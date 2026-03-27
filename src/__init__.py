@@ -6,35 +6,23 @@ SCREEN_HEIGHT = 600
 SCREEN_TITLE = "My Simple Arcade App"
 
 class MyGame(arcade.Window):
-    """ Main application class. """
-
     def __init__(self):
-        # Call the parent class (arcade.Window) to create the window
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-        
-        # Set the background color
-        arcade.set_background_color(arcade.color.SKY_BLUE)
+        super().__init__(800, 600, "TMX Map Renderer")
+        self.tile_map = None
+        self.scene = None
 
     def setup(self):
-        """ Set up the game variables here. """
-        # This is where you would load your sprites, sounds, and maps
-        pass
+        map_name = "assets/map/littleroot_town.tmx"
+    
+        tile_scaling = 2
+        
+        self.tile_map = arcade.tilemap.load_tilemap(map_name, tile_scaling)
+
+        self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
     def on_draw(self):
-        """ Render the screen. """
-        # Clear the screen to the background color
         self.clear()
-
-        # Draw a simple circle (Center X, Center Y, Radius, Color)
-        arcade.draw_circle_filled(400, 300, 50, arcade.color.YELLOW)
-        
-        # Draw some text
-        arcade.draw_text("Hello Arcade!", 300, 200, arcade.color.WHITE, 24)
-
-    def on_update(self, delta_time):
-        """ Movement and game logic goes here. """
-        # delta_time is the time since the last update (approx 1/60th of a sec)
-        pass
+        self.scene.draw()
 
 def main():
     """ Main function """
