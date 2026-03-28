@@ -5,14 +5,14 @@ class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(800, 600, "Pokemon Emerald Clone")
         self.scene = None
-        self.player = Player(x=15, y=12)
+        self.player = Player(x=11, y=12)
         self.keys = set()
         self.setup()
 
     def setup(self):
         # Load your town map
         map_name = "assets/map/littleroot_town.tmx"
-        self.tile_map = arcade.tilemap.load_tilemap(map_name, scaling=1.0)
+        self.tile_map = arcade.tilemap.load_tilemap(map_name, scaling=2.0)
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
     def on_key_press(self, key, modifiers):
@@ -22,7 +22,7 @@ class MyGame(arcade.Window):
         self.keys.discard(key)
 
     def on_update(self, delta_time):
-        self.player.update(delta_time, self.keys)
+        self.player.update(delta_time, self.keys, self.scene["collision"])
 
     def on_draw(self):
         self.clear()
