@@ -1,4 +1,6 @@
 import arcade
+import random
+from src.util import getPokemon
 
 class Player(arcade.Sprite):
     def __init__(self, x: int, y: int):
@@ -51,7 +53,7 @@ class Player(arcade.Sprite):
         self.anim_frame = 0
         self.anim_timer = 0
 
-    def update(self, delta_time, keys, collision_tiles):
+    def update(self, delta_time, keys, collision_tiles, bush):
         if self.moving:
             # --- Movement Logic ---
             if self.center_x < self.target_x: self.center_x += self.move_speed
@@ -113,6 +115,19 @@ class Player(arcade.Sprite):
                 hit_list = arcade.get_sprites_at_point((target_x, target_y), collision_tiles)
                 
                 is_blocked = len(hit_list) > 0
+                hit_bush = arcade.get_sprites_at_point((target_x, target_y), bush)
+                
+                if hit_bush:
+                    pokemon_string = hit_bush[0].properties.get("pokemon")
+                        
+                    encounter_chance = random.random()
+                        
+                    if encounter_chance < 0.20:
+                        possible_pokemon = [p.strip() for p in pokemon_string.split(",")]
+                            
+                        wild_pokemon = getPokemon()[random.choice(possible_pokemon)] 
+                        print(f"Wild {wild_pokemon} appeared!")
+                
                 
                 if not is_blocked:
                     self.moving = True
