@@ -51,7 +51,7 @@ class Player(arcade.Sprite):
         self.anim_frame = 0
         self.anim_timer = 0
 
-    def update(self, delta_time, keys):
+    def update(self, delta_time, keys, collision_tiles):
         if self.moving:
             # --- Movement Logic ---
             if self.center_x < self.target_x: self.center_x += self.move_speed
@@ -90,7 +90,6 @@ class Player(arcade.Sprite):
                 elif self.direction == "right": self.texture = self.idle_textures[3]
         
         else:
-            # --- Check Input for ALL 4 Directions ---
             new_dir = None
             dx, dy = 0, 0
 
@@ -105,9 +104,28 @@ class Player(arcade.Sprite):
             
             if new_dir:
                 self.direction = new_dir
-                self.moving = True
-                self.target_x = self.center_x + dx
-                self.target_y = self.center_y + dy
+                
+                # PRE-COLLISION CHECK
+                target_x = self.center_x + dx
+                target_y = self.center_y + dy
+                
+                # Find any sprites at the target position
+                hit_list = arcade.get_sprites_at_point((target_x, target_y), collision_tiles)
+                
+                is_blocked = len(hit_list) > 0
+                
+                if not is_blocked:
+                    self.moving = True
+                    self.target_x = target_x
+                    self.target_y = target_y
+                else:
+                    # Just change direction but don't move
+                    self.moving = False
+                    # Update idle texture to face the wall
+                    if self.direction == "down": self.texture = self.idle_textures[0]
+                    elif self.direction == "up": self.texture = self.idle_textures[1]
+                    elif self.direction == "left": self.texture = self.idle_textures[2]
+                    elif self.direction == "right": self.texture = self.idle_textures[3]
 
     def draw(self):
         arcade.draw_sprite(self)
