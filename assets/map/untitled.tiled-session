@@ -10,9 +10,9 @@
         },
         "littleroot_town.tmx": {
             "scale": 1.5,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 340.66666666666663,
+                "x": 605.6666666666666,
                 "y": 226
             }
         }
@@ -23,12 +23,13 @@
     "map.renderOrder": "3",
     "map.width": 50,
     "openFiles": [
-        "littleroot_town.tmx"
+        "littleroot_town.tmx",
+        "Tiles.tsx"
     ],
     "project": "untitled.tiled-project",
     "recentFiles": [
-        "littleroot_town.tmx",
-        "Tiles.tsx"
+        "Tiles.tsx",
+        "littleroot_town.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

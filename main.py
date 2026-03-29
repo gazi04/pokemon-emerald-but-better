@@ -22,7 +22,7 @@ class MyGame(arcade.Window):
         self.keys.discard(key)
 
     def on_update(self, delta_time):
-        self.player.update(delta_time, self.keys, self.scene["collision"])
+        self.player.update(delta_time, self.keys, self.scene["collision"], self.scene["bush"])
 
     def on_draw(self):
         self.clear()
