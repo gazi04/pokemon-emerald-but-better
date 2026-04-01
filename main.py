@@ -7,15 +7,13 @@ class MyGame(arcade.Window):
         self.scene = None
         self.player = Player(x=11, y=12)
         self.keys = set()
-        self.camera = None
-        
         self.setup()
 
     def setup(self):
+        # Load your town map
         map_name = "assets/map/littleroot_town.tmx"
         self.tile_map = arcade.tilemap.load_tilemap(map_name, scaling=2.0)
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
-        self.camera = arcade.Camera2D()
 
     def on_key_press(self, key, modifiers):
         self.keys.add(key)
@@ -24,19 +22,12 @@ class MyGame(arcade.Window):
         self.keys.discard(key)
 
     def on_update(self, delta_time):
-        self.camera.position = arcade.math.lerp_2d(
-            self.camera.position, 
-            self.player.getPosition(), 
-            0.05
-        )
-        
         self.player.update(delta_time, self.keys, self.scene["collision"], self.scene["bush"])
 
     def on_draw(self):
         self.clear()
         
-        self.camera.use()
-        
+        # pixelated=True is CRITICAL for Arcade 3.0 pixel art
         if self.scene:
             self.scene.draw(pixelated=True)
             

@@ -144,6 +144,3 @@ class Player(arcade.Sprite):
 
     def draw(self):
         arcade.draw_sprite(self)
-
-    def getPosition(self):
-        return (self.center_x, self.center_y)
