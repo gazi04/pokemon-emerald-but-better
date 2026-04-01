@@ -27,7 +27,7 @@ class MyGame(arcade.Window):
         self.camera.position = arcade.math.lerp_2d(
             self.camera.position, 
             self.player.getPosition(), 
-            0.05
+            0.5
         )
         self.player.update(delta_time, self.keys, self.scene["collision"], self.scene["bush"])
 
