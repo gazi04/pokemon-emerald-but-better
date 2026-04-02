@@ -106,28 +106,23 @@ class Player(arcade.Sprite):
             
             if new_dir:
                 self.direction = new_dir
-                
-                # PRE-COLLISION CHECK
                 target_x = self.center_x + dx
                 target_y = self.center_y + dy
                 
-                # Find any sprites at the target position
                 hit_list = arcade.get_sprites_at_point((target_x, target_y), collision_tiles)
-                
                 is_blocked = len(hit_list) > 0
                 hit_bush = arcade.get_sprites_at_point((target_x, target_y), bush)
                 
-                if hit_bush:
+                if hit_bush and not is_blocked:
                     pokemon_string = hit_bush[0].properties.get("pokemon")
-                        
-                    encounter_chance = random.random()
-                        
-                    if encounter_chance < 0.20:
-                        possible_pokemon = [p.strip() for p in pokemon_string.split(",")]
+                    if pokemon_string:
+                        if random.random() < 0.20:
+                            possible_pokemon = [p.strip() for p in pokemon_string.split(",")]
+                            pokemon_name = random.choice(possible_pokemon)
+                            pokemon_data = getPokemon()[pokemon_name]
                             
-                        wild_pokemon = getPokemon()[random.choice(possible_pokemon)] 
-                        print(f"Wild {wild_pokemon} appeared!")
-                
+                            # RETURN THE DATA to the OverworldView
+                            return (pokemon_name, pokemon_data)
                 
                 if not is_blocked:
                     self.moving = True
@@ -141,6 +136,8 @@ class Player(arcade.Sprite):
                     elif self.direction == "up": self.texture = self.idle_textures[1]
                     elif self.direction == "left": self.texture = self.idle_textures[2]
                     elif self.direction == "right": self.texture = self.idle_textures[3]
+                    
+        return None
 
     def draw(self):
         arcade.draw_sprite(self)
