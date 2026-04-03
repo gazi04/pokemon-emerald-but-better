@@ -1,76 +1,136 @@
 {
   "treecko": {
-    "ablities":["overgrow"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/treecko_back.png",
+      "front": "assets/sprite/pokemon/front/treecko_front.png"
+    },
+    "abilities": ["overgrow"],
     "types": ["grass"],
     "stats": { "hp": 40, "attack": 65, "defence": 35, "special_attack": 45, "special_defence": 55, "speed": 70 }
   },
   "torchic": {
-    "ablities":["blaze"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/mudkip_back.png",
+      "front": "assets/sprite/pokemon/front/mudkip_front.png"
+    },
+    "abilities": ["blaze"],
     "types": ["fire"],
     "stats": { "hp": 45, "attack": 60, "defence": 40, "special_attack": 70, "special_defence": 50, "speed": 45 }
   },
   "mudkip": {
-    "ablities":["torrent"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/mudkip_back.png",
+      "front": "assets/sprite/pokemon/front/mudkip_front.png"
+    },
+    "abilities": ["torrent"],
     "types": ["water"],
     "stats": { "hp": 50, "attack": 70, "defence": 50, "special_attack": 50, "special_defence": 50, "speed": 40 }
   },
   "poochyena": {
-    "ablities":["run_away"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/poochyena_back.png",
+      "front": "assets/sprite/pokemon/front/poochyena_front.png"
+    },
+    "abilities": ["run_away"],
     "types": ["dark"],
     "stats": { "hp": 35, "attack": 55, "defence": 35, "special_attack": 30, "special_defence": 30, "speed": 35 }
   },
   "zigzagoon": {
-    "ablities":["pick_up"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/zigzagoon_back.png",
+      "front": "assets/sprite/pokemon/front/zigzagoon_front.png"
+    },
+    "abilities": ["pick_up"],
     "types": ["normal"],
     "stats": { "hp": 38, "attack": 30, "defence": 41, "special_attack": 30, "special_defence": 41, "speed": 60 }
   },
   "wurmple": {
-    "ablities":["shild_dust"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/wurmple_back.png",
+      "front": "assets/sprite/pokemon/front/wurmple_front.png"
+    },
+    "abilities": ["shield_dust"],
     "types": ["bug"],
     "stats": { "hp": 45, "attack": 45, "defence": 35, "special_attack": 20, "special_defence": 30, "speed": 20 }
   },
   "lotad": {
-    "ablities":["swift_swim"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/lotad_back.png",
+      "front": "assets/sprite/pokemon/front/lotad_front.png"
+    },
+    "abilities": ["swift_swim"],
     "types": ["water", "grass"],
     "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 40, "special_defence": 50, "speed": 30 }
   },
   "seedot": {
-    "ablities":["chlorophyll"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/seedot_back.png",
+      "front": "assets/sprite/pokemon/front/seedot_front.png"
+    },
+    "abilities": ["chlorophyll"],
     "types": ["grass"],
     "stats": { "hp": 40, "attack": 40, "defence": 50, "special_attack": 30, "special_defence": 30, "speed": 30 }
   },
   "taillow": {
-    "ablities":["guts"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/taillow_back.png",
+      "front": "assets/sprite/pokemon/front/taillow_front.png"
+    },
+    "abilities": ["guts"],
     "types": ["normal", "flying"],
     "stats": { "hp": 40, "attack": 55, "defence": 30, "special_attack": 30, "special_defence": 30, "speed": 85 }
   },
   "wingull": {
-    "ablities":["keen_eye"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/wingull_back.png",
+      "front": "assets/sprite/pokemon/front/wingull_front.png"
+    },
+    "abilities": ["keen_eye"],
     "types": ["water", "flying"],
     "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 55, "special_defence": 30, "speed": 85 }
   },
   "ralts": {
-    "ablities":["synchronize"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/ralts_back.png",
+      "front": "assets/sprite/pokemon/front/ralts_front.png"
+    },
+    "abilities": ["synchronize"],
     "types": ["psychic", "fairy"],
     "stats": { "hp": 28, "attack": 25, "defence": 25, "special_attack": 45, "special_defence": 35, "speed": 40 }
   },
   "shroomish": {
-    "ablities":["effect_spore"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/shroomish_back.png",
+      "front": "assets/sprite/pokemon/front/shroomish_front.png"
+    },
+    "abilities": ["effect_spore"],
     "types": ["grass"],
     "stats": { "hp": 60, "attack": 40, "defence": 60, "special_attack": 40, "special_defence": 60, "speed": 35 }
   },
   "abra": {
-    "ablities":["synchronize"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/abra_back.png",
+      "front": "assets/sprite/pokemon/front/abra_front.png"
+    },
+    "abilities": ["synchronize"],
     "types": ["psychic"],
     "stats": { "hp": 25, "attack": 20, "defence": 15, "special_attack": 105, "special_defence": 55, "speed": 90 }
   },
   "makuhita": {
-    "ablities":["guts"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/makuhita_back.png",
+      "front": "assets/sprite/pokemon/front/makuhita_front.png"
+    },
+    "abilities": ["guts"],
     "types": ["fighting"],
     "stats": { "hp": 72, "attack": 60, "defence": 30, "special_attack": 20, "special_defence": 30, "speed": 25 }
   },
   "zubat": {
-    "ablities":["inner_focus"],
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/zubat_back.png",
+      "front": "assets/sprite/pokemon/front/zubat_front.png"
+    },
+    "abilities": ["inner_focus"],
     "types": ["poison", "flying"],
     "stats": { "hp": 40, "attack": 45, "defence": 35, "special_attack": 30, "special_defence": 40, "speed": 55 }
   }
