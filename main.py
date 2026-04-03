@@ -18,7 +18,7 @@ class OverworldView(arcade.View):
 
     def on_update(self, delta_time):
         self.camera.position = arcade.math.lerp_2d(
-            self.camera.position, self.player.getPosition(), 0.05
+            self.camera.position, self.player.getPosition(), 0.5
         )
         
         encounter = self.player.update(
