@@ -1,5 +1,6 @@
 import arcade
 import arcade.gui
+from src.entities.pokemon import Pokemon
 
 class BattleView(arcade.View):
     def __init__(self, pokemon_name, pokemon_data, overworld_view):
@@ -7,9 +8,10 @@ class BattleView(arcade.View):
         self.overworld_view = overworld_view
         
         self.pokemon_name = pokemon_name
+        self.wild_pokemon = Pokemon(pokemon_name, pokemon_data, is_enemy=True)
 
         self.title_label = arcade.Text(
-            text=f"A wild {pokemon_name} appeared!",
+            text=f"A wild {self.wild_pokemon.name} appeared!",
             x=400, y=550, color=arcade.color.WHITE,
             font_size=20, anchor_x="center"
         )
@@ -21,8 +23,6 @@ class BattleView(arcade.View):
         self.clear()
         
         self.wild_pokemon.draw()
-        
-        self.draw_hp_bar()
         
         self.title_label.draw()
         self.manager.draw()
