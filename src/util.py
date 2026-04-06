@@ -5,3 +5,11 @@ def getPokemon():
         poke = json.load(f)
         
     return poke
+
+def getAMove(name):
+    try:
+        with open("data/moves.json", "r") as f:
+            return json.load(f)[name]
+    except:
+        print("The move doesnt exits")
+        return {}
