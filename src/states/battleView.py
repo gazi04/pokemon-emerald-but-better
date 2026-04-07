@@ -51,6 +51,12 @@ class BattleView(arcade.View):
 
         self.main_menu_container = arcade.gui.UIWidget()
         self.move_menu_container = arcade.gui.UIWidget()
+        self.dialog_menu_container = arcade.gui.UIWidget()
+        
+        self.target_text = ""      
+        self.current_text = ""     
+        self.typing_speed = 0.04   
+        self.typing_timer = 0
 
         self.hp_bars = {}
 
@@ -84,6 +90,7 @@ class BattleView(arcade.View):
                         texture_pressed=sprite,
                     )
                     self.main_menu_container.add(self.dialogBox)
+                    self.dialog_menu_container.add(self.dialogBox)
 
                 elif obj.name == "box":
                     sprite = arcade.load_texture("assets/ui/battle/box.png")
@@ -314,6 +321,21 @@ class BattleView(arcade.View):
                         font_size=25,
                     )
                     self.move_menu_container.add(self.type)
+                    
+                if obj.name == "dialog":
+                    self.dialog = arcade.gui.UILabel(
+                        text="Lets larp - Genci",
+                        x=arc_x,
+                        y=arc_y - obj_h,
+                        width=obj_w,
+                        height=obj_h,
+                        text_color=arcade.color.WHITE,
+                        font_name="Pokemon Emerald",
+                        font_size=25,
+                        align="left"
+                    )
+                    self.main_menu_container.add(self.dialog)
+                    self.dialog_menu_container.add(self.dialog)
 
                 # --- HP BAR FILL AREAS ---
                 # These are just data points for the draw_hp_bar method
@@ -368,11 +390,14 @@ class BattleView(arcade.View):
     def switch_menu(self, menu_to_show):
         self.manager.remove(self.main_menu_container)
         self.manager.remove(self.move_menu_container)
+        self.manager.remove(self.dialog_menu_container)
         
         if menu_to_show == "main":
             self.manager.add(self.main_menu_container)
         elif menu_to_show == "moves":
             self.manager.add(self.move_menu_container)
+        elif menu_to_show == "dialog":
+            self.manager.add(self.dialog_menu_container)
 
     def update_ui_moves(self):
         moves = self.your_pokemon.moves
@@ -381,12 +406,39 @@ class BattleView(arcade.View):
         for i, button in enumerate(buttons):
             if i < len(moves):
                 button.text = moves[i]["name"].upper()
+                button.on_click = lambda event, move_index=i: self.turn(move_index)
                 button.visible = True
                 button.enabled = True
             else:
                 button.text = ""
                 button.visible = False
                 button.enabled = False
+                
+    def turn(self, move_index):
+        move_name = self.your_pokemon.moves[move_index]['name']
+        
+        self.your_pokemon.use_move(move_index, self.enemy_pokemon)
+        
+        self.target_text = f"{self.your_pokemon.name} used {move_name}!"
+        self.current_text = "" 
+        
+        self.switch_menu("dialog")
+        
+        arcade.schedule_once(lambda dt: self.enemy_turn(move_index), 2.0)
+
+    def enemy_turn(self, move_index):
+        move_name = self.enemy_pokemon.moves[move_index]['name']
+        self.target_text = f"{self.enemy_pokemon.name} used {move_name}!"
+        self.current_text = ""
+        
+        self.enemy_pokemon.use_move(move_index, self.your_pokemon)
+        
+        arcade.schedule_once(self.reset_to_main_menu, 2.0)
+
+    def reset_to_main_menu(self, dt):
+        self.switch_menu("main")
+        self.target_text = "Lets larp - Genc"
+        self.current_text = ""
         
     def on_draw(self):
         self.clear()
@@ -400,6 +452,17 @@ class BattleView(arcade.View):
 
         self.draw_hp_bar(self.your_pokemon, self.hp_bars.get("player"))
         self.draw_hp_bar(self.enemy_pokemon, self.hp_bars.get("enemy"))
+        
+    def on_update(self, delta_time):
+        if len(self.current_text) < len(self.target_text):
+            self.typing_timer += delta_time
+            
+            if self.typing_timer >= self.typing_speed:
+                self.current_text += self.target_text[len(self.current_text)]
+                
+                self.dialog.text = self.current_text
+                
+                self.typing_timer = 0
         
     def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
         widgets = self.manager.get_widgets_at((x, y))

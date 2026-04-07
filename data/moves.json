@@ -1,6 +1,6 @@
 {
     "tackle": {
-        "power": 100,
+        "power": 10,
         "accuracy": 100,
         "isPhysical": true,
         "type": "normal",

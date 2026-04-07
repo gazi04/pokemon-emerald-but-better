@@ -10,8 +10,8 @@
   },
   "torchic": {
     "sprites": {
-      "back": "assets/sprite/pokemon/back/mudkip_back.png",
-      "front": "assets/sprite/pokemon/front/mudkip_front.png"
+      "back": "assets/sprite/pokemon/back/trochip_back.png",
+      "front": "assets/sprite/pokemon/front/torchip_front.png"
     },
     "abilities": ["blaze"],
     "types": ["fire"],

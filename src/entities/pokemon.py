@@ -1,8 +1,9 @@
 import arcade
+from src.util import getAMove
 
 class Pokemon(arcade.Sprite):
     def __init__(self, name, data, moves, level=5, is_enemy=True):
-        sprite_path = data["sprites"]["back"] if is_enemy else data["sprites"]["front"]
+        sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
         
         super().__init__(sprite_path.strip(), scale=3.0)
         
@@ -15,14 +16,27 @@ class Pokemon(arcade.Sprite):
         self.level = level
 
         if is_enemy:
-            self.center_x = 235 
-            self.center_y = 235
-        else:
             self.center_x = 470 
             self.center_y = 400
+        else:
+            self.center_x = 235 
+            self.center_y = 235
 
     def draw(self):
         arcade.draw_sprite(self, pixelated=True)
+        
+    def take_damage(self, damage:int):
+        self.current_hp -= damage
+        if self.current_hp < 0:
+            self.current_hp = 0
+            
+        
+    def use_move(self, index:int, pokemon:Pokemon):
+        move = getAMove(self.moves[index]["name"])
+        
+        if self.moves[index]["pp"] > 0:
+            pokemon.take_damage(move["power"])
+            self.moves[index]["pp"] -= 1
     
     def get_hp_ratio(self):
         return self.current_hp / self.max_hp
