@@ -5,6 +5,10 @@ from src.states.battleView import BattleView
 class OverworldView(arcade.View):
     def __init__(self):
         super().__init__()
+        arcade.get_window().ctx.default_texture_filter = (arcade.gl.NEAREST, arcade.gl.NEAREST)
+        
+        arcade.load_font("assets/fonts/pokemon-emerald.otf")
+        
         self.player = Player(x=11, y=12)
         self.keys = set()
         self.camera = None
@@ -43,7 +47,7 @@ class OverworldView(arcade.View):
 # --- 2. THE STARTING LINE (Functions) ---
 
 def main():
-    window = arcade.Window(800, 600, "Pokemon Emerald Clone")
+    window = arcade.Window(800, 600, "Pokemon Emerald Clone", antialiasing=False)
     start_view = OverworldView()
     window.show_view(start_view)
     arcade.run()
