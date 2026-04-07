@@ -381,6 +381,7 @@ class BattleView(arcade.View):
         for i, button in enumerate(buttons):
             if i < len(moves):
                 button.text = moves[i]["name"].upper()
+                button.on_click = lambda event, move_index=i: self.your_pokemon.use_move(move_index, self.enemy_pokemon)
                 button.visible = True
                 button.enabled = True
             else:
