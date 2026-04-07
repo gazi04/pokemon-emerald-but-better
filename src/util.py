@@ -6,6 +6,12 @@ def getPokemon():
         
     return poke
 
+def getConfigs():
+    with open("data/config.json", "r") as f:
+        config = json.load(f)
+        
+    return config
+
 def getAMove(name):
     try:
         with open("data/moves.json", "r") as f:

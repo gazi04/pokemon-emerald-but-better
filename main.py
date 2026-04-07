@@ -1,6 +1,7 @@
 import arcade
 from src.entities.player import Player
 from src.states.battleView import BattleView
+from src.util import getConfigs
 
 class OverworldView(arcade.View):
     def __init__(self):
@@ -44,7 +45,8 @@ class OverworldView(arcade.View):
 # --- 2. THE STARTING LINE (Functions) ---
 
 def main():
-    window = arcade.Window(800, 600, "Pokemon Emerald Clone", antialiasing=False)
+    configs = getConfigs()
+    window = arcade.Window(configs["window"]["width"], configs["window"]["height"], configs["window"]["title"], configs["window"]["fullscreen"], configs["window"]["resizable"])
     start_view = OverworldView()
     window.show_view(start_view)
     arcade.run()
