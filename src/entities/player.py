@@ -1,6 +1,7 @@
 import arcade
 import random
 from src.util import getPokemon
+from src.util import getEnc
 
 class Player(arcade.Sprite):
     def __init__(self, x: int, y: int):
@@ -14,6 +15,7 @@ class Player(arcade.Sprite):
             "left": arcade.load_texture("assets/sprite/player/idle/brendan_idle_left.png"),
         }
         self.idle_textures["right"] = self.idle_textures["left"].flip_left_right()
+        self.map = "littleroot_town"
 
         # Walk (2 frames → we make it 4-frame loop)
         self.walk_textures = {
@@ -108,12 +110,12 @@ class Player(arcade.Sprite):
                 # Random encounter
                 if hit_bush and not hit_list:
                     if random.random() < 0.15:
-                        pokemon_string = hit_bush[0].properties.get("pokemon", "")
-                        if pokemon_string:
-                            possible = [p.strip() for p in pokemon_string.split(",")]
-                            pokemon_name = random.choice(possible)
-                            pokemon_data = getPokemon()[pokemon_name]
-                            return (pokemon_name, pokemon_data)
+                        enc = getEnc()[self.map]["grass"]["pokemon"]
+                        
+                        pokemon = random.choice(enc)
+                        pokemon_data = getPokemon()[pokemon["name"]]
+                        pokemon_lvl = random.randint(pokemon["min_level"], pokemon["max_level"])
+                        return (pokemon["name"], pokemon_data, pokemon_lvl)
 
                 if not hit_list:
                     self.moving = True

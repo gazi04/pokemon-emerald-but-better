@@ -12,6 +12,12 @@ def getConfigs():
         
     return config
 
+def getEnc():
+    with open("data/encounters.json", "r") as f:
+        enc = json.load(f)
+        
+    return enc
+
 def getAMove(name):
     try:
         with open("data/moves.json", "r") as f:

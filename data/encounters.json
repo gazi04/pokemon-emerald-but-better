@@ -2,7 +2,7 @@
   "littleroot_town": {
     "grass": {
       "pokemon": [
-        { "name": "poochyana", "min_level": 2, "max_level": 4, "encounter_rate": 0.25 },
+        { "name": "poochyena", "min_level": 2, "max_level": 4, "encounter_rate": 0.25 },
         { "name": "zigzagoon", "min_level": 2, "max_level": 4, "encounter_rate": 0.25 }
       ]
     }
@@ -11,7 +11,7 @@
   "route_101": {
     "grass": {
       "pokemon": [
-        { "name": "poochyana", "min_level": 3, "max_level": 5, "encounter_rate": 0.25 },
+        { "name": "poochyena", "min_level": 3, "max_level": 5, "encounter_rate": 0.25 },
         { "name": "zigzagoon", "min_level": 3, "max_level": 5, "encounter_rate": 0.25 },
         { "name": "wurmple",   "min_level": 3, "max_level": 5, "encounter_rate": 0.25 }
       ]

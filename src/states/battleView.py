@@ -4,7 +4,7 @@ from src.entities.pokemon import Pokemon
 from src.util import getAMove
 
 class BattleView(arcade.View):
-    def __init__(self, pokemon_name, pokemon_data, overworld_view):
+    def __init__(self, pokemon_name, pokemon_data, level, overworld_view):
         super().__init__()
         
         self.overworld_view = overworld_view
@@ -42,8 +42,8 @@ class BattleView(arcade.View):
 
         arcade.load_font("assets/fonts/pokemon-emerald.otf")
 
-        self.your_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=False)
-        self.enemy_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=True)
+        self.your_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], level=level, is_enemy=False)
+        self.enemy_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], level=level, is_enemy=True)
 
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
