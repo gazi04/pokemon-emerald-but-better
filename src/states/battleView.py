@@ -40,8 +40,8 @@ class BattleView(arcade.View):
             ),
         }
 
-        self.your_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=False)
-        self.enemy_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=True)
+        self.your_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=False, run=self.run)
+        self.enemy_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=True, run=self.run)
 
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -108,7 +108,7 @@ class BattleView(arcade.View):
                         height=obj_h,
                         texture=sprite
                     )
-                    fightBtn.on_click = lambda event: self.switch_menu("moves")
+                    fightBtn.on_click = lambda event: self.switchMenu("moves")
 
                     self.main_menu_container.add(fightBtn)
 
@@ -342,23 +342,22 @@ class BattleView(arcade.View):
                         "h": obj_h,
                     }
                     
-        self.switch_menu("main")
-        self.update_ui_moves()
+        self.switchMenu("main")
+        self.updateUiMoves()
         first_move = getAMove(self.your_pokemon.moves[0]["name"])
         
         self.type.text = first_move["type"]
         self.maxPP.text = first_move["maxPP"]
         self.currPP.text = self.your_pokemon.moves[0]["pp"]
 
-    def draw_hp_bar(self, pokemon, bar_data): 
-        if not bar_data:
+    def drawHpBar(self, pokemon, barData): 
+        if not barData:
             return
 
-        ratio = pokemon.get_hp_ratio()
-        full_width = bar_data["w"]
-        current_width = full_width * ratio
+        ratio = pokemon.getHpRatio()
+        fullWidth = barData["w"]
+        currentWidth = fullWidth * ratio
 
-        # 2. Set the Color
         color = arcade.color.GREEN
         if ratio < 0.2:
             color = arcade.color.RED
@@ -366,14 +365,14 @@ class BattleView(arcade.View):
             color = arcade.color.GOLD
 
         arcade.draw_lrbt_rectangle_filled(
-            left=bar_data["x"], 
-            right=bar_data["x"] + current_width, 
-            bottom=bar_data["y"], 
-            top=bar_data["y"] + bar_data["h"], 
+            left=barData["x"], 
+            right=barData["x"] + currentWidth, 
+            bottom=barData["y"], 
+            top=barData["y"] + barData["h"], 
             color=color
         )
 
-    def switch_menu(self, menu_to_show):
+    def switchMenu(self, menu_to_show):
         self.manager.remove(self.main_menu_container)
         self.manager.remove(self.move_menu_container)
         self.manager.remove(self.dialog_menu_container)
@@ -385,7 +384,7 @@ class BattleView(arcade.View):
         elif menu_to_show == "dialog":
             self.manager.add(self.dialog_menu_container)
 
-    def update_ui_moves(self):
+    def updateUiMoves(self):
         moves = self.your_pokemon.moves
         buttons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
         
@@ -403,26 +402,26 @@ class BattleView(arcade.View):
     def turn(self, move_index):
         move_name = self.your_pokemon.moves[move_index]['name']
         
-        self.your_pokemon.use_move(move_index, self.enemy_pokemon)
+        self.your_pokemon.useMove(move_index, self.enemy_pokemon)
         
         self.target_text = f"{self.your_pokemon.name} used {move_name}!"
         self.current_text = "" 
         
-        self.switch_menu("dialog")
+        self.switchMenu("dialog")
         
-        arcade.schedule_once(lambda dt: self.enemy_turn(move_index), 2.0)
+        arcade.schedule_once(lambda dt: self.enemyTurn(move_index), 2.0)
 
-    def enemy_turn(self, move_index):
+    def enemyTurn(self, move_index):
         move_name = self.enemy_pokemon.moves[move_index]['name']
         self.target_text = f"{self.enemy_pokemon.name} used {move_name}!"
         self.current_text = ""
         
-        self.enemy_pokemon.use_move(move_index, self.your_pokemon)
+        self.enemy_pokemon.useMove(move_index, self.your_pokemon)
         
-        arcade.schedule_once(self.reset_to_main_menu, 2.0)
+        arcade.schedule_once(self.resetToMainMenu, 2.0)
 
-    def reset_to_main_menu(self, dt):
-        self.switch_menu("main")
+    def resetToMainMenu(self, dt):
+        self.switchMenu("main")
         self.target_text = "Lets larp - Genc"
         self.current_text = ""
         
@@ -436,8 +435,8 @@ class BattleView(arcade.View):
 
         self.manager.draw()
 
-        self.draw_hp_bar(self.your_pokemon, self.hp_bars.get("player"))
-        self.draw_hp_bar(self.enemy_pokemon, self.hp_bars.get("enemy"))
+        self.drawHpBar(self.your_pokemon, self.hp_bars.get("player"))
+        self.drawHpBar(self.enemy_pokemon, self.hp_bars.get("enemy"))
         
     def on_update(self, delta_time):
         if len(self.current_text) < len(self.target_text):
@@ -452,16 +451,19 @@ class BattleView(arcade.View):
         
     def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
         widgets = self.manager.get_widgets_at((x, y))
-        move_buttons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
+        moveButtons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
 
-        for i, button in enumerate(move_buttons):
+        for i, button in enumerate(moveButtons):
             if button in widgets:
                 self.move_hover(i)
                 return
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.Z:
-            self.switch_menu("main")
+            self.switchMenu("main")
+            
+        if key == arcade.key.SPACE:
+            self.enemy_pokemon.takeDamage(30)
             
     def move_hover(self, index):
         if index is not None:

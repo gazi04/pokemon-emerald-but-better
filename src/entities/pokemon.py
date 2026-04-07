@@ -1,8 +1,8 @@
 import arcade
-from src.util import getAMove
+from src.util import getAMove, calculateMultiplier
 
 class Pokemon(arcade.Sprite):
-    def __init__(self, name, data, moves, level=5, is_enemy=True):
+    def __init__(self, name, data, moves, level=5, is_enemy=True, run:function=None):
         sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
         
         super().__init__(sprite_path.strip(), scale=3.0)
@@ -10,6 +10,7 @@ class Pokemon(arcade.Sprite):
         self.name = name.capitalize()
         self.data = data
         self.moves = moves
+        self.run = run
         
         self.max_hp = data["stats"]["hp"]
         self.current_hp = self.max_hp
@@ -25,18 +26,33 @@ class Pokemon(arcade.Sprite):
     def draw(self):
         arcade.draw_sprite(self, pixelated=True)
         
-    def take_damage(self, damage:int):
+    def takeDamage(self, damage:int):
         self.current_hp -= damage
         if self.current_hp < 0:
             self.current_hp = 0
+            self.run()
             
-        
-    def use_move(self, index:int, pokemon:Pokemon):
+    def useMove(self, index:int, pokemon:Pokemon):
         move = getAMove(self.moves[index]["name"])
         
         if self.moves[index]["pp"] > 0:
-            pokemon.take_damage(move["power"])
+            d = pokemon.data["stats"]["defence"]
+            a = self.data["stats"]["attack"]
+            if not move["isPhysical"]:
+                d = pokemon.data["stats"]["special_defence"]
+                a = self.data["stats"]["special_attack"]
+            
+            stab = 1
+            
+            if move["type"] in self.data["types"]:
+                stab = 1.5
+                
+            mult = calculateMultiplier(move["type"], pokemon.data["types"])
+                
+            damage = (((2 * self.level / 5 + 1) * move["power"] * a/d) / 50 + 2) * stab * mult
+            pokemon.takeDamage(damage)
             self.moves[index]["pp"] -= 1
     
-    def get_hp_ratio(self):
+    def getHpRatio(self):
         return self.current_hp / self.max_hp
+    
