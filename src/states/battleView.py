@@ -40,8 +40,6 @@ class BattleView(arcade.View):
             ),
         }
 
-        arcade.load_font("assets/fonts/pokemon-emerald.otf")
-
         self.your_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=False)
         self.enemy_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=True)
 
@@ -80,14 +78,12 @@ class BattleView(arcade.View):
                 # --- UI TEXTURES (Buttons/Frames) ---
                 if obj.name == "dialogBox":
                     sprite = arcade.load_texture("assets/ui/battle/dialogbox.png")
-                    self.dialogBox = arcade.gui.UITextureButton(
+                    self.dialogBox = arcade.gui.UIImage(
                         x=arc_x,
                         y=arc_y,
                         width=obj_w,
                         height=obj_h,
-                        texture=sprite,
-                        texture_hovered=sprite,
-                        texture_pressed=sprite,
+                        texture=sprite
                     )
                     self.main_menu_container.add(self.dialogBox)
                     self.dialog_menu_container.add(self.dialogBox)
@@ -99,9 +95,7 @@ class BattleView(arcade.View):
                         y=arc_y,
                         width=obj_w,
                         height=obj_h,
-                        texture=sprite,
-                        texture_hovered=sprite,
-                        texture_pressed=sprite,
+                        texture=sprite
                     )
                     self.main_menu_container.add(self.box)
 
@@ -112,9 +106,7 @@ class BattleView(arcade.View):
                         y=arc_y,
                         width=obj_w,
                         height=obj_h,
-                        texture=sprite,
-                        texture_hovered=sprite,
-                        texture_pressed=sprite,
+                        texture=sprite
                     )
                     fightBtn.on_click = lambda event: self.switch_menu("moves")
 
@@ -127,9 +119,7 @@ class BattleView(arcade.View):
                         y=arc_y,
                         width=obj_w,
                         height=obj_h,
-                        texture=sprite,
-                        texture_hovered=sprite,
-                        texture_pressed=sprite,
+                        texture=sprite
                     )
                     runBtn.on_click = lambda event: self.run()
                     self.main_menu_container.add(runBtn)
@@ -141,9 +131,7 @@ class BattleView(arcade.View):
                         y=arc_y,
                         width=obj_w,
                         height=obj_h,
-                        texture=sprite,
-                        texture_hovered=sprite,
-                        texture_pressed=sprite,
+                        texture=sprite
                     )
                     self.main_menu_container.add(self.pokemonBtn)
 
@@ -204,7 +192,7 @@ class BattleView(arcade.View):
                 elif obj.name == "movesBox":
                     sprite = arcade.load_texture("assets/ui/battle/movesBox.png")
                     self.move_menu_container.add(
-                        arcade.gui.UITextureButton(
+                        arcade.gui.UIImage(
                             x=arc_x,
                             y=arc_y,
                             width=obj_w,
@@ -217,7 +205,7 @@ class BattleView(arcade.View):
 
                 elif obj.name == "player_hp_widget":
                     sprite = arcade.load_texture("assets/ui/battle/playerHpBar.png")
-                    self.player_hp_widget = arcade.gui.UITextureButton(
+                    self.player_hp_widget = arcade.gui.UIImage(
                         x=arc_x,
                         y=arc_y,
                         width=obj_w,
@@ -230,7 +218,7 @@ class BattleView(arcade.View):
 
                 elif obj.name == "enemy_hp_widget":
                     sprite = arcade.load_texture("assets/ui/battle/enemyHpBar.png")
-                    self.enemy_hp_widget = arcade.gui.UITextureButton(
+                    self.enemy_hp_widget = arcade.gui.UIImage(
                         x=arc_x,
                         y=arc_y,
                         width=obj_w,
@@ -338,9 +326,7 @@ class BattleView(arcade.View):
                     self.dialog_menu_container.add(self.dialog)
 
                 # --- HP BAR FILL AREAS ---
-                # These are just data points for the draw_hp_bar method
                 elif obj.name == "player_hp_fill":
-                    print(f"Map Height: {raw_map_height}, Obj Y: {obj.coordinates.y}, Calc Y: {int(raw_map_height - obj.coordinates.y - obj.size.height)}")
                     self.hp_bars["player"] = {
                         "x": arc_x,
                         "y": arc_y - obj_h,

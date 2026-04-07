@@ -6,6 +6,9 @@ class OverworldView(arcade.View):
     def __init__(self):
         super().__init__()
         arcade.get_window().ctx.default_texture_filter = (arcade.gl.NEAREST, arcade.gl.NEAREST)
+        
+        arcade.load_font("assets/fonts/pokemon-emerald.otf")
+        
         self.player = Player(x=11, y=12)
         self.keys = set()
         self.camera = None
