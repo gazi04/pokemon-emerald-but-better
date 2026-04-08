@@ -2,13 +2,17 @@ import arcade
 from src.entities.player import Player
 from src.states.battleView import BattleView
 
+
 class OverworldView(arcade.View):
     def __init__(self):
         super().__init__()
-        arcade.get_window().ctx.default_texture_filter = (arcade.gl.NEAREST, arcade.gl.NEAREST)
-        
+        arcade.get_window().ctx.default_texture_filter = (
+            arcade.gl.NEAREST,
+            arcade.gl.NEAREST,
+        )
+
         arcade.load_font("assets/fonts/pokemon-emerald.otf")
-        
+
         self.player = Player(x=11, y=12)
         self.keys = set()
         self.camera = None
@@ -24,7 +28,7 @@ class OverworldView(arcade.View):
         self.camera.position = arcade.math.lerp_2d(
             self.camera.position, self.player.getPosition(), 0.5
         )
-        
+
         encounter = self.player.update(
             delta_time, self.keys, self.scene["collision"], self.scene["bush"]
         )
@@ -41,11 +45,15 @@ class OverworldView(arcade.View):
             self.scene.draw(pixelated=True)
         self.player.draw()
 
-    def on_key_press(self, key, _): self.keys.add(key)
-    def on_key_release(self, key, _): self.keys.discard(key)
+    def on_key_press(self, key, _):
+        self.keys.add(key)
+
+    def on_key_release(self, key, _):
+        self.keys.discard(key)
 
 
 # --- 2. THE STARTING LINE (Functions) ---
+
 
 def main():
     window = arcade.Window(800, 600, "Pokemon Emerald Clone", antialiasing=False)
@@ -56,4 +64,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

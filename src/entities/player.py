@@ -2,6 +2,7 @@ import arcade
 import random
 from src.util import getPokemon
 
+
 class Player(arcade.Sprite):
     def __init__(self, x: int, y: int):
         super().__init__(scale=1.9)
@@ -9,30 +10,46 @@ class Player(arcade.Sprite):
         # ====================== LOAD TEXTURES ======================
         # Idle
         self.idle_textures = {
-            "down": arcade.load_texture("assets/sprite/player/idle/brendan_idle_down.png"),
+            "down": arcade.load_texture(
+                "assets/sprite/player/idle/brendan_idle_down.png"
+            ),
             "up": arcade.load_texture("assets/sprite/player/idle/brendan_idle_up.png"),
-            "left": arcade.load_texture("assets/sprite/player/idle/brendan_idle_left.png"),
+            "left": arcade.load_texture(
+                "assets/sprite/player/idle/brendan_idle_left.png"
+            ),
         }
         self.idle_textures["right"] = self.idle_textures["left"].flip_left_right()
 
         # Walk (2 frames → we make it 4-frame loop)
         self.walk_textures = {
             "down": [
-                arcade.load_texture("assets/sprite/player/walk_anim/brendan_walk_down1.png"),
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_down1.png"
+                ),
                 self.idle_textures["down"],
-                arcade.load_texture("assets/sprite/player/walk_anim/brendan_walk_down2.png"),
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_down2.png"
+                ),
                 self.idle_textures["down"],
             ],
             "up": [
-                arcade.load_texture("assets/sprite/player/walk_anim/brendan_walk_up1.png"),
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_up1.png"
+                ),
                 self.idle_textures["up"],
-                arcade.load_texture("assets/sprite/player/walk_anim/brendan_walk_up2.png"),
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_up2.png"
+                ),
                 self.idle_textures["up"],
             ],
             "left": [
-                arcade.load_texture("assets/sprite/player/walk_anim/brendan_walk_left1.png"),
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_left1.png"
+                ),
                 self.idle_textures["left"],
-                arcade.load_texture("assets/sprite/player/walk_anim/brendan_walk_left2.png"),
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_left2.png"
+                ),
                 self.idle_textures["left"],
             ],
         }
@@ -68,8 +85,12 @@ class Player(arcade.Sprite):
                 self.move_progress = 1.0
 
             # Tile-perfect movement
-            self.center_x = self.start_x + (self.target_x - self.start_x) * self.move_progress
-            self.center_y = self.start_y + (self.target_y - self.start_y) * self.move_progress
+            self.center_x = (
+                self.start_x + (self.target_x - self.start_x) * self.move_progress
+            )
+            self.center_y = (
+                self.start_y + (self.target_y - self.start_y) * self.move_progress
+            )
 
             # Animation synced to movement
             frame_index = int(self.move_progress * 4) % 4
@@ -102,7 +123,9 @@ class Player(arcade.Sprite):
                 target_y = self.center_y + dy
 
                 # Collision
-                hit_list = arcade.get_sprites_at_point((target_x, target_y), collision_tiles)
+                hit_list = arcade.get_sprites_at_point(
+                    (target_x, target_y), collision_tiles
+                )
                 hit_bush = arcade.get_sprites_at_point((target_x, target_y), bush)
 
                 # Random encounter
