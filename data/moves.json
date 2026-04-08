@@ -1,9 +1,16 @@
 {
     "tackle": {
-        "power": 20,
-        "accuracy": 100,
+        "power": 10,
+        "accuracy": 70,
         "isPhysical": true,
         "type": "normal",
+        "maxPP": 15
+    }, 
+    "close combat": {
+        "power": 120,
+        "accuracy": 100,
+        "isPhysical": true,
+        "type": "fighting",
         "maxPP": 15
     }
 }
