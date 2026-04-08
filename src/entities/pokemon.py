@@ -1,5 +1,6 @@
 import arcade
 from src.util import getAMove, calculateMultiplier
+import random
 
 class Pokemon(arcade.Sprite):
     def __init__(self, name, data, moves, level=5, is_enemy=True, run:function=None):
@@ -34,8 +35,15 @@ class Pokemon(arcade.Sprite):
             
     def useMove(self, index:int, pokemon:Pokemon):
         move = getAMove(self.moves[index]["name"])
+        accuracy = random.random()
+        print(accuracy)
+        
+        if move["accuracy"] / 100 < accuracy:
+            return [f"{self.name.upper()} missed."]
         
         if self.moves[index]["pp"] > 0:
+            text = []
+            
             d = pokemon.data["stats"]["defence"]
             a = self.data["stats"]["attack"]
             if not move["isPhysical"]:
@@ -48,10 +56,16 @@ class Pokemon(arcade.Sprite):
                 stab = 1.5
                 
             mult = calculateMultiplier(move["type"], pokemon.data["types"])
+            
+            if mult > 1:
+                text.append("Its super effective!")
+            elif mult < 1:
+                text.append("Its under effective!")
                 
             damage = (((2 * self.level / 5 + 1) * move["power"] * a/d) / 50 + 2) * stab * mult
             pokemon.takeDamage(damage)
             self.moves[index]["pp"] -= 1
+            return list
     
     def getHpRatio(self):
         return self.current_hp / self.max_hp

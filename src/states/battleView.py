@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 from src.entities.pokemon import Pokemon
 from src.util import getAMove
+import random
 
 class BattleView(arcade.View):
     def __init__(self, pokemon_name, pokemon_data, overworld_view):
@@ -40,7 +41,7 @@ class BattleView(arcade.View):
             ),
         }
 
-        self.your_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=False, run=self.run)
+        self.your_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}], is_enemy=False, run=self.run)
         self.enemy_pokemon = Pokemon(pokemon_name, pokemon_data, [{"name": "tackle", "pp": 15}], is_enemy=True, run=self.run)
 
         self.manager = arcade.gui.UIManager()
@@ -349,6 +350,13 @@ class BattleView(arcade.View):
         self.type.text = first_move["type"]
         self.maxPP.text = first_move["maxPP"]
         self.currPP.text = self.your_pokemon.moves[0]["pp"]
+        
+        self.active_menu = "main"
+        self.selection_index = 0
+
+        # Group buttons for navigation
+        self.main_buttons = [fightBtn, self.bagBtn, self.pokemonBtn, runBtn]
+        self.move_buttons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
 
     def drawHpBar(self, pokemon, barData): 
         if not barData:
@@ -373,6 +381,9 @@ class BattleView(arcade.View):
         )
 
     def switchMenu(self, menu_to_show):
+        self.active_menu = menu_to_show
+        self.selection_index = 0
+    
         self.manager.remove(self.main_menu_container)
         self.manager.remove(self.move_menu_container)
         self.manager.remove(self.dialog_menu_container)
@@ -409,9 +420,10 @@ class BattleView(arcade.View):
         
         self.switchMenu("dialog")
         
-        arcade.schedule_once(lambda dt: self.enemyTurn(move_index), 2.0)
+        arcade.schedule_once(lambda dt: self.enemyTurn(), 2.0)
 
-    def enemyTurn(self, move_index):
+    def enemyTurn(self):
+        move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
         move_name = self.enemy_pokemon.moves[move_index]['name']
         self.target_text = f"{self.enemy_pokemon.name} used {move_name}!"
         self.current_text = ""
@@ -438,6 +450,18 @@ class BattleView(arcade.View):
         self.drawHpBar(self.your_pokemon, self.hp_bars.get("player"))
         self.drawHpBar(self.enemy_pokemon, self.hp_bars.get("enemy"))
         
+        if self.active_menu != "dialog":
+            current_list = self.main_buttons if self.active_menu == "main" else self.move_buttons
+            active_btn = current_list[self.selection_index]
+            
+            arcade.draw_text("▶", 
+                        active_btn.rect.left - 10, 
+                        active_btn.rect.center_y, 
+                        arcade.color.BLACK, 
+                        font_size=24, 
+                        anchor_y="center",
+                        font_name="Pokemon Emerald")
+            
     def on_update(self, delta_time):
         if len(self.current_text) < len(self.target_text):
             self.typing_timer += delta_time
@@ -459,11 +483,47 @@ class BattleView(arcade.View):
                 return
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.Z:
-            self.switchMenu("main")
+        if self.active_menu == "main":
+            current_list = self.main_buttons
+            num_buttons = len(current_list)
+        else:
+            current_list = self.move_buttons
+            num_buttons = len(self.your_pokemon.moves)
+
+        if key == arcade.key.UP or key == arcade.key.W:
+            if num_buttons > 2:
+                self.selection_index = (self.selection_index - 2) % num_buttons
+                
+            if self.active_menu == "moves":
+                self.move_hover(self.selection_index)
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            if num_buttons > 2:
+                self.selection_index = (self.selection_index + 2) % num_buttons
             
-        if key == arcade.key.SPACE:
-            self.enemy_pokemon.takeDamage(30)
+            if self.active_menu == "moves":
+                self.move_hover(self.selection_index)
+        elif key == arcade.key.LEFT or key == arcade.key.A:
+            self.selection_index = (self.selection_index - 1) % num_buttons
+            
+            if self.active_menu == "moves":
+                self.move_hover(self.selection_index)
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.selection_index = (self.selection_index + 1) % num_buttons
+            
+            if self.active_menu == "moves":
+                self.move_hover(self.selection_index)
+
+        elif key == arcade.key.ENTER or key == arcade.key.Z:
+            selected_btn = current_list[self.selection_index]
+            if self.active_menu == "main":
+                if self.selection_index == 0: self.switchMenu("moves")
+                elif self.selection_index == 3: self.run()
+            else:
+                self.turn(self.selection_index)
+        elif key == arcade.key.ESCAPE or key == arcade.key.X:
+            if self.active_menu == "moves":
+                self.switchMenu("main")
+
             
     def move_hover(self, index):
         if index is not None:

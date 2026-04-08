@@ -4,31 +4,31 @@
  <objectgroup id="3" name="background">
   <object id="14" name="background" gid="5" x="-12" y="13848" width="25528" height="13840"/>
  </objectgroup>
- <objectgroup id="5" name="moves-button" visible="0">
+ <objectgroup id="5" name="moves-button">
   <object id="25" name="movesBox" gid="10" x="-56" y="19256" width="25648" height="5392"/>
-  <object id="26" name="maxPP" x="21430.5" y="15062.5" width="1139" height="1203">
+  <object id="26" name="maxPP" x="21430.5" y="15062.5" width="1235" height="1203">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="27" name="currentPP" x="23510.5" y="15158.5" width="979" height="1075">
+  <object id="27" name="currentPP" x="23510.5" y="15062.5" width="1235" height="1203">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="28" name="move1" x="1654.5" y="15126.5" width="4339" height="1075">
+  <object id="28" name="move1" x="1430.5" y="15094.5" width="6508.5" height="1075">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="30" name="move2" x="9222.5" y="15126.5" width="4339" height="1075">
+  <object id="30" name="move2" x="8998.5" y="15094.5" width="6508.5" height="1075">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="31" name="move3" x="1726.5" y="17126.5" width="4339" height="1075">
+  <object id="31" name="move3" x="1502.5" y="17094.5" width="6508.5" height="1075">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="32" name="move4" x="9294.5" y="17126.5" width="4339" height="1075">
+  <object id="32" name="move4" x="9070.5" y="17094.5" width="6508.5" height="1075">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="33" name="type" x="20822.5" y="16982.5" width="2355" height="1171">
+  <object id="33" name="type" x="20822.5" y="16982.5" width="3891" height="1171">
    <text wrap="1">Hello World</text>
   </object>
  </objectgroup>
- <objectgroup id="2" name="ui-bottom">
+ <objectgroup id="2" name="ui-bottom" visible="0">
   <object id="5" name="dialogBox" gid="2" x="4" y="19204" width="25584" height="5424" visible="0"/>
   <object id="7" name="box" gid="1" x="14196" y="19208" width="11400" height="5400" visible="0"/>
   <object id="16" name="run" gid="8" x="21301" y="17943" width="2200" height="1300"/>
