@@ -35,6 +35,7 @@ class OverworldView(arcade.View):
 
         if encounter:
             name, data = encounter
+            self.keys.clear()
             self.window.show_view(BattleView(name, data, self))
 
     def on_draw(self):

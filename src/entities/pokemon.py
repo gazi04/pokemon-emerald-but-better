@@ -1,5 +1,6 @@
 import arcade
 from src.util import getAMove, calculateMultiplier
+import random
 
 
 class Pokemon(arcade.Sprite):
@@ -35,8 +36,9 @@ class Pokemon(arcade.Sprite):
 
     def useMove(self, index: int, pokemon: Pokemon):
         move = getAMove(self.moves[index]["name"])
-
         if self.moves[index]["pp"] > 0:
+            text = []
+            
             d = pokemon.data["stats"]["defence"]
             a = self.data["stats"]["attack"]
             if not move["isPhysical"]:
