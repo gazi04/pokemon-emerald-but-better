@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="41">
+ <tileset firstgid="1" source="battleUI.tsx"/>
+ <objectgroup id="3" name="background">
+  <object id="14" name="background" gid="5" x="-12" y="13848" width="25528" height="13840"/>
+ </objectgroup>
+ <objectgroup id="5" name="moves-button">
+  <object id="25" name="movesBox" gid="10" x="-56" y="19256" width="25648" height="5392"/>
+  <object id="26" name="maxPP" x="21430.5" y="15062.5" width="1235" height="1203">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="27" name="currentPP" x="23510.5" y="15062.5" width="1235" height="1203">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="28" name="move1" x="1430.5" y="15094.5" width="6508.5" height="1075">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="30" name="move2" x="8998.5" y="15094.5" width="6508.5" height="1075">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="31" name="move3" x="1502.5" y="17094.5" width="6508.5" height="1075">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="32" name="move4" x="9070.5" y="17094.5" width="6508.5" height="1075">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="33" name="type" x="20822.5" y="16982.5" width="3891" height="1171">
+   <text wrap="1">Hello World</text>
+  </object>
+ </objectgroup>
+ <objectgroup id="2" name="ui-bottom" visible="0">
+  <object id="5" name="dialogBox" gid="2" x="4" y="19204" width="25584" height="5424" visible="0"/>
+  <object id="7" name="box" gid="1" x="14196" y="19208" width="11400" height="5400" visible="0"/>
+  <object id="16" name="run" gid="8" x="21301" y="17943" width="2200" height="1300"/>
+  <object id="15" name="bag" gid="9" x="21301" y="16071" width="2200" height="1300"/>
+  <object id="17" name="pokemon" gid="7" x="15477" y="18007" width="4800" height="1300"/>
+  <object id="23" name="fight" gid="6" x="15471" y="16135" width="3400" height="1300"/>
+  <object id="24" name="dialog" x="1510.5" y="15206.5" width="12035" height="2819">
+   <text wrap="1">Hello World</text>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="battle">
+  <object id="12" name="enemy_hp_widget" gid="3" x="943" y="5360" width="9990" height="2910"/>
+  <object id="13" name="player_hp_widget" gid="4" x="14053" y="13364" width="11010" height="3690"/>
+  <object id="34" name="player_hp_fill" x="19168" y="11376" width="4976" height="272"/>
+  <object id="35" name="player_xp_fill" x="17440" y="12944" width="6768" height="224"/>
+  <object id="36" name="enemy_hp_fill" x="4840" y="4184" width="4768" height="272"/>
+  <object id="37" name="player_name" x="15638.5" y="10134.5" width="5971" height="851">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="38" name="player_lvl" x="22710.5" y="10134.5" width="1299" height="851">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="39" name="enemy_name" x="1286.5" y="2838.5" width="5971" height="851">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="40" name="enemy_lvl" x="8358.5" y="2838.5" width="1299" height="851">
+   <text wrap="1">Hello World</text>
+  </object>
+ </objectgroup>
+</map>
