@@ -102,6 +102,17 @@ class Player(arcade.Sprite):
                 self.center_y = self.target_y
                 self.moving = False
                 self.texture = self.idle_textures[self.direction]
+                
+                hit_bush = arcade.get_sprites_at_point((self.center_x, self.center_y), bush)
+
+                if hit_bush:
+                    if random.random() < 0.15:
+                        pokemon_string = hit_bush[0].properties.get("pokemon", "")
+                        if pokemon_string:
+                            possible = [p.strip() for p in pokemon_string.split(",")]
+                            pokemon_name = random.choice(possible)
+                            pokemon_data = getPokemon()[pokemon_name]
+                            return (pokemon_name, pokemon_data)
 
         # ====================== INPUT ======================
         else:
@@ -126,17 +137,6 @@ class Player(arcade.Sprite):
                 hit_list = arcade.get_sprites_at_point(
                     (target_x, target_y), collision_tiles
                 )
-                hit_bush = arcade.get_sprites_at_point((target_x, target_y), bush)
-
-                # Random encounter
-                if hit_bush and not hit_list:
-                    if random.random() < 0.15:
-                        pokemon_string = hit_bush[0].properties.get("pokemon", "")
-                        if pokemon_string:
-                            possible = [p.strip() for p in pokemon_string.split(",")]
-                            pokemon_name = random.choice(possible)
-                            pokemon_data = getPokemon()[pokemon_name]
-                            return (pokemon_name, pokemon_data)
 
                 if not hit_list:
                     self.moving = True
