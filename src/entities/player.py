@@ -102,8 +102,10 @@ class Player(arcade.Sprite):
                 self.center_y = self.target_y
                 self.moving = False
                 self.texture = self.idle_textures[self.direction]
-                
-                hit_bush = arcade.get_sprites_at_point((self.center_x, self.center_y), bush)
+
+                hit_bush = arcade.get_sprites_at_point(
+                    (self.center_x, self.center_y), bush
+                )
 
                 if hit_bush:
                     if random.random() < 0.15:
