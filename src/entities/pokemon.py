@@ -36,29 +36,52 @@ class Pokemon(arcade.Sprite):
 
     def useMove(self, index: int, pokemon: Pokemon):
         move = getAMove(self.moves[index]["name"])
-        if self.moves[index]["pp"] > 0:
-            text = []
 
-            d = pokemon.data["stats"]["defence"]
-            a = self.data["stats"]["attack"]
-            if not move["isPhysical"]:
-                d = pokemon.data["stats"]["special_defence"]
-                a = self.data["stats"]["special_attack"]
+        roll = random.randint(1, 100)
+        
+        if self.moves[index]["pp"] <= 0:
+            return ["But there is no PP left!"]
 
-            stab = 1
+        self.moves[index]["pp"] -= 1
 
-            if move["type"] in self.data["types"]:
-                stab = 1.5
+        if move["accuracy"] < roll:
+            return ["It missed."]
 
-            mult = calculateMultiplier(move["type"], pokemon.data["types"])
+        text = []
 
-            damage = (
-                (((2 * self.level / 5 + 1) * move["power"] * a / d) / 50 + 2)
-                * stab
-                * mult
-            )
-            pokemon.takeDamage(damage)
-            self.moves[index]["pp"] -= 1
+        d = pokemon.data["stats"]["defence"]
+        a = self.data["stats"]["attack"]
+        if not move["isPhysical"]:
+            d = pokemon.data["stats"]["special_defence"]
+            a = self.data["stats"]["special_attack"]
+
+        stab = 1
+
+        if move["type"] in self.data["types"]:
+            stab = 1.5
+
+        mult = calculateMultiplier(move["type"], pokemon.data["types"])
+
+        if mult >= 2:
+            text.append("Its super effective.")
+        elif mult < 1:
+            text.append("Its not very effective.")
+        elif mult == 0:
+            text.append("No effect.")
+            
+        crit = 1
+        if random.random() < 17/256:
+            crit = 2
+            text.append("A critical hit!")
+
+        damage = (
+            (((2 * self.level / 5 + 1) * move["power"] * a / d) / 50 + 2)
+            * stab
+            * mult
+            * crit
+        )
+        pokemon.takeDamage(damage)
+        return text
 
     def getHpRatio(self):
         return self.current_hp / self.max_hp

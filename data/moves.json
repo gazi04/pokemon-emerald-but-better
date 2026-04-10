@@ -1,7 +1,7 @@
 {
     "tackle": {
         "power": 10,
-        "accuracy": 70,
+        "accuracy": 30,
         "isPhysical": true,
         "type": "normal",
         "maxPP": 15
