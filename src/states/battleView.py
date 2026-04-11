@@ -6,7 +6,7 @@ import random
 
 
 class BattleView(arcade.View):
-    def __init__(self, pokemon_name, pokemon_data, overworld_view):
+    def __init__(self, pokemon_name, pokemon_data, level, overworld_view):
         super().__init__()
 
         self.overworld_view = overworld_view
@@ -46,6 +46,7 @@ class BattleView(arcade.View):
             pokemon_name,
             pokemon_data,
             [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}],
+            level=level,
             is_enemy=False,
             run=self.run,
         )
@@ -53,6 +54,7 @@ class BattleView(arcade.View):
             pokemon_name,
             pokemon_data,
             [{"name": "tackle", "pp": 15}],
+            level=level,
             is_enemy=True,
             run=self.run,
         )
