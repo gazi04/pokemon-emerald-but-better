@@ -19,11 +19,11 @@ class Pokemon(arcade.Sprite):
         self.level = level
 
         if is_enemy:
-            self.center_x = 470
+            self.center_x = 580
             self.center_y = 400
         else:
-            self.center_x = 235
-            self.center_y = 235
+            self.center_x = 210
+            self.center_y = 252
 
     def draw(self):
         arcade.draw_sprite(self, pixelated=True)

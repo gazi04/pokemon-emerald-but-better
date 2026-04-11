@@ -84,9 +84,6 @@ class BattleView(arcade.View):
 
             current_layer = self.tilemap.get_tilemap_layer(layer_name)
 
-            if layer_name == "background":
-                continue
-
             for obj in current_layer.tiled_objects:
                 obj_w = int(obj.size.width / 32)
                 obj_h = int(obj.size.height / 32)
@@ -95,7 +92,18 @@ class BattleView(arcade.View):
                 arc_y = int((raw_map_height - obj.coordinates.y) / 32)
 
                 # --- UI TEXTURES (Buttons/Frames) ---
-                if obj.name == "dialogBox":
+                if obj.name == "background":
+                    sprite = arcade.load_texture("assets/ui/battle/battleBackground.png")
+
+                    self.background = arcade.gui.UIImage(
+                        x=arc_x,
+                        y=arc_y,
+                        width=obj_w,
+                        height=obj_h,
+                        texture=sprite,
+                    )
+                    self.manager.add(self.background)
+                elif obj.name == "dialogBox":
                     sprite = arcade.load_texture("assets/ui/battle/dialogbox.png")
                     self.dialogBox = arcade.gui.UIImage(
                         x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
@@ -452,10 +460,10 @@ class BattleView(arcade.View):
 
         self.window.default_camera.use()
 
+        self.manager.draw()
+        
         self.enemy_pokemon.draw()
         self.your_pokemon.draw()
-
-        self.manager.draw()
 
         self.drawHpBar(self.your_pokemon, self.hp_bars.get("player"))
         self.drawHpBar(self.enemy_pokemon, self.hp_bars.get("enemy"))
