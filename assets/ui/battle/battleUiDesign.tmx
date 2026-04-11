@@ -2,7 +2,7 @@
 <map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="41">
  <tileset firstgid="1" source="battleUI.tsx"/>
  <objectgroup id="3" name="background">
-  <object id="14" name="background" gid="5" x="-12" y="13848" width="25528" height="13840"/>
+  <object id="14" name="background" gid="5" x="-12" y="13848" width="25656" height="13904"/>
  </objectgroup>
  <objectgroup id="5" name="moves-button">
   <object id="25" name="movesBox" gid="10" x="-56" y="19256" width="25648" height="5392"/>
