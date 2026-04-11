@@ -105,6 +105,22 @@ class Player(arcade.Sprite):
                 self.moving = False
                 self.texture = self.idle_textures[self.direction]
 
+                hit_bush = arcade.get_sprites_at_point(
+                    (self.center_x, self.center_y), bush
+                )
+
+                hit_bush = arcade.get_sprites_at_point((target_x, target_y), bush)
+
+                # Random encounter
+                if hit_bush and not hit_list:
+                    if random.random() < 0.15:
+                        enc = getEnc()[self.map]["grass"]["pokemon"]
+                        
+                        pokemon = random.choice(enc)
+                        pokemon_data = getPokemon()[pokemon["name"]]
+                        pokemon_lvl = random.randint(pokemon["min_level"], pokemon["max_level"])
+                        return (pokemon["name"], pokemon_data, pokemon_lvl)
+
         # ====================== INPUT ======================
         else:
             new_dir = None
@@ -128,17 +144,6 @@ class Player(arcade.Sprite):
                 hit_list = arcade.get_sprites_at_point(
                     (target_x, target_y), collision_tiles
                 )
-                hit_bush = arcade.get_sprites_at_point((target_x, target_y), bush)
-
-                # Random encounter
-                if hit_bush and not hit_list:
-                    if random.random() < 0.15:
-                        enc = getEnc()[self.map]["grass"]["pokemon"]
-                        
-                        pokemon = random.choice(enc)
-                        pokemon_data = getPokemon()[pokemon["name"]]
-                        pokemon_lvl = random.randint(pokemon["min_level"], pokemon["max_level"])
-                        return (pokemon["name"], pokemon_data, pokemon_lvl)
 
                 if not hit_list:
                     self.moving = True

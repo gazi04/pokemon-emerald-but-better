@@ -1,6 +1,8 @@
 import json
+from functools import lru_cache
 
 
+@lru_cache(maxsize=1)
 def getPokemon():
     with open("data/pokemon.json", "r") as f:
         poke = json.load(f)

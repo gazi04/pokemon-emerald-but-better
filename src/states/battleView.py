@@ -472,6 +472,8 @@ class BattleView(arcade.View):
                 self.current_text += self.target_text[len(self.current_text)]
 
                 self.dialog.text = self.current_text
+                self.dialog_menu_container.trigger_full_render()
+                self.main_menu_container.trigger_full_render()
 
                 self.typing_timer = 0
 
