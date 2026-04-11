@@ -109,10 +109,10 @@ class Player(arcade.Sprite):
                     (self.center_x, self.center_y), bush
                 )
 
-                hit_bush = arcade.get_sprites_at_point((target_x, target_y), bush)
+                hit_bush = arcade.get_sprites_at_point((self.center_x, self.center_y), bush)
 
                 # Random encounter
-                if hit_bush and not hit_list:
+                if hit_bush:
                     if random.random() < 0.15:
                         enc = getEnc()[self.map]["grass"]["pokemon"]
                         
