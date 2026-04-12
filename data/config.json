@@ -1,0 +1,37 @@
+{
+  "window": {
+    "width": 800,
+    "height": 600,
+    "title": "Pokemon Emerald But BETTER",
+    "fullscreen": false,
+    "resizable": false
+  },
+  "audio": {
+    "music_volume": 0.85,
+    "sound_volume": 1.0,
+    "battle_music_volume": 0.9,
+    "mute_when_minimized": true
+  },
+  "controls": {
+    "up": "UP",
+    "down": "DOWN",
+    "left": "LEFT",
+    "right": "RIGHT",
+    "run": "LSHIFT",
+    "interact": "Z",
+    "menu": "X",
+    "cancel": "X",
+    "speed_up_text": "SPACE"
+  },
+  "game": {
+    "starting_map": "assets/map/littleroot_town.tmx",
+    "starting_tile_x": 13,
+    "starting_tile_y": 12,
+    "starting_money": 3000,
+    "text_speed": "medium",
+    "battle_style": "set"
+  },
+  "pokecenter_cord": {
+    "currently_no_pokecenter_but_well_have_this_ready": 2
+  }
+}

@@ -1,6 +1,7 @@
 import arcade
 import random
 from src.util import getPokemon
+from src.util import getEnc
 
 
 class Player(arcade.Sprite):
@@ -19,6 +20,7 @@ class Player(arcade.Sprite):
             ),
         }
         self.idle_textures["right"] = self.idle_textures["left"].flip_left_right()
+        self.map = "littleroot_town"
 
         # Walk (2 frames → we make it 4-frame loop)
         self.walk_textures = {
@@ -76,7 +78,7 @@ class Player(arcade.Sprite):
         self.move_progress = 0.0
         self.move_duration = 0.2  # Pokémon-like speed
 
-    def update(self, delta_time, keys, collision_tiles, bush):
+    def update(self, delta_time, keys, collision_tiles, bush, controlsConfig):
         # ====================== MOVEMENT ======================
         if self.moving:
             self.move_progress += delta_time / self.move_duration
@@ -107,27 +109,30 @@ class Player(arcade.Sprite):
                     (self.center_x, self.center_y), bush
                 )
 
+                hit_bush = arcade.get_sprites_at_point((self.center_x, self.center_y), bush)
+
+                # Random encounter
                 if hit_bush:
                     if random.random() < 0.15:
-                        pokemon_string = hit_bush[0].properties.get("pokemon", "")
-                        if pokemon_string:
-                            possible = [p.strip() for p in pokemon_string.split(",")]
-                            pokemon_name = random.choice(possible)
-                            pokemon_data = getPokemon()[pokemon_name]
-                            return (pokemon_name, pokemon_data)
+                        enc = getEnc()[self.map]["grass"]["pokemon"]
+                        
+                        pokemon = random.choice(enc)
+                        pokemon_data = getPokemon()[pokemon["name"]]
+                        pokemon_lvl = random.randint(pokemon["min_level"], pokemon["max_level"])
+                        return (pokemon["name"], pokemon_data, pokemon_lvl)
 
         # ====================== INPUT ======================
         else:
             new_dir = None
             dx = dy = 0
 
-            if arcade.key.UP in keys or arcade.key.W in keys:
+            if self.is_pressed(controlsConfig.up, keys):
                 new_dir, dy = "up", 32
-            elif arcade.key.DOWN in keys or arcade.key.S in keys:
+            elif self.is_pressed(controlsConfig.down, keys):
                 new_dir, dy = "down", -32
-            elif arcade.key.LEFT in keys or arcade.key.A in keys:
+            elif self.is_pressed(controlsConfig.left, keys):
                 new_dir, dx = "left", -32
-            elif arcade.key.RIGHT in keys or arcade.key.D in keys:
+            elif self.is_pressed(controlsConfig.right, keys):
                 new_dir, dx = "right", 32
 
             if new_dir:
@@ -158,6 +163,11 @@ class Player(arcade.Sprite):
 
     def draw(self):
         arcade.draw_sprite(self)
+        
+    def is_pressed(self, configKey, keys):
+        keyCode = getattr(arcade.key, configKey, None)
+        
+        return keyCode is not None and keyCode in keys
 
     def getPosition(self):
         return (self.center_x, self.center_y)
