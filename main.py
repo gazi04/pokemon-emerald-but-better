@@ -1,12 +1,14 @@
 import arcade
 from src.entities.player import Player
 from src.states.battleView import BattleView
-from src.util import getConfigs
+from data.config import Config  
 
+CONFIG = Config.load()
 
 class OverworldView(arcade.View):
     def __init__(self):
         super().__init__()
+
         arcade.get_window().ctx.default_texture_filter = (
             arcade.gl.NEAREST,
             arcade.gl.NEAREST,
@@ -14,14 +16,22 @@ class OverworldView(arcade.View):
 
         arcade.load_font("assets/fonts/pokemon-emerald.otf")
 
-        self.player = Player(x=11, y=12)
+        self.player = Player(
+            x=CONFIG.game.starting_tile_x,
+            y=CONFIG.game.starting_tile_y
+        )
+
         self.keys = set()
         self.camera = None
+
         self.setup()
 
     def setup(self):
-        map_name = "assets/map/littleroot_town.tmx"
-        self.tile_map = arcade.tilemap.load_tilemap(map_name, scaling=2.0)
+        """Load the map from config"""
+        self.tile_map = arcade.tilemap.load_tilemap(
+            CONFIG.game.starting_map,
+            scaling=2.0
+        )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
         self.camera = arcade.Camera2D()
 
@@ -31,7 +41,11 @@ class OverworldView(arcade.View):
         )
 
         encounter = self.player.update(
-            delta_time, self.keys, self.scene["collision"], self.scene["bush"]
+            delta_time,
+            self.keys,
+            self.scene["collision"],
+            self.scene["bush"],
+            CONFIG.controls
         )
 
         if encounter:
@@ -42,8 +56,10 @@ class OverworldView(arcade.View):
     def on_draw(self):
         self.clear()
         self.camera.use()
+
         if self.scene:
             self.scene.draw(pixelated=True)
+
         self.player.draw()
 
     def on_key_press(self, key, _):
@@ -51,14 +67,19 @@ class OverworldView(arcade.View):
 
     def on_key_release(self, key, _):
         self.keys.discard(key)
-
-
-# --- 2. THE STARTING LINE (Functions) ---
-
+        
+        
 
 def main():
-    configs = getConfigs()
-    window = arcade.Window(configs["window"]["width"], configs["window"]["height"], configs["window"]["title"], configs["window"]["fullscreen"], configs["window"]["resizable"])
+    """Start the game"""
+    window = arcade.Window(
+        width=CONFIG.window.width,
+        height=CONFIG.window.height,
+        title=CONFIG.window.title,
+        fullscreen=CONFIG.window.fullscreen,
+        resizable=CONFIG.window.resizable
+    )
+
     start_view = OverworldView()
     window.show_view(start_view)
     arcade.run()
@@ -66,3 +87,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
