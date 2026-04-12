@@ -61,6 +61,7 @@ class BattleView(arcade.View):
             run=self.run,
         )
 
+        
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.manager._pixelated = True
@@ -69,10 +70,11 @@ class BattleView(arcade.View):
         self.move_menu_container = arcade.gui.UIWidget()
         self.dialog_menu_container = arcade.gui.UIWidget()
 
-        self.target_text = ""
-        self.current_text = ""
-        self.typing_speed = 0.04
-        self.typing_timer = 0
+        self.targetText = ""
+        self.currentText = ""
+        self.textDelayTimer = 0
+        self.messageQueue = []
+        self.isProcessingText = False
 
         self.hp_bars = {}
 
@@ -86,9 +88,6 @@ class BattleView(arcade.View):
 
             current_layer = self.tilemap.get_tilemap_layer(layer_name)
 
-            if layer_name == "background":
-                continue
-
             for obj in current_layer.tiled_objects:
                 obj_w = int(obj.size.width / 32)
                 obj_h = int(obj.size.height / 32)
@@ -97,9 +96,19 @@ class BattleView(arcade.View):
                 arc_y = int((raw_map_height - obj.coordinates.y) / 32)
 
                 # --- UI TEXTURES (Buttons/Frames) ---
-                if obj.name == "dialogBox":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/dialogbox.png")
+                if obj.name == "background":
+                    sprite = arcade.load_texture("assets/ui/battle/battleBackground.png")
+
+                    self.background = arcade.gui.UIImage(
+                        x=arc_x,
+                        y=arc_y,
+                        width=obj_w,
+                        height=obj_h,
+                        texture=sprite,
+                    )
+                    self.manager.add(self.background)
+                elif obj.name == "dialogBox":
+                    sprite = arcade.load_texture("assets/ui/battle/dialogbox.png")
                     self.dialogBox = arcade.gui.UIImage(
                         x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
                     )
@@ -420,42 +429,54 @@ class BattleView(arcade.View):
                 button.visible = False
                 button.enabled = False
 
-    def turn(self, move_index):
-        move_name = self.your_pokemon.moves[move_index]["name"]
-
-        self.your_pokemon.useMove(move_index, self.enemy_pokemon)
-
-        self.target_text = f"{self.your_pokemon.name} used {move_name}!"
-        self.current_text = ""
-
+    def turn(self, moveIndex):        
         self.switchMenu("dialog")
+        enemyMoveIndex = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+        pokemonSpeed = self.your_pokemon.data["stats"]["speed"]
+        enemySpeed = self.enemy_pokemon.data["stats"]["speed"]
 
-        arcade.schedule_once(lambda dt: self.enemyTurn(), 2.0)
-
-    def enemyTurn(self):
-        move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
-        move_name = self.enemy_pokemon.moves[move_index]["name"]
-        self.target_text = f"{self.enemy_pokemon.name} used {move_name}!"
-        self.current_text = ""
-
-        self.enemy_pokemon.useMove(move_index, self.your_pokemon)
-
-        arcade.schedule_once(self.resetToMainMenu, 2.0)
+        if pokemonSpeed >= enemySpeed:
+            order = [("player", moveIndex), ("enemy", enemyMoveIndex)]
+        else:
+            order = [("enemy", enemyMoveIndex), ("player", moveIndex)]
+            
+        for key, index in order:
+            if key == "player":
+                move_name = self.your_pokemon.moves[index]["name"]
+                self.messageQueue.append(f"{self.your_pokemon.name} used {move_name}!")
+                result = self.your_pokemon.useMove(index, self.enemy_pokemon)
+                self.messageQueue.extend(result)
+            else:
+                move_name = self.enemy_pokemon.moves[index]["name"]
+                self.messageQueue.append(f"Foe {self.enemy_pokemon.name} used {move_name}!")
+                result = self.enemy_pokemon.useMove(index, self.your_pokemon)
+                self.messageQueue.extend(result)
+                
+        self.nextMessage()
+            
+    def nextMessage(self):
+        if self.messageQueue:
+            self.targetText = self.messageQueue.pop(0)
+            self.currentText = ""
+            self.isProcessingText = True
+        else:
+            self.isProcessingText = False
+            arcade.schedule_once(self.resetToMainMenu, 1.5)
 
     def resetToMainMenu(self, dt):
         self.switchMenu("main")
-        self.target_text = "Lets larp - Genc"
-        self.current_text = ""
+        self.targetText = "Lets larp - Genc"
+        self.currentText = ""
 
     def on_draw(self):
         self.clear()
 
         self.window.default_camera.use()
 
+        self.manager.draw()
+        
         self.enemy_pokemon.draw()
         self.your_pokemon.draw()
-
-        self.manager.draw()
 
         self.drawHpBar(self.your_pokemon, self.hp_bars.get("player"))
         self.drawHpBar(self.enemy_pokemon, self.hp_bars.get("enemy"))
@@ -477,17 +498,19 @@ class BattleView(arcade.View):
             )
 
     def on_update(self, delta_time):
-        if len(self.current_text) < len(self.target_text):
-            self.typing_timer += delta_time
-
-            if self.typing_timer >= self.typing_speed:
-                self.current_text += self.target_text[len(self.current_text)]
-
-                self.dialog.text = self.current_text
-                self.dialog_menu_container.trigger_full_render()
+        self.textDelayTimer += delta_time
+        
+        if len(self.currentText) < len(self.targetText):
+            if self.textDelayTimer > 0.03:
+                self.currentText += self.targetText[len(self.currentText)]
+                self.dialog.text = self.currentText
+                self.dialogBox.trigger_full_render()
                 self.main_menu_container.trigger_full_render()
-
-                self.typing_timer = 0
+                self.textDelayTimer = 0
+        elif self.isProcessingText:
+            if self.textDelayTimer > 1.5: 
+                self.nextMessage()
+                self.textDelayTimer = 0
 
     def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
         widgets = self.manager.get_widgets_at((x, y))
@@ -536,8 +559,14 @@ class BattleView(arcade.View):
                     self.switchMenu("moves")
                 elif self.selection_index == 3:
                     self.run()
-            else:
+            elif self.active_menu == "moves":
                 self.turn(self.selection_index)
+            elif self.active_menu == "dialog":
+                self.currentText = self.targetText
+                self.dialog.text = self.currentText
+                self.dialogBox.trigger_full_render()
+                self.main_menu_container.trigger_full_render()
+                self.textDelayTimer = 0
         elif self.is_pressed(CONFIG.controls.cancel, key):
             if self.active_menu == "moves":
                 self.switchMenu("main")
