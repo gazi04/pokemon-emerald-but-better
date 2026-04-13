@@ -1,0 +1,31 @@
+{
+  "littleroot_town": {
+    "grass": {
+      "pokemon": [
+        { "name": "poochyena", "min_level": 2, "max_level": 4, "encounter_rate": 0.25 },
+        { "name": "zigzagoon", "min_level": 2, "max_level": 4, "encounter_rate": 0.25 }
+      ]
+    }
+  },
+
+  "route_101": {
+    "grass": {
+      "pokemon": [
+        { "name": "poochyena", "min_level": 3, "max_level": 5, "encounter_rate": 0.25 },
+        { "name": "zigzagoon", "min_level": 3, "max_level": 5, "encounter_rate": 0.25 },
+        { "name": "wurmple",   "min_level": 3, "max_level": 5, "encounter_rate": 0.25 }
+      ]
+    }
+  },
+
+  "route_102": {
+    "grass": {
+      "pokemon": [
+        { "name": "zigzagoon", "min_level": 4, "max_level": 6, "encounter_rate": 0.25},
+        { "name": "wurmple",   "min_level": 4, "max_level": 6, "encounter_rate": 0.25},
+        { "name": "lotad",     "min_level": 4, "max_level": 6, "encounter_rate": 0.25},
+        { "name": "seedot",    "min_level": 4, "max_level": 6, "encounter_rate": 0.25}
+      ]
+    }
+  }
+}

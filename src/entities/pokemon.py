@@ -2,7 +2,6 @@ import arcade
 from src.util import getAMove, calculateMultiplier
 import random
 
-
 class Pokemon(arcade.Sprite):
     def __init__(self, name, data, moves, level=5, is_enemy=True, run: function = None):
         sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
