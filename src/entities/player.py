@@ -109,16 +109,20 @@ class Player(arcade.Sprite):
                     (self.center_x, self.center_y), bush
                 )
 
-                hit_bush = arcade.get_sprites_at_point((self.center_x, self.center_y), bush)
+                hit_bush = arcade.get_sprites_at_point(
+                    (self.center_x, self.center_y), bush
+                )
 
                 # Random encounter
                 if hit_bush:
                     if random.random() < 0.15:
                         enc = getEnc()[self.map]["grass"]["pokemon"]
-                        
+
                         pokemon = random.choice(enc)
                         pokemon_data = getPokemon()[pokemon["name"]]
-                        pokemon_lvl = random.randint(pokemon["min_level"], pokemon["max_level"])
+                        pokemon_lvl = random.randint(
+                            pokemon["min_level"], pokemon["max_level"]
+                        )
                         return (pokemon["name"], pokemon_data, pokemon_lvl)
 
         # ====================== INPUT ======================
@@ -163,10 +167,10 @@ class Player(arcade.Sprite):
 
     def draw(self):
         arcade.draw_sprite(self)
-        
+
     def is_pressed(self, configKey, keys):
         keyCode = getattr(arcade.key, configKey, None)
-        
+
         return keyCode is not None and keyCode in keys
 
     def getPosition(self):

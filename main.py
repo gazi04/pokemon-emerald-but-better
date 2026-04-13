@@ -1,9 +1,10 @@
 import arcade
 from src.entities.player import Player
 from src.states.battleView import BattleView
-from data.config import Config  
+from data.config import Config
 
 CONFIG = Config.load()
+
 
 class OverworldView(arcade.View):
     def __init__(self):
@@ -17,8 +18,7 @@ class OverworldView(arcade.View):
         arcade.load_font("assets/fonts/pokemon-emerald.otf")
 
         self.player = Player(
-            x=CONFIG.game.starting_tile_x,
-            y=CONFIG.game.starting_tile_y
+            x=CONFIG.game.starting_tile_x, y=CONFIG.game.starting_tile_y
         )
 
         self.keys = set()
@@ -29,8 +29,7 @@ class OverworldView(arcade.View):
     def setup(self):
         """Load the map from config"""
         self.tile_map = arcade.tilemap.load_tilemap(
-            CONFIG.game.starting_map,
-            scaling=2.0
+            CONFIG.game.starting_map, scaling=2.0
         )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
         self.camera = arcade.Camera2D()
@@ -45,7 +44,7 @@ class OverworldView(arcade.View):
             self.keys,
             self.scene["collision"],
             self.scene["bush"],
-            CONFIG.controls
+            CONFIG.controls,
         )
 
         if encounter:
@@ -67,8 +66,7 @@ class OverworldView(arcade.View):
 
     def on_key_release(self, key, _):
         self.keys.discard(key)
-        
-        
+
 
 def main():
     """Start the game"""
@@ -77,7 +75,7 @@ def main():
         height=CONFIG.window.height,
         title=CONFIG.window.title,
         fullscreen=CONFIG.window.fullscreen,
-        resizable=CONFIG.window.resizable
+        resizable=CONFIG.window.resizable,
     )
 
     start_view = OverworldView()
@@ -87,4 +85,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

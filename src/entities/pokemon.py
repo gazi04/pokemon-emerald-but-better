@@ -2,6 +2,7 @@ import arcade
 from src.util import getAMove, calculateMultiplier
 import random
 
+
 class Pokemon(arcade.Sprite):
     def __init__(self, name, data, moves, level=5, is_enemy=True, run: function = None):
         sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
@@ -37,7 +38,7 @@ class Pokemon(arcade.Sprite):
         move = getAMove(self.moves[index]["name"])
 
         roll = random.randint(1, 100)
-        
+
         if self.moves[index]["pp"] <= 0:
             return ["But there is no PP left!"]
 
@@ -67,9 +68,9 @@ class Pokemon(arcade.Sprite):
             text.append("Its not very effective.")
         elif mult == 0:
             text.append("No effect.")
-            
+
         crit = 1
-        if random.random() < 17/256:
+        if random.random() < 17 / 256:
             crit = 2
             text.append("A critical hit!")
 

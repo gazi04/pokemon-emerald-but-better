@@ -3,9 +3,10 @@ import arcade.gui
 from src.entities.pokemon import Pokemon
 from src.util import getAMove
 import random
-from data.config import Config  
+from data.config import Config
 
 CONFIG = Config.load()
+
 
 class BattleView(arcade.View):
     def __init__(self, pokemon_name, pokemon_data, level, overworld_view):
@@ -61,7 +62,6 @@ class BattleView(arcade.View):
             run=self.run,
         )
 
-        
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.manager._pixelated = True
@@ -97,7 +97,9 @@ class BattleView(arcade.View):
 
                 # --- UI TEXTURES (Buttons/Frames) ---
                 if obj.name == "background":
-                    sprite = arcade.load_texture("assets/ui/battle/battleBackground.png")
+                    sprite = arcade.load_texture(
+                        "assets/ui/battle/battleBackground.png"
+                    )
 
                     self.background = arcade.gui.UIImage(
                         x=arc_x,
@@ -123,8 +125,7 @@ class BattleView(arcade.View):
                     self.main_menu_container.add(self.box)
 
                 elif obj.name == "fight":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/fightButton.png")
+                    sprite = arcade.load_texture("assets/ui/battle/fightButton.png")
                     fightBtn = arcade.gui.UITextureButton(
                         x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
                     )
@@ -133,8 +134,7 @@ class BattleView(arcade.View):
                     self.main_menu_container.add(fightBtn)
 
                 elif obj.name == "run":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/runButton.png")
+                    sprite = arcade.load_texture("assets/ui/battle/runButton.png")
                     runBtn = arcade.gui.UITextureButton(
                         x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
                     )
@@ -142,16 +142,14 @@ class BattleView(arcade.View):
                     self.main_menu_container.add(runBtn)
 
                 elif obj.name == "pokemon":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/pokemonButton.png")
+                    sprite = arcade.load_texture("assets/ui/battle/pokemonButton.png")
                     self.pokemonBtn = arcade.gui.UITextureButton(
                         x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
                     )
                     self.main_menu_container.add(self.pokemonBtn)
 
                 elif obj.name == "bag":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/bagButton.png")
+                    sprite = arcade.load_texture("assets/ui/battle/bagButton.png")
                     self.bagBtn = arcade.gui.UITextureButton(
                         x=arc_x,
                         y=arc_y,
@@ -205,8 +203,7 @@ class BattleView(arcade.View):
                     self.move_menu_container.add(self.moveBtn4)
 
                 elif obj.name == "movesBox":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/movesBox.png")
+                    sprite = arcade.load_texture("assets/ui/battle/movesBox.png")
                     self.move_menu_container.add(
                         arcade.gui.UIImage(
                             x=arc_x,
@@ -220,8 +217,7 @@ class BattleView(arcade.View):
                     )
 
                 elif obj.name == "player_hp_widget":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/playerHpBar.png")
+                    sprite = arcade.load_texture("assets/ui/battle/playerHpBar.png")
                     self.player_hp_widget = arcade.gui.UIImage(
                         x=arc_x,
                         y=arc_y,
@@ -234,8 +230,7 @@ class BattleView(arcade.View):
                     self.manager.add(self.player_hp_widget)
 
                 elif obj.name == "enemy_hp_widget":
-                    sprite = arcade.load_texture(
-                        "assets/ui/battle/enemyHpBar.png")
+                    sprite = arcade.load_texture("assets/ui/battle/enemyHpBar.png")
                     self.enemy_hp_widget = arcade.gui.UIImage(
                         x=arc_x,
                         y=arc_y,
@@ -373,8 +368,7 @@ class BattleView(arcade.View):
 
         # Group buttons for navigation
         self.main_buttons = [fightBtn, self.bagBtn, self.pokemonBtn, runBtn]
-        self.move_buttons = [self.moveBtn1,
-                             self.moveBtn2, self.moveBtn3, self.moveBtn4]
+        self.move_buttons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
 
     def drawHpBar(self, pokemon, barData):
         if not barData:
@@ -420,8 +414,7 @@ class BattleView(arcade.View):
         for i, button in enumerate(buttons):
             if i < len(moves):
                 button.text = moves[i]["name"].upper()
-                button.on_click = lambda event, move_index=i: self.turn(
-                    move_index)
+                button.on_click = lambda event, move_index=i: self.turn(move_index)
                 button.visible = True
                 button.enabled = True
             else:
@@ -429,7 +422,7 @@ class BattleView(arcade.View):
                 button.visible = False
                 button.enabled = False
 
-    def turn(self, moveIndex):        
+    def turn(self, moveIndex):
         self.switchMenu("dialog")
         enemyMoveIndex = random.randint(0, len(self.enemy_pokemon.moves) - 1)
         pokemonSpeed = self.your_pokemon.data["stats"]["speed"]
@@ -439,7 +432,7 @@ class BattleView(arcade.View):
             order = [("player", moveIndex), ("enemy", enemyMoveIndex)]
         else:
             order = [("enemy", enemyMoveIndex), ("player", moveIndex)]
-            
+
         for key, index in order:
             if key == "player":
                 move_name = self.your_pokemon.moves[index]["name"]
@@ -448,12 +441,14 @@ class BattleView(arcade.View):
                 self.messageQueue.extend(result)
             else:
                 move_name = self.enemy_pokemon.moves[index]["name"]
-                self.messageQueue.append(f"Foe {self.enemy_pokemon.name} used {move_name}!")
+                self.messageQueue.append(
+                    f"Foe {self.enemy_pokemon.name} used {move_name}!"
+                )
                 result = self.enemy_pokemon.useMove(index, self.your_pokemon)
                 self.messageQueue.extend(result)
-                
+
         self.nextMessage()
-            
+
     def nextMessage(self):
         if self.messageQueue:
             self.targetText = self.messageQueue.pop(0)
@@ -474,7 +469,7 @@ class BattleView(arcade.View):
         self.window.default_camera.use()
 
         self.manager.draw()
-        
+
         self.enemy_pokemon.draw()
         self.your_pokemon.draw()
 
@@ -499,7 +494,7 @@ class BattleView(arcade.View):
 
     def on_update(self, delta_time):
         self.textDelayTimer += delta_time
-        
+
         if len(self.currentText) < len(self.targetText):
             if self.textDelayTimer > 0.03:
                 self.currentText += self.targetText[len(self.currentText)]
@@ -508,14 +503,13 @@ class BattleView(arcade.View):
                 self.main_menu_container.trigger_full_render()
                 self.textDelayTimer = 0
         elif self.isProcessingText:
-            if self.textDelayTimer > 1.5: 
+            if self.textDelayTimer > 1.5:
                 self.nextMessage()
                 self.textDelayTimer = 0
 
     def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
         widgets = self.manager.get_widgets_at((x, y))
-        moveButtons = [self.moveBtn1, self.moveBtn2,
-                       self.moveBtn3, self.moveBtn4]
+        moveButtons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
 
         for i, button in enumerate(moveButtons):
             if button in widgets:
@@ -570,7 +564,7 @@ class BattleView(arcade.View):
         elif self.is_pressed(CONFIG.controls.cancel, key):
             if self.active_menu == "moves":
                 self.switchMenu("main")
-                
+
     def is_pressed(self, configKey, key):
         return getattr(arcade.key, configKey, None) == key
 
