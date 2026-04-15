@@ -23,7 +23,7 @@ class Pokemon(arcade.Sprite):
             self.center_y = 400
         else:
             self.center_x = 210
-            self.center_y = 252
+            self.center_y = 230
 
     def draw(self):
         arcade.draw_sprite(self, pixelated=True)
