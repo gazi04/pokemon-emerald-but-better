@@ -21,8 +21,12 @@ class Pokemon(arcade.Sprite):
         self.types = data["types"]
         self.moves = moves
         self.run = run
+        self.level = level
+        
+        self.max_hp = self.getStat("hp")
+        self.current_hp = self.max_hp
 
-        self.modifiers = {"attack": 0, "defense": 0, "special_attack": 0, "special_defense": 0, "speed": 0, "accuracy": 0}
+        self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0}
 
         if is_enemy:
             self.center_x = 580
