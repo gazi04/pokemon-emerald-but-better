@@ -27,7 +27,7 @@ class OverworldView(arcade.View):
 
         self.transition_active = False
         self.transition_timer = 0.0
-        self.max_transition_time = .8
+        self.max_transition_time = 0.8
         self.canRenderScene = True
         self.flickerInterval = 0.1
 
@@ -43,7 +43,7 @@ class OverworldView(arcade.View):
     def on_update(self, delta_time):
         if self.transition_active:
             self.transition_timer += delta_time
-            
+
             if int(self.transition_timer / self.flickerInterval) % 2 == 0:
                 self.canRenderScene = True
             else:
