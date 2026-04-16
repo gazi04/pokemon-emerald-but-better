@@ -1,16 +1,42 @@
 {
     "tackle": {
+        "category": "physical",
+        "type": "normal",
         "power": 40,
         "accuracy": 100,
-        "isPhysical": true,
-        "type": "normal",
-        "maxPP": 15
+        "pp": 35,
+        "effects": []
     }, 
     "close combat": {
-        "power": 60,
-        "accuracy": 100,
-        "isPhysical": true,
+        "category": "physical",
         "type": "fighting",
-        "maxPP": 15
+        "power": 120,
+        "accuracy": 100,
+        "pp": 5,
+        "effects": [
+            {"target": "self", "stat": "defence", "change": -1},
+            {"target": "self", "stat": "special_defence", "change": -1}
+        ]
+    },
+    "growl": {
+        "category": "status",
+        "type": "normal",
+        "power": null,
+        "accuracy": 100,
+        "pp": 40,
+        "effects": [
+            {"target": "opponent", "stat": "attack", "change": -1}
+        ]
+    },
+    "dragon dance": {
+        "category": "status",
+        "type": "dragon",
+        "power": null,
+        "accuracy": null,
+        "pp": 20,
+        "effects": [
+            {"target": "self", "stat": "attack", "change": 1},
+            {"target": "self", "stat": "speed", "change": 1}
+        ]
     }
 }

@@ -48,7 +48,7 @@ class BattleView(arcade.View):
         self.your_pokemon = Pokemon(
             pokemon_name,
             pokemon_data,
-            [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}],
+            [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}, {"name": "dragon dance", "pp": 20}],
             level=level,
             is_enemy=False,
             run=self.run,
@@ -379,7 +379,7 @@ class BattleView(arcade.View):
         first_move = getAMove(self.your_pokemon.moves[0]["name"])
 
         self.type.text = first_move["type"]
-        self.maxPP.text = first_move["maxPP"]
+        self.maxPP.text = first_move["pp"]
         self.currPP.text = self.your_pokemon.moves[0]["pp"]
 
         self.active_menu = "main"
@@ -639,7 +639,7 @@ class BattleView(arcade.View):
 
             move = getAMove(move_name)
             self.type.text = move["type"]
-            self.maxPP.text = move["maxPP"]
+            self.maxPP.text = move["pp"]
             self.currPP.text = self.your_pokemon.moves[index]["pp"]
 
     def run(self):

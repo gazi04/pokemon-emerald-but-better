@@ -54,14 +54,23 @@ class Pokemon(arcade.Sprite):
 
         self.moves[index]["pp"] -= 1
 
-        if move["accuracy"] < roll:
+        if move["accuracy"] and move["accuracy"] < roll:
             return ["It missed."]
 
         text = []
 
+        self.damageFoePokemon(move, pokemon, text)
+        self.executeEffects(move, pokemon, text)
+
+        return text
+    
+    def damageFoePokemon(self, move, pokemon, text):
+        if not move["power"]:
+            return
+        
         d = pokemon.getStat("defence")
         a = self.getStat("attack")
-        if not move["isPhysical"]:
+        if move["category"] == "special":
             d = pokemon.getStat("special_defence")
             a = self.getStat("special_attack")
 
@@ -93,8 +102,30 @@ class Pokemon(arcade.Sprite):
 
         pokemon.takeDamage(round(damage))
 
-        return text
+    def executeEffects(self, move, pokemon, text):        
+        for effect in move["effects"]:
+            destination = self if effect["target"] == "self" else pokemon
+            stat = effect["stat"]
+            change = effect["change"]
+            
+            current_stage = destination.modifiers[stat]
 
+            if change > 0 and current_stage == 6:
+                text.append(f"{destination.name}'s {stat} won't go any higher!")
+                continue
+            if change < 0 and current_stage == -6:
+                text.append(f"{destination.name}'s {stat} won't go any lower!")
+                continue
+
+            destination.modifiers[stat] = max(-6, min(6, current_stage + change))
+            
+            if change > 0:
+                adj = "sharply " if change == 2 else ("drastically " if change >= 3 else "")
+                text.append(f"{destination.name}'s {stat} {adj}rose!")
+            elif change < 0:
+                adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
+                text.append(f"{destination.name}'s {stat} {adj}fell!")
+   
     def getHpRatio(self):
         return self.current_hp / self.max_hp
 
