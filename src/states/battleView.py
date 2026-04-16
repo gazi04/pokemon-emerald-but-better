@@ -487,8 +487,8 @@ class BattleView(arcade.View):
     def turn(self, moveIndex):
         self.switchMenu("dialog")
         enemyMoveIndex = random.randint(0, len(self.enemy_pokemon.moves) - 1)
-        pokemonSpeed = self.your_pokemon.data["stats"]["speed"]
-        enemySpeed = self.enemy_pokemon.data["stats"]["speed"]
+        pokemonSpeed = self.your_pokemon.getStat("speed")
+        enemySpeed = self.enemy_pokemon.getStat("speed")
 
         if pokemonSpeed >= enemySpeed:
             order = [("player", moveIndex), ("enemy", enemyMoveIndex)]

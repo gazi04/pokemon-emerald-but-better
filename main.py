@@ -29,7 +29,7 @@ class OverworldView(arcade.View):
         self.transition_timer = 0.0
         self.max_transition_time = .8
         self.canRenderScene = True
-        self.flickerInterval = 0.1
+        self.flickerInterval = 0.05
 
         self.setup()
 

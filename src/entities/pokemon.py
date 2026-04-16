@@ -2,7 +2,6 @@ import arcade
 from src.util import getAMove, calculateMultiplier
 import random
 
-
 class Pokemon(arcade.Sprite):
     def __init__(self, name, data, moves, level=5, is_enemy=True, run: function = None):
         sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
@@ -10,13 +9,20 @@ class Pokemon(arcade.Sprite):
         super().__init__(sprite_path.strip(), scale=3.0)
 
         self.name = name.capitalize()
-        self.data = data
+        
+        self.stats = data["stats"].copy()
+        
+        for key, value in data["stats"].items():
+            if key != "hp":
+                self.stats[key] = ((2 * value * level) // 100) + 5
+            else:
+                self.stats[key] = ((2 * value * level) // 100) + 5 + level
+
+        self.types = data["types"]
         self.moves = moves
         self.run = run
 
-        self.max_hp = data["stats"]["hp"]
-        self.current_hp = self.max_hp
-        self.level = level
+        self.modifiers = {"attack": 0, "defense": 0, "special_attack": 0, "special_defense": 0, "speed": 0, "accuracy": 0}
 
         if is_enemy:
             self.center_x = 580
@@ -49,18 +55,18 @@ class Pokemon(arcade.Sprite):
 
         text = []
 
-        d = pokemon.data["stats"]["defence"]
-        a = self.data["stats"]["attack"]
+        d = pokemon.getStat("defence")
+        a = self.getStat("attack")
         if not move["isPhysical"]:
-            d = pokemon.data["stats"]["special_defence"]
-            a = self.data["stats"]["special_attack"]
+            d = pokemon.getStat("special_defence")
+            a = self.getStat("special_attack")
 
         stab = 1
 
-        if move["type"] in self.data["types"]:
+        if move["type"] in self.types:
             stab = 1.5
 
-        mult = calculateMultiplier(move["type"], pokemon.data["types"])
+        mult = calculateMultiplier(move["type"], pokemon.types)
 
         if mult >= 2:
             text.append("Its super effective.")
@@ -80,8 +86,24 @@ class Pokemon(arcade.Sprite):
             * mult
             * crit
         )
-        pokemon.takeDamage(damage)
+
+        pokemon.takeDamage(round(damage))
+
         return text
 
     def getHpRatio(self):
         return self.current_hp / self.max_hp
+
+    def getStat(self, stat):
+        if stat == "hp":
+            return self.stats[stat]
+
+        fraction = 1
+
+        if self.modifiers[stat] > 0:
+            fraction = (2 + self.modifiers[stat]) / 2
+        elif self.modifiers[stat] < 0:
+            fraction = 2 / (2 + abs(self.modifiers[stat]))
+
+        return round(self.stats[stat] * fraction)
+
