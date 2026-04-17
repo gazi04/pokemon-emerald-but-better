@@ -28,6 +28,9 @@ class Pokemon(arcade.Sprite):
 
         self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0, "evasion": 0, "crits": 0}
 
+        self.statusEffect = ""
+        self.sleepCounter = 0
+
         if is_enemy:
             self.center_x = 580
             self.center_y = 400
@@ -46,7 +49,18 @@ class Pokemon(arcade.Sprite):
 
     def useMove(self, index: int, pokemon: Pokemon):
         move = getAMove(self.moves[index]["name"])
+        
+        text = []
+        
+        if self.statusEffect == "paralyzed" and random.random() < 0.25:
+            return ["The Pokémon is fully paralyzed!"]
 
+        if self.sleepCounter != 0 and self.statusEffect == "sleep":
+            self.sleepCounter -= 1
+            return [f"{self.name} was fast asleep."]
+        elif self.sleepCounter == 0 and self.statusEffect == "sleep":
+            self.statusEffect = ""
+            text.append(f"{self.name} woke up!")
 
         if self.moves[index]["pp"] <= 0:
             return ["But there is no PP left!"]
@@ -55,8 +69,6 @@ class Pokemon(arcade.Sprite):
 
         if not self.moveAccuracy(move["accuracy"]):
             return ["It missed."]
-
-        text = []
 
         self.damageFoePokemon(move, pokemon, text)
         self.executeEffects(move, pokemon, text)
@@ -154,6 +166,16 @@ class Pokemon(arcade.Sprite):
                 adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
                 text.append(f"{destination.name}'s {stat} {adj}fell!")
    
+    def afterATurn(self):
+        text = []
+        
+        if self.statusEffect == "poison":
+            damage = self.max_hp / 12.5
+            self.takeDamage(damage)
+            text.append(f"{self.name} is hurt by poison!")
+        
+        return text
+    
     def getHpRatio(self):
         return self.current_hp / self.max_hp
 
@@ -167,5 +189,8 @@ class Pokemon(arcade.Sprite):
             fraction = (2 + self.modifiers[stat]) / 2
         elif self.modifiers[stat] < 0:
             fraction = 2 / (2 + abs(self.modifiers[stat]))
+            
+        if stat == "speed" and self.statusEffect == "paralyzed":
+            return round((self.stats[stat] * fraction) * 0.5)
 
         return round(self.stats[stat] * fraction)
