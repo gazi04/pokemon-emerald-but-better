@@ -1,16 +1,92 @@
 {
     "tackle": {
-        "power": 10,
-        "accuracy": 30,
-        "isPhysical": true,
+        "category": "physical",
         "type": "normal",
-        "maxPP": 15
+        "power": 40,
+        "accuracy": 100,
+        "pp": 35,
+        "effects": []
     }, 
     "close combat": {
+        "category": "physical",
+        "type": "fighting",
         "power": 120,
         "accuracy": 100,
-        "isPhysical": true,
-        "type": "fighting",
-        "maxPP": 15
+        "pp": 5,
+        "effects": [
+            {"target": "self", "type": "stat", "stat": "defence", "change": -1},
+            {"target": "self", "type": "stat", "stat": "special_defence", "change": -1}
+        ]
+    },
+    "growl": {
+        "category": "status",
+        "type": "normal",
+        "power": null,
+        "accuracy": 100,
+        "pp": 40,
+        "effects": [
+            {"target": "opponent", "type": "stat", "stat": "attack", "change": -1}
+        ]
+    },
+    "dragon dance": {
+        "category": "status",
+        "type": "dragon",
+        "power": null,
+        "accuracy": null,
+        "pp": 20,
+        "effects": [
+            {"target": "self", "type": "stat", "stat": "attack", "change": 1},
+            {"target": "self", "type": "stat", "stat": "speed", "change": 1}
+        ]
+    },
+    "toxic": {
+        "category": "status",
+        "type": "poison",
+        "power": null,
+        "accuracy": 90,
+        "pp": 10,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "poison" }
+        ]
+    },
+    "thunder wave": {
+        "category": "status",
+        "type": "electric",
+        "power": null,
+        "accuracy": 90,
+        "pp": 20,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "paralyzed" }
+        ]
+    },
+    "spore": {
+        "category": "status",
+        "type": "grass",
+        "power": null,
+        "accuracy": 100,
+        "pp": 15,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "sleep" }
+        ]
+    },
+    "nuzzle": {
+        "category": "physical",
+        "type": "electric",
+        "power": 20,
+        "accuracy": 100,
+        "pp": 20,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "paralyzed", "chance": 100 }
+        ]
+    },
+    "sludge bomb": {
+        "category": "special",
+        "type": "poison",
+        "power": 90,
+        "accuracy": 100,
+        "pp": 10,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "poison", "chance": 30 }
+        ]
     }
 }

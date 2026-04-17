@@ -48,10 +48,10 @@ class BattleView(arcade.View):
         self.your_pokemon = Pokemon(
             pokemon_name,
             pokemon_data,
-            [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}],
+            [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}, {"name": "growl", "pp": 20}],
             level=level,
             is_enemy=False,
-            run=self.run,
+            deathEvent=self.run,
         )
         self.enemy_pokemon = Pokemon(
             pokemon_name,
@@ -59,7 +59,7 @@ class BattleView(arcade.View):
             [{"name": "tackle", "pp": 15}],
             level=level,
             is_enemy=True,
-            run=self.run,
+            deathEvent=self.run,
         )
 
         self.manager = arcade.gui.UIManager()
@@ -379,7 +379,7 @@ class BattleView(arcade.View):
         first_move = getAMove(self.your_pokemon.moves[0]["name"])
 
         self.type.text = first_move["type"]
-        self.maxPP.text = first_move["maxPP"]
+        self.maxPP.text = first_move["pp"]
         self.currPP.text = self.your_pokemon.moves[0]["pp"]
 
         self.active_menu = "main"
@@ -387,6 +387,8 @@ class BattleView(arcade.View):
 
         self.main_buttons = [fightBtn, self.bagBtn, self.pokemonBtn, runBtn]
         self.move_buttons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
+        
+        self.battleState = "intro"
 
         self.isSliding = True
         self.targetX = self.player_hp_widget.center_x
@@ -469,10 +471,11 @@ class BattleView(arcade.View):
                 button.enabled = False
 
     def turn(self, moveIndex):
+        self.battleState = "currently turn"
         self.switchMenu("dialog")
         enemyMoveIndex = random.randint(0, len(self.enemy_pokemon.moves) - 1)
-        pokemonSpeed = self.your_pokemon.data["stats"]["speed"]
-        enemySpeed = self.enemy_pokemon.data["stats"]["speed"]
+        pokemonSpeed = self.your_pokemon.getStat("speed")
+        enemySpeed = self.enemy_pokemon.getStat("speed")
 
         if pokemonSpeed >= enemySpeed:
             order = [("player", moveIndex), ("enemy", enemyMoveIndex)]
@@ -502,7 +505,28 @@ class BattleView(arcade.View):
             self.isProcessingText = True
         else:
             self.isProcessingText = False
-            arcade.schedule_once(self.resetToMainMenu, 1.5)
+            if self.battleState == "intro" or self.battleState == "post turn":
+                self.battleState = "waiting"
+                arcade.schedule_once(self.resetToMainMenu, .5)
+            elif self.battleState == "currently turn":
+                self.postTurn()
+
+    def postTurn(self):
+        list = []
+        
+        list.extend(self.your_pokemon.afterATurn())
+        list.extend(self.enemy_pokemon.afterATurn())
+        
+        if len(list) - 1 > 0:
+            self.battleState = "post turn"
+            
+            self.messageQueue.extend(list)
+            
+            self.nextMessage()
+            self.switchMenu("dialog")
+        else: 
+            self.battleState = "waiting"
+            arcade.schedule_once(self.resetToMainMenu, 0.5)
 
     def resetToMainMenu(self, dt):
         self.switchMenu("main")
@@ -639,7 +663,7 @@ class BattleView(arcade.View):
 
             move = getAMove(move_name)
             self.type.text = move["type"]
-            self.maxPP.text = move["maxPP"]
+            self.maxPP.text = move["pp"]
             self.currPP.text = self.your_pokemon.moves[index]["pp"]
 
     def run(self):
