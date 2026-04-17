@@ -26,7 +26,7 @@ class Pokemon(arcade.Sprite):
         self.max_hp = self.getStat("hp")
         self.current_hp = self.max_hp
 
-        self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0}
+        self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0, "crits": 0}
 
         if is_enemy:
             self.center_x = 580
@@ -47,14 +47,13 @@ class Pokemon(arcade.Sprite):
     def useMove(self, index: int, pokemon: Pokemon):
         move = getAMove(self.moves[index]["name"])
 
-        roll = random.randint(1, 100)
 
         if self.moves[index]["pp"] <= 0:
             return ["But there is no PP left!"]
 
         self.moves[index]["pp"] -= 1
 
-        if move["accuracy"] and move["accuracy"] < roll:
+        if not self.moveAccuracy(move["accuracy"]):
             return ["It missed."]
 
         text = []
@@ -63,6 +62,21 @@ class Pokemon(arcade.Sprite):
         self.executeEffects(move, pokemon, text)
 
         return text
+    
+    def moveAccuracy(self, accuracy):
+        if not accuracy:
+            return True
+        
+        stage = self.modifiers["accuracy"]
+        
+        multiplier = 1
+        if stage < 0:
+            multiplier = 3 / (3 - stage)
+        elif stage > 0:
+            multiplier = (3 + stage) / 3
+        
+        finalAccuracy = accuracy * multiplier
+        return random.randint(1, 100) <= finalAccuracy
     
     def damageFoePokemon(self, move, pokemon, text):
         if not move["power"]:
@@ -89,7 +103,7 @@ class Pokemon(arcade.Sprite):
             text.append("No effect.")
 
         crit = 1
-        if random.random() < 17 / 256:
+        if self.isCritical(move):
             crit = 2
             text.append("A critical hit!")
 
@@ -101,6 +115,16 @@ class Pokemon(arcade.Sprite):
         )
 
         pokemon.takeDamage(round(damage))
+
+    def isCritical(self, move):
+        tier = move.get("crit_ratio", 0) + self.modifiers["crits"]
+        
+        tier = min(tier, 4)
+        
+        probabilities = {0: 16, 1: 8, 2: 4, 3: 3, 4: 2}
+        denominator = probabilities[tier]
+    
+        return random.randint(1, denominator) == 1
 
     def executeEffects(self, move, pokemon, text):        
         for effect in move["effects"]:
@@ -126,6 +150,7 @@ class Pokemon(arcade.Sprite):
                 adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
                 text.append(f"{destination.name}'s {stat} {adj}fell!")
    
+   
     def getHpRatio(self):
         return self.current_hp / self.max_hp
 
@@ -141,4 +166,3 @@ class Pokemon(arcade.Sprite):
             fraction = 2 / (2 + abs(self.modifiers[stat]))
 
         return round(self.stats[stat] * fraction)
-

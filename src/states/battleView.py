@@ -48,7 +48,7 @@ class BattleView(arcade.View):
         self.your_pokemon = Pokemon(
             pokemon_name,
             pokemon_data,
-            [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}, {"name": "dragon dance", "pp": 20}],
+            [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}, {"name": "growl", "pp": 20}],
             level=level,
             is_enemy=False,
             run=self.run,
