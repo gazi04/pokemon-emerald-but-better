@@ -145,26 +145,36 @@ class Pokemon(arcade.Sprite):
     def executeEffects(self, move, pokemon, text):        
         for effect in move["effects"]:
             destination = self if effect["target"] == "self" else pokemon
-            stat = effect["stat"]
-            change = effect["change"]
             
-            current_stage = destination.modifiers[stat]
+            if effect["type"] == "stat":
+                stat = effect["stat"]
+                change = effect["change"]
+                
+                current_stage = destination.modifiers[stat]
 
-            if change > 0 and current_stage == 6:
-                text.append(f"{destination.name}'s {stat} won't go any higher!")
-                continue
-            if change < 0 and current_stage == -6:
-                text.append(f"{destination.name}'s {stat} won't go any lower!")
-                continue
+                if change > 0 and current_stage == 6:
+                    text.append(f"{destination.name}'s {stat} won't go any higher!")
+                    continue
+                if change < 0 and current_stage == -6:
+                    text.append(f"{destination.name}'s {stat} won't go any lower!")
+                    continue
 
-            destination.modifiers[stat] = max(-6, min(6, current_stage + change))
-            
-            if change > 0:
-                adj = "sharply " if change == 2 else ("drastically " if change >= 3 else "")
-                text.append(f"{destination.name}'s {stat} {adj}rose!")
-            elif change < 0:
-                adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
-                text.append(f"{destination.name}'s {stat} {adj}fell!")
+                destination.modifiers[stat] = max(-6, min(6, current_stage + change))
+                
+                if change > 0:
+                    adj = "sharply " if change == 2 else ("drastically " if change >= 3 else "")
+                    text.append(f"{destination.name}'s {stat} {adj}rose!")
+                elif change < 0:
+                    adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
+                    text.append(f"{destination.name}'s {stat} {adj}fell!")
+            else:
+                chance = effect.get("chance", 100)
+                
+                if chance >= random.randint(1, 100):
+                    destination.statusEffect = effect["condition"]
+                    
+                    if effect["condition"] == "sleep":
+                        destination.sleepCounter = random.randint(2, 5)
    
     def afterATurn(self):
         text = []
