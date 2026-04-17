@@ -3,7 +3,7 @@ from src.util import getAMove, calculateMultiplier
 import random
 
 class Pokemon(arcade.Sprite):
-    def __init__(self, name, data, moves, level=5, is_enemy=True, run: function = None):
+    def __init__(self, name, data, moves, level=5, is_enemy=True, deathEvent: function = None):
         sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
 
         super().__init__(sprite_path.strip(), scale=3.0)
@@ -20,13 +20,13 @@ class Pokemon(arcade.Sprite):
 
         self.types = data["types"]
         self.moves = moves
-        self.run = run
+        self.deathEvent = deathEvent
         self.level = level
         
         self.max_hp = self.getStat("hp")
         self.current_hp = self.max_hp
 
-        self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0, "crits": 0}
+        self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0, "evasion": 0, "crits": 0}
 
         if is_enemy:
             self.center_x = 580
@@ -42,7 +42,7 @@ class Pokemon(arcade.Sprite):
         self.current_hp -= damage
         if self.current_hp < 0:
             self.current_hp = 0
-            self.run()
+            self.deathEvent()
 
     def useMove(self, index: int, pokemon: Pokemon):
         move = getAMove(self.moves[index]["name"])
@@ -67,27 +67,30 @@ class Pokemon(arcade.Sprite):
         if not accuracy:
             return True
         
-        stage = self.modifiers["accuracy"]
+        stage = self.modifiers["accuracy"] - self.modifiers["evasion"]
+        stage = max(-6, min(6, stage))
         
         multiplier = 1
         if stage < 0:
-            multiplier = 3 / (3 - stage)
+            multiplier = 3 / (3 - abs(stage))
         elif stage > 0:
             multiplier = (3 + stage) / 3
         
         finalAccuracy = accuracy * multiplier
         return random.randint(1, 100) <= finalAccuracy
     
-    def damageFoePokemon(self, move, pokemon, text):
+    def damageFoePokemon(self, move, pokemon:Pokemon, text:list):
         if not move["power"]:
             return
         
-        d = pokemon.getStat("defence")
-        a = self.getStat("attack")
-        if move["category"] == "special":
-            d = pokemon.getStat("special_defence")
-            a = self.getStat("special_attack")
-
+        if move["category"] == "status":
+            return
+        
+        isPhysical = move["category"] == "physical"
+        
+        d = pokemon.getStat("defence") if isPhysical else pokemon.getStat("special_defence")
+        a = self.getStat("attack") if isPhysical else self.getStat("special_attack")
+        
         stab = 1
 
         if move["type"] in self.types:
@@ -104,6 +107,7 @@ class Pokemon(arcade.Sprite):
 
         crit = 1
         if self.isCritical(move):
+            d = pokemon.stats["defence"] if isPhysical else pokemon.stats["special_defence"]
             crit = 2
             text.append("A critical hit!")
 
@@ -149,7 +153,6 @@ class Pokemon(arcade.Sprite):
             elif change < 0:
                 adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
                 text.append(f"{destination.name}'s {stat} {adj}fell!")
-   
    
     def getHpRatio(self):
         return self.current_hp / self.max_hp

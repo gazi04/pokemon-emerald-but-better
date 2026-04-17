@@ -51,7 +51,7 @@ class BattleView(arcade.View):
             [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}, {"name": "growl", "pp": 20}],
             level=level,
             is_enemy=False,
-            run=self.run,
+            deathEvent=self.run,
         )
         self.enemy_pokemon = Pokemon(
             pokemon_name,
@@ -59,7 +59,7 @@ class BattleView(arcade.View):
             [{"name": "tackle", "pp": 15}],
             level=level,
             is_enemy=True,
-            run=self.run,
+            deathEvent=self.run,
         )
 
         self.manager = arcade.gui.UIManager()
