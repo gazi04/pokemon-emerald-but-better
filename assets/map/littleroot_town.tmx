@@ -38,9 +38,9 @@
  <objectgroup id="4" name="transitions">
   <object id="2" name="door" gid="809" x="256" y="192.364" width="16" height="16">
    <properties>
-    <property name="destination map" value="test.tmx"/>
-    <property name="x" type="int" value="15"/>
-    <property name="y" type="int" value="12"/>
+    <property name="destination map" value="test"/>
+    <property name="x" type="int" value="366"/>
+    <property name="y" type="int" value="205"/>
    </properties>
   </object>
  </objectgroup>

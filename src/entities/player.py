@@ -113,12 +113,12 @@ class Player(arcade.Sprite):
                 
                 if hit_bush:
                     if random.random() < 0.15:
-                        enc = getEnc()[self.map]["grass"]["pokemon"]
+                        pokemonList = getEnc()[self.map]["grass"]
 
-                        pokemon = random.choice(enc)
+                        pokemon = random.choices(pokemonList, weights=[p["weight"] for p in pokemonList])[0]
                         pokemon_data = getPokemon()[pokemon["name"]]
                         pokemon_lvl = random.randint(
-                            pokemon["min_level"], pokemon["max_level"]
+                            pokemon["levels"][0], pokemon["levels"][1]
                         )
                         return {
                             "type": "encounter",
@@ -151,6 +151,7 @@ class Player(arcade.Sprite):
                 )
                 
                 if hitTransitions:
+                    # print(target_x, target_y)
                     return {
                         "type": "transition",
                         "map": hitTransitions[0].properties["destination map"],

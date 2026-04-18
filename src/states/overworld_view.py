@@ -82,7 +82,8 @@ class OverworldView(arcade.View):
                 name, data, level = result["name"], result["data"], result["level"]
                 self.startBattle(name, level, data)
             elif type == "transition":
-                path = f"assets/map/{result["map"]}"
+                path = f"assets/map/{result["map"]}.tmx"
+                self.player.map = result["map"]
                 self.setup(path, [result["x"], result["y"]])
 
     def on_draw(self):

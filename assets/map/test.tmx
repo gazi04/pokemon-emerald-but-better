@@ -60,9 +60,9 @@
  <objectgroup id="2" name="transitions">
   <object id="1" name="door" gid="354" x="175.545" y="288.473" width="16" height="16">
    <properties>
-    <property name="destination map" value="littleroot_town.tmx"/>
-    <property name="x" type="int" value="15"/>
-    <property name="y" type="int" value="12"/>
+    <property name="destination map" value="littleroot_town"/>
+    <property name="x" type="int" value="528"/>
+    <property name="y" type="int" value="590"/>
    </properties>
   </object>
  </objectgroup>
