@@ -1,6 +1,21 @@
 import json
 from functools import lru_cache
 
+PLAYER_FILE = "data/player.json"
+
+def loadPlayer():
+    with open(PLAYER_FILE, "r") as f:
+        return json.load(f)
+
+def savePlayer(data):
+    with open(PLAYER_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+        
+def getTeamPokemon(player_data, name):
+    for p in player_data["pokemons"]:
+        if p["name"] == name:
+            return p
+    return None
 
 @lru_cache(maxsize=1)
 def getPokemon():
@@ -10,8 +25,7 @@ def getPokemon():
     return poke
 
 def getPlayersPokemon():
-    with open("data/player.json", "r") as f:
-        pokemons = json.load(f)["pokemons"]
+    pokemons = loadPlayer()["pokemons"]
     
     allPokemons = getPokemon()
     result = []
@@ -24,6 +38,15 @@ def getPlayersPokemon():
         result.append(merged)
     
     return result
+
+def updateHp(name, newHp):
+    data = loadPlayer()
+    pokemon = getTeamPokemon(data, name.lower())
+
+    if pokemon:
+        pokemon["hp"] = max(0, newHp)
+
+    savePlayer(data)
 
 def getConfigs():
     with open("data/config.json", "r") as f:

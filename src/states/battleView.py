@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
 from src.entities.pokemon import Pokemon
-from src.util import getAMove, getPlayersPokemon
+from src.util import getAMove, getPlayersPokemon, updateHp
 import random
 from data.config import Config
 
@@ -514,7 +514,6 @@ class BattleView(arcade.View):
             
             if self.battleState == "currently turn":
                 self.execute_next_action()
-            
             elif self.battleState in ["intro", "post turn"]:
                 self.battleState = "waiting"
                 arcade.schedule_once(self.resetToMainMenu, .5)
@@ -523,6 +522,7 @@ class BattleView(arcade.View):
 
     def pokemonDeath(self, diedPokemon:Pokemon):
         self.battleState = "end"
+        updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
         if diedPokemon.isEnemy:
             exp = diedPokemon.getExp()
             
@@ -530,7 +530,13 @@ class BattleView(arcade.View):
                 f"Wild {self.enemy_pokemon.name} fainted!",
                 f"{self.your_pokemon.name} gained {exp} EXP. Points!",
             ])
-            print(self.messageQueue)
+
+            self.nextMessage()
+            self.switchMenu("dialog")
+        else:
+            self.messageQueue.extend([
+                f"{self.your_pokemon.name} fainted!"
+            ])
 
             self.nextMessage()
             self.switchMenu("dialog")
