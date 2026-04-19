@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
 from src.entities.pokemon import Pokemon
-from src.util import getAMove
+from src.util import getAMove, getPlayersPokemon
 import random
 from data.config import Config
 
@@ -17,6 +17,9 @@ class BattleView(arcade.View):
         self.tilemap = arcade.tilemap.load_tilemap(
             "assets/ui/battle/battleUiDesign.tmx"
         )
+        
+        self.playerPokemon =getPlayersPokemon()
+        print(self.playerPokemon)
 
         move_button_style = {
             "normal": arcade.gui.UIFlatButton.UIStyle(
@@ -46,12 +49,13 @@ class BattleView(arcade.View):
         }
 
         self.your_pokemon = Pokemon(
-            pokemon_name,
-            pokemon_data,
-            [{"name": "tackle", "pp": 15}, {"name": "close combat", "pp": 15}, {"name": "growl", "pp": 20}],
-            level=level,
+            self.playerPokemon[0]["name"],
+            self.playerPokemon[0],
+            self.playerPokemon[0]["moves"],
+            level=self.playerPokemon[0]["level"],
             is_enemy=False,
             deathEvent=self.run,
+            currentHp=self.playerPokemon[0]["hp"]
         )
         self.enemy_pokemon = Pokemon(
             pokemon_name,

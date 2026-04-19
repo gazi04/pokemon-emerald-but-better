@@ -3,7 +3,7 @@ from src.util import getAMove, calculateMultiplier
 import random
 
 class Pokemon(arcade.Sprite):
-    def __init__(self, name, data, moves, level=5, is_enemy=True, deathEvent: function = None):
+    def __init__(self, name, data, moves, level=5, is_enemy=True, deathEvent: function = None, currentHp: int = None):
         sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
 
         super().__init__(sprite_path.strip(), scale=3.0)
@@ -24,7 +24,7 @@ class Pokemon(arcade.Sprite):
         self.level = level
         
         self.max_hp = self.getStat("hp")
-        self.current_hp = self.max_hp
+        self.current_hp = currentHp or self.max_hp
 
         self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0, "evasion": 0, "crits": 0}
 

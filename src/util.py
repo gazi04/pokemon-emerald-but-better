@@ -9,6 +9,21 @@ def getPokemon():
 
     return poke
 
+def getPlayersPokemon():
+    with open("data/player.json", "r") as f:
+        pokemons = json.load(f)["pokemons"]
+    
+    allPokemons = getPokemon()
+    result = []
+    
+    for p in pokemons:
+        merged = {
+            **p,
+            **allPokemons[p["name"]]
+        }
+        result.append(merged)
+    
+    return result
 
 def getConfigs():
     with open("data/config.json", "r") as f:
