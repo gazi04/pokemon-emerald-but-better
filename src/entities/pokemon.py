@@ -3,8 +3,8 @@ from src.util import getAMove, calculateMultiplier
 import random
 
 class Pokemon(arcade.Sprite):
-    def __init__(self, name, data, moves, level=5, is_enemy=True, deathEvent: function = None, currentHp: int = None):
-        sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
+    def __init__(self, name, data, moves, level=5, isEnemy=True, deathEvent: function = None, currentHp: int = None):
+        sprite_path = data["sprites"]["front"] if isEnemy else data["sprites"]["back"]
 
         super().__init__(sprite_path.strip(), scale=3.0)
 
@@ -22,6 +22,9 @@ class Pokemon(arcade.Sprite):
         self.moves = moves
         self.deathEvent = deathEvent
         self.level = level
+        self.baseExp = data["baseExp"]
+        
+        self.isEnemy = isEnemy
         
         self.max_hp = self.getStat("hp")
         self.current_hp = currentHp or self.max_hp
@@ -31,7 +34,7 @@ class Pokemon(arcade.Sprite):
         self.statusEffect = ""
         self.sleepCounter = 0
 
-        if is_enemy:
+        if isEnemy:
             self.center_x = 580
             self.center_y = 400
         else:
@@ -43,9 +46,9 @@ class Pokemon(arcade.Sprite):
 
     def takeDamage(self, damage: int):
         self.current_hp -= damage
-        if self.current_hp < 0:
+        if self.current_hp <= 0:
             self.current_hp = 0
-            self.deathEvent()
+            self.deathEvent(self)
 
     def useMove(self, index: int, pokemon: Pokemon):
         move = getAMove(self.moves[index]["name"])
@@ -188,6 +191,9 @@ class Pokemon(arcade.Sprite):
     
     def getHpRatio(self):
         return self.current_hp / self.max_hp
+
+    def getExp(self):
+        return (self.baseExp * self.level) // 7
 
     def getStat(self, stat):
         if stat == "hp":

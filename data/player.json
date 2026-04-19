@@ -2,10 +2,10 @@
     "pokemons": [
         {
             "name": "torchic",
-            "hp": 20,
-            "level": 15,
+            "hp": 15,
+            "level": 1,
             "exp": 0,
-            "moves": [{"name": "tackle", "pp": 15}]
+            "moves": [{"name": "close combat", "pp": 5}, {"name": "tackle", "pp": 15}]
         }
     ]
 }
