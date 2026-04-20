@@ -44,7 +44,7 @@
  <objectgroup id="4" name="battle">
   <object id="12" name="enemy_hp_widget" gid="3" x="943" y="5360" width="9990" height="2910"/>
   <object id="13" name="player_hp_widget" gid="4" x="14053" y="13364" width="11010" height="3690"/>
-  <object id="34" name="player_hp_fill" x="19168" y="11376" width="4976" height="272"/>
+  <object id="34" name="player_hp_fill" x="19160" y="11376" width="5032" height="304"/>
   <object id="35" name="player_xp_fill" x="17440" y="12944" width="6768" height="224"/>
   <object id="36" name="enemy_hp_fill" x="4840" y="4184" width="4768" height="272"/>
   <object id="37" name="player_name" x="15638.5" y="10134.5" width="5971" height="851">

@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
 from src.entities.pokemon import Pokemon
-from src.util import getAMove, getPlayersPokemon, updateHp
+from src.util import getAMove, getPlayersPokemon, updateHp, updateMove
 import random
 from data.config import Config
 
@@ -52,16 +52,15 @@ class BattleView(arcade.View):
             self.playerPokemon[0]["moves"],
             level=self.playerPokemon[0]["level"],
             isEnemy=False,
-            deathEvent=self.pokemonDeath,
-            currentHp=self.playerPokemon[0]["hp"]
+            currentHp=self.playerPokemon[0]["hp"],
+            exp=self.playerPokemon[0]["exp"]
         )
         self.enemy_pokemon = Pokemon(
             pokemon_name,
             pokemon_data,
             [{"name": "tackle", "pp": 15}],
             level=level,
-            isEnemy=True,
-            deathEvent=self.pokemonDeath,
+            isEnemy=True
         )
 
         self.manager = arcade.gui.UIManager()
@@ -375,6 +374,14 @@ class BattleView(arcade.View):
                         "w": obj_w,
                         "h": obj_h,
                     }
+                    
+                elif obj.name == "player_xp_fill":
+                    self.expBar = {
+                        "x": arc_x,
+                        "y": arc_y - obj_h,
+                        "w": obj_w,
+                        "h": obj_h,
+                    }
 
         self.switchMenu("main")
         self.updateUiMoves()
@@ -392,6 +399,7 @@ class BattleView(arcade.View):
         
         self.turn_queue = []
         self.battleState = "intro"
+        self.exp = 0
 
         self.isSliding = True
         self.targetX = self.player_hp_widget.center_x
@@ -409,6 +417,7 @@ class BattleView(arcade.View):
         self.player_lvl_label.center_x += 400
         self.player_name_label.center_x += 400
         self.hp_bars["player"]["x"] += 400
+        self.expBar["x"] += 400
         self.playerPlatform.center_x -= 400
         self.your_pokemon.center_x -= 400
 
@@ -439,6 +448,22 @@ class BattleView(arcade.View):
             bottom=barData["y"],
             top=barData["y"] + barData["h"],
             color=color,
+        )
+
+    def drawExpBar(self):
+        if not self.expBar:
+            return
+
+        ratio = self.your_pokemon.getExpRatio()
+        fullWidth = self.expBar["w"]
+        currentWidth = fullWidth * ratio
+
+        arcade.draw_lrbt_rectangle_filled(
+            left=self.expBar["x"],
+            right=self.expBar["x"] + currentWidth,
+            bottom=self.expBar["y"],
+            top=self.expBar["y"] + self.expBar["h"],
+            color=arcade.color.CYAN,
         )
 
     def switchMenu(self, menu_to_show):
@@ -505,6 +530,7 @@ class BattleView(arcade.View):
         self.nextMessage()
 
     def nextMessage(self):
+        print(self.messageQueue)
         if self.messageQueue:
             self.targetText = self.messageQueue.pop(0)
             self.currentText = ""
@@ -518,18 +544,23 @@ class BattleView(arcade.View):
                 self.battleState = "waiting"
                 arcade.schedule_once(self.resetToMainMenu, .5)
             elif self.battleState == "end":
-                self.run()
+                if self.exp > 0: 
+                    print(self.your_pokemon.gainExp(self.exp))
+                    self.exp = 0
+                else:
+                    self.run()
 
     def pokemonDeath(self, diedPokemon:Pokemon):
         self.battleState = "end"
-        updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
         if diedPokemon.isEnemy:
-            exp = diedPokemon.getExp()
+            self.exp = diedPokemon.getExp()
             
             self.messageQueue.extend([
                 f"Wild {self.enemy_pokemon.name} fainted!",
-                f"{self.your_pokemon.name} gained {exp} EXP. Points!",
+                f"{self.your_pokemon.name} gained {self.exp} EXP. Points!",
             ])
+            
+            print(self.messageQueue)
 
             self.nextMessage()
             self.switchMenu("dialog")
@@ -539,14 +570,21 @@ class BattleView(arcade.View):
             ])
 
             self.nextMessage()
-            self.switchMenu("dialog")
-            
+            self.switchMenu("dialog")      
 
     def postTurn(self):
         list = []
         
         list.extend(self.your_pokemon.afterATurn())
         list.extend(self.enemy_pokemon.afterATurn())
+        
+        if self.your_pokemon.current_hp <= 0:
+            self.pokemonDeath(self.your_pokemon)
+            return
+        
+        if self.enemy_pokemon.current_hp <= 0:
+            self.pokemonDeath(self.enemy_pokemon)
+            return
         
         if len(list) - 1 > 0:
             self.battleState = "post turn"
@@ -575,6 +613,7 @@ class BattleView(arcade.View):
         self.your_pokemon.draw()
 
         self.drawHpBar(self.your_pokemon, self.hp_bars.get("player"))
+        self.drawExpBar()
         self.drawHpBar(self.enemy_pokemon, self.hp_bars.get("enemy"))
 
         if self.active_menu != "dialog":
@@ -596,10 +635,12 @@ class BattleView(arcade.View):
     def on_update(self, delta_time):
         if self.isSliding:
             transitionSpeed = 7
+            
             self.player_hp_widget.center_x -= transitionSpeed
             self.player_lvl_label.center_x -= transitionSpeed
             self.player_name_label.center_x -= transitionSpeed
             self.hp_bars["player"]["x"] -= transitionSpeed
+            self.expBar["x"] -= transitionSpeed
             self.your_pokemon.center_x += transitionSpeed
             self.playerPlatform.center_x += transitionSpeed
 
@@ -699,3 +740,5 @@ class BattleView(arcade.View):
 
     def run(self):
         self.window.show_view(self.overworld_view)
+        updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
+        updateMove(self.your_pokemon.name, self.your_pokemon.moves)

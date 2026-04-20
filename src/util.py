@@ -47,6 +47,17 @@ def updateHp(name, newHp):
         pokemon["hp"] = max(0, newHp)
 
     savePlayer(data)
+    
+def updateMove(name, moves):
+    data = loadPlayer()
+    pokemon = getTeamPokemon(data, name.lower())
+
+    for move in moves:
+        for pokemonMove in pokemon["moves"]:
+            if move["name"] == pokemonMove["name"]:
+                pokemonMove["pp"] = move["pp"]
+
+    savePlayer(data)
 
 def getConfigs():
     with open("data/config.json", "r") as f:
