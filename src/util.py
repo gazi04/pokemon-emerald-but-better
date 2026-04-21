@@ -59,12 +59,15 @@ def updateMove(name, moves):
 
     savePlayer(data)
 
-def updateLevel(name, level, exp):
+def updateLevel(name, level, exp, evolvedName = None):
     data = loadPlayer()
     pokemon = getTeamPokemon(data, name.lower())
     
     pokemon["level"] = level
     pokemon["exp"] = exp
+    
+    if evolvedName:
+        pokemon["name"] = evolvedName
     
     savePlayer(data)
 

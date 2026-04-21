@@ -400,6 +400,7 @@ class BattleView(arcade.View):
         self.turn_queue = []
         self.battleState = "intro"
         self.exp = 0
+        self.hasEvolved = False
 
         self.isSliding = True
         self.targetX = self.player_hp_widget.center_x
@@ -547,8 +548,15 @@ class BattleView(arcade.View):
                     result = self.your_pokemon.gainExp(self.exp)
                     self.exp = 0
                     
-                    if result["is leveled up"]:
+                    if result["isLeveledUp"]:
+                        self.player_lvl_label = f"Lv{self.your_pokemon.level}"
+                        self.manager.trigger_render()
                         self.messageQueue.extend([f"{self.your_pokemon.name} has leveled up!!!", f"Now {self.your_pokemon.name} is {self.your_pokemon.level} lvl!!!"])
+                        self.isProcessingText = True
+                        
+                    if result["evolve"]["hasEvolved"]:
+                        self.hasEvolved = True
+                        self.messageQueue.extend([f"{self.your_pokemon.name} is evoling!!!", f"{self.your_pokemon.name} is evolved into {result["evolve"]["to"]}"])
                         self.isProcessingText = True
                 else:
                     self.run()
@@ -745,4 +753,7 @@ class BattleView(arcade.View):
         self.window.show_view(self.overworld_view)
         updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
         updateMove(self.your_pokemon.name, self.your_pokemon.moves)
-        updateLevel(self.your_pokemon.name, self.your_pokemon.level, self.your_pokemon.exp)
+        if not self.hasEvolved:
+            updateLevel(self.your_pokemon.name, self.your_pokemon.level, self.your_pokemon.exp)
+        else:
+            updateLevel(self.your_pokemon.name, self.your_pokemon.level, self.your_pokemon.exp, self.your_pokemon.evolution["to"])

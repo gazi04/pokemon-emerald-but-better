@@ -1,6 +1,7 @@
 {
   "treecko": {
     "baseExp": 62,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/treecko_back.png",
       "front": "assets/sprite/pokemon/front/treecko_front.png"
@@ -11,6 +12,7 @@
   },
   "torchic": {
     "baseExp": 62,
+    "evolution": { "to": "combusken", "level": 16 },
     "sprites": {
       "back": "assets/sprite/pokemon/back/trochip_back.png",
       "front": "assets/sprite/pokemon/front/torchip_front.png"
@@ -19,8 +21,20 @@
     "types": ["fire"],
     "stats": { "hp": 45, "attack": 60, "defence": 40, "special_attack": 70, "special_defence": 50, "speed": 45 }
   },
+  "combusken": {
+    "baseExp": 142,
+    "evolution": null,
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/combusken_back.png",
+      "front": "assets/sprite/pokemon/front/combusken_front.png"
+    },
+    "abilities": ["blaze"],
+    "types": ["fire"],
+    "stats": { "hp": 60, "attack": 80, "defence": 60, "special_attack": 80, "special_defence": 60, "speed": 55 }
+  },
   "mudkip": {
     "baseExp": 62,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/mudkip_back.png",
       "front": "assets/sprite/pokemon/front/mudkip_front.png"
@@ -31,6 +45,7 @@
   },
   "poochyena": {
     "baseExp": 55,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/poochyena_back.png",
       "front": "assets/sprite/pokemon/front/poochyena_front.png"
@@ -41,6 +56,7 @@
   },
   "zigzagoon": {
     "baseExp": 48,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/zigzagoon_back.png",
       "front": "assets/sprite/pokemon/front/zigzagoon_front.png"
@@ -51,6 +67,7 @@
   },
   "wurmple": {
     "baseExp": 54,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/wurmple_back.png",
       "front": "assets/sprite/pokemon/front/wurmple_front.png"
@@ -61,6 +78,7 @@
   },
   "lotad": {
     "baseExp": 44,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/lotad_back.png",
       "front": "assets/sprite/pokemon/front/lotad_front.png"
@@ -71,6 +89,7 @@
   },
   "seedot": {
     "baseExp": 44,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/seedot_back.png",
       "front": "assets/sprite/pokemon/front/seedot_front.png"
@@ -81,6 +100,7 @@
   },
   "taillow": {
     "baseExp": 59,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/taillow_back.png",
       "front": "assets/sprite/pokemon/front/taillow_front.png"
@@ -91,6 +111,7 @@
   },
   "wingull": {
     "baseExp": 64,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/wingull_back.png",
       "front": "assets/sprite/pokemon/front/wingull_front.png"
@@ -101,6 +122,7 @@
   },
   "ralts": {
     "baseExp": 70,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/ralts_back.png",
       "front": "assets/sprite/pokemon/front/ralts_front.png"
@@ -111,6 +133,7 @@
   },
   "shroomish": {
     "baseExp": 65,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/shroomish_back.png",
       "front": "assets/sprite/pokemon/front/shroomish_front.png"
@@ -121,6 +144,7 @@
   },
   "abra": {
     "baseExp": 73,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/abra_back.png",
       "front": "assets/sprite/pokemon/front/abra_front.png"
@@ -131,6 +155,7 @@
   },
   "makuhita": {
     "baseExp": 87,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/makuhita_back.png",
       "front": "assets/sprite/pokemon/front/makuhita_front.png"
@@ -141,6 +166,7 @@
   },
   "zubat": {
     "baseExp": 54,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/zubat_back.png",
       "front": "assets/sprite/pokemon/front/zubat_front.png"
