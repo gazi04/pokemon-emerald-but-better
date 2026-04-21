@@ -197,19 +197,24 @@ class Pokemon(arcade.Sprite):
         return self.current_hp / self.max_hp
 
     def gainExp(self, exp):
+        old_level = self.level
         self.exp += exp
         old_stats = self.stats.copy()
 
         while self.exp >= self.expNeeded():
+            self.exp -= self.expNeeded()
             self.levelUp()
+            
+        self.current_hp = self.max_hp
 
-        return [old_stats, self.stats.copy()]
+        return {
+            "is leveled up": self.level > old_level,
+            "stats history": [old_stats, self.stats.copy()]
+        }
             
     def levelUp(self):
         self.level += 1
         self.calculateStats()
-
-        self.current_hp = self.max_hp
 
     def getExp(self):
         return (self.baseExp * self.level) // 7

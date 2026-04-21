@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
 from src.entities.pokemon import Pokemon
-from src.util import getAMove, getPlayersPokemon, updateHp, updateMove
+from src.util import getAMove, getPlayersPokemon, updateHp, updateMove, updateLevel
 import random
 from data.config import Config
 
@@ -530,7 +530,6 @@ class BattleView(arcade.View):
         self.nextMessage()
 
     def nextMessage(self):
-        print(self.messageQueue)
         if self.messageQueue:
             self.targetText = self.messageQueue.pop(0)
             self.currentText = ""
@@ -545,8 +544,12 @@ class BattleView(arcade.View):
                 arcade.schedule_once(self.resetToMainMenu, .5)
             elif self.battleState == "end":
                 if self.exp > 0: 
-                    print(self.your_pokemon.gainExp(self.exp))
+                    result = self.your_pokemon.gainExp(self.exp)
                     self.exp = 0
+                    
+                    if result["is leveled up"]:
+                        self.messageQueue.extend([f"{self.your_pokemon.name} has leveled up!!!", f"Now {self.your_pokemon.name} is {self.your_pokemon.level} lvl!!!"])
+                        self.isProcessingText = True
                 else:
                     self.run()
 
@@ -742,3 +745,4 @@ class BattleView(arcade.View):
         self.window.show_view(self.overworld_view)
         updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
         updateMove(self.your_pokemon.name, self.your_pokemon.moves)
+        updateLevel(self.your_pokemon.name, self.your_pokemon.level, self.your_pokemon.exp)

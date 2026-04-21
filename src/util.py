@@ -59,6 +59,15 @@ def updateMove(name, moves):
 
     savePlayer(data)
 
+def updateLevel(name, level, exp):
+    data = loadPlayer()
+    pokemon = getTeamPokemon(data, name.lower())
+    
+    pokemon["level"] = level
+    pokemon["exp"] = exp
+    
+    savePlayer(data)
+
 def getConfigs():
     with open("data/config.json", "r") as f:
         config = json.load(f)
