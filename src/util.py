@@ -89,8 +89,8 @@ def getAMove(name):
     try:
         with open("data/moves.json", "r") as f:
             return json.load(f)[name]
-    except:
-        print("The move doesnt exits")
+    except Exception as e:
+        print(f"Unhandled exception occurred: {e}")
         return {}
 
 

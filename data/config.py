@@ -1,7 +1,6 @@
 import json
 from pydantic import BaseModel, Field
-from typing import List, Literal
-from pathlib import Path
+from typing import Literal
 
 
 class WindowConfig(BaseModel):
