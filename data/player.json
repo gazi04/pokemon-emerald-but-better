@@ -1,14 +1,20 @@
 {
-    "pokemons": {
-        "mudkip": {
-            "level": 15,
-            "hp": 100,
-            "max_hp": 100,
-            "attack": 100,
-            "special_attack": 100,
-            "defence": 100,
-            "special_defence": 100,
-            "moves": [{"name": "takle", "pp": 15}]
+    "pokemons": [
+        {
+            "name": "combusken",
+            "hp": 33,
+            "level": 16,
+            "exp": 21,
+            "moves": [
+                {
+                    "name": "close combat",
+                    "pp": 1
+                },
+                {
+                    "name": "tackle",
+                    "pp": 12
+                }
+            ]
         }
-    }
+    ]
 }

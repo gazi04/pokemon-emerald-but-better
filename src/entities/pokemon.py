@@ -3,49 +3,57 @@ from src.util import getAMove, calculateMultiplier
 import random
 
 class Pokemon(arcade.Sprite):
-    def __init__(self, name, data, moves, level=5, is_enemy=True, deathEvent: function = None):
-        sprite_path = data["sprites"]["front"] if is_enemy else data["sprites"]["back"]
+    def __init__(self, name, data, moves, level=5, isEnemy=True, currentHp: int = None, exp: int = None):
+        sprite_path = data["sprites"]["front"] if isEnemy else data["sprites"]["back"]
 
         super().__init__(sprite_path.strip(), scale=3.0)
 
         self.name = name.capitalize()
         
-        self.stats = data["stats"].copy()
+        self.baseStat = data["stats"].copy()
+        self.level = level
         
-        for key, value in data["stats"].items():
-            if key != "hp":
-                self.stats[key] = ((2 * value * level) // 100) + 5
-            else:
-                self.stats[key] = ((2 * value * level) // 100) + 5 + level
+        self.calculateStats()
 
         self.types = data["types"]
         self.moves = moves
-        self.deathEvent = deathEvent
-        self.level = level
+        self.baseExp = data["baseExp"]
+        self.exp = exp
+        self.evolution = data["evolution"]
+        
+        self.isEnemy = isEnemy
         
         self.max_hp = self.getStat("hp")
-        self.current_hp = self.max_hp
+        self.current_hp = currentHp or self.max_hp
 
         self.modifiers = {"attack": 0, "defence": 0, "special_attack": 0, "special_defence": 0, "speed": 0, "accuracy": 0, "evasion": 0, "crits": 0}
 
         self.statusEffect = ""
         self.sleepCounter = 0
 
-        if is_enemy:
+        if isEnemy:
             self.center_x = 580
             self.center_y = 400
         else:
             self.center_x = 210
             self.center_y = 230
 
+    def calculateStats(self):
+        self.stats = self.baseStat.copy()
+        
+        for key, value in self.baseStat.items():
+            if key != "hp":
+                self.stats[key] = ((2 * value * self.level) // 100) + 5
+            else:
+                self.stats[key] = ((2 * value * self.level) // 100) + 5 + self.level
+
     def draw(self):
         arcade.draw_sprite(self, pixelated=True)
 
     def takeDamage(self, damage: int):
         self.current_hp -= damage
-        if self.current_hp < 0:
+        if self.current_hp <= 0:
             self.current_hp = 0
-            self.deathEvent()
 
     def useMove(self, index: int, pokemon: Pokemon):
         move = getAMove(self.moves[index]["name"])
@@ -188,6 +196,41 @@ class Pokemon(arcade.Sprite):
     
     def getHpRatio(self):
         return self.current_hp / self.max_hp
+
+    def gainExp(self, exp):
+        old_level = self.level
+        self.exp += exp
+        old_stats = self.stats.copy()
+
+        while self.exp >= self.expNeeded():
+            self.exp -= self.expNeeded()
+            self.levelUp()
+            
+        self.current_hp = self.max_hp
+        
+        hasEvolved = self.evolution and self.evolution["level"] == self.level
+
+        return {
+            "isLeveledUp": self.level > old_level,
+            "statsHistory": [old_stats, self.stats.copy()],
+            "evolve": {
+                "hasEvolved": hasEvolved,
+                "to": self.evolution["to"]
+            }
+        }
+            
+    def levelUp(self):
+        self.level += 1
+        self.calculateStats()
+
+    def getExp(self):
+        return (self.baseExp * self.level) // 7
+
+    def getExpRatio(self):
+        return self.exp / self.expNeeded()
+    
+    def expNeeded(self):
+        return self.level ** 3
 
     def getStat(self, stat):
         if stat == "hp":

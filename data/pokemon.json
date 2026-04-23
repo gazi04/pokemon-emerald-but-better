@@ -1,5 +1,7 @@
 {
   "treecko": {
+    "baseExp": 62,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/treecko_back.png",
       "front": "assets/sprite/pokemon/front/treecko_front.png"
@@ -9,6 +11,8 @@
     "stats": { "hp": 40, "attack": 65, "defence": 35, "special_attack": 45, "special_defence": 55, "speed": 70 }
   },
   "torchic": {
+    "baseExp": 62,
+    "evolution": { "to": "combusken", "level": 16 },
     "sprites": {
       "back": "assets/sprite/pokemon/back/trochip_back.png",
       "front": "assets/sprite/pokemon/front/torchip_front.png"
@@ -17,7 +21,20 @@
     "types": ["fire"],
     "stats": { "hp": 45, "attack": 60, "defence": 40, "special_attack": 70, "special_defence": 50, "speed": 45 }
   },
+  "combusken": {
+    "baseExp": 142,
+    "evolution": null,
+    "sprites": {
+      "back": "assets/sprite/pokemon/back/combusken_back.png",
+      "front": "assets/sprite/pokemon/front/combusken_front.png"
+    },
+    "abilities": ["blaze"],
+    "types": ["fire"],
+    "stats": { "hp": 60, "attack": 80, "defence": 60, "special_attack": 80, "special_defence": 60, "speed": 55 }
+  },
   "mudkip": {
+    "baseExp": 62,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/mudkip_back.png",
       "front": "assets/sprite/pokemon/front/mudkip_front.png"
@@ -27,6 +44,8 @@
     "stats": { "hp": 50, "attack": 70, "defence": 50, "special_attack": 50, "special_defence": 50, "speed": 40 }
   },
   "poochyena": {
+    "baseExp": 55,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/poochyena_back.png",
       "front": "assets/sprite/pokemon/front/poochyena_front.png"
@@ -36,6 +55,8 @@
     "stats": { "hp": 35, "attack": 55, "defence": 35, "special_attack": 30, "special_defence": 30, "speed": 35 }
   },
   "zigzagoon": {
+    "baseExp": 48,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/zigzagoon_back.png",
       "front": "assets/sprite/pokemon/front/zigzagoon_front.png"
@@ -45,6 +66,8 @@
     "stats": { "hp": 38, "attack": 30, "defence": 41, "special_attack": 30, "special_defence": 41, "speed": 60 }
   },
   "wurmple": {
+    "baseExp": 54,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/wurmple_back.png",
       "front": "assets/sprite/pokemon/front/wurmple_front.png"
@@ -54,6 +77,8 @@
     "stats": { "hp": 45, "attack": 45, "defence": 35, "special_attack": 20, "special_defence": 30, "speed": 20 }
   },
   "lotad": {
+    "baseExp": 44,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/lotad_back.png",
       "front": "assets/sprite/pokemon/front/lotad_front.png"
@@ -63,6 +88,8 @@
     "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 40, "special_defence": 50, "speed": 30 }
   },
   "seedot": {
+    "baseExp": 44,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/seedot_back.png",
       "front": "assets/sprite/pokemon/front/seedot_front.png"
@@ -72,6 +99,8 @@
     "stats": { "hp": 40, "attack": 40, "defence": 50, "special_attack": 30, "special_defence": 30, "speed": 30 }
   },
   "taillow": {
+    "baseExp": 59,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/taillow_back.png",
       "front": "assets/sprite/pokemon/front/taillow_front.png"
@@ -81,6 +110,8 @@
     "stats": { "hp": 40, "attack": 55, "defence": 30, "special_attack": 30, "special_defence": 30, "speed": 85 }
   },
   "wingull": {
+    "baseExp": 64,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/wingull_back.png",
       "front": "assets/sprite/pokemon/front/wingull_front.png"
@@ -90,6 +121,8 @@
     "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 55, "special_defence": 30, "speed": 85 }
   },
   "ralts": {
+    "baseExp": 70,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/ralts_back.png",
       "front": "assets/sprite/pokemon/front/ralts_front.png"
@@ -99,6 +132,8 @@
     "stats": { "hp": 28, "attack": 25, "defence": 25, "special_attack": 45, "special_defence": 35, "speed": 40 }
   },
   "shroomish": {
+    "baseExp": 65,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/shroomish_back.png",
       "front": "assets/sprite/pokemon/front/shroomish_front.png"
@@ -108,6 +143,8 @@
     "stats": { "hp": 60, "attack": 40, "defence": 60, "special_attack": 40, "special_defence": 60, "speed": 35 }
   },
   "abra": {
+    "baseExp": 73,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/abra_back.png",
       "front": "assets/sprite/pokemon/front/abra_front.png"
@@ -117,6 +154,8 @@
     "stats": { "hp": 25, "attack": 20, "defence": 15, "special_attack": 105, "special_defence": 55, "speed": 90 }
   },
   "makuhita": {
+    "baseExp": 87,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/makuhita_back.png",
       "front": "assets/sprite/pokemon/front/makuhita_front.png"
@@ -126,6 +165,8 @@
     "stats": { "hp": 72, "attack": 60, "defence": 30, "special_attack": 20, "special_defence": 30, "speed": 25 }
   },
   "zubat": {
+    "baseExp": 54,
+    "evolution": null,
     "sprites": {
       "back": "assets/sprite/pokemon/back/zubat_back.png",
       "front": "assets/sprite/pokemon/front/zubat_front.png"
