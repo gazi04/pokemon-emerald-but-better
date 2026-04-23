@@ -3,19 +3,23 @@ from functools import lru_cache
 
 PLAYER_FILE = "data/player.json"
 
+
 def loadPlayer():
     with open(PLAYER_FILE, "r") as f:
         return json.load(f)
 
+
 def savePlayer(data):
     with open(PLAYER_FILE, "w") as f:
         json.dump(data, f, indent=4)
-        
+
+
 def getTeamPokemon(player_data, name):
     for p in player_data["pokemons"]:
         if p["name"] == name:
             return p
     return None
+
 
 @lru_cache(maxsize=1)
 def getPokemon():
@@ -24,20 +28,19 @@ def getPokemon():
 
     return poke
 
+
 def getPlayersPokemon():
     pokemons = loadPlayer()["pokemons"]
-    
+
     allPokemons = getPokemon()
     result = []
-    
+
     for p in pokemons:
-        merged = {
-            **p,
-            **allPokemons[p["name"]]
-        }
+        merged = {**p, **allPokemons[p["name"]]}
         result.append(merged)
-    
+
     return result
+
 
 def updateHp(name, newHp):
     data = loadPlayer()
@@ -47,7 +50,8 @@ def updateHp(name, newHp):
         pokemon["hp"] = max(0, newHp)
 
     savePlayer(data)
-    
+
+
 def updateMove(name, moves):
     data = loadPlayer()
     pokemon = getTeamPokemon(data, name.lower())
@@ -59,17 +63,19 @@ def updateMove(name, moves):
 
     savePlayer(data)
 
-def updateLevel(name, level, exp, evolvedName = None):
+
+def updateLevel(name, level, exp, evolvedName=None):
     data = loadPlayer()
     pokemon = getTeamPokemon(data, name.lower())
-    
+
     pokemon["level"] = level
     pokemon["exp"] = exp
-    
+
     if evolvedName:
         pokemon["name"] = evolvedName
-    
+
     savePlayer(data)
+
 
 def getConfigs():
     with open("data/config.json", "r") as f:

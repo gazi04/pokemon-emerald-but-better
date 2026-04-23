@@ -37,11 +37,11 @@ class OverworldView(arcade.View):
             map or CONFIG.game.starting_map, scaling=2.0
         )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
-        
+
         if playerPos:
             self.player.center_x = playerPos[0]
             self.player.center_y = playerPos[1]
-        
+
         self.camera = arcade.Camera2D()
 
     def on_update(self, delta_time):
@@ -72,17 +72,17 @@ class OverworldView(arcade.View):
             self.scene["collision"],
             self.scene["bush"],
             self.scene["transitions"],
-            CONFIG.controls
+            CONFIG.controls,
         )
 
         if result:
             type = result["type"]
-            
+
             if type == "encounter":
                 name, data, level = result["name"], result["data"], result["level"]
                 self.startBattle(name, level, data)
             elif type == "transition":
-                path = f"assets/map/{result["map"]}.tmx"
+                path = f"assets/map/{result['map']}.tmx"
                 self.player.map = result["map"]
                 self.setup(path, [result["x"], result["y"]])
 

@@ -78,7 +78,9 @@ class Player(arcade.Sprite):
         self.move_progress = 0.0
         self.move_duration = 0.2  # Pokémon-like speed
 
-    def update(self, delta_time, keys, collision_tiles, bush, transitions, controlsConfig):
+    def update(
+        self, delta_time, keys, collision_tiles, bush, transitions, controlsConfig
+    ):
         # ====================== MOVEMENT ======================
         if self.moving:
             self.move_progress += delta_time / self.move_duration
@@ -88,12 +90,10 @@ class Player(arcade.Sprite):
 
             # Tile-perfect movement
             self.center_x = (
-                self.start_x + (self.target_x - self.start_x) *
-                self.move_progress
+                self.start_x + (self.target_x - self.start_x) * self.move_progress
             )
             self.center_y = (
-                self.start_y + (self.target_y - self.start_y) *
-                self.move_progress
+                self.start_y + (self.target_y - self.start_y) * self.move_progress
             )
 
             # Animation synced to movement
@@ -110,12 +110,14 @@ class Player(arcade.Sprite):
                 hit_bush = arcade.get_sprites_at_point(
                     (self.center_x, self.center_y), bush
                 )
-                
+
                 if hit_bush:
                     if random.random() < 0.15:
                         pokemonList = getEnc()[self.map]["grass"]
 
-                        pokemon = random.choices(pokemonList, weights=[p["weight"] for p in pokemonList])[0]
+                        pokemon = random.choices(
+                            pokemonList, weights=[p["weight"] for p in pokemonList]
+                        )[0]
                         pokemon_data = getPokemon()[pokemon["name"]]
                         pokemon_lvl = random.randint(
                             pokemon["levels"][0], pokemon["levels"][1]
@@ -124,7 +126,7 @@ class Player(arcade.Sprite):
                             "type": "encounter",
                             "name": pokemon["name"],
                             "data": pokemon_data,
-                            "level": pokemon_lvl
+                            "level": pokemon_lvl,
                         }
 
         # ====================== INPUT ======================
@@ -145,11 +147,11 @@ class Player(arcade.Sprite):
                 self.direction = new_dir
                 target_x = self.center_x + dx
                 target_y = self.center_y + dy
-                
+
                 hitTransitions = arcade.get_sprites_at_point(
                     (target_x, target_y), transitions
                 )
-                
+
                 if hitTransitions:
                     # print(target_x, target_y)
                     return {
@@ -179,7 +181,6 @@ class Player(arcade.Sprite):
                     self.texture = self.idle_textures[self.direction]
 
         return None
-
 
     def draw(self):
         arcade.draw_sprite(self)
