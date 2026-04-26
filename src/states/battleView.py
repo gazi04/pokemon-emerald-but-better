@@ -90,21 +90,21 @@ class BattleView(arcade.View):
             current_layer = self.tilemap.get_tilemap_layer(layer_name)
 
             for obj in current_layer.tiled_objects:
-                obj_w = int(obj.size.width / 32)
-                obj_h = int(obj.size.height / 32)
+                w = int(obj.size.width / 32)
+                h = int(obj.size.height / 32)
 
-                arc_x = int(obj.coordinates.x / 32)
-                arc_y = int((raw_map_height - obj.coordinates.y) / 32)
+                x = int(obj.coordinates.x / 32)
+                y = int((raw_map_height - obj.coordinates.y) / 32)
 
                 # --- UI TEXTURES (Buttons/Frames) ---
                 if obj.name == "background":
                     sprite = arcade.load_texture("assets/ui/battle/background.png")
 
                     self.background = arcade.gui.UIImage(
-                        x=arc_x,
-                        y=arc_y,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
                         texture=sprite,
                     )
                     self.manager.add(self.background)
@@ -112,10 +112,10 @@ class BattleView(arcade.View):
                     sprite = arcade.load_texture("assets/ui/battle/battlePlatform.png")
 
                     self.playerPlatform = arcade.gui.UIImage(
-                        x=arc_x,
-                        y=arc_y,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
                         texture=sprite,
                     )
                     self.manager.add(self.playerPlatform)
@@ -123,17 +123,17 @@ class BattleView(arcade.View):
                     sprite = arcade.load_texture("assets/ui/battle/battlePlatform.png")
 
                     self.enemyPlatform = arcade.gui.UIImage(
-                        x=arc_x,
-                        y=arc_y,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
                         texture=sprite,
                     )
                     self.manager.add(self.enemyPlatform)
                 elif obj.name == "dialogBox":
                     sprite = arcade.load_texture("assets/ui/battle/dialogbox.png")
                     self.dialogBox = arcade.gui.UIImage(
-                        x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
+                        x=x, y=y, width=w, height=h, texture=sprite
                     )
                     self.main_menu_container.add(self.dialogBox)
                     self.dialog_menu_container.add(self.dialogBox)
@@ -141,14 +141,14 @@ class BattleView(arcade.View):
                 elif obj.name == "box":
                     sprite = arcade.load_texture("assets/ui/battle/box.png")
                     self.box = arcade.gui.UITextureButton(
-                        x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
+                        x=x, y=y, width=w, height=h, texture=sprite
                     )
                     self.main_menu_container.add(self.box)
 
                 elif obj.name == "fight":
                     sprite = arcade.load_texture("assets/ui/battle/fightButton.png")
                     fightBtn = arcade.gui.UITextureButton(
-                        x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
+                        x=x, y=y, width=w, height=h, texture=sprite
                     )
                     fightBtn.on_click = lambda event: self.switchMenu("moves")
 
@@ -157,7 +157,7 @@ class BattleView(arcade.View):
                 elif obj.name == "run":
                     sprite = arcade.load_texture("assets/ui/battle/runButton.png")
                     runBtn = arcade.gui.UITextureButton(
-                        x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
+                        x=x, y=y, width=w, height=h, texture=sprite
                     )
                     runBtn.on_click = lambda event: self.run()
                     self.main_menu_container.add(runBtn)
@@ -165,17 +165,17 @@ class BattleView(arcade.View):
                 elif obj.name == "pokemon":
                     sprite = arcade.load_texture("assets/ui/battle/pokemonButton.png")
                     self.pokemonBtn = arcade.gui.UITextureButton(
-                        x=arc_x, y=arc_y, width=obj_w, height=obj_h, texture=sprite
+                        x=x, y=y, width=w, height=h, texture=sprite
                     )
                     self.main_menu_container.add(self.pokemonBtn)
 
                 elif obj.name == "bag":
                     sprite = arcade.load_texture("assets/ui/battle/bagButton.png")
                     self.bagBtn = arcade.gui.UITextureButton(
-                        x=arc_x,
-                        y=arc_y,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
                         texture=sprite,
                         texture_hovered=sprite,
                         texture_pressed=sprite,
@@ -184,10 +184,10 @@ class BattleView(arcade.View):
 
                 if obj.name == "move1":
                     self.moveBtn1 = arcade.gui.UIFlatButton(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         style=move_button_style,
                         bg=(255, 255, 255, 255),
                     )
@@ -195,30 +195,30 @@ class BattleView(arcade.View):
 
                 if obj.name == "move2":
                     self.moveBtn2 = arcade.gui.UIFlatButton(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         style=move_button_style,
                     )
                     self.move_menu_container.add(self.moveBtn2)
 
                 if obj.name == "move3":
                     self.moveBtn3 = arcade.gui.UIFlatButton(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         style=move_button_style,
                     )
                     self.move_menu_container.add(self.moveBtn3)
 
                 if obj.name == "move4":
                     self.moveBtn4 = arcade.gui.UIFlatButton(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         style=move_button_style,
                     )
                     self.move_menu_container.add(self.moveBtn4)
@@ -227,10 +227,10 @@ class BattleView(arcade.View):
                     sprite = arcade.load_texture("assets/ui/battle/movesBox.png")
                     self.move_menu_container.add(
                         arcade.gui.UIImage(
-                            x=arc_x,
-                            y=arc_y,
-                            width=obj_w,
-                            height=obj_h,
+                            x=x,
+                            y=y,
+                            width=w,
+                            height=h,
                             texture=sprite,
                             texture_hovered=sprite,
                             texture_pressed=sprite,
@@ -240,10 +240,10 @@ class BattleView(arcade.View):
                 elif obj.name == "player_hp_widget":
                     sprite = arcade.load_texture("assets/ui/battle/playerHpBar.png")
                     self.player_hp_widget = arcade.gui.UIImage(
-                        x=arc_x,
-                        y=arc_y,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
                         texture=sprite,
                         texture_hovered=sprite,
                         texture_pressed=sprite,
@@ -253,10 +253,10 @@ class BattleView(arcade.View):
                 elif obj.name == "enemy_hp_widget":
                     sprite = arcade.load_texture("assets/ui/battle/enemyHpBar.png")
                     self.enemy_hp_widget = arcade.gui.UIImage(
-                        x=arc_x,
-                        y=arc_y,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
                         texture=sprite,
                         texture_hovered=sprite,
                         texture_pressed=sprite,
@@ -267,8 +267,8 @@ class BattleView(arcade.View):
                 elif obj.name == "player_name":
                     self.player_name_label = arcade.gui.UILabel(
                         text=self.your_pokemon.name.upper(),
-                        x=arc_x,
-                        y=arc_y - obj_h,
+                        x=x,
+                        y=y - h,
                         text_color=arcade.color.BLACK,
                         font_name="Pokemon Emerald",
                         font_size=25,
@@ -278,8 +278,8 @@ class BattleView(arcade.View):
                 elif obj.name == "player_lvl":
                     self.player_lvl_label = arcade.gui.UILabel(
                         text=f"Lv{self.your_pokemon.level}",
-                        x=arc_x,
-                        y=arc_y - obj_h,
+                        x=x,
+                        y=y - h,
                         text_color=arcade.color.BLACK,
                         font_name="Pokemon Emerald",
                         font_size=25,
@@ -289,8 +289,8 @@ class BattleView(arcade.View):
                 elif obj.name == "enemy_name":
                     self.enemy_name_label = arcade.gui.UILabel(
                         text=self.enemy_pokemon.name.upper(),
-                        x=arc_x,
-                        y=arc_y - obj_h,
+                        x=x,
+                        y=y - h,
                         text_color=arcade.color.BLACK,
                         font_name="Pokemon Emerald",
                         font_size=25,
@@ -300,8 +300,8 @@ class BattleView(arcade.View):
                 elif obj.name == "enemy_lvl":
                     self.enemy_lvl_label = arcade.gui.UILabel(
                         text=f"Lv{self.enemy_pokemon.level}",
-                        x=arc_x,
-                        y=arc_y - obj_h,
+                        x=x,
+                        y=y - h,
                         text_color=arcade.color.BLACK,
                         font_name="Pokemon Emerald",
                         font_size=25,
@@ -310,10 +310,10 @@ class BattleView(arcade.View):
 
                 elif obj.name == "maxPP":
                     self.maxPP = arcade.gui.UILabel(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         text_color=arcade.color.BLACK,
                         font_name="Pokemon Emerald",
                         font_size=25,
@@ -322,10 +322,10 @@ class BattleView(arcade.View):
 
                 elif obj.name == "currentPP":
                     self.currPP = arcade.gui.UILabel(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         text_color=arcade.color.BLACK,
                         font_name="Pokemon Emerald",
                         font_size=25,
@@ -334,10 +334,10 @@ class BattleView(arcade.View):
 
                 elif obj.name == "type":
                     self.type = arcade.gui.UILabel(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         text_color=arcade.color.BLACK,
                         font_name="Pokemon Emerald",
                         font_size=25,
@@ -346,12 +346,12 @@ class BattleView(arcade.View):
 
                 if obj.name == "dialog":
                     self.dialog = arcade.gui.UILabel(
-                        x=arc_x,
-                        y=arc_y - obj_h,
-                        width=obj_w,
-                        height=obj_h,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
                         text_color=arcade.color.WHITE,
-                        font_name="Pokemon Emerald",
+                        font_name="",
                         font_size=25,
                         align="left",
                     )
@@ -361,26 +361,26 @@ class BattleView(arcade.View):
                 # --- HP BAR FILL AREAS ---
                 elif obj.name == "player_hp_fill":
                     self.hp_bars["player"] = {
-                        "x": arc_x,
-                        "y": arc_y - obj_h,
-                        "w": obj_w,
-                        "h": obj_h,
+                        "x": x,
+                        "y": y - h,
+                        "w": w,
+                        "h": h,
                     }
 
                 elif obj.name == "enemy_hp_fill":
                     self.hp_bars["enemy"] = {
-                        "x": arc_x,
-                        "y": arc_y - obj_h,
-                        "w": obj_w,
-                        "h": obj_h,
+                        "x": x,
+                        "y": y - h,
+                        "w": w,
+                        "h": h,
                     }
 
                 elif obj.name == "player_xp_fill":
                     self.expBar = {
-                        "x": arc_x,
-                        "y": arc_y - obj_h,
-                        "w": obj_w,
-                        "h": obj_h,
+                        "x": x,
+                        "y": y - h,
+                        "w": w,
+                        "h": h,
                     }
 
         self.switchMenu("main")
