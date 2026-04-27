@@ -4,6 +4,7 @@ from src.entities.pokemon import Pokemon
 from src.util import getAMove, getPlayersPokemon, updateHp, updateMove, updateLevel
 import random
 from data.config import Config
+from src.states.evolvingView import EvolvingView
 
 CONFIG = Config.load()
 
@@ -351,7 +352,7 @@ class BattleView(arcade.View):
                         width=w,
                         height=h,
                         text_color=arcade.color.WHITE,
-                        font_name="",
+                        font_name="Pokemon Emerald",
                         font_size=25,
                         align="left",
                     )
@@ -517,12 +518,12 @@ class BattleView(arcade.View):
 
         attacker_key, move_idx = self.turn_queue.pop(0)
 
-        if attacker_key == "player":
+        if attacker_key == "player" and self.your_pokemon.current_hp > 0:
             move_name = self.your_pokemon.moves[move_idx]["name"]
             self.messageQueue.append(f"{self.your_pokemon.name} used {move_name}!")
             result = self.your_pokemon.useMove(move_idx, self.enemy_pokemon)
             self.messageQueue.extend(result)
-        else:
+        elif attacker_key == "enemy" and self.enemy_pokemon.current_hp > 0:
             move_name = self.enemy_pokemon.moves[move_idx]["name"]
             self.messageQueue.append(f"Foe {self.enemy_pokemon.name} used {move_name}!")
             result = self.enemy_pokemon.useMove(move_idx, self.your_pokemon)
@@ -547,6 +548,9 @@ class BattleView(arcade.View):
                 if self.exp > 0:
                     result = self.your_pokemon.gainExp(self.exp)
                     self.exp = 0
+                    
+                    if not result["isLeveledUp"] and not result["evolve"]["hasEvolved"]:
+                        self.run()
 
                     if result["isLeveledUp"]:
                         self.player_lvl_label = f"Lv{self.your_pokemon.level}"
@@ -561,13 +565,8 @@ class BattleView(arcade.View):
 
                     if result["evolve"]["hasEvolved"]:
                         self.hasEvolved = True
-                        self.messageQueue.extend(
-                            [
-                                f"{self.your_pokemon.name} is evoling!!!",
-                                f"{self.your_pokemon.name} is evolved into {result['evolve']['to']}",
-                            ]
-                        )
-                        self.isProcessingText = True
+                        self.save()
+                        self.window.show_view(EvolvingView(self.overworld_view, self.your_pokemon.name.lower(), result["evolve"]["to"]))
                 else:
                     self.run()
 
@@ -761,6 +760,9 @@ class BattleView(arcade.View):
 
     def run(self):
         self.window.show_view(self.overworld_view)
+        self.save()
+    
+    def save(self):
         updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
         updateMove(self.your_pokemon.name, self.your_pokemon.moves)
         if not self.hasEvolved:

@@ -162,6 +162,11 @@ class EvolvingView(arcade.View):
         self.pokemon2.height = 200
         self.targetText = "Congratulations! It evolved!"
         self.currentText = ""
+        
+        arcade.schedule_once(self.end, 1.5)
+        
+    def end(self, dt):
+        self.window.show_view(self.overworld)
     
 if __name__ == "__main__":
     window = arcade.Window(
