@@ -15,7 +15,7 @@ class EvolvingView(arcade.View):
         self.manager.enable()
         self.manager._pixelated = True
         
-        self.targetText = f"What? {pokemon.capitalize()} is evolving!"
+        self.targetText = ""
         self.currentText = ""
         self.textDelayTimer = 0
         
@@ -35,13 +35,15 @@ class EvolvingView(arcade.View):
                     texture=arcade.load_texture("assets/ui/battle/dialogBox.png"),
                 ))
             elif obj.name == "background":
-                self.manager.add(arcade.gui.UIImage(
+                self.background = arcade.gui.UIImage(
                     x=x,
                     y=y,
                     width=w,
                     height=h,
                     texture=arcade.load_texture("assets/ui/battle/background.png"),
-                ))
+                )
+                
+                self.manager.add(self.background)
             elif obj.name == "text":
                 self.dialogText = arcade.gui.UILabel(
                     text="TEST",
@@ -75,12 +77,26 @@ class EvolvingView(arcade.View):
                 )
                 
                 self.manager.add(self.pokemon2)
-                
+        
         self.anim_timer = 0
         self.pulse_speed = 5  
-        self.is_evolving = True
+        self.is_evolving = False
         self.pokemon2.visible = False
         self.whichPokemon = False
+        
+        self.fadeTime = 2
+        self.duration = 1
+        self.fadeOutBackground = False
+        self.fadeInBackground = False
+        
+        self.transition(pokemon.capitalize())
+    
+    def transition(self, pokemonName):
+        self.targetText = f"What? {pokemonName} is evolving!"
+        self.currentText = ""
+        
+        arcade.schedule_once(lambda dt: setattr(self, 'fadeOutBackground', True), 0.7)
+        arcade.schedule_once(lambda dt: setattr(self, 'is_evolving', True), 2.7)
     
     def on_draw(self):
         self.clear()
@@ -91,22 +107,39 @@ class EvolvingView(arcade.View):
     def on_update(self, delta_time):
         self.textDelayTimer += delta_time
         
+        if self.fadeOutBackground:
+            self.fadeTime -= delta_time
+            self.fadeTime = max(0, self.fadeTime)
+            t = 1 - (self.fadeTime / self.duration)
+            
+            fade = 1 - (1 - (1 - t) * (1 - t))
+            self.background.alpha = 255 * fade
+            
+        if self.fadeInBackground:
+            self.fadeTime -= delta_time
+            self.fadeTime = max(0, self.fadeTime)
+            t = 1 - (self.fadeTime / self.duration)
+            
+            fade = 1 - (1 - t) * (1 - t)
+            self.background.alpha = 255 * fade
+          
         if self.is_evolving:
             self.anim_timer += delta_time
             self.pulse_speed += delta_time * 2 
             
             scale = abs(math.sin(self.anim_timer * self.pulse_speed)) + 0.3
+            size = 200 * scale
             
             if math.sin(self.anim_timer * self.pulse_speed) > 0:
                 self.pokemon1.visible = True
                 self.pokemon2.visible = False
-                self.pokemon1.width = 200 * scale
-                self.pokemon1.height = 200 * scale
+                self.pokemon1.width = size
+                self.pokemon1.height = size
             else:
                 self.pokemon1.visible = False
                 self.pokemon2.visible = True
-                self.pokemon2.width = 200 * scale
-                self.pokemon2.height = 200 * scale
+                self.pokemon2.width = size
+                self.pokemon2.height = size
 
             if self.pulse_speed > 25: 
                 self.finish_evolution()
@@ -120,6 +153,9 @@ class EvolvingView(arcade.View):
             
     def finish_evolution(self):
         self.is_evolving = False
+        self.fadeInBackground = True
+        self.fadeTime = 2
+        
         self.pokemon1.visible = False
         self.pokemon2.visible = True
         self.pokemon2.width = 200 
