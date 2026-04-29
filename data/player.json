@@ -4,7 +4,7 @@
             "name": "combusken",
             "hp": 33,
             "level": 16,
-            "exp": 21,
+            "exp": 46,
             "moves": [
                 {
                     "name": "close combat",
@@ -12,7 +12,7 @@
                 },
                 {
                     "name": "tackle",
-                    "pp": 12
+                    "pp": 10
                 }
             ]
         }

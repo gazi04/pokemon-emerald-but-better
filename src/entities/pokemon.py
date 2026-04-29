@@ -239,16 +239,15 @@ class Pokemon(arcade.Sprite):
 
         while self.exp >= self.expNeeded():
             self.exp -= self.expNeeded()
+            self.current_hp = self.max_hp
             self.levelUp()
-
-        self.current_hp = self.max_hp
 
         hasEvolved = self.evolution and self.evolution["level"] == self.level
 
         return {
             "isLeveledUp": self.level > old_level,
             "statsHistory": [old_stats, self.stats.copy()],
-            "evolve": {"hasEvolved": hasEvolved, "to": self.evolution["to"]},
+            "evolve": {"hasEvolved": hasEvolved, "to": "" if not self.evolution else self.evolution["to"]},
         }
 
     def levelUp(self):

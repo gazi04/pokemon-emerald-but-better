@@ -14,8 +14,8 @@
     "baseExp": 62,
     "evolution": { "to": "combusken", "level": 16 },
     "sprites": {
-      "back": "assets/sprite/pokemon/back/trochip_back.png",
-      "front": "assets/sprite/pokemon/front/torchip_front.png"
+      "back": "assets/sprite/pokemon/back/torchic_back.png",
+      "front": "assets/sprite/pokemon/front/torchic_front.png"
     },
     "abilities": ["blaze"],
     "types": ["fire"],

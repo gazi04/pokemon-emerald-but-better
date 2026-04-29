@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="3" nextobjectid="6">
+ <tileset firstgid="1" source="battle/battleUI.tsx"/>
+ <objectgroup id="2" name="ui">
+  <object id="2" name="background" gid="5" x="0.666667" y="431.667" width="800" height="434.5"/>
+  <object id="1" name="dialogBox" gid="2" x="0.666667" y="601" width="799.333" height="175"/>
+  <object id="3" name="pokemon2" gid="12" x="306.424" y="323.879" width="162" height="162"/>
+  <object id="4" name="pokemon1" gid="12" x="306.424" y="323.879" width="162" height="162"/>
+  <object id="5" name="text" x="49.8939" y="469.409" width="705" height="83">
+   <text wrap="1">Hello World</text>
+  </object>
+ </objectgroup>
+</map>
