@@ -247,7 +247,10 @@ class Pokemon(arcade.Sprite):
         return {
             "isLeveledUp": self.level > old_level,
             "statsHistory": [old_stats, self.stats.copy()],
-            "evolve": {"hasEvolved": hasEvolved, "to": "" if not self.evolution else self.evolution["to"]},
+            "evolve": {
+                "hasEvolved": hasEvolved,
+                "to": "" if not self.evolution else self.evolution["to"],
+            },
         }
 
     def levelUp(self):

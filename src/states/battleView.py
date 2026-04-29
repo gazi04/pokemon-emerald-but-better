@@ -548,7 +548,7 @@ class BattleView(arcade.View):
                 if self.exp > 0:
                     result = self.your_pokemon.gainExp(self.exp)
                     self.exp = 0
-                    
+
                     if not result["isLeveledUp"] and not result["evolve"]["hasEvolved"]:
                         self.run()
 
@@ -566,7 +566,13 @@ class BattleView(arcade.View):
                     if result["evolve"]["hasEvolved"]:
                         self.hasEvolved = True
                         self.save()
-                        self.window.show_view(EvolvingView(self.overworld_view, self.your_pokemon.name.lower(), result["evolve"]["to"]))
+                        self.window.show_view(
+                            EvolvingView(
+                                self.overworld_view,
+                                self.your_pokemon.name.lower(),
+                                result["evolve"]["to"],
+                            )
+                        )
                 else:
                     self.run()
 
@@ -761,7 +767,7 @@ class BattleView(arcade.View):
     def run(self):
         self.window.show_view(self.overworld_view)
         self.save()
-    
+
     def save(self):
         updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
         updateMove(self.your_pokemon.name, self.your_pokemon.moves)
