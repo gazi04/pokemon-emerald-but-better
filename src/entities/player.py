@@ -2,6 +2,7 @@ import arcade
 import random
 from src.util import getPokemon
 from src.util import getEnc
+from src.constants import TILE_SIZE, ENCOUNTER_RATE, MOVE_DURATION
 
 
 class Player(arcade.Sprite):
@@ -65,8 +66,8 @@ class Player(arcade.Sprite):
         self.direction = "down"
         self.texture = self.idle_textures[self.direction]
 
-        self.center_x = x * 32 + 16
-        self.center_y = y * 32 + 16
+        self.center_x = x * TILE_SIZE + TILE_SIZE // 2
+        self.center_y = y * TILE_SIZE + TILE_SIZE // 2
 
         self.target_x = self.center_x
         self.target_y = self.center_y
@@ -76,7 +77,7 @@ class Player(arcade.Sprite):
 
         self.moving = False
         self.move_progress = 0.0
-        self.move_duration = 0.2  # Pokémon-like speed
+        self.move_duration = MOVE_DURATION
 
     def update(
         self, delta_time, keys, collision_tiles, bush, transitions, controlsConfig
@@ -112,7 +113,7 @@ class Player(arcade.Sprite):
                 )
 
                 if hit_bush:
-                    if random.random() < 0.15:
+                    if random.random() < ENCOUNTER_RATE:
                         pokemonList = getEnc()[self.map]["grass"]
 
                         pokemon = random.choices(
@@ -135,13 +136,13 @@ class Player(arcade.Sprite):
             dx = dy = 0
 
             if self.is_pressed(controlsConfig.up, keys):
-                new_dir, dy = "up", 32
+                new_dir, dy = "up", TILE_SIZE
             elif self.is_pressed(controlsConfig.down, keys):
-                new_dir, dy = "down", -32
+                new_dir, dy = "down", -TILE_SIZE
             elif self.is_pressed(controlsConfig.left, keys):
-                new_dir, dx = "left", -32
+                new_dir, dx = "left", -TILE_SIZE
             elif self.is_pressed(controlsConfig.right, keys):
-                new_dir, dx = "right", 32
+                new_dir, dx = "right", TILE_SIZE
 
             if new_dir:
                 self.direction = new_dir
