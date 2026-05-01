@@ -79,6 +79,10 @@ class BattleView(arcade.View):
         self.isProcessingText = False
 
         self.hp_bars = {}
+        self.bagBtn = None
+        self.fightBtn = None
+        self.pokemonBtn = None
+        self.runBtn = None
 
         raw_map_height = (
             self.tilemap.tiled_map.map_size.height
@@ -395,7 +399,7 @@ class BattleView(arcade.View):
         self.active_menu = "main"
         self.selection_index = 0
 
-        self.main_buttons = [fightBtn, self.bagBtn, self.pokemonBtn, runBtn]
+        self.main_buttons = [self.fightBtn, self.bagBtn, self.pokemonBtn, self.runBtn]
         self.move_buttons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
 
         self.turn_queue = []
