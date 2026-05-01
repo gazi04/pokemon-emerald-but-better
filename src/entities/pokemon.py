@@ -223,7 +223,7 @@ class Pokemon(arcade.Sprite):
         text = []
 
         if self.statusEffect == "poison":
-            damage = self.max_hp / 12.5
+            damage = self.max_hp // 12.5
             self.takeDamage(damage)
             text.append(f"{self.name} is hurt by poison!")
 
