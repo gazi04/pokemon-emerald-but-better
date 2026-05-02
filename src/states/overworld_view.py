@@ -17,9 +17,7 @@ class OverworldView(arcade.View):
 
         arcade.load_font("assets/fonts/pokemon-emerald.otf")
 
-        self.player = Player(
-            x=CONFIG.game.starting_tile_x, y=CONFIG.game.starting_tile_y
-        )
+        self.player = Player()
 
         self.keys = set()
         self.camera = None
@@ -29,9 +27,15 @@ class OverworldView(arcade.View):
         self.max_transition_time = 0.8
         self.canRenderScene = True
         self.flickerInterval = 0.05
-
+        
         self.setup()
-
+        
+        print(self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates)
+        position = self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
+        
+        self.player.teleportPlayer(position.x, position.y)
+        
+        
     def setup(self, map=None, playerPos=None):
         self.tile_map = arcade.tilemap.load_tilemap(
             map or CONFIG.game.starting_map, scaling=2.0
@@ -63,7 +67,7 @@ class OverworldView(arcade.View):
             return
 
         self.camera.position = arcade.math.lerp_2d(
-            self.camera.position, self.player.getPosition(), 0.5
+            self.camera.position, self.player.getPosition(), 0.2
         )
 
         result = self.player.update(
