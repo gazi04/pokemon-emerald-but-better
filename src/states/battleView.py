@@ -152,20 +152,20 @@ class BattleView(arcade.View):
 
                 elif obj.name == "fight":
                     sprite = arcade.load_texture("assets/ui/battle/fightButton.png")
-                    fightBtn = arcade.gui.UITextureButton(
+                    self.fightBtn = arcade.gui.UITextureButton(
                         x=x, y=y, width=w, height=h, texture=sprite
                     )
-                    fightBtn.on_click = lambda event: self.switchMenu("moves")
+                    self.fightBtn.on_click = lambda event: self.switchMenu("moves")
 
-                    self.main_menu_container.add(fightBtn)
+                    self.main_menu_container.add(self.fightBtn)
 
                 elif obj.name == "run":
                     sprite = arcade.load_texture("assets/ui/battle/runButton.png")
-                    runBtn = arcade.gui.UITextureButton(
+                    self.runBtn = arcade.gui.UITextureButton(
                         x=x, y=y, width=w, height=h, texture=sprite
                     )
-                    runBtn.on_click = lambda event: self.run()
-                    self.main_menu_container.add(runBtn)
+                    self.runBtn.on_click = lambda event: self.run()
+                    self.main_menu_container.add(self.runBtn)
 
                 elif obj.name == "pokemon":
                     sprite = arcade.load_texture("assets/ui/battle/pokemonButton.png")
@@ -387,6 +387,15 @@ class BattleView(arcade.View):
                         "w": w,
                         "h": h,
                     }
+
+        self.cursor_text = arcade.Text(
+            "▶",
+            0, 0, # Start at 0,0
+            arcade.color.BLACK,
+            font_size=24,
+            anchor_y="center",
+            font_name="Pokemon Emerald"
+        )
 
         self.switchMenu("main")
         self.updateUiMoves()
@@ -652,15 +661,10 @@ class BattleView(arcade.View):
             )
             active_btn = current_list[self.selection_index]
 
-            arcade.draw_text(
-                "▶",
-                active_btn.rect.left - 10,
-                active_btn.rect.center_y,
-                arcade.color.BLACK,
-                font_size=24,
-                anchor_y="center",
-                font_name="Pokemon Emerald",
-            )
+            self.cursor_text.x = active_btn.rect.left - 10
+            self.cursor_text.y = active_btn.rect.center_y
+                
+            self.cursor_text.draw()
 
     def on_update(self, delta_time):
         if self.isSliding:
