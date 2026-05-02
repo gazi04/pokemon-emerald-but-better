@@ -184,13 +184,8 @@ class Player(arcade.Sprite):
         return None
 
     def teleportPlayer(self, x, y):
-        self.center_x = x + x + TILE_SIZE
-        self.center_y = MAP_HEIGHT - y + TILE_SIZE
-        
-        self.target_x = self.center_x
-        self.target_y = self.center_y
-        self.start_x = self.center_x
-        self.start_y = self.center_y
+        self.left = x + x + TILE_SIZE
+        self.bottom = MAP_HEIGHT - y + TILE_SIZE
         
         print((self.center_x, self.center_y))
 

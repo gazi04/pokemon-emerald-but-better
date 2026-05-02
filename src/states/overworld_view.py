@@ -37,8 +37,15 @@ class OverworldView(arcade.View):
         
         
     def setup(self, map=None, playerPos=None):
+        layer_options = {
+            "collision": {"use_spatial_hash": True},
+            "bush": {"use_spatial_hash": True},
+            "transitions": {"use_spatial_hash": True},
+        }
         self.tile_map = arcade.tilemap.load_tilemap(
-            map or CONFIG.game.starting_map, scaling=2.0
+            map or CONFIG.game.starting_map, 
+            scaling=2.0,
+            layer_options=layer_options
         )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
