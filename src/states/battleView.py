@@ -390,7 +390,7 @@ class BattleView(arcade.View):
 
         self.cursor_text = arcade.Text(
             "▶",
-            0, 0, # Start at 0,0
+            0, 0,
             arcade.color.BLACK,
             font_size=24,
             anchor_y="center",
