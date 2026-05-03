@@ -82,6 +82,7 @@ class Player(arcade.Sprite):
     def update(
         self, delta_time, keys, collision_tiles, bush, transitions, controlsConfig
     ):
+        # print((self.center_x, self.center_y))
         # ====================== MOVEMENT ======================
         if self.moving:
             self.move_progress += delta_time / self.move_duration
@@ -184,8 +185,8 @@ class Player(arcade.Sprite):
         return None
 
     def teleportPlayer(self, x, y):
-        self.left = x + x + TILE_SIZE
-        self.bottom = MAP_HEIGHT - y + TILE_SIZE
+        self.center_x = x * 2
+        self.center_y = y / 2 + 10
         
         print((self.center_x, self.center_y))
 
