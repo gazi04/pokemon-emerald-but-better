@@ -7,6 +7,7 @@ requires-python = ">=3.14"
 dependencies = [
     "arcade>=3.3.3",
     "pydantic>=2.12.5",
+    "pyright>=1.1.409",
 ]
 
 [dependency-groups]
