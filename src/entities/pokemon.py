@@ -11,8 +11,8 @@ class Pokemon(arcade.Sprite):
         moves,
         level=5,
         isEnemy=True,
-        currentHp: int = None,
-        exp: int = None,
+        currentHp: int = 0,
+        exp: int = 0,
     ):
         sprite_path = data["sprites"]["front"] if isEnemy else data["sprites"]["back"]
 
