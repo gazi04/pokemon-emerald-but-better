@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="112" tilecount="12" columns="0">
+<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="13" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="box.png" width="120" height="48"/>
@@ -36,5 +36,8 @@
  </tile>
  <tile id="11">
   <image source="../../sprite/pokemon/question_mark.png" width="72" height="72"/>
+ </tile>
+ <tile id="12">
+  <image source="bagUi.png" width="240" height="160"/>
  </tile>
 </tileset>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="43">
- <tileset firstgid="1" source="battleUI.tsx"/>
+ <tileset firstgid="1" source="sprites/ui.tsx"/>
  <objectgroup id="3" name="background">
   <object id="14" name="background" gid="5" x="-12" y="13848" width="25656" height="13904"/>
   <object id="41" name="enemyPlatform" gid="11" x="12001" y="9808" width="13472" height="3872"/>

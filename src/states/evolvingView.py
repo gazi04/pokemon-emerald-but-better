@@ -34,7 +34,7 @@ class EvolvingView(arcade.View):
                         y=y,
                         width=w,
                         height=h,
-                        texture=arcade.load_texture("assets/ui/battle/dialogBox.png"),
+                        texture=arcade.load_texture("assets/ui/sprites/dialogBox.png"),
                     )
                 )
             elif obj.name == "background":
@@ -43,7 +43,7 @@ class EvolvingView(arcade.View):
                     y=y,
                     width=w,
                     height=h,
-                    texture=arcade.load_texture("assets/ui/battle/background.png"),
+                    texture=arcade.load_texture("assets/ui/sprites/background.png"),
                 )
 
                 self.manager.add(self.background)
@@ -182,6 +182,6 @@ if __name__ == "__main__":
         height=600,
     )
 
-    start_view = EvolvingView(None, "torchip", "combusken")
+    start_view = EvolvingView(None, "combusken", "combusken")
     window.show_view(start_view)
     arcade.run()

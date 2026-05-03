@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="3" nextobjectid="2">
+ <tileset firstgid="1" source="sprites/ui.tsx"/>
+ <objectgroup id="2" name="ui">
+  <object id="1" name="background" gid="13" x="2" y="600" width="798.5" height="600"/>
+ </objectgroup>
+</map>
