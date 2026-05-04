@@ -186,7 +186,7 @@ class Player(arcade.Sprite):
 
     def teleportPlayer(self, x, y):
         self.center_x = x * 2
-        self.center_y = y / 2 + 10
+        self.center_y = y / 2 - 110
         
         print((self.center_x, self.center_y))
 
