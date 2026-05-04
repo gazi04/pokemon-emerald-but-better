@@ -1,6 +1,7 @@
 import arcade
 from src.entities.player import Player
 from src.states.battleView import BattleView
+from src.states.bagView import BagView
 from data.config import Config
 
 CONFIG = Config.load()
@@ -97,6 +98,12 @@ class OverworldView(arcade.View):
 
     def on_key_press(self, key, _):
         self.keys.add(key)
+        
+        if self.isPressed(CONFIG.controls.bag, key):
+            self.window.show_view(BagView(self))
+
+    def isPressed(self, configKey, key):
+        return getattr(arcade.key, configKey, None) == key
 
     def on_key_release(self, key, _):
         self.keys.discard(key)

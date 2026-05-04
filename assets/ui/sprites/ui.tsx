@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="15" columns="0">
+<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="17" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="box.png" width="120" height="48"/>
@@ -45,5 +45,11 @@
  </tile>
  <tile id="14">
   <image source="leftArrow.png" width="9" height="14"/>
+ </tile>
+ <tile id="15">
+  <image source="bagPokeball.png" width="54" height="45"/>
+ </tile>
+ <tile id="16">
+  <image source="bagItem.png" width="54" height="45"/>
  </tile>
 </tileset>

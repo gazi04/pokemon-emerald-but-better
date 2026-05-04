@@ -21,7 +21,7 @@
     "interact": "Z",
     "menu": "X",
     "cancel": "X",
-    "speed_up_text": "SPACE"
+    "bag": "TAB"
   },
   "game": {
     "starting_map": "assets/map/littleroot_town.tmx",
