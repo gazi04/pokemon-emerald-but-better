@@ -16,5 +16,17 @@
                 }
             ]
         }
+    ],
+    "items": [
+        {
+            "name": "potion",
+            "count": 99
+        }
+    ],
+    "pokeballs": [
+        {
+            "name": "pokeball",
+            "count": 99
+        }
     ]
 }

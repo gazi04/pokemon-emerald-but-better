@@ -41,6 +41,31 @@ def getPlayersPokemon():
 
     return result
 
+def getPlayerItems():
+    playerItems = loadPlayer()["items"]
+    
+    with open("data/items.json", "r") as f:
+        allItems = json.load(f)
+        
+    result = []
+    
+    for item in playerItems:
+        result.append({**item, **allItems[item["name"]]})
+    
+    return result
+
+def getPlayerPokeball():
+    playerPokeball = loadPlayer()["pokeballs"]
+    
+    with open("data/items.json", "r") as f:
+        allItems = json.load(f)
+        
+    result = []
+    
+    for item in playerPokeball:
+        result.append({**item, **allItems[item["name"]]})
+    
+    return result
 
 def updateHp(name, newHp):
     data = loadPlayer()
