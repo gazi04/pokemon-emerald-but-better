@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="3" nextobjectid="6">
- <tileset firstgid="1" source="battle/battleUI.tsx"/>
+ <tileset firstgid="1" source="sprites/ui.tsx"/>
  <objectgroup id="2" name="ui">
   <object id="2" name="background" gid="5" x="0.666667" y="431.667" width="800" height="434.5"/>
   <object id="1" name="dialogBox" gid="2" x="0.666667" y="601" width="799.333" height="175"/>

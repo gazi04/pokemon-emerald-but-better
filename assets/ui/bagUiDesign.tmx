@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="4" nextobjectid="8">
+ <tileset firstgid="1" source="sprites/ui.tsx"/>
+ <objectgroup id="2" name="ui">
+  <object id="1" name="background" gid="13" x="2" y="600" width="798.5" height="600"/>
+  <object id="6" name="text" x="17.5" y="388.5" width="326" height="177">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="2" name="section" x="91.5" y="38.5" width="248" height="41">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="3" name="rightArrow" gid="14" x="328" y="84.5" width="32.4" height="50.4"/>
+  <object id="4" name="leftArrow" gid="15" x="74" y="84.5" width="32.4" height="50.4"/>
+  <object id="7" name="bag" gid="16" x="123" y="248" width="162" height="135"/>
+ </objectgroup>
+</map>

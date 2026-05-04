@@ -16,7 +16,7 @@ class BattleView(arcade.View):
         self.overworld_view = overworld_view
 
         self.tilemap = arcade.tilemap.load_tilemap(
-            "assets/ui/battle/battleUiDesign.tmx"
+            "assets/ui/battleUiDesign.tmx"
         )
 
         self.playerPokemon = getPlayersPokemon()
@@ -103,7 +103,7 @@ class BattleView(arcade.View):
 
                 # --- UI TEXTURES (Buttons/Frames) ---
                 if obj.name == "background":
-                    sprite = arcade.load_texture("assets/ui/battle/background.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/background.png")
 
                     self.background = arcade.gui.UIImage(
                         x=x,
@@ -114,7 +114,7 @@ class BattleView(arcade.View):
                     )
                     self.manager.add(self.background)
                 elif obj.name == "playerPlatform":
-                    sprite = arcade.load_texture("assets/ui/battle/battlePlatform.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/battlePlatform.png")
 
                     self.playerPlatform = arcade.gui.UIImage(
                         x=x,
@@ -125,7 +125,7 @@ class BattleView(arcade.View):
                     )
                     self.manager.add(self.playerPlatform)
                 elif obj.name == "enemyPlatform":
-                    sprite = arcade.load_texture("assets/ui/battle/battlePlatform.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/battlePlatform.png")
 
                     self.enemyPlatform = arcade.gui.UIImage(
                         x=x,
@@ -136,7 +136,7 @@ class BattleView(arcade.View):
                     )
                     self.manager.add(self.enemyPlatform)
                 elif obj.name == "dialogBox":
-                    sprite = arcade.load_texture("assets/ui/battle/dialogbox.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/dialogbox.png")
                     self.dialogBox = arcade.gui.UIImage(
                         x=x, y=y, width=w, height=h, texture=sprite
                     )
@@ -144,14 +144,14 @@ class BattleView(arcade.View):
                     self.dialog_menu_container.add(self.dialogBox)
 
                 elif obj.name == "box":
-                    sprite = arcade.load_texture("assets/ui/battle/box.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/box.png")
                     self.box = arcade.gui.UITextureButton(
                         x=x, y=y, width=w, height=h, texture=sprite
                     )
                     self.main_menu_container.add(self.box)
 
                 elif obj.name == "fight":
-                    sprite = arcade.load_texture("assets/ui/battle/fightButton.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/fightButton.png")
                     self.fightBtn = arcade.gui.UITextureButton(
                         x=x, y=y, width=w, height=h, texture=sprite
                     )
@@ -160,7 +160,7 @@ class BattleView(arcade.View):
                     self.main_menu_container.add(self.fightBtn)
 
                 elif obj.name == "run":
-                    sprite = arcade.load_texture("assets/ui/battle/runButton.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/runButton.png")
                     self.runBtn = arcade.gui.UITextureButton(
                         x=x, y=y, width=w, height=h, texture=sprite
                     )
@@ -168,14 +168,14 @@ class BattleView(arcade.View):
                     self.main_menu_container.add(self.runBtn)
 
                 elif obj.name == "pokemon":
-                    sprite = arcade.load_texture("assets/ui/battle/pokemonButton.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/pokemonButton.png")
                     self.pokemonBtn = arcade.gui.UITextureButton(
                         x=x, y=y, width=w, height=h, texture=sprite
                     )
                     self.main_menu_container.add(self.pokemonBtn)
 
                 elif obj.name == "bag":
-                    sprite = arcade.load_texture("assets/ui/battle/bagButton.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/bagButton.png")
                     self.bagBtn = arcade.gui.UITextureButton(
                         x=x,
                         y=y,
@@ -229,7 +229,7 @@ class BattleView(arcade.View):
                     self.move_menu_container.add(self.moveBtn4)
 
                 elif obj.name == "movesBox":
-                    sprite = arcade.load_texture("assets/ui/battle/movesBox.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/movesBox.png")
                     self.move_menu_container.add(
                         arcade.gui.UIImage(
                             x=x,
@@ -243,7 +243,7 @@ class BattleView(arcade.View):
                     )
 
                 elif obj.name == "player_hp_widget":
-                    sprite = arcade.load_texture("assets/ui/battle/playerHpBar.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/playerHpBar.png")
                     self.player_hp_widget = arcade.gui.UIImage(
                         x=x,
                         y=y,
@@ -256,7 +256,7 @@ class BattleView(arcade.View):
                     self.manager.add(self.player_hp_widget)
 
                 elif obj.name == "enemy_hp_widget":
-                    sprite = arcade.load_texture("assets/ui/battle/enemyHpBar.png")
+                    sprite = arcade.load_texture("assets/ui/sprites/enemyHpBar.png")
                     self.enemy_hp_widget = arcade.gui.UIImage(
                         x=x,
                         y=y,

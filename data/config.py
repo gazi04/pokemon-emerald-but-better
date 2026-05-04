@@ -27,7 +27,7 @@ class ControlsConfig(BaseModel):
     interact: str = "Z"
     menu: str = "X"
     cancel: str = "ESCAPE"
-    speed_up_text: str = "SPACE"
+    bag: str = "TAB"
 
 
 class GameConfig(BaseModel):
