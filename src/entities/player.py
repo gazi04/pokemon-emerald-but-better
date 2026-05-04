@@ -2,11 +2,11 @@ import arcade
 import random
 from src.util import getPokemon
 from src.util import getEnc
-from src.constants import TILE_SIZE, ENCOUNTER_RATE, MOVE_DURATION
+from src.constants import TILE_SIZE, ENCOUNTER_RATE, MOVE_DURATION, MAP_HEIGHT
 
 
 class Player(arcade.Sprite):
-    def __init__(self, x: int, y: int):
+    def __init__(self):
         super().__init__(scale=1.9)
 
         # ====================== LOAD TEXTURES ======================
@@ -66,8 +66,8 @@ class Player(arcade.Sprite):
         self.direction = "down"
         self.texture = self.idle_textures[self.direction]
 
-        self.center_x = x * TILE_SIZE + TILE_SIZE // 2
-        self.center_y = y * TILE_SIZE + TILE_SIZE // 2
+        self.center_x = 0
+        self.center_y = 0
 
         self.target_x = self.center_x
         self.target_y = self.center_y
@@ -82,6 +82,7 @@ class Player(arcade.Sprite):
     def update(
         self, delta_time, keys, collision_tiles, bush, transitions, controlsConfig
     ):
+        # print((self.center_x, self.center_y))
         # ====================== MOVEMENT ======================
         if self.moving:
             self.move_progress += delta_time / self.move_duration
@@ -182,6 +183,12 @@ class Player(arcade.Sprite):
                     self.texture = self.idle_textures[self.direction]
 
         return None
+
+    def teleportPlayer(self, x, y):
+        self.center_x = x * 2
+        self.center_y = y / 2 - 110
+        
+        print((self.center_x, self.center_y))
 
     def draw(self):
         arcade.draw_sprite(self)
