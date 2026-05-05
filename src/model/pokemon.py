@@ -1,0 +1,43 @@
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class PokemonStat:
+    hp: int
+    attack: int
+    defence: int
+    special_attack: int
+    special_defence: int
+    speed: int
+
+@dataclass
+class PokemonMove:
+    category: str
+    type: str
+    power: int
+    accuracy: int
+    pp: int
+    effects: list[PokemonMoveEffect]
+    
+@dataclass
+class PokemonMoveEffect:
+    target: str
+    type: str
+    stat: Optional[str] = None
+    change: Optional[str] = None
+    condition: Optional[str] = None
+    chance: Optional[str] = None
+
+@dataclass
+class PokemonSprites:
+    back: str
+    front: str
+
+@dataclass
+class PokemonProfile:
+    baseExp: int
+    evolution: Optional[str] = None
+    sprites: PokemonSprites = None
+    abilities: list[str]
+    types: list[str] = None
+    stats: PokemonStat = None
