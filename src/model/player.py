@@ -28,4 +28,4 @@ class Pokeball:
 class PlayerProfile:
     pokemon: list[PlayerPokemon]
     items: list[Item]
-    pokeball: list[Pokeball]
+    pokeballs: list[Pokeball]
