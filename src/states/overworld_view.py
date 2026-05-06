@@ -31,7 +31,6 @@ class OverworldView(arcade.View):
         
         self.setup()
         
-        print(self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates)
         position = self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
         
         self.player.teleportPlayer(position.x, position.y)

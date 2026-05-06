@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 from src.util import getPlayerItems, getPlayerPokeball
 from data.config import Config
+from src.core.gameContext import saveManager,dataLoader
 
 CONFIG = Config.load()
 
@@ -83,8 +84,8 @@ class BagView(arcade.View):
                 )
                 self.manager.add(self.dialog)
 
-        self.items = getPlayerItems()
-        self.pokeball = getPlayerPokeball()
+        self.items = saveManager.player.items
+        self.pokeball = saveManager.player.pokeballs
 
         self.inventory = self.items
 
@@ -142,9 +143,9 @@ class BagView(arcade.View):
 
             if inventory_index < len(self.inventory):
                 item = self.inventory[inventory_index]
-                name = item["name"].upper()
-                if item["count"] > 0:
-                    display = f"{name:<14} x{item['count']}"
+                name = item.name.upper()
+                if item.count > 0:
+                    display = f"{name:<14} x{item.count}"
                 else:
                     display = name
 
@@ -155,7 +156,7 @@ class BagView(arcade.View):
         index = self.currentIndex - self.topVisibleIndex
         self.cursorLabel.y = self.startY - \
             (index * self.spacing) + (self.spacing / 3)
-        self.dialog.text = self.inventory[self.currentIndex]["description"]
+        self.dialog.text = dataLoader.getItem(self.inventory[self.currentIndex].name).description
 
     def on_key_press(self, key, modifiers):
         if self.isPressed(CONFIG.controls.up, key):
@@ -179,7 +180,7 @@ class BagView(arcade.View):
 
             self.changeBag()
         elif self.isPressed(CONFIG.controls.left, key):
-            self.bagIndex = 0 if self.bagIndex == 0 else 1
+            self.bagIndex = 0 if self.bagIndex == 1 else 1
 
             self.changeBag()
         elif self.isPressed(CONFIG.controls.cancel, key):

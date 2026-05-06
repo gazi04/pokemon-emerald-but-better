@@ -3,6 +3,7 @@ import random
 from src.util import getPokemon
 from src.util import getEnc
 from src.constants import TILE_SIZE, ENCOUNTER_RATE, MOVE_DURATION, MAP_HEIGHT
+from src.core.gameContext import dataLoader
 
 
 class Player(arcade.Sprite):
@@ -120,7 +121,7 @@ class Player(arcade.Sprite):
                         pokemon = random.choices(
                             pokemonList, weights=[p["weight"] for p in pokemonList]
                         )[0]
-                        pokemon_data = getPokemon()[pokemon["name"]]
+                        pokemon_data = dataLoader.getPokemon(pokemon["name"])
                         pokemon_lvl = random.randint(
                             pokemon["levels"][0], pokemon["levels"][1]
                         )

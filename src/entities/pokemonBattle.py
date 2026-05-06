@@ -1,37 +1,36 @@
 import arcade
-from src.util import getAMove, calculateMultiplier
+from src.util import calculateMultiplier
 import random
+from src.core.gameContext import dataLoader
+from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
+from src.model.player import PlayerPokemonMove
 
 
-class Pokemon(arcade.Sprite):
+class PokemonBattle():
     def __init__(
         self,
-        name,
-        data,
-        moves,
-        level=5,
-        isEnemy=True,
-        currentHp: int = 0,
-        exp: int = 0,
+        name: str,
+        data:PokemonProfile,
+        moves:list[PlayerPokemonMove],
+        level:int,
+        isEnemy:bool,
+        currentHp:int = 0,
+        exp:int = 0,
     ):
-        sprite_path = data["sprites"]["front"] if isEnemy else data["sprites"]["back"]
-
-        super().__init__(sprite_path.strip(), scale=3.0)
-
         self.name = name.capitalize()
 
-        self.baseStat = data["stats"].copy()
+        self.isEnemy = isEnemy
+
+        self.baseStat = data.stats.copy()
         self.level = level
 
         self.calculateStats()
 
-        self.types = data["types"]
+        self.types = data.types
         self.moves = moves
-        self.baseExp = data["baseExp"]
+        self.baseExp = data.baseExp
         self.exp = exp
-        self.evolution = data["evolution"]
-
-        self.isEnemy = isEnemy
+        self.evolution = data.evolution
 
         self.max_hp = self.getStat("hp")
         self.current_hp = currentHp or self.max_hp
@@ -50,32 +49,23 @@ class Pokemon(arcade.Sprite):
         self.statusEffect = ""
         self.sleepCounter = 0
 
-        if isEnemy:
-            self.center_x = 580
-            self.center_y = 400
-        else:
-            self.center_x = 210
-            self.bottom = 168
-
     def calculateStats(self):
-        self.stats = self.baseStat.copy()
-
-        for key, value in self.baseStat.items():
-            if key != "hp":
-                self.stats[key] = ((2 * value * self.level) // 100) + 5
-            else:
-                self.stats[key] = ((2 * value * self.level) // 100) + 5 + self.level
-
-    def draw(self):
-        arcade.draw_sprite(self, pixelated=True)
+        self.stats = PokemonStat(
+            ((2 * self.baseStat.hp * self.level) // 100) + 5 + self.level, 
+            ((2 * self.baseStat.attack * self.level) // 100) + 5, 
+            ((2 * self.baseStat.defence * self.level) // 100) + 5, 
+            ((2 * self.baseStat.special_attack * self.level) // 100) + 5, 
+            ((2 * self.baseStat.special_defence * self.level) // 100) + 5, 
+            ((2 * self.baseStat.speed * self.level) // 100) + 5
+        )
 
     def takeDamage(self, damage: int):
         self.current_hp -= damage
         if self.current_hp <= 0:
             self.current_hp = 0
 
-    def useMove(self, index: int, pokemon: Pokemon):
-        move = getAMove(self.moves[index]["name"])
+    def useMove(self, index: int, pokemon: PokemonBattle):
+        move = dataLoader.getAMove(self.moves[index].name)
 
         text = []
 
@@ -89,12 +79,12 @@ class Pokemon(arcade.Sprite):
             self.statusEffect = ""
             text.append(f"{self.name} woke up!")
 
-        if self.moves[index]["pp"] <= 0:
+        if self.moves[index].pp <= 0:
             return ["But there is no PP left!"]
 
-        self.moves[index]["pp"] -= 1
+        self.moves[index].pp -= 1
 
-        if not self.moveAccuracy(move["accuracy"]):
+        if not self.moveAccuracy(move.accuracy):
             return ["It missed."]
 
         self.damageFoePokemon(move, pokemon, text)
@@ -118,14 +108,14 @@ class Pokemon(arcade.Sprite):
         finalAccuracy = accuracy * multiplier
         return random.randint(1, 100) <= finalAccuracy
 
-    def damageFoePokemon(self, move, pokemon: Pokemon, text: list):
-        if not move["power"]:
+    def damageFoePokemon(self, move: PokemonMove, pokemon: PokemonBattle, text: list):
+        if not move.power:
             return
 
-        if move["category"] == "status":
+        if move.category == "status":
             return
 
-        isPhysical = move["category"] == "physical"
+        isPhysical = move.category == "physical"
 
         d = (
             pokemon.getStat("defence")
@@ -136,10 +126,10 @@ class Pokemon(arcade.Sprite):
 
         stab = 1
 
-        if move["type"] in self.types:
+        if move.type in self.types:
             stab = 1.5
 
-        mult = calculateMultiplier(move["type"], pokemon.types)
+        mult = calculateMultiplier(move.type, pokemon.types)
 
         if mult >= 2:
             text.append("Its super effective.")
@@ -149,17 +139,17 @@ class Pokemon(arcade.Sprite):
             text.append("No effect.")
 
         crit = 1
-        if self.isCritical(move):
+        if self.isCritical():
             d = (
-                pokemon.stats["defence"]
+                pokemon.stats.defence
                 if isPhysical
-                else pokemon.stats["special_defence"]
+                else pokemon.stats.special_defence
             )
             crit = 2
             text.append("A critical hit!")
 
         damage = (
-            (((2 * self.level / 5 + 1) * move["power"] * a / d) / 50 + 2)
+            (((2 * self.level / 5 + 1) * move.power * a / d) / 50 + 2)
             * stab
             * mult
             * crit
@@ -167,8 +157,8 @@ class Pokemon(arcade.Sprite):
 
         pokemon.takeDamage(round(damage))
 
-    def isCritical(self, move):
-        tier = move.get("crit_ratio", 0) + self.modifiers["crits"]
+    def isCritical(self):
+        tier = self.modifiers["crits"]
 
         tier = min(tier, 4)
 
@@ -177,13 +167,13 @@ class Pokemon(arcade.Sprite):
 
         return random.randint(1, denominator) == 1
 
-    def executeEffects(self, move, pokemon, text):
-        for effect in move["effects"]:
+    def executeEffects(self, move: PokemonMove, pokemon: PokemonBattle, text: list[str]):
+        for effect in move.effects:
             destination = self if effect["target"] == "self" else pokemon
 
-            if effect["type"] == "stat":
-                stat = effect["stat"]
-                change = effect["change"]
+            if effect.type == "stat":
+                stat = effect.stat
+                change = effect.change
 
                 current_stage = destination.modifiers[stat]
 
@@ -211,12 +201,12 @@ class Pokemon(arcade.Sprite):
                     )
                     text.append(f"{destination.name}'s {stat} {adj}fell!")
             else:
-                chance = effect.get("chance", 100)
+                chance = effect.chance if not effect.chance else 100
 
                 if chance >= random.randint(1, 100):
-                    destination.statusEffect = effect["condition"]
+                    destination.statusEffect = effect.condition
 
-                    if effect["condition"] == "sleep":
+                    if effect.condition == "sleep":
                         destination.sleepCounter = random.randint(2, 5)
 
     def afterATurn(self):
@@ -268,7 +258,7 @@ class Pokemon(arcade.Sprite):
 
     def getStat(self, stat):
         if stat == "hp":
-            return self.stats[stat]
+            return self.stats.hp
 
         fraction = 1
 
@@ -278,6 +268,15 @@ class Pokemon(arcade.Sprite):
             fraction = 2 / (2 + abs(self.modifiers[stat]))
 
         if stat == "speed" and self.statusEffect == "paralyzed":
-            return round((self.stats[stat] * fraction) * 0.5)
+            return round((self.stats.speed * fraction) * 0.5)
+        elif stat == "speed":
+            return round((self.stats.speed * fraction))
 
-        return round(self.stats[stat] * fraction)
+        if stat == "attack":
+            return round(self.stats.attack * fraction)
+        elif stat == "defence":
+            return round(self.stats.defence * fraction)
+        elif stat == "special_attack":
+            return round(self.stats.special_attack * fraction)
+        elif stat == "special_defence":
+            return round(self.stats.special_defence * fraction)

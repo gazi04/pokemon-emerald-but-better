@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
-from src.entities.pokemon import Pokemon
-from src.util import getAMove, getPlayersPokemon, updateHp, updateMove, updateLevel
+from src.entities.pokemonSprites import Pokemon
+from src.core.gameContext import saveManager, dataLoader
 import random
 from data.config import Config
 from src.states.evolvingView import EvolvingView
@@ -19,7 +19,7 @@ class BattleView(arcade.View):
             "assets/ui/battleUiDesign.tmx"
         )
 
-        self.playerPokemon = getPlayersPokemon()
+        self.playerPokemon = saveManager.player.pokemon
         move_button_style = {
             "normal": arcade.gui.UIFlatButton.UIStyle(
                 font_size=24,
@@ -48,13 +48,13 @@ class BattleView(arcade.View):
         }
 
         self.your_pokemon = Pokemon(
-            self.playerPokemon[0]["name"],
-            self.playerPokemon[0],
-            self.playerPokemon[0]["moves"],
-            level=self.playerPokemon[0]["level"],
+            self.playerPokemon[0].name,
+            dataLoader.getPokemon(self.playerPokemon[0].name),
+            self.playerPokemon[0].moves,
+            level=self.playerPokemon[0].level,
             isEnemy=False,
-            currentHp=self.playerPokemon[0]["hp"],
-            exp=self.playerPokemon[0]["exp"],
+            currentHp=self.playerPokemon[0].hp,
+            exp=self.playerPokemon[0].exp,
         )
         self.enemy_pokemon = Pokemon(
             pokemon_name,
@@ -271,7 +271,7 @@ class BattleView(arcade.View):
                 # --- UI LABELS (Names and Levels) ---
                 elif obj.name == "player_name":
                     self.player_name_label = arcade.gui.UILabel(
-                        text=self.your_pokemon.name.upper(),
+                        text=self.your_pokemon.pokemonBattle.name.upper(),
                         x=x,
                         y=y - h,
                         text_color=arcade.color.BLACK,
@@ -282,7 +282,7 @@ class BattleView(arcade.View):
 
                 elif obj.name == "player_lvl":
                     self.player_lvl_label = arcade.gui.UILabel(
-                        text=f"Lv{self.your_pokemon.level}",
+                        text=f"Lv{self.your_pokemon.pokemonBattle.level}",
                         x=x,
                         y=y - h,
                         text_color=arcade.color.BLACK,
@@ -293,7 +293,7 @@ class BattleView(arcade.View):
 
                 elif obj.name == "enemy_name":
                     self.enemy_name_label = arcade.gui.UILabel(
-                        text=self.enemy_pokemon.name.upper(),
+                        text=self.enemy_pokemon.pokemonBattle.name.upper(),
                         x=x,
                         y=y - h,
                         text_color=arcade.color.BLACK,
@@ -304,7 +304,7 @@ class BattleView(arcade.View):
 
                 elif obj.name == "enemy_lvl":
                     self.enemy_lvl_label = arcade.gui.UILabel(
-                        text=f"Lv{self.enemy_pokemon.level}",
+                        text=f"Lv{self.enemy_pokemon.pokemonBattle.level}",
                         x=x,
                         y=y - h,
                         text_color=arcade.color.BLACK,
@@ -399,11 +399,11 @@ class BattleView(arcade.View):
 
         self.switchMenu("main")
         self.updateUiMoves()
-        first_move = getAMove(self.your_pokemon.moves[0]["name"])
+        first_move = dataLoader.getAMove(self.your_pokemon.pokemonBattle.moves[0].name)
 
-        self.type.text = first_move["type"]
-        self.maxPP.text = first_move["pp"]
-        self.currPP.text = self.your_pokemon.moves[0]["pp"]
+        self.type.text = first_move.type
+        self.maxPP.text = first_move.pp
+        self.currPP.text = self.your_pokemon.pokemonBattle.moves[0].pp
 
         self.active_menu = "main"
         self.selection_index = 0
@@ -422,8 +422,8 @@ class BattleView(arcade.View):
 
     def transition(self):
         self.messageQueue = [
-            f"A foe {self.enemy_pokemon.name} appeared!",
-            f"Go! {self.your_pokemon.name}!",
+            f"A foe {self.enemy_pokemon.pokemonBattle.name} appeared!",
+            f"Go! {self.your_pokemon.pokemonBattle.name}!",
         ]
 
         self.nextMessage()
@@ -447,7 +447,7 @@ class BattleView(arcade.View):
         if not barData:
             return
 
-        ratio = pokemon.getHpRatio()
+        ratio = pokemon.pokemonBattle.getHpRatio()
         fullWidth = barData["w"]
         currentWidth = fullWidth * ratio
 
@@ -469,7 +469,7 @@ class BattleView(arcade.View):
         if not self.expBar:
             return
 
-        ratio = self.your_pokemon.getExpRatio()
+        ratio = self.your_pokemon.pokemonBattle.getExpRatio()
         fullWidth = self.expBar["w"]
         currentWidth = fullWidth * ratio
 
@@ -497,12 +497,12 @@ class BattleView(arcade.View):
             self.manager.add(self.dialog_menu_container)
 
     def updateUiMoves(self):
-        moves = self.your_pokemon.moves
+        moves = self.your_pokemon.pokemonBattle.moves
         buttons = [self.moveBtn1, self.moveBtn2, self.moveBtn3, self.moveBtn4]
 
         for i, button in enumerate(buttons):
             if i < len(moves):
-                button.text = moves[i]["name"].upper()
+                button.text = moves[i].name.upper()
                 button.on_click = lambda event, move_index=i: self.turn(move_index)
                 button.visible = True
                 button.enabled = True
@@ -515,9 +515,9 @@ class BattleView(arcade.View):
         self.battleState = "currently turn"
         self.switchMenu("dialog")
 
-        enemyMoveIndex = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+        enemyMoveIndex = random.randint(0, len(self.enemy_pokemon.pokemonBattle.moves) - 1)
 
-        if self.your_pokemon.getStat("speed") >= self.enemy_pokemon.getStat("speed"):
+        if self.your_pokemon.pokemonBattle.getStat("speed") >= self.enemy_pokemon.pokemonBattle.getStat("speed"):
             self.turn_queue = [("player", moveIndex), ("enemy", enemyMoveIndex)]
         else:
             self.turn_queue = [("enemy", enemyMoveIndex), ("player", moveIndex)]
@@ -531,15 +531,15 @@ class BattleView(arcade.View):
 
         attacker_key, move_idx = self.turn_queue.pop(0)
 
-        if attacker_key == "player" and self.your_pokemon.current_hp > 0:
-            move_name = self.your_pokemon.moves[move_idx]["name"]
-            self.messageQueue.append(f"{self.your_pokemon.name} used {move_name}!")
-            result = self.your_pokemon.useMove(move_idx, self.enemy_pokemon)
+        if attacker_key == "player" and self.your_pokemon.pokemonBattle.current_hp > 0:
+            move_name = self.your_pokemon.pokemonBattle.moves[move_idx].name
+            self.messageQueue.append(f"{self.your_pokemon.pokemonBattle.name} used {move_name}!")
+            result = self.your_pokemon.pokemonBattle.useMove(move_idx, self.enemy_pokemon.pokemonBattle)
             self.messageQueue.extend(result)
-        elif attacker_key == "enemy" and self.enemy_pokemon.current_hp > 0:
-            move_name = self.enemy_pokemon.moves[move_idx]["name"]
-            self.messageQueue.append(f"Foe {self.enemy_pokemon.name} used {move_name}!")
-            result = self.enemy_pokemon.useMove(move_idx, self.your_pokemon)
+        elif attacker_key == "enemy" and self.enemy_pokemon.pokemonBattle.current_hp > 0:
+            move_name = self.enemy_pokemon.pokemonBattle.moves[move_idx].name
+            self.messageQueue.append(f"Foe {self.enemy_pokemon.pokemonBattle.name} used {move_name}!")
+            result = self.enemy_pokemon.pokemonBattle.useMove(move_idx, self.your_pokemon.pokemonBattle)
             self.messageQueue.extend(result)
 
         self.nextMessage()
@@ -559,19 +559,19 @@ class BattleView(arcade.View):
                 arcade.schedule_once(self.resetToMainMenu, 0.5)
             elif self.battleState == "end":
                 if self.exp > 0:
-                    result = self.your_pokemon.gainExp(self.exp)
+                    result = self.your_pokemon.pokemonBattle.gainExp(self.exp)
                     self.exp = 0
 
                     if not result["isLeveledUp"] and not result["evolve"]["hasEvolved"]:
                         self.run()
 
                     if result["isLeveledUp"]:
-                        self.player_lvl_label = f"Lv{self.your_pokemon.level}"
+                        self.player_lvl_label = f"Lv{self.your_pokemon.pokemonBattle.level}"
                         self.manager.trigger_render()
                         self.messageQueue.extend(
                             [
-                                f"{self.your_pokemon.name} has leveled up!!!",
-                                f"Now {self.your_pokemon.name} is {self.your_pokemon.level} lvl!!!",
+                                f"{self.your_pokemon.pokemonBattle.name} has leveled up!!!",
+                                f"Now {self.your_pokemon.pokemonBattle.name} is {self.your_pokemon.pokemonBattle.level} lvl!!!",
                             ]
                         )
                         self.isProcessingText = True
@@ -582,7 +582,7 @@ class BattleView(arcade.View):
                         self.window.show_view(
                             EvolvingView(
                                 self.overworld_view,
-                                self.your_pokemon.name.lower(),
+                                self.your_pokemon.pokemonBattle.name.lower(),
                                 result["evolve"]["to"],
                             )
                         )
@@ -596,17 +596,15 @@ class BattleView(arcade.View):
 
             self.messageQueue.extend(
                 [
-                    f"Wild {self.enemy_pokemon.name} fainted!",
-                    f"{self.your_pokemon.name} gained {self.exp} EXP. Points!",
+                    f"Wild {self.enemy_pokemon.pokemonBattle.name} fainted!",
+                    f"{self.your_pokemon.pokemonBattle.name} gained {self.exp} EXP. Points!",
                 ]
             )
-
-            print(self.messageQueue)
 
             self.nextMessage()
             self.switchMenu("dialog")
         else:
-            self.messageQueue.extend([f"{self.your_pokemon.name} fainted!"])
+            self.messageQueue.extend([f"{self.your_pokemon.pokemonBattle.name} fainted!"])
 
             self.nextMessage()
             self.switchMenu("dialog")
@@ -614,15 +612,15 @@ class BattleView(arcade.View):
     def postTurn(self):
         list = []
 
-        list.extend(self.your_pokemon.afterATurn())
-        list.extend(self.enemy_pokemon.afterATurn())
+        list.extend(self.your_pokemon.pokemonBattle.afterATurn())
+        list.extend(self.enemy_pokemon.pokemonBattle.afterATurn())
 
-        if self.your_pokemon.current_hp <= 0:
-            self.pokemonDeath(self.your_pokemon)
+        if self.your_pokemon.pokemonBattle.current_hp <= 0:
+            self.pokemonDeath(self.your_pokemon.pokemonBattle)
             return
 
-        if self.enemy_pokemon.current_hp <= 0:
-            self.pokemonDeath(self.enemy_pokemon)
+        if self.enemy_pokemon.pokemonBattle.current_hp <= 0:
+            self.pokemonDeath(self.enemy_pokemon.pokemonBattle)
             return
 
         if len(list) - 1 > 0:
@@ -638,7 +636,7 @@ class BattleView(arcade.View):
 
     def resetToMainMenu(self, dt):
         self.switchMenu("main")
-        self.targetText = f"What will {self.your_pokemon.name} do?"
+        self.targetText = f"What will {self.your_pokemon.pokemonBattle.name} do?"
         self.currentText = ""
 
     def on_draw(self):
@@ -717,7 +715,7 @@ class BattleView(arcade.View):
             num_buttons = len(current_list)
         else:
             current_list = self.move_buttons
-            num_buttons = len(self.your_pokemon.moves)
+            num_buttons = len(self.your_pokemon.pokemonBattle.moves)
 
         if self.is_pressed(CONFIG.controls.up, key):
             if num_buttons > 2:
@@ -765,28 +763,31 @@ class BattleView(arcade.View):
 
     def move_hover(self, index):
         if index is not None:
-            move_name = self.your_pokemon.moves[index]["name"]
+            move_name = self.your_pokemon.pokemonBattle.moves[index].name
 
-            move = getAMove(move_name)
-            self.type.text = move["type"]
-            self.maxPP.text = move["pp"]
-            self.currPP.text = self.your_pokemon.moves[index]["pp"]
+            move = dataLoader.getAMove(move_name)
+            self.type.text = move.type
+            self.maxPP.text = move.pp
+            self.currPP.text = self.your_pokemon.pokemonBattle.moves[index].pp
 
     def run(self):
         self.window.show_view(self.overworld_view)
         self.save()
 
     def save(self):
-        updateHp(self.your_pokemon.name, self.your_pokemon.current_hp)
-        updateMove(self.your_pokemon.name, self.your_pokemon.moves)
-        if not self.hasEvolved:
-            updateLevel(
-                self.your_pokemon.name, self.your_pokemon.level, self.your_pokemon.exp
-            )
-        else:
-            updateLevel(
-                self.your_pokemon.name,
-                self.your_pokemon.level,
-                self.your_pokemon.exp,
-                self.your_pokemon.evolution["to"],
-            )
+        pass
+        # saveManager.updateHp(self.your_pokemon.pokemonBattle.pokemonBattle.name, self.your_pokemon.pokemonBattle.current_hp)
+        # for move in self.your_pokemon.pokemonBattle.pokemonBattle.moves:
+        #     saveManager.updateMove(self.your_pokemon.pokemonBattle.pokemonBattle.name, self.move[""])
+            
+        # if not self.hasEvolved:
+        #     saveManager.updateLevel(
+        #         self.your_pokemon.pokemonBattle.name, self.your_pokemon.pokemonBattle.level, self.your_pokemon.pokemonBattle.exp
+        #     )
+        # else:
+        #     saveManager.updateLevel(
+        #         self.your_pokemon.pokemonBattle.name,
+        #         self.your_pokemon.pokemonBattle.level,
+        #         self.your_pokemon.pokemonBattle.exp,
+        #         self.your_pokemon.pokemonBattle.evolution["to"],
+        #     )

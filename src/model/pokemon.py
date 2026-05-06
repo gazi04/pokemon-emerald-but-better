@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+
 @dataclass
 class PokemonStat:
     hp: int
@@ -9,6 +10,16 @@ class PokemonStat:
     special_attack: int
     special_defence: int
     speed: int
+
+    def copy(self) -> PokemonStat:
+        return PokemonStat(
+            hp=self.hp,
+            attack=self.attack,
+            defence=self.defence,
+            special_attack=self.special_attack,
+            special_defence=self.special_defence,
+            speed=self.speed
+        )
 
 @dataclass
 class PokemonMove:
@@ -38,6 +49,6 @@ class PokemonProfile:
     baseExp: int
     evolution: Optional[str] = None
     sprites: PokemonSprites = None
-    abilities: list[str]
+    abilities: list[str] = None
     types: list[str] = None
     stats: PokemonStat = None
