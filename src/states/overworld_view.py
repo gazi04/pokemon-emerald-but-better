@@ -1,5 +1,5 @@
 import arcade
-from src.entities.player import Player
+from src.entities.playerController import Player
 from src.states.battleView import BattleView
 from src.states.bagView import BagView
 from data.config import Config
