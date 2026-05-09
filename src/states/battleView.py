@@ -1,10 +1,10 @@
 import arcade
 from src.entities.pokemonSprites import Pokemon
 from src.core.gameContext import saveManager, dataLoader
-import random
 from data.config import Config
 from src.states.evolvingView import EvolvingView
 from src.ui.battleUi import BattleUi
+from src.core.battleSystem import BattleSystem
 
 CONFIG = Config.load()
 
@@ -36,19 +36,15 @@ class BattleView(arcade.View):
             isEnemy=True,
         )
 
+        self.battleSystem = BattleSystem(self.yourPokemon.pokemonBattle, self.enemyPokemon.pokemonBattle)
+
         self.ui.setPlayerInformation(self.yourPokemon.pokemonBattle.name.upper(), self.yourPokemon.pokemonBattle.level)
         self.ui.setEnemyInformation(self.enemyPokemon.pokemonBattle.name.upper(), self.enemyPokemon.pokemonBattle.level)
         self.ui.switchMenu("main")
         self.updateUiMoves()
-        first_move = dataLoader.getAMove(
-            self.yourPokemon.pokemonBattle.moves[0].name)
+        first_move = dataLoader.getAMove(self.yourPokemon.pokemonBattle.moves[0].name)
 
         self.ui.setMoveInformation(first_move.type, first_move.pp, self.yourPokemon.pokemonBattle.moves[0].pp)
-
-        self.turn_queue = []
-        self.battleState = "intro"
-        self.exp = 0
-        self.hasEvolved = False
         
         self.ui.setTransition(self.yourPokemon, self.enemyPokemon)
 
@@ -65,74 +61,40 @@ class BattleView(arcade.View):
                 button.visible = False
                 button.enabled = False
 
-    def turn(self, moveIndex):
-        self.battleState = "currently turn"
+    def startTurn(self, index):
+        self.ui.messageQueue.extend(self.battleSystem.turn(index))
         self.ui.switchMenu("dialog")
-
-        enemyMoveIndex = random.randint(
-            0, len(self.enemyPokemon.pokemonBattle.moves) - 1)
-
-        if self.yourPokemon.pokemonBattle.getStat("speed") >= self.enemyPokemon.pokemonBattle.getStat("speed"):
-            self.turn_queue = [("player", moveIndex),
-                               ("enemy", enemyMoveIndex)]
-        else:
-            self.turn_queue = [("enemy", enemyMoveIndex),
-                               ("player", moveIndex)]
-
-        self.execute_next_action()
-
-    def execute_next_action(self):
-        if not self.turn_queue:
-            self.postTurn()
-            return
-
-        attacker_key, move_idx = self.turn_queue.pop(0)
-
-        if attacker_key == "player" and self.yourPokemon.pokemonBattle.current_hp > 0:
-            move_name = self.yourPokemon.pokemonBattle.moves[move_idx].name
-            self.ui.messageQueue.append(
-                f"{self.yourPokemon.pokemonBattle.name} used {move_name}!")
-            result = self.yourPokemon.pokemonBattle.useMove(
-                move_idx, self.enemyPokemon.pokemonBattle)
-            self.ui.messageQueue.extend(result)
-        elif attacker_key == "enemy" and self.enemyPokemon.pokemonBattle.current_hp > 0:
-            move_name = self.enemyPokemon.pokemonBattle.moves[move_idx].name
-            self.ui.messageQueue.append(
-                f"Foe {self.enemyPokemon.pokemonBattle.name} used {move_name}!")
-            result = self.enemyPokemon.pokemonBattle.useMove(
-                move_idx, self.yourPokemon.pokemonBattle)
-            self.ui.messageQueue.extend(result)
-
         self.ui.nextMessage()
 
     def whatHappendAfterText(self):
-        if self.battleState == "currently turn":
-            self.execute_next_action()
-        elif self.battleState in ["intro", "post turn"]:
-            self.battleState = "waiting"
+        if self.battleSystem.battleState == "currently turn":
+            self.ui.messageQueue.extend(self.battleSystem.executeNextAction())
+            self.ui.nextMessage()
+        elif self.battleSystem.battleState in ["intro", "post turn"]:
+            self.battleSystem.battleState = "waiting"
             arcade.schedule_once(self.resetToMainMenu, 0.5)
-        elif self.battleState == "end":
-            if self.exp > 0:
-                result = self.yourPokemon.pokemonBattle.gainExp(self.exp)
-                self.exp = 0
+        elif self.battleSystem.battleState == "end":
+            if self.battleSystem.exp > 0:
+                result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
+                self.battleSystem.exp = 0
 
                 if not result["isLeveledUp"] and not result["evolve"]["hasEvolved"]:
                     self.run()
 
                 if result["isLeveledUp"]:
-                    self.player_lvl_label = f"Lv{self.yourPokemon.pokemonBattle.level}"
-                    self.manager.trigger_render()
+                    self.ui.player_lvl_label = f"Lv{self.yourPokemon.pokemonBattle.level}"
+                    self.ui.manager.trigger_render()
                     self.ui.messageQueue.extend(
                         [
                             f"{self.yourPokemon.pokemonBattle.name} has leveled up!!!",
                             f"Now {self.yourPokemon.pokemonBattle.name} is {self.yourPokemon.pokemonBattle.level} lvl!!!",
                         ]
                     )
-                    self.isProcessingText = True
+                    self.ui.isProcessingText = True
 
                 if result["evolve"]["hasEvolved"]:
-                    self.hasEvolved = True
-                    self.save()
+                    self.battleSystem.hasEvolved = True
+                    self.battleSystem.save()
                     self.window.show_view(
                         EvolvingView(
                             self.overworld_view,
@@ -142,52 +104,6 @@ class BattleView(arcade.View):
                     )
             else:
                 self.run()
-
-    def pokemonDeath(self, diedPokemon: Pokemon):
-        self.battleState = "end"
-        if diedPokemon.isEnemy:
-            self.exp = diedPokemon.getExp()
-
-            self.ui.messageQueue.extend(
-                [
-                    f"Wild {self.enemyPokemon.pokemonBattle.name} fainted!",
-                    f"{self.yourPokemon.pokemonBattle.name} gained {self.exp} EXP. Points!",
-                ]
-            )
-
-            self.ui.nextMessage()
-            self.ui.switchMenu("dialog")
-        else:
-            self.ui.messageQueue.extend(
-                [f"{self.yourPokemon.pokemonBattle.name} fainted!"])
-
-            self.nextMessage()
-            self.switchMenu("dialog")
-
-    def postTurn(self):
-        list = []
-
-        list.extend(self.yourPokemon.pokemonBattle.afterATurn())
-        list.extend(self.enemyPokemon.pokemonBattle.afterATurn())
-
-        if self.yourPokemon.pokemonBattle.current_hp <= 0:
-            self.pokemonDeath(self.yourPokemon.pokemonBattle)
-            return
-
-        if self.enemyPokemon.pokemonBattle.current_hp <= 0:
-            self.pokemonDeath(self.enemyPokemon.pokemonBattle)
-            return
-
-        if len(list) - 1 > 0:
-            self.battleState = "post turn"
-
-            self.ui.messageQueue.extend(list)
-
-            self.ui.nextMessage()
-            self.ui.switchMenu("dialog")
-        else:
-            self.battleState = "waiting"
-            arcade.schedule_once(self.resetToMainMenu, 0.5)
 
     def resetToMainMenu(self, dt):
         self.ui.switchMenu("main")
@@ -241,7 +157,6 @@ class BattleView(arcade.View):
 
             if self.ui.activeMenu == "moves":
                 self.moveHover(self.ui.selectionIndex)
-
         elif self.is_pressed(CONFIG.controls.interact, key):
             if self.ui.activeMenu == "main":
                 if self.ui.selectionIndex == 0:
@@ -249,7 +164,7 @@ class BattleView(arcade.View):
                 elif self.ui.selectionIndex == 3:
                     self.run()
             elif self.ui.activeMenu == "moves":
-                self.turn(self.ui.selectionIndex)
+                self.startTurn(self.ui.selectionIndex)
         elif self.is_pressed(CONFIG.controls.cancel, key):
             if self.ui.activeMenu == "moves":
                 self.ui.switchMenu("main")
@@ -266,22 +181,4 @@ class BattleView(arcade.View):
 
     def run(self):
         self.window.show_view(self.overworld_view)
-        self.save()
-
-    def save(self):
-        pass
-        # saveManager.updateHp(self.your_pokemon.pokemonBattle.pokemonBattle.name, self.your_pokemon.pokemonBattle.current_hp)
-        # for move in self.your_pokemon.pokemonBattle.pokemonBattle.moves:
-        #     saveManager.updateMove(self.your_pokemon.pokemonBattle.pokemonBattle.name, self.move[""])
-
-        # if not self.hasEvolved:
-        #     saveManager.updateLevel(
-        #         self.your_pokemon.pokemonBattle.name, self.your_pokemon.pokemonBattle.level, self.your_pokemon.pokemonBattle.exp
-        #     )
-        # else:
-        #     saveManager.updateLevel(
-        #         self.your_pokemon.pokemonBattle.name,
-        #         self.your_pokemon.pokemonBattle.level,
-        #         self.your_pokemon.pokemonBattle.exp,
-        #         self.your_pokemon.pokemonBattle.evolution["to"],
-        #     )
+        self.battleSystem.save()
