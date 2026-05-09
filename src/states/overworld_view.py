@@ -114,7 +114,7 @@ class OverworldView(arcade.View):
         if self.isPressed(CONFIG.controls.bag, key):
             self.window.show_view(BagView(self))
 
-    def isPressed(self, configKey, key):
+    def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def on_key_release(self, key, _):

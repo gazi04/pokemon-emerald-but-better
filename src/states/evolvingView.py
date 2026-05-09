@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
 import math
-from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE
+from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE, TEXT_DELAY
 
 
 class EvolvingView(arcade.View):

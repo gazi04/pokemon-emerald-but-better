@@ -7,7 +7,7 @@ from src.constants import MAX_VISIBLE_ITEMS
 CONFIG = Config.load()
 
 class BagView(arcade.View):
-    def __init__(self, previousWindow):
+    def __init__(self, previousWindow:arcade.View):
         super().__init__()
 
         self.bagUi = BagUI()
@@ -75,7 +75,7 @@ class BagView(arcade.View):
         elif self.isPressed(CONFIG.controls.cancel, key):
             self.window.show_view(self.previousWindow)
             
-    def isPressed(self, configKey, key):
+    def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def changeBag(self):

@@ -13,7 +13,7 @@ class BattleSystem:
         self.exp = 0
         self.hasEvolved = False
         
-    def turn(self, moveIndex):
+    def turn(self, moveIndex) -> list[str]:
         self.battleState = "currently turn"
 
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
@@ -27,7 +27,7 @@ class BattleSystem:
 
         return self.executeNextAction()
 
-    def executeNextAction(self):
+    def executeNextAction(self) -> list[str]:
         if not self.turnQueue:
             return self.postTurn()
 
@@ -48,7 +48,7 @@ class BattleSystem:
 
         return messages
 
-    def pokemonDeath(self, diedPokemon: PokemonBattle):
+    def pokemonDeath(self, diedPokemon: PokemonBattle) -> list[str]:
         message = []
         self.battleState = "end"
         if diedPokemon.isEnemy:
@@ -66,7 +66,7 @@ class BattleSystem:
 
         return message
 
-    def postTurn(self):
+    def postTurn(self) -> list[str]:
         messages = []
 
         messages.extend(self.yourPokemon.afterATurn())

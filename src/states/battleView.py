@@ -135,29 +135,29 @@ class BattleView(arcade.View):
             current_list = self.ui.moveButtons
             num_buttons = len(self.yourPokemon.pokemonBattle.moves)
 
-        if self.is_pressed(CONFIG.controls.up, key):
+        if self.isPressed(CONFIG.controls.up, key):
             if num_buttons > 2:
                 self.ui.selectionIndex = (self.ui.selectionIndex - 2) % num_buttons
 
             if self.ui.activeMenu == "moves":
                 self.moveHover(self.ui.selectionIndex)
-        elif self.is_pressed(CONFIG.controls.down, key):
+        elif self.isPressed(CONFIG.controls.down, key):
             if num_buttons > 2:
                 self.ui.selectionIndex = (self.ui.selectionIndex + 2) % num_buttons
 
             if self.ui.activeMenu == "moves":
                 self.moveHover(self.ui.selectionIndex)
-        elif self.is_pressed(CONFIG.controls.left, key):
+        elif self.isPressed(CONFIG.controls.left, key):
             self.ui.selectionIndex = (self.ui.selectionIndex - 1) % num_buttons
 
             if self.ui.activeMenu == "moves":
                 self.moveHover(self.ui.selectionIndex)
-        elif self.is_pressed(CONFIG.controls.right, key):
+        elif self.isPressed(CONFIG.controls.right, key):
             self.ui.selectionIndex = (self.ui.selectionIndex + 1) % num_buttons
 
             if self.ui.activeMenu == "moves":
                 self.moveHover(self.ui.selectionIndex)
-        elif self.is_pressed(CONFIG.controls.interact, key):
+        elif self.isPressed(CONFIG.controls.interact, key):
             if self.ui.activeMenu == "main":
                 if self.ui.selectionIndex == 0:
                     self.ui.switchMenu("moves")
@@ -165,11 +165,11 @@ class BattleView(arcade.View):
                     self.run()
             elif self.ui.activeMenu == "moves":
                 self.startTurn(self.ui.selectionIndex)
-        elif self.is_pressed(CONFIG.controls.cancel, key):
+        elif self.isPressed(CONFIG.controls.cancel, key):
             if self.ui.activeMenu == "moves":
                 self.ui.switchMenu("main")
 
-    def is_pressed(self, configKey, key):
+    def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def moveHover(self, index):

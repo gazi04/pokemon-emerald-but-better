@@ -64,7 +64,7 @@ class PokemonBattle():
         if self.currentHp <= 0:
             self.currentHp = 0
 
-    def useMove(self, index: int, pokemon: PokemonBattle):
+    def useMove(self, index: int, pokemon: PokemonBattle) -> list[str]:
         move = dataLoader.getAMove(self.moves[index].name)
 
         text = []
@@ -92,7 +92,7 @@ class PokemonBattle():
 
         return text
 
-    def moveAccuracy(self, accuracy):
+    def moveAccuracy(self, accuracy) -> bool:
         if not accuracy:
             return True
 
@@ -157,7 +157,7 @@ class PokemonBattle():
 
         pokemon.takeDamage(round(damage))
 
-    def isCritical(self):
+    def isCritical(self) -> bool:
         tier = self.modifiers["crits"]
 
         tier = min(tier, 4)
@@ -209,7 +209,7 @@ class PokemonBattle():
                     if effect.condition == "sleep":
                         destination.sleepCounter = random.randint(2, 5)
 
-    def afterATurn(self):
+    def afterATurn(self) -> list[str]:
         text = []
 
         if self.statusEffect == "poison":
@@ -219,10 +219,10 @@ class PokemonBattle():
 
         return text
 
-    def getHpRatio(self):
+    def getHpRatio(self) -> float:
         return self.currentHp / self.maxHp
 
-    def gainExp(self, exp):
+    def gainExp(self, exp:int):
         old_level = self.level
         self.exp += exp
         old_stats = self.stats.copy()
@@ -256,7 +256,7 @@ class PokemonBattle():
     def expNeeded(self):
         return self.level**3
 
-    def getStat(self, stat):
+    def getStat(self, stat:str) -> int:
         if stat == "hp":
             return self.stats.hp
 

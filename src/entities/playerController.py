@@ -144,7 +144,7 @@ class Player:
     def draw(self):
         self.sprites.draw()
 
-    def is_pressed(self, configKey, keys):
+    def is_pressed(self, configKey, keys) -> bool:
         keyCode = getattr(arcade.key, configKey, None)
 
         return keyCode is not None and keyCode in keys
