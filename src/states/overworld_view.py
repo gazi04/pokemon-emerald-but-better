@@ -67,6 +67,7 @@ class OverworldView(arcade.View):
             if self.transition_timer >= self.max_transition_time:
                 name, level, data = self.pending_battle_data
                 self.window.show_view(BattleView(name, data, level, self))
+                self.keys.clear()
 
                 self.transition_active = False
                 self.canRenderScene = True
@@ -119,7 +120,6 @@ class OverworldView(arcade.View):
         self.keys.discard(key)
 
     def startBattle(self, name, level, data):
-        self.keys.clear()
         self.transition_active = True
         self.transition_timer = 0.0
         self.pending_battle_data = (name, level, data)

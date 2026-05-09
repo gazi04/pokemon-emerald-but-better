@@ -169,7 +169,7 @@ class PokemonBattle():
 
     def executeEffects(self, move: PokemonMove, pokemon: PokemonBattle, text: list[str]):
         for effect in move.effects:
-            destination = self if effect["target"] == "self" else pokemon
+            destination = self if effect.target == "self" else pokemon
 
             if effect.type == "stat":
                 stat = effect.stat
