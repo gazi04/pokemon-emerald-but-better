@@ -1,12 +1,13 @@
 import arcade
 import arcade.gui
+from src.constants import BAG_UI, MAX_VISIBLE_ITEMS
 
 class BagUI:
     def __init__(self):
         self.manager = arcade.gui.UIManager()
         self.manager._pixelated = True
 
-        tilemap = arcade.load_tilemap("assets/ui/bagUiDesign.tmx")
+        tilemap = arcade.load_tilemap(BAG_UI)
         uiLayer = tilemap.get_tilemap_layer("ui")
 
         for obj in uiLayer.tiled_objects:
@@ -95,14 +96,14 @@ class BagUI:
             font_size=20
         )
     
-    def setupInvetory(self, itemsCount):
+    def setupInvetory(self):
         for item in self.itemLabels:
             self.manager.remove(item)
 
         self.currentIndex = 0
         self.itemLabels.clear()
 
-        for i in range(itemsCount):
+        for i in range(MAX_VISIBLE_ITEMS):
             label = arcade.gui.UILabel(
                 text="",
                 x=self.startX,

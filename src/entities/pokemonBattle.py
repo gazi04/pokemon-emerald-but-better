@@ -38,8 +38,8 @@ class PokemonBattle():
         self.modifiers = {
             "attack": 0,
             "defence": 0,
-            "special_attack": 0,
-            "special_defence": 0,
+            "special attack": 0,
+            "special defence": 0,
             "speed": 0,
             "accuracy": 0,
             "evasion": 0,
@@ -276,7 +276,7 @@ class PokemonBattle():
             return round(self.stats.attack * fraction)
         elif stat == "defence":
             return round(self.stats.defence * fraction)
-        elif stat == "special_attack":
+        elif stat == "special attack":
             return round(self.stats.special_attack * fraction)
-        elif stat == "special_defence":
+        elif stat == "special defence":
             return round(self.stats.special_defence * fraction)

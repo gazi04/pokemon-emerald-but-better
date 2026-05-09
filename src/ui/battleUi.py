@@ -1,6 +1,7 @@
 import arcade
 import arcade.gui
 from src.entities.pokemonSprites import Pokemon
+from src.constants import BATTLE_UI, TEXT_DELAY
 
 class BattleUi:
     def __init__(self, afterText:function):
@@ -31,7 +32,7 @@ class BattleUi:
             ),
         }
         
-        self.tilemap = arcade.tilemap.load_tilemap("assets/ui/battleUiDesign.tmx")
+        self.tilemap = arcade.tilemap.load_tilemap(BATTLE_UI)
         
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -442,7 +443,7 @@ class BattleUi:
         self.textDelayTimer += delta_time
 
         if len(self.currentText) < len(self.targetText):
-            if self.textDelayTimer > 0.03:
+            if self.textDelayTimer > TEXT_DELAY:
                 self.currentText += self.targetText[len(self.currentText)]
                 self.dialogText.text = self.currentText
                 self.dialogBox.trigger_full_render()

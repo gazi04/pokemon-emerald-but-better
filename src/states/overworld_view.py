@@ -3,6 +3,7 @@ from src.entities.playerController import Player
 from src.states.battleView import BattleView
 from src.states.bagView import BagView
 from data.config import Config
+from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
 
 CONFIG = Config.load()
 
@@ -16,7 +17,7 @@ class OverworldView(arcade.View):
             arcade.gl.NEAREST,
         )
 
-        arcade.load_font("assets/fonts/pokemon-emerald.otf")
+        arcade.load_font(FONT)
 
         self.player = Player()
 
@@ -27,7 +28,7 @@ class OverworldView(arcade.View):
         self.transition_timer = 0.0
         self.max_transition_time = 0.8
         self.canRenderScene = True
-        self.flickerInterval = 0.05
+        self.flickerInterval = FLICKER_INTERVAL
         
         self.setup()
         
@@ -75,7 +76,7 @@ class OverworldView(arcade.View):
             return
 
         self.camera.position = arcade.math.lerp_2d(
-            self.camera.position, self.player.getPosition(), 0.2
+            self.camera.position, self.player.getPosition(), CAMERA_LERP_SPEED
         )
 
         result = self.player.update(

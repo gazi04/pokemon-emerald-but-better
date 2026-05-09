@@ -2,6 +2,7 @@ import arcade
 from data.config import Config
 from src.core.gameContext import saveManager,dataLoader
 from src.ui.bagUi import BagUI
+from src.constants import MAX_VISIBLE_ITEMS
 
 CONFIG = Config.load()
 
@@ -20,15 +21,14 @@ class BagView(arcade.View):
 
         self.bagIndex = 0
 
-        self.maxVisibleItems = 10
         self.currentIndex = 0
         self.topVisibleIndex = 0
 
-        self.bagUi.setupInvetory(self.maxVisibleItems)
+        self.bagUi.setupInvetory()
         self.updateItem()
 
     def updateItem(self):
-        for i in range(self.maxVisibleItems):
+        for i in range(MAX_VISIBLE_ITEMS):
             inventory_index = self.topVisibleIndex + i
 
             if inventory_index < len(self.inventory):
@@ -60,7 +60,7 @@ class BagView(arcade.View):
             if self.currentIndex < len(self.inventory) - 1:
                 self.currentIndex += 1
 
-                if self.currentIndex >= self.topVisibleIndex + self.maxVisibleItems:
+                if self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS:
                     self.topVisibleIndex += 1
 
                 self.updateItem()
@@ -83,13 +83,13 @@ class BagView(arcade.View):
             self.inventory = self.items
             self.bagUi.changeBag("items")
             
-            self.bagUi.setupInvetory(self.maxVisibleItems)
+            self.bagUi.setupInvetory()
             self.updateItem()
         else:
             self.inventory = self.pokeball
             self.bagUi.changeBag("pokeball")
             
-            self.bagUi.setupInvetory(self.maxVisibleItems)
+            self.bagUi.setupInvetory()
             self.updateItem()
 
     def on_draw(self):
