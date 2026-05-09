@@ -32,8 +32,8 @@ class PokemonBattle():
         self.exp = exp
         self.evolution = data.evolution
 
-        self.max_hp = self.getStat("hp")
-        self.current_hp = currentHp or self.max_hp
+        self.maxHp = self.getStat("hp")
+        self.currentHp = currentHp or self.maxHp
 
         self.modifiers = {
             "attack": 0,
@@ -60,9 +60,9 @@ class PokemonBattle():
         )
 
     def takeDamage(self, damage: int):
-        self.current_hp -= damage
-        if self.current_hp <= 0:
-            self.current_hp = 0
+        self.currentHp -= damage
+        if self.currentHp <= 0:
+            self.currentHp = 0
 
     def useMove(self, index: int, pokemon: PokemonBattle):
         move = dataLoader.getAMove(self.moves[index].name)
@@ -213,14 +213,14 @@ class PokemonBattle():
         text = []
 
         if self.statusEffect == "poison":
-            damage = self.max_hp // 12.5
+            damage = self.maxHp // 12.5
             self.takeDamage(damage)
             text.append(f"{self.name} is hurt by poison!")
 
         return text
 
     def getHpRatio(self):
-        return self.current_hp / self.max_hp
+        return self.currentHp / self.maxHp
 
     def gainExp(self, exp):
         old_level = self.level
@@ -229,17 +229,17 @@ class PokemonBattle():
 
         while self.exp >= self.expNeeded():
             self.exp -= self.expNeeded()
-            self.current_hp = self.max_hp
+            self.currentHp = self.maxHp
             self.levelUp()
 
-        hasEvolved = self.evolution and self.evolution["level"] == self.level
+        hasEvolved = self.evolution and self.evolution.levelCap == self.level
 
         return {
             "isLeveledUp": self.level > old_level,
             "statsHistory": [old_stats, self.stats.copy()],
             "evolve": {
                 "hasEvolved": hasEvolved,
-                "to": "" if not self.evolution else self.evolution["to"],
+                "to": "" if not self.evolution else self.evolution.to,
             },
         }
 

@@ -43,11 +43,16 @@ class PokemonMoveEffect:
 class PokemonSprites:
     back: str
     front: str
+    
+@dataclass
+class PokemonEvolution:
+    to: str
+    levelCap: int
 
 @dataclass
 class PokemonProfile:
     baseExp: int
-    evolution: Optional[str] = None
+    evolution: Optional[PokemonEvolution] = None
     sprites: PokemonSprites = None
     abilities: list[str] = None
     types: list[str] = None
