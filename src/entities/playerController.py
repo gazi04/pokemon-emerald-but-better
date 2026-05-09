@@ -6,25 +6,23 @@ from src.core.gameContext import dataLoader
 from src.entities.playerSprites import PlayerSprites
 
 
-class Player(arcade.Sprite):
+class Player:
     def __init__(self):
-        super().__init__(scale=1.9)
-
         self.sprites = PlayerSprites()
 
         self.map = "littleroot_town"
 
         self.direction = "down"
-        self.texture = self.sprites.getIdle(self.direction)
+        self.sprites.setIdle(self.direction)
 
-        self.center_x = 0
-        self.center_y = 0
+        self.sprites.center_x = 0
+        self.sprites.center_y = 0
 
-        self.target_x = self.center_x
-        self.target_y = self.center_y
+        self.target_x = self.sprites.center_x
+        self.target_y = self.sprites.center_y
 
-        self.start_x = self.center_x
-        self.start_y = self.center_y
+        self.start_x = self.sprites.center_x
+        self.start_y = self.sprites.center_y
 
         self.moving = False
         self.moveProgress = 0.0
@@ -46,26 +44,26 @@ class Player(arcade.Sprite):
         if self.moveProgress >= 1.0:
             self.moveProgress = 1.0
 
-        self.center_x = (
+        self.sprites.center_x = (
             self.start_x + (self.target_x - self.start_x) *
             self.moveProgress
         )
-        self.center_y = (
+        self.sprites.center_y = (
             self.start_y + (self.target_y - self.start_y) *
             self.moveProgress
         )
 
-        frame_index = int(self.moveProgress * 4) % 4
-        self.texture = self.sprites.getWalkFrame(self.direction, frame_index)
+        progress = int(self.moveProgress * 4) % 4
+        self.sprites.setWalkFrame(self.direction, progress)
 
         if self.moveProgress >= 1.0:
-            self.center_x = self.target_x
-            self.center_y = self.target_y
+            self.sprites.center_x = self.target_x
+            self.sprites.center_y = self.target_y
             self.moving = False
-            self.texture = self.sprites.getIdle(self.direction)
+            self.sprites.setIdle(self.direction)
 
             hit_bush = arcade.get_sprites_at_point(
-                (self.center_x, self.center_y), bush
+                (self.sprites.center_x, self.sprites.center_y), bush
             )
 
             if not hit_bush:
@@ -106,8 +104,8 @@ class Player(arcade.Sprite):
 
         if newDir:
             self.direction = newDir
-            target_x = self.center_x + dx
-            target_y = self.center_y + dy
+            target_x = self.sprites.center_x + dx
+            target_y = self.sprites.center_y + dy
 
             hitTransitions = arcade.get_sprites_at_point(
                 (target_x, target_y), transitions
@@ -129,24 +127,22 @@ class Player(arcade.Sprite):
                 self.moving = True
                 self.moveProgress = 0.0
 
-                self.start_x = self.center_x
-                self.start_y = self.center_y
+                self.start_x = self.sprites.center_x
+                self.start_y = self.sprites.center_y
 
                 self.target_x = target_x
                 self.target_y = target_y
-
-                self.texture = self.sprites.getIdle(self.direction)
+                
+                self.sprites.setIdle(self.direction)
             else:
-                self.texture = self.sprites.getIdle(self.direction)
+                self.sprites.setIdle(self.direction)
 
     def teleportPlayer(self, x, y):
-        self.center_x = x * 2
-        self.center_y = y / 2 - 110
-
-        print((self.center_x, self.center_y))
+        self.sprites.center_x = x * 2
+        self.sprites.center_y = y / 2 - 110
 
     def draw(self):
-        arcade.draw_sprite(self)
+        self.sprites.draw()
 
     def is_pressed(self, configKey, keys):
         keyCode = getattr(arcade.key, configKey, None)
@@ -154,4 +150,4 @@ class Player(arcade.Sprite):
         return keyCode is not None and keyCode in keys
 
     def getPosition(self):
-        return (self.center_x, self.center_y)
+        return (self.sprites.center_x, self.sprites.center_y)

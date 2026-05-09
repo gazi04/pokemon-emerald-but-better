@@ -1,7 +1,8 @@
 import arcade
 
-class PlayerSprites:
+class PlayerSprites(arcade.Sprite):
     def __init__(self):
+        super().__init__(scale=1.9)
         self.idleTextures = {
             "down": arcade.load_texture(
                 "assets/sprite/player/idle/brendan_idle_down.png"
@@ -50,8 +51,11 @@ class PlayerSprites:
             tex.flip_left_right() for tex in self.walkTextures["left"]
         ]
         
-    def getIdle(self, direction):
-        return self.idleTextures[direction]
+    def draw(self):
+        arcade.draw_sprite(self)
+        
+    def setIdle(self, direction):
+        self.texture = self.idleTextures[direction]
 
-    def getWalkFrame(self, direction, frame_index):
-        return self.walkTextures[direction][frame_index % 4]
+    def setWalkFrame(self, direction, progress):
+        self.texture = self.walkTextures[direction][progress % 4]
