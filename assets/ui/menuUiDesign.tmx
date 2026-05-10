@@ -3,13 +3,13 @@
  <tileset firstgid="1" source="sprites/ui.tsx"/>
  <objectgroup id="2" name="ui">
   <object id="1" name="background" gid="18" x="533.667" y="600" width="266" height="600.4"/>
-  <object id="6" name="save" x="565.955" y="188" width="200" height="50">
+  <object id="2" name="pokemon" x="587.955" y="32" width="174" height="50">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="5" name="bag" x="565.955" y="110" width="200" height="50">
+  <object id="5" name="bag" x="587.955" y="110" width="174" height="50">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="2" name="pokemon" x="565.955" y="32" width="200" height="50">
+  <object id="6" name="save" x="587.955" y="188" width="174" height="50">
    <text wrap="1">Hello World</text>
   </object>
  </objectgroup>
