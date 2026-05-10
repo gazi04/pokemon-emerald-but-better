@@ -1,7 +1,7 @@
 import arcade
 from src.entities.playerController import Player
 from src.states.battleView import BattleView
-from src.states.bagView import BagView
+from src.states.menuView import MenuView
 from data.config import Config
 from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
 
@@ -24,9 +24,9 @@ class OverworldView(arcade.View):
         self.keys = set()
         self.camera = None
 
-        self.transition_active = False
-        self.transition_timer = 0.0
-        self.max_transition_time = 0.8
+        self.transitionActive = False
+        self.transitionTimer = 0.0
+        self.maxTransitionTime = 0.8
         self.canRenderScene = True
         self.flickerInterval = FLICKER_INTERVAL
         
@@ -57,22 +57,22 @@ class OverworldView(arcade.View):
         self.camera = arcade.Camera2D()
 
     def on_update(self, delta_time):
-        if self.transition_active:
-            self.transition_timer += delta_time
+        if self.transitionActive:
+            self.transitionTimer += delta_time
 
-            if int(self.transition_timer / self.flickerInterval) % 2 == 0:
+            if int(self.transitionTimer / self.flickerInterval) % 2 == 0:
                 self.canRenderScene = True
             else:
                 self.canRenderScene = False
 
-            if self.transition_timer >= self.max_transition_time:
+            if self.transitionTimer >= self.maxTransitionTime:
                 name, level, data = self.pending_battle_data
                 self.window.show_view(BattleView(name, data, level, self))
                 self.keys.clear()
 
-                self.transition_active = False
+                self.transitionActive = False
                 self.canRenderScene = True
-                self.transition_timer = 0.0
+                self.transitionTimer = 0.0
             return
 
         self.camera.position = arcade.math.lerp_2d(
@@ -112,7 +112,8 @@ class OverworldView(arcade.View):
         self.keys.add(key)
         
         if self.isPressed(CONFIG.controls.bag, key):
-            self.window.show_view(BagView(self))
+            self.keys.clear()
+            self.window.show_view(MenuView(self))
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
@@ -121,6 +122,6 @@ class OverworldView(arcade.View):
         self.keys.discard(key)
 
     def startBattle(self, name, level, data):
-        self.transition_active = True
-        self.transition_timer = 0.0
+        self.transitionActive = True
+        self.transitionTimer = 0.0
         self.pending_battle_data = (name, level, data)
