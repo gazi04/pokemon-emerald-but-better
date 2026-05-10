@@ -2,6 +2,7 @@ import arcade
 from data.config import Config
 from src.core.gameContext import saveManager,dataLoader
 from src.ui.bagUi import BagUI
+from src.core.bagSystem import BagSystem
 from src.constants import MAX_VISIBLE_ITEMS
 
 CONFIG = Config.load()
@@ -11,13 +12,11 @@ class BagView(arcade.View):
         super().__init__()
 
         self.bagUi = BagUI()
+        self.bagSystem = BagSystem()
 
         self.previousWindow = previousWindow
 
-        self.items = saveManager.player.items
-        self.pokeball = saveManager.player.pokeballs
-
-        self.inventory = self.items
+        self.inventory = self.bagSystem.getItems()
 
         self.bagIndex = 0
 
@@ -43,9 +42,14 @@ class BagView(arcade.View):
             else:
                 self.bagUi.itemLabels[i].text = ""
 
+        if len(self.inventory) <= 0:
+            self.currentIndex = 0
+            self.bagUi.setText("There isnt any items.")
+            return
+
         index = self.currentIndex - self.topVisibleIndex
         self.bagUi.setYOfCursor(index)
-        self.bagUi.dialog.text = dataLoader.getItem(self.inventory[self.currentIndex].name).description
+        self.bagUi.setText(dataLoader.getItem(self.inventory[self.currentIndex].name).description)
 
     def on_key_press(self, key, modifiers):
         if self.isPressed(CONFIG.controls.up, key):
@@ -74,19 +78,23 @@ class BagView(arcade.View):
             self.changeBag()
         elif self.isPressed(CONFIG.controls.cancel, key):
             self.window.show_view(self.previousWindow)
+        elif self.isPressed(CONFIG.controls.interact, key) and self.bagIndex == 0:
+            self.bagSystem.useItem(self.currentIndex)
+            self.updateItem()
             
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def changeBag(self):
+        self.currentIndex = 0
         if self.bagIndex == 0:
-            self.inventory = self.items
+            self.inventory = self.bagSystem.getItems()
             self.bagUi.changeBag("items")
             
             self.bagUi.setupInvetory()
             self.updateItem()
         else:
-            self.inventory = self.pokeball
+            self.inventory = self.bagSystem.getPokeballs()
             self.bagUi.changeBag("pokeball")
             
             self.bagUi.setupInvetory()
