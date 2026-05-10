@@ -65,7 +65,7 @@ class PokemonBattle():
             self.currentHp = 0
 
     def useMove(self, index: int, pokemon: PokemonBattle) -> list[str]:
-        move = dataLoader.getAMove(self.moves[index].name)
+        move = dataLoader.getMove(self.moves[index].name)
 
         text = []
 

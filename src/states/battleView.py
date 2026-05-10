@@ -42,7 +42,7 @@ class BattleView(arcade.View):
         self.ui.setEnemyInformation(self.enemyPokemon.pokemonBattle.name.upper(), self.enemyPokemon.pokemonBattle.level)
         self.ui.switchMenu("main")
         self.updateUiMoves()
-        first_move = dataLoader.getAMove(self.yourPokemon.pokemonBattle.moves[0].name)
+        first_move = dataLoader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
 
         self.ui.setMoveInformation(first_move.type, first_move.pp, self.yourPokemon.pokemonBattle.moves[0].pp)
         
@@ -176,7 +176,7 @@ class BattleView(arcade.View):
         if index is not None:
             move_name = self.yourPokemon.pokemonBattle.moves[index].name
 
-            move = dataLoader.getAMove(move_name)
+            move = dataLoader.getMove(move_name)
             self.ui.setMoveInformation(move.type, move.pp, self.yourPokemon.pokemonBattle.moves[index].pp)
 
     def run(self):
