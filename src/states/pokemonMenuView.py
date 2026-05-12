@@ -14,7 +14,7 @@ class PokemonMenuView(arcade.View):
         arcade.load_font(FONT)
         
         self.team = saveManager.player.pokemon
-        self.index = 0
+        self.teamIndex = 0
         
         self.ui = PokemonMenuUi()
         self.ui.setValues(self.team)
@@ -26,19 +26,21 @@ class PokemonMenuView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if self.isPressed(CONFIG.controls.down, key):
-            self.index += 1
+            self.teamIndex += 1
             
-            if self.index == len(self.team):
-                self.index = 0
+            if self.teamIndex == len(self.team):
+                self.teamIndex = 0
                 
-            self.ui.selectPokemon(self.index)
+            self.ui.selectPokemon(self.teamIndex)
         elif self.isPressed(CONFIG.controls.up, key):
-            self.index -= 1
+            self.teamIndex -= 1
             
-            if self.index == -1:
-                self.index = len(self.team) - 1
+            if self.teamIndex == -1:
+                self.teamIndex = len(self.team) - 1
                 
-            self.ui.selectPokemon(self.index)
+            self.ui.selectPokemon(self.teamIndex)
+        elif self.isPressed(CONFIG.controls.interact, key):
+            self.ui.showTooltip(self.teamIndex)
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

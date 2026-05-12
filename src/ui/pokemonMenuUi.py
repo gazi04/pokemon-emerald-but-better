@@ -24,6 +24,10 @@ class PokemonMenuUi:
             "assets/ui/sprites/emptyProfile.png")
 
         self._pokemonUis = [{} for _ in range(6)]
+        
+        self._tooltip = arcade.gui.UIWidget()
+        self._tooltip.visible = False
+        self.manager.add(self._tooltip)
 
         for obj in uiLayer.tiled_objects:
             w = obj.size.width
@@ -36,6 +40,11 @@ class PokemonMenuUi:
                     texture=arcade.load_texture(
                         "assets/ui/sprites/pokemonMenuBg.png"),
                     x=x, y=y, width=w, height=h
+                ))
+            elif obj.name == "tooltip":
+                self._tooltip.add(arcade.gui.UIImage(
+                    texture=arcade.load_texture("assets/ui/sprites/box2.png"),
+                    width=w, height=h
                 ))
             elif obj.name == "pokemon1":
                 slot = int(obj.name[-1]) - 1
@@ -160,6 +169,11 @@ class PokemonMenuUi:
                 slot["profile"].texture = self._emptyTexture
                 
         self.selectPokemon(0)
+
+    def showTooltip(self, index:int):
+        self._tooltip.visible = True
+        self._tooltip.center_x = self._pokemonUis[index]["profile"].rect.left + 30
+        self._tooltip.center_y = self._pokemonUis[index]["profile"].rect.center_y
 
     def selectPokemon(self, index: int):
         for i, ui in enumerate(self._pokemonUis):
