@@ -1,5 +1,6 @@
 import arcade
 from src.states.overworld_view import OverworldView, CONFIG
+from src.states.pokemonMenuView import PokemonMenuView
 import src.core.gameContext 
 
 def main():
@@ -13,7 +14,7 @@ def main():
         resizable=CONFIG.window.resizable,
     )
 
-    start_view = OverworldView()
+    start_view = PokemonMenuView()
     window.show_view(start_view)
     arcade.run()
 

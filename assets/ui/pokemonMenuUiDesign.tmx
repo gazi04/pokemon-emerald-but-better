@@ -49,7 +49,7 @@
   <object id="5" name="pokemon3" gid="24" x="373" y="164" width="383.4" height="59.4"/>
   <object id="47" name="pokeball3" gid="19" x="356.917" y="165.084" width="54" height="54"/>
   <object id="48" name="pokemonSprite3" gid="12" x="356.417" y="181.084" width="72" height="72"/>
-  <object id="49" name="hpText2" x="659.25" y="142.084" width="83" height="19">
+  <object id="49" name="hpText3" x="659.25" y="142.084" width="83" height="19">
    <text wrap="1">Hello World</text>
   </object>
   <object id="50" name="levelText3" x="460.75" y="141.916" width="83" height="19">

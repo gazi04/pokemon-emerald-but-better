@@ -15,7 +15,7 @@ class DataLoader:
     def getMove(self, name) -> PokemonMove | None:
         return self.moves.get(name)  
     
-    def getPokemon(self, name) -> Item | None:
+    def getPokemon(self, name) -> PokemonProfile | None:
         return self.pokemons.get(name)  
     
     def getItem(self, name) -> Item | None:

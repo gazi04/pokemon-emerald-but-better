@@ -1,59 +1,76 @@
 import arcade
 import arcade.gui
+from src.model.player import PlayerPokemon
+from src.core.gameContext import dataLoader
+
 
 class PokemonMenuUi:
     def __init__(self):
         self.manager = arcade.gui.UIManager()
         self.manager._pixelated = True
-        
+
         tilemap = arcade.load_tilemap("assets/ui/pokemonMenuUiDesign.tmx")
         uiLayer = tilemap.get_tilemap_layer("ui")
-        
-        self.pokemonUis = [{} for _ in range(6)]
-        
+
+        self._profileTexture = arcade.load_texture(
+            "assets/ui/sprites/pokemonProfile.png")
+        self._profileSelectedTexture = arcade.load_texture(
+            "assets/ui/sprites/pokemonProfileSelected.png")
+        self._leadTexture = arcade.load_texture(
+            "assets/ui/sprites/pokemonLead.png")
+        self._leadSelectedTexture = arcade.load_texture(
+            "assets/ui/sprites/pokemonLeadSelected.png")
+        self._emptyTexture = arcade.load_texture(
+            "assets/ui/sprites/emptyProfile.png")
+
+        self._pokemonUis = [{} for _ in range(6)]
+
         for obj in uiLayer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
-            
+
             if obj.name == "background":
                 self.manager.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/pokemonMenuBg.png"),
+                    texture=arcade.load_texture(
+                        "assets/ui/sprites/pokemonMenuBg.png"),
                     x=x, y=y, width=w, height=h
                 ))
             elif obj.name == "pokemon1":
                 slot = int(obj.name[-1]) - 1
                 button = arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/pokemonLead.png"),
+                    texture=self._leadTexture,
                     x=x, y=y, width=w, height=h
                 )
-                self.pokemonUis[slot]["profile"] = button
+                self._pokemonUis[slot]["profile"] = button
                 self.manager.add(button)
             elif "pokemon" in obj.name and "pokemonSprite" not in obj.name:
                 slot = int(obj.name[-1]) - 1
                 button = arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/pokemonProfile.png"),
+                    texture=self._profileTexture,
                     x=x, y=y, width=w, height=h
                 )
-                self.pokemonUis[slot]["profile"] = button
+                self._pokemonUis[slot]["profile"] = button
                 self.manager.add(button)
 
             elif "pokeball" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 image = arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/pokeballProfile.png"),
+                    texture=arcade.load_texture(
+                        "assets/ui/sprites/pokeballProfile.png"),
                     x=x, y=y, width=w, height=h
                 )
-                self.pokemonUis[slot]["pokeball"] = image 
+                self._pokemonUis[slot]["pokeball"] = image
                 self.manager.add(image)
             elif "pokemonSprite" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 image = arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/sprite/pokemon/question_mark.png"),
+                    texture=arcade.load_texture(
+                        "assets/sprite/pokemon/question_mark.png"),
                     x=x, y=y, width=w, height=h
                 )
-                self.pokemonUis[slot]["pokemon"] = image
+                self._pokemonUis[slot]["pokemon"] = image
                 self.manager.add(image)
             elif "hpText" in obj.name:
                 slot = int(obj.name[-1]) - 1
@@ -65,7 +82,7 @@ class PokemonMenuUi:
                     align="right",
                     x=x, y=y - h, width=w, height=h
                 )
-                self.pokemonUis[slot]["hpText"] = text
+                self._pokemonUis[slot]["hpText"] = text
                 self.manager.add(text)
             elif "levelText" in obj.name:
                 slot = int(obj.name[-1]) - 1
@@ -76,19 +93,27 @@ class PokemonMenuUi:
                     font_size=15,
                     x=x, y=y - h, width=w, height=h
                 )
-                self.pokemonUis[slot]["levelText"] = text
+                self._pokemonUis[slot]["levelText"] = text
                 self.manager.add(text)
             elif "nameText" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 text = arcade.gui.UILabel(
-                    text="Unknown",  
+                    text="Unknown",
                     text_color=arcade.color.WHITE,
                     font_name="Pokemon Emerald",
                     font_size=15,
                     x=x, y=y - h, width=w, height=h
                 )
-                self.pokemonUis[slot]["nameText"] = text
+                self._pokemonUis[slot]["nameText"] = text
                 self.manager.add(text)
+            elif "hpBar" in obj.name:
+                slot = int(obj.name[-1]) - 1
+                self._pokemonUis[slot]["hpBar"] = {
+                    "x": x,
+                    "y": y - h,
+                    "w": w,
+                    "h": h,
+                }
             elif obj.name == "box":
                 self.manager.add(arcade.gui.UIImage(
                     texture=arcade.load_texture("assets/ui/sprites/box.png"),
@@ -96,12 +121,69 @@ class PokemonMenuUi:
                 ))
             elif obj.name == "text":
                 self.manager.add(arcade.gui.UILabel(
-                    text="Choose Pokemon", 
+                    text="Choose Pokemon",
                     text_color=arcade.color.BLACK,
                     font_name="Pokemon Emerald",
                     font_size=25,
                     x=x, y=y - h, width=w, height=h
                 ))
+
+    def setValues(self, pokemons: list[PlayerPokemon]):
+        SKIP_KEYS = {"hpBar", "profile"}
+
+        for i, slot in enumerate(self._pokemonUis):
+            if i < len(pokemons):
+                pokemon = pokemons[i]
+                pokemonProfile = dataLoader.getPokemon(pokemon.name)
+                maxHp = ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
+
+                slot["nameText"].text = pokemon.name.upper()
+                slot["levelText"].text = f"Lv{pokemon.level}"
+                slot["hpText"].text = f"{pokemon.hp}/{maxHp}"
+                slot["pokemon"].texture = arcade.load_texture(pokemonProfile.sprites.front)
+
+                for key, element in slot.items():   
+                    if key not in SKIP_KEYS:       
+                        element.visible = True
+
+                if i == 0:
+                    slot["profile"].texture = self._leadTexture
+                else:
+                    slot["profile"].texture = self._profileTexture
+            else:
+                for key, element in slot.items():
+                    if key not in SKIP_KEYS:
+                        element.visible = False
+
+                slot["profile"].texture = self._emptyTexture
+
+    def drawHpBars(self, pokemons: list[PlayerPokemon]):
+        for i, pokemon in enumerate(pokemons):
+            pokemonProfile = dataLoader.getPokemon(pokemon.name)
+            maxHp = ((2 * pokemonProfile.stats.hp * pokemon.level) //
+                     100) + 5 + pokemon.level
+
+            self._drawHpBar(pokemon.hp / maxHp, i)
+
+    def _drawHpBar(self, ratio: float, index: int):
+        barData = self._pokemonUis[index]["hpBar"]
+
+        fullWidth = barData["w"]
+        currentWidth = fullWidth * ratio
+
+        color = arcade.color.GREEN
+        if ratio < 0.2:
+            color = arcade.color.RED
+        elif ratio < 0.5:
+            color = arcade.color.GOLD
+
+        arcade.draw_lrbt_rectangle_filled(
+            left=barData["x"],
+            right=barData["x"] + currentWidth,
+            bottom=barData["y"],
+            top=barData["y"] + barData["h"],
+            color=color,
+        )
 
     def draw(self):
         self.manager.draw()
