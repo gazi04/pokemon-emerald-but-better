@@ -135,15 +135,17 @@ class PokemonMenuUi:
             if i < len(pokemons):
                 pokemon = pokemons[i]
                 pokemonProfile = dataLoader.getPokemon(pokemon.name)
-                maxHp = ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
+                maxHp = ((2 * pokemonProfile.stats.hp *
+                         pokemon.level) // 100) + 5 + pokemon.level
 
                 slot["nameText"].text = pokemon.name.upper()
                 slot["levelText"].text = f"Lv{pokemon.level}"
                 slot["hpText"].text = f"{pokemon.hp}/{maxHp}"
-                slot["pokemon"].texture = arcade.load_texture(pokemonProfile.sprites.front)
+                slot["pokemon"].texture = arcade.load_texture(
+                    pokemonProfile.sprites.front)
 
-                for key, element in slot.items():   
-                    if key not in SKIP_KEYS:       
+                for key, element in slot.items():
+                    if key not in SKIP_KEYS:
                         element.visible = True
 
                 if i == 0:
@@ -156,6 +158,23 @@ class PokemonMenuUi:
                         element.visible = False
 
                 slot["profile"].texture = self._emptyTexture
+                
+        self.selectPokemon(0)
+
+    def selectPokemon(self, index: int):
+        for i, ui in enumerate(self._pokemonUis):
+            if ui["profile"].texture == self._emptyTexture:
+                continue
+            
+            if i == index:
+                ui["profile"].texture = self._leadSelectedTexture if i == 0 else self._profileSelectedTexture
+            else:
+                ui["profile"].texture = self._leadTexture if i == 0 else self._profileTexture
+                
+            for key, element in ui.items():
+                if key != "hpBar":
+                    self.manager.remove(element)
+                    self.manager.add(element)
 
     def drawHpBars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
