@@ -1,5 +1,5 @@
 import json
-from src.model.pokemon import PokemonProfile, PokemonSprites, PokemonStat, PokemonMove, PokemonMoveEffect
+from src.model.pokemon import PokemonProfile, PokemonSprites, PokemonStat, PokemonMove, PokemonMoveEffect, PokemonEvolution
 from src.model.item import Item, ItemEffect
 
 class DataLoader:
@@ -28,13 +28,12 @@ class DataLoader:
         for name, pokemon in data.items():  
             sprites = PokemonSprites(**pokemon["sprites"])
             stats = PokemonStat(**pokemon["stats"])
+            evolution = PokemonEvolution(pokemon["evolution"]) if pokemon["evolution"] else None
             
             self.pokemons[name] = PokemonProfile( 
-                pokemon.get("baseExp"), 
-                pokemon.get("evolution"),
+                pokemon, 
+                evolution,
                 sprites,
-                pokemon.get("abilities"),
-                pokemon.get("types"),
                 stats
             )
     
@@ -43,32 +42,15 @@ class DataLoader:
             data = json.load(f)
             
         for name, move in data.items():
-            effects = []
+            effects = [PokemonMoveEffect(effect)  for effect in move["effects"]]
             
-            for effect in move["effects"]:
-                effects.append(PokemonMoveEffect(**effect))
-            
-            self.moves[name] = PokemonMove(   
-                move["category"],
-                move["type"],
-                move["power"],
-                move["accuracy"],
-                move["pp"],
-                effects
-            )
+            self.moves[name] = PokemonMove(move,  effects)
     
     def _loadItems(self):
         with open("data/items.json", "r") as f:
             data = json.load(f)
             
         for name, item in data.items():
-            effects = []
+            effects = [ItemEffect(effect) for effect in item["effects"]]
             
-            for effect in item["effects"]:
-                effects.append(ItemEffect(**effect))
-            
-            self.items[name] = Item(      
-                item.get("description"),
-                item.get("price"),
-                effects
-            )
+            self.items[name] = Item(item, effects)

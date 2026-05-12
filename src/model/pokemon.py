@@ -30,6 +30,14 @@ class PokemonMove:
     pp: int
     effects: list[PokemonMoveEffect]
     
+    def __init__(self, move:dict, effects:list[PokemonMoveEffect]):
+        self.category = move["category"]
+        self.type = move["type"]
+        self.power = move["power"]
+        self.accuracy = move["accuracy"]
+        self.pp = move["pp"]
+        self.effects = effects
+    
 @dataclass
 class PokemonMoveEffect:
     target: str
@@ -38,6 +46,14 @@ class PokemonMoveEffect:
     change: Optional[str] = None
     condition: Optional[str] = None
     chance: Optional[str] = None
+    
+    def __init__(self, effect: dict):
+        self.target = effect["target"]
+        self.type = effect["type"]
+        self.stat = effect.get("stat")
+        self.change = effect.get("change")
+        self.condition = effect.get("condition")
+        self.chance = effect.get("chance")
 
 @dataclass
 class PokemonSprites:
@@ -48,6 +64,10 @@ class PokemonSprites:
 class PokemonEvolution:
     to: str
     levelCap: int
+    
+    def __init__(self, evolution:dict):
+        self.to = evolution["to"]
+        self.levelCap = evolution["level"]
 
 @dataclass
 class PokemonProfile:
@@ -57,3 +77,11 @@ class PokemonProfile:
     abilities: list[str] = None
     types: list[str] = None
     stats: PokemonStat = None
+    
+    def __init__(self, pokemon:dict, evolution:PokemonEvolution, sprites: PokemonSprites, stats:PokemonStat):
+        self.baseExp = pokemon["baseExp"]
+        self.abilities = pokemon["abilities"]
+        self.types = pokemon["types"]
+        self.evolution = evolution
+        self.sprites = sprites
+        self.stats = stats
