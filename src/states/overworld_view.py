@@ -1,8 +1,9 @@
 import arcade
-from src.entities.player import Player
+from src.entities.playerController import Player
 from src.states.battleView import BattleView
 from src.states.bagView import BagView
 from data.config import Config
+from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
 
 CONFIG = Config.load()
 
@@ -16,7 +17,7 @@ class OverworldView(arcade.View):
             arcade.gl.NEAREST,
         )
 
-        arcade.load_font("assets/fonts/pokemon-emerald.otf")
+        arcade.load_font(FONT)
 
         self.player = Player()
 
@@ -27,11 +28,10 @@ class OverworldView(arcade.View):
         self.transition_timer = 0.0
         self.max_transition_time = 0.8
         self.canRenderScene = True
-        self.flickerInterval = 0.05
+        self.flickerInterval = FLICKER_INTERVAL
         
         self.setup()
         
-        print(self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates)
         position = self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
         
         self.player.teleportPlayer(position.x, position.y)
@@ -68,6 +68,7 @@ class OverworldView(arcade.View):
             if self.transition_timer >= self.max_transition_time:
                 name, level, data = self.pending_battle_data
                 self.window.show_view(BattleView(name, data, level, self))
+                self.keys.clear()
 
                 self.transition_active = False
                 self.canRenderScene = True
@@ -75,7 +76,7 @@ class OverworldView(arcade.View):
             return
 
         self.camera.position = arcade.math.lerp_2d(
-            self.camera.position, self.player.getPosition(), 0.2
+            self.camera.position, self.player.getPosition(), CAMERA_LERP_SPEED
         )
 
         result = self.player.update(
@@ -113,14 +114,13 @@ class OverworldView(arcade.View):
         if self.isPressed(CONFIG.controls.bag, key):
             self.window.show_view(BagView(self))
 
-    def isPressed(self, configKey, key):
+    def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def on_key_release(self, key, _):
         self.keys.discard(key)
 
     def startBattle(self, name, level, data):
-        self.keys.clear()
         self.transition_active = True
         self.transition_timer = 0.0
         self.pending_battle_data = (name, level, data)

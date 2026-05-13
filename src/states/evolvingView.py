@@ -1,6 +1,7 @@
 import arcade
 import arcade.gui
 import math
+from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE, TEXT_DELAY
 
 
 class EvolvingView(arcade.View):
@@ -9,7 +10,7 @@ class EvolvingView(arcade.View):
 
         self.overworld = overworldView
 
-        tilemap = arcade.load_tilemap("assets/ui/evolvingUiDesign.tmx")
+        tilemap = arcade.load_tilemap(EVOLVING_UI)
         uiLayer = tilemap.get_tilemap_layer("ui")
 
         self.manager = arcade.gui.UIManager()
@@ -67,8 +68,8 @@ class EvolvingView(arcade.View):
                     ),
                     x=x,
                     y=y,
-                    width=200,
-                    height=200,
+                    width=EVOLVE_IMAGE_SIZE,
+                    height=EVOLVE_IMAGE_SIZE,
                 )
 
                 self.manager.add(self.pokemon1)
@@ -79,8 +80,8 @@ class EvolvingView(arcade.View):
                     ),
                     x=x,
                     y=y,
-                    width=200,
-                    height=200,
+                    width=EVOLVE_IMAGE_SIZE,
+                    height=EVOLVE_IMAGE_SIZE,
                 )
 
                 self.manager.add(self.pokemon2)
@@ -135,7 +136,7 @@ class EvolvingView(arcade.View):
             self.pulse_speed += delta_time * 2
 
             scale = abs(math.sin(self.anim_timer * self.pulse_speed)) + 0.3
-            size = 200 * scale
+            size = EVOLVE_IMAGE_SIZE * scale
 
             if math.sin(self.anim_timer * self.pulse_speed) > 0:
                 self.pokemon1.visible = True
@@ -152,7 +153,7 @@ class EvolvingView(arcade.View):
                 self.finish_evolution()
 
         if len(self.currentText) < len(self.targetText):
-            if self.textDelayTimer > 0.03:
+            if self.textDelayTimer > TEXT_DELAY:
                 self.currentText += self.targetText[len(self.currentText)]
                 self.dialogText.text = self.currentText
                 self.manager.trigger_render()
@@ -165,8 +166,8 @@ class EvolvingView(arcade.View):
 
         self.pokemon1.visible = False
         self.pokemon2.visible = True
-        self.pokemon2.width = 200
-        self.pokemon2.height = 200
+        self.pokemon2.width = EVOLVE_IMAGE_SIZE
+        self.pokemon2.height = EVOLVE_IMAGE_SIZE
         self.targetText = "Congratulations! It evolved!"
         self.currentText = ""
 
@@ -174,14 +175,3 @@ class EvolvingView(arcade.View):
 
     def end(self, dt):
         self.window.show_view(self.overworld)
-
-
-if __name__ == "__main__":
-    window = arcade.Window(
-        width=800,
-        height=600,
-    )
-
-    start_view = EvolvingView(None, "combusken", "combusken")
-    window.show_view(start_view)
-    arcade.run()
