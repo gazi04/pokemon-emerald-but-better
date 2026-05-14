@@ -1,13 +1,14 @@
 import arcade
 from data.config import Config
-from src.core.gameContext import saveManager,dataLoader
+from src.core.gameContext import saveManager, dataLoader
 from src.ui.bagUi import BagUI
 from src.constants import MAX_VISIBLE_ITEMS
 
 CONFIG = Config.load()
 
+
 class BagView(arcade.View):
-    def __init__(self, previousWindow:arcade.View):
+    def __init__(self, previousWindow: arcade.View):
         super().__init__()
 
         self.bagUi = BagUI()
@@ -45,7 +46,9 @@ class BagView(arcade.View):
 
         index = self.currentIndex - self.topVisibleIndex
         self.bagUi.setYOfCursor(index)
-        self.bagUi.dialog.text = dataLoader.getItem(self.inventory[self.currentIndex].name).description
+        self.bagUi.dialog.text = dataLoader.getItem(
+            self.inventory[self.currentIndex].name
+        ).description
 
     def on_key_press(self, key, modifiers):
         if self.isPressed(CONFIG.controls.up, key):
@@ -74,7 +77,7 @@ class BagView(arcade.View):
             self.changeBag()
         elif self.isPressed(CONFIG.controls.cancel, key):
             self.window.show_view(self.previousWindow)
-            
+
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
@@ -82,13 +85,13 @@ class BagView(arcade.View):
         if self.bagIndex == 0:
             self.inventory = self.items
             self.bagUi.changeBag("items")
-            
+
             self.bagUi.setupInvetory()
             self.updateItem()
         else:
             self.inventory = self.pokeball
             self.bagUi.changeBag("pokeball")
-            
+
             self.bagUi.setupInvetory()
             self.updateItem()
 

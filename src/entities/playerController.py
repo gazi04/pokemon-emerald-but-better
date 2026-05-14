@@ -45,12 +45,10 @@ class Player:
             self.moveProgress = 1.0
 
         self.sprites.center_x = (
-            self.start_x + (self.target_x - self.start_x) *
-            self.moveProgress
+            self.start_x + (self.target_x - self.start_x) * self.moveProgress
         )
         self.sprites.center_y = (
-            self.start_y + (self.target_y - self.start_y) *
-            self.moveProgress
+            self.start_y + (self.target_y - self.start_y) * self.moveProgress
         )
 
         progress = int(self.moveProgress * 4) % 4
@@ -73,13 +71,10 @@ class Player:
                 pokemonList = getEnc()[self.map]["grass"]
 
                 pokemon = random.choices(
-                    pokemonList, weights=[p["weight"]
-                                          for p in pokemonList]
+                    pokemonList, weights=[p["weight"] for p in pokemonList]
                 )[0]
                 pokemon_data = dataLoader.getPokemon(pokemon["name"])
-                pokemon_lvl = random.randint(
-                    pokemon["levels"][0], pokemon["levels"][1]
-                )
+                pokemon_lvl = random.randint(pokemon["levels"][0], pokemon["levels"][1])
                 return {
                     "type": "encounter",
                     "name": pokemon["name"],
@@ -119,9 +114,7 @@ class Player:
                     "y": hitTransitions[0].properties["y"],
                 }
 
-            hit_list = arcade.get_sprites_at_point(
-                (target_x, target_y), collisionTiles
-            )
+            hit_list = arcade.get_sprites_at_point((target_x, target_y), collisionTiles)
 
             if not hit_list:
                 self.moving = True
@@ -132,7 +125,7 @@ class Player:
 
                 self.target_x = target_x
                 self.target_y = target_y
-                
+
                 self.sprites.setIdle(self.direction)
             else:
                 self.sprites.setIdle(self.direction)

@@ -29,14 +29,15 @@ class OverworldView(arcade.View):
         self.max_transition_time = 0.8
         self.canRenderScene = True
         self.flickerInterval = FLICKER_INTERVAL
-        
+
         self.setup()
-        
-        position = self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
-        
+
+        position = (
+            self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
+        )
+
         self.player.teleportPlayer(position.x, position.y)
-        
-        
+
     def setup(self, map=None, playerPos=None):
         layer_options = {
             "collision": {"use_spatial_hash": True},
@@ -44,9 +45,7 @@ class OverworldView(arcade.View):
             "transitions": {"use_spatial_hash": True},
         }
         self.tile_map = arcade.tilemap.load_tilemap(
-            map or CONFIG.game.starting_map, 
-            scaling=2.0,
-            layer_options=layer_options
+            map or CONFIG.game.starting_map, scaling=2.0, layer_options=layer_options
         )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
@@ -110,7 +109,7 @@ class OverworldView(arcade.View):
 
     def on_key_press(self, key, _):
         self.keys.add(key)
-        
+
         if self.isPressed(CONFIG.controls.bag, key):
             self.window.show_view(BagView(self))
 

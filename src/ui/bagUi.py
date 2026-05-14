@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 from src.constants import BAG_UI, MAX_VISIBLE_ITEMS
 
+
 class BagUI:
     def __init__(self):
         self.manager = arcade.gui.UIManager()
@@ -20,23 +21,23 @@ class BagUI:
             if obj.name == "background":
                 self.manager.add(
                     arcade.gui.UIImage(
-                        texture=arcade.load_texture(
-                            "assets/ui/sprites/bagUi.png"),
+                        texture=arcade.load_texture("assets/ui/sprites/bagUi.png"),
                         width=w,
                         height=h,
                         x=x,
-                        y=y
+                        y=y,
                     )
                 )
             elif "Arrow" in obj.name:
                 self.manager.add(
                     arcade.gui.UIImage(
                         texture=arcade.load_texture(
-                            f"assets/ui/sprites/{obj.name}.png"),
+                            f"assets/ui/sprites/{obj.name}.png"
+                        ),
                         width=w,
                         height=h,
                         x=x,
-                        y=y
+                        y=y,
                     )
                 )
             elif obj.name == "section":
@@ -49,17 +50,16 @@ class BagUI:
                     text_color=arcade.color.BLACK,
                     font_name="Pokemon Emerald",
                     font_size=25,
-                    align="center"
+                    align="center",
                 )
                 self.manager.add(self.sectionText)
             elif obj.name == "bag":
                 self.bag = arcade.gui.UIImage(
-                    texture=arcade.load_texture(
-                        "assets/ui/sprites/bagItem.png"),
+                    texture=arcade.load_texture("assets/ui/sprites/bagItem.png"),
                     width=w,
                     height=h,
                     x=x,
-                    y=y
+                    y=y,
                 )
                 self.manager.add(self.bag)
             elif obj.name == "text":
@@ -72,19 +72,21 @@ class BagUI:
                     text_color=arcade.color.BLACK,
                     font_name="Pokemon Emerald",
                     font_size=30,
-                    multiline=True
+                    multiline=True,
                 )
                 self.manager.add(self.dialog)
-    
+
         self.bagItemTexture = arcade.load_texture("assets/ui/sprites/bagItem.png")
-        self.bagPokeballTexture = arcade.load_texture("assets/ui/sprites/bagPokeball.png")
-        
+        self.bagPokeballTexture = arcade.load_texture(
+            "assets/ui/sprites/bagPokeball.png"
+        )
+
         self.itemLabels = []
 
         self.startX = 420
         self.startY = 500
-        self.spacing = 40        
-        
+        self.spacing = 40
+
         self.cursorLabel = arcade.Text(
             text="▶",
             x=self.startX - 30,
@@ -93,9 +95,9 @@ class BagUI:
             height=self.spacing,
             color=arcade.color.RED,
             font_name="Pokemon Emerald",
-            font_size=20
+            font_size=20,
         )
-    
+
     def setupInvetory(self):
         for item in self.itemLabels:
             self.manager.remove(item)
@@ -112,21 +114,21 @@ class BagUI:
                 height=self.spacing,
                 text_color=arcade.color.BLACK,
                 font_name="Pokemon Emerald",
-                font_size=30
+                font_size=30,
             )
             self.itemLabels.append(label)
-            self.manager.add(label)           
-    
-    def changeBag(self, bag:str):
+            self.manager.add(label)
+
+    def changeBag(self, bag: str):
         self.sectionText.text = bag.upper()
         if bag == "items":
             self.bag.texture = self.bagItemTexture
         elif bag == "pokeball":
             self.bag.texture = self.bagPokeballTexture
-    
-    def setYOfCursor(self, index:int):
+
+    def setYOfCursor(self, index: int):
         self.cursorLabel.y = self.startY - (index * self.spacing) + (self.spacing / 3)
-    
+
     def draw(self):
         self.manager.draw()
         self.cursorLabel.draw()
