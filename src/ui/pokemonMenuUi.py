@@ -27,7 +27,7 @@ class PokemonMenuUi:
         
         self._tooltip = arcade.gui.UIWidget()
         self._tooltip.visible = False
-        self.manager.add(self._tooltip)
+        self._tooltipButtons = []
 
         for obj in uiLayer.tiled_objects:
             w = obj.size.width
@@ -44,8 +44,31 @@ class PokemonMenuUi:
             elif obj.name == "tooltip":
                 self._tooltip.add(arcade.gui.UIImage(
                     texture=arcade.load_texture("assets/ui/sprites/box2.png"),
+                    x=0, y=0,
                     width=w, height=h
                 ))
+            elif obj.name == "info":
+                text = arcade.gui.UILabel(
+                    text="Info",
+                    text_color=arcade.color.BLACK,
+                    font_name="Pokemon Emerald",
+                    font_size=15,
+                    x=0, y=y - h,
+                    width=w, height=h
+                )
+                self._tooltip.add(text)
+                self._tooltipButtons.append(text)
+            elif obj.name == "move":
+                text = arcade.gui.UILabel(
+                    text="Move",
+                    text_color=arcade.color.BLACK,
+                    font_name="Pokemon Emerald",
+                    font_size=15,
+                    x=0, y=y - h,
+                    width=w, height=h
+                )
+                self._tooltip.add(text)
+                self._tooltipButtons.append(text)
             elif obj.name == "pokemon1":
                 slot = int(obj.name[-1]) - 1
                 button = arcade.gui.UIImage(
@@ -136,6 +159,17 @@ class PokemonMenuUi:
                     font_size=25,
                     x=x, y=y - h, width=w, height=h
                 ))
+        
+        self.manager.add(self._tooltip)
+        
+        self.cursorText = arcade.Text(
+            "▶",
+            0, 0,
+            arcade.color.RED,
+            font_size=12,
+            anchor_y="center",
+            font_name="Pokemon Emerald"
+        )
 
     def setValues(self, pokemons: list[PlayerPokemon]):
         SKIP_KEYS = {"hpBar", "profile"}
@@ -170,11 +204,6 @@ class PokemonMenuUi:
                 
         self.selectPokemon(0)
 
-    def showTooltip(self, index:int):
-        self._tooltip.visible = True
-        self._tooltip.center_x = self._pokemonUis[index]["profile"].rect.left + 30
-        self._tooltip.center_y = self._pokemonUis[index]["profile"].rect.center_y
-
     def selectPokemon(self, index: int):
         for i, ui in enumerate(self._pokemonUis):
             if ui["profile"].texture == self._emptyTexture:
@@ -189,6 +218,31 @@ class PokemonMenuUi:
                 if key != "hpBar":
                     self.manager.remove(element)
                     self.manager.add(element)
+
+    def isTooltipShowing(self) -> bool:
+        return self._tooltip.visible
+
+    def selectTooltipOption(self, index: int):
+        self.cursorText.x = self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.left - 10
+        self.cursorText.y = self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.center_y
+
+    def showTooltip(self, index:int):
+        self._tooltip.visible = True
+        self.cursorText.visible = True
+        
+        for i, element in enumerate(self._tooltip.children):
+            x = self._pokemonUis[index]["profile"].rect.right if index == 0 else self._pokemonUis[index]["profile"].rect.left
+            
+            x += (element.width // 2) + 5 + (15 if i > 0 else 0) if index == 0 else -(element.width // 2) - 5 + (5 if i > 0 else 0)
+            
+            element.center_x = x
+            element.center_y = self._pokemonUis[index]["profile"].rect.center_y + (element.height * i) + 5
+        
+        self.selectTooltipOption(0)
+
+    def hideTooltip(self):
+        self._tooltip.visible = False
+        self.cursorText.visible = False
 
     def drawHpBars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
@@ -220,3 +274,4 @@ class PokemonMenuUi:
 
     def draw(self):
         self.manager.draw()
+        self.cursorText.draw()
