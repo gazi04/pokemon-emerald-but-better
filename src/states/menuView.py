@@ -1,6 +1,7 @@
 import arcade
 from data.config import Config
 from src.states.bagView import BagView
+from src.states.pokemonMenuView import PokemonMenuView
 from src.ui.menuUi import MenuUi
 
 CONFIG = Config.load()
@@ -44,7 +45,7 @@ class MenuView(arcade.View):
     
     def action(self):
         if self.selectedIndex == 0:
-            pass
+            self.window.show_view(PokemonMenuView(self))
         elif self.selectedIndex == 1:
             self.window.show_view(BagView(self))
         elif self.selectedIndex == 2:

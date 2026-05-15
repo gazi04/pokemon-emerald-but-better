@@ -8,8 +8,10 @@ from src.constants import FONT
 CONFIG = Config.load()
 
 class PokemonMenuView(arcade.View):
-    def __init__(self):
+    def __init__(self, previousView:arcade.View):
         super().__init__()
+        
+        self.previousView = previousView
         
         arcade.load_font(FONT)
         
@@ -33,6 +35,11 @@ class PokemonMenuView(arcade.View):
             self.tooltip(key)
             return
         
+        if self.isPressed(CONFIG.controls.cancel, key) and not self.isMovingPokemon:
+            self.window.show_view(self.previousView)
+        elif self.isPressed(CONFIG.controls.cancel, key) and self.isMovingPokemon:
+            self.isMovingPokemon = False
+
         self.handlePokemonSelection(key)
 
     def handlePokemonSelection(self, key):
