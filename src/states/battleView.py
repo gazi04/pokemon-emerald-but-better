@@ -36,16 +36,26 @@ class BattleView(arcade.View):
             isEnemy=True,
         )
 
-        self.battleSystem = BattleSystem(self.yourPokemon.pokemonBattle, self.enemyPokemon.pokemonBattle)
+        self.battleSystem = BattleSystem(
+            self.yourPokemon.pokemonBattle, self.enemyPokemon.pokemonBattle
+        )
 
-        self.ui.setPlayerInformation(self.yourPokemon.pokemonBattle.name.upper(), self.yourPokemon.pokemonBattle.level)
-        self.ui.setEnemyInformation(self.enemyPokemon.pokemonBattle.name.upper(), self.enemyPokemon.pokemonBattle.level)
+        self.ui.setPlayerInformation(
+            self.yourPokemon.pokemonBattle.name.upper(),
+            self.yourPokemon.pokemonBattle.level,
+        )
+        self.ui.setEnemyInformation(
+            self.enemyPokemon.pokemonBattle.name.upper(),
+            self.enemyPokemon.pokemonBattle.level,
+        )
         self.ui.switchMenu("main")
         self.updateUiMoves()
         first_move = dataLoader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
 
-        self.ui.setMoveInformation(first_move.type, first_move.pp, self.yourPokemon.pokemonBattle.moves[0].pp)
-        
+        self.ui.setMoveInformation(
+            first_move.type, first_move.pp, self.yourPokemon.pokemonBattle.moves[0].pp
+        )
+
         self.ui.setTransition(self.yourPokemon, self.enemyPokemon)
 
     def updateUiMoves(self):
@@ -82,7 +92,9 @@ class BattleView(arcade.View):
                     self.run()
 
                 if result["isLeveledUp"]:
-                    self.ui.player_lvl_label = f"Lv{self.yourPokemon.pokemonBattle.level}"
+                    self.ui.player_lvl_label = (
+                        f"Lv{self.yourPokemon.pokemonBattle.level}"
+                    )
                     self.ui.manager.trigger_render()
                     self.ui.messageQueue.extend(
                         [
@@ -177,7 +189,9 @@ class BattleView(arcade.View):
             move_name = self.yourPokemon.pokemonBattle.moves[index].name
 
             move = dataLoader.getMove(move_name)
-            self.ui.setMoveInformation(move.type, move.pp, self.yourPokemon.pokemonBattle.moves[index].pp)
+            self.ui.setMoveInformation(
+                move.type, move.pp, self.yourPokemon.pokemonBattle.moves[index].pp
+            )
 
     def run(self):
         self.window.show_view(self.overworld_view)

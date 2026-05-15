@@ -3,8 +3,9 @@ import arcade.gui
 from src.entities.pokemonSprites import Pokemon
 from src.constants import BATTLE_UI, TEXT_DELAY
 
+
 class BattleUi:
-    def __init__(self, afterText:function):
+    def __init__(self, afterText: function):
         move_button_style = {
             "normal": arcade.gui.UIFlatButton.UIStyle(
                 font_size=24,
@@ -31,9 +32,9 @@ class BattleUi:
                 border_width=0,
             ),
         }
-        
+
         self.tilemap = arcade.tilemap.load_tilemap(BATTLE_UI)
-        
+
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.manager._pixelated = True
@@ -326,7 +327,7 @@ class BattleUi:
                         font_name="Pokemon Emerald",
                         font_size=25,
                         align="left",
-                        multiline=True
+                        multiline=True,
                     )
                     self.main_menu_container.add(self.dialogText)
                     self.dialog_menu_container.add(self.dialogText)
@@ -361,24 +362,25 @@ class BattleUi:
 
         self.cursorText = arcade.Text(
             "▶",
-            0, 0,
+            0,
+            0,
             arcade.color.BLACK,
             font_size=24,
             anchor_y="center",
-            font_name="Pokemon Emerald"
+            font_name="Pokemon Emerald",
         )
-        
+
         self.isSliding = False
         self.targetX = self.playerHpWidget.center_x
         self.switchMenu("main")
-    
+
     def update(self, delta_time):
         self.transition()
         self.dialog(delta_time)
-     
+
     def draw(self):
         self.manager.draw()
-        
+
         if self.activeMenu != "dialog":
             currentList = (
                 self.mainButtons if self.activeMenu == "main" else self.moveButtons
@@ -389,12 +391,12 @@ class BattleUi:
             self.cursorText.y = active.rect.center_y
 
             self.cursorText.draw()
-     
-    def setTransition(self, yourPokemon:Pokemon, enemyPokemon:Pokemon):
+
+    def setTransition(self, yourPokemon: Pokemon, enemyPokemon: Pokemon):
         self.isSliding = True
         self.yourPokemon = yourPokemon
         self.enemyPokemon = enemyPokemon
-        
+
         self.messageQueue = [
             f"A foe {self.yourPokemon.pokemonBattle.name} appeared!",
             f"Go! {self.enemyPokemon.pokemonBattle.name}!",
@@ -416,7 +418,7 @@ class BattleUi:
         self.hpBars["enemy"]["x"] -= 400
         self.enemyPokemon.center_x += 400
         self.enemyPlatform.center_x += 400
-        
+
     def transition(self):
         if self.isSliding:
             transitionSpeed = 7
@@ -464,7 +466,7 @@ class BattleUi:
 
             self.afterText()
 
-    def drawHpBar(self, ratio:float, target:str):
+    def drawHpBar(self, ratio: float, target: str):
         barData = self.hpBars[target]
 
         fullWidth = barData["w"]
@@ -484,7 +486,7 @@ class BattleUi:
             color=color,
         )
 
-    def drawExpBar(self, ratio:float):
+    def drawExpBar(self, ratio: float):
         if not self.expBar:
             return
 
@@ -499,16 +501,16 @@ class BattleUi:
             color=arcade.color.CYAN,
         )
 
-    def setMoveInformation(self, type:str, pp:int, maxPp: int):
+    def setMoveInformation(self, type: str, pp: int, maxPp: int):
         self.type.text = type
         self.maxPP.text = maxPp
         self.currPP.text = pp
 
-    def setPlayerInformation(self, name:str, level:int):
+    def setPlayerInformation(self, name: str, level: int):
         self.playerNameLabel.text = name
         self.playerLevelLabel.text = f"Lv{level}"
 
-    def setEnemyInformation(self, name:str, level:int):
+    def setEnemyInformation(self, name: str, level: int):
         self.enemyNameLabel.text = name
         self.enemyLevelLabel.text = f"Lv{level}"
 

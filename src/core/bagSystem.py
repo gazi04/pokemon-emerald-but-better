@@ -19,15 +19,14 @@ class BagSystem:
     
     def _handleItemEffects(self, pokemonId:str, itemId:str):
         pokemon = saveManager.getPokemon(pokemonId)
-        item = dataLoader.getItem(itemId)
+        if not pokemon:
+            return
         
-        print(pokemon.hp)
+        item = dataLoader.getItem(itemId)
         
         for effect in item.effects:
             if effect.type == "heal":
                 pokemon.hp += effect.amount
-                
-        print(pokemon.hp)
                 
     def getItems(self):
         return self._items

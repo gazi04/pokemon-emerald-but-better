@@ -1,5 +1,6 @@
 import arcade
 
+
 class PlayerSprites(arcade.Sprite):
     def __init__(self):
         super().__init__(scale=1.9)
@@ -50,10 +51,10 @@ class PlayerSprites(arcade.Sprite):
         self.walkTextures["right"] = [
             tex.flip_left_right() for tex in self.walkTextures["left"]
         ]
-        
+
     def draw(self):
         arcade.draw_sprite(self)
-        
+
     def setIdle(self, direction):
         self.texture = self.idleTextures[direction]
 

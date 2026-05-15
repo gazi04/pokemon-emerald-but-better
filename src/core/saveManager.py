@@ -1,5 +1,11 @@
 import json
-from src.model.player import PlayerProfile, Item, Pokeball, PlayerPokemonMove, PlayerPokemon
+from src.model.player import (
+    PlayerProfile,
+    Item,
+    Pokeball,
+    PlayerPokemonMove,
+    PlayerPokemon,
+)
 
 
 class SaveManager:
@@ -22,18 +28,17 @@ class SaveManager:
             moves = []
 
             for move in pokemon["moves"]:
-                moves.append(PlayerPokemonMove(
-                    name=move["name"],
-                    pp=move["pp"]
-                ))
+                moves.append(PlayerPokemonMove(name=move["name"], pp=move["pp"]))
 
-            pokemons.append(PlayerPokemon(
-                name=pokemon["name"],
-                hp=pokemon["hp"],
-                level=pokemon["level"],
-                exp=pokemon["exp"],
-                moves=moves
-            ))
+            pokemons.append(
+                PlayerPokemon(
+                    name=pokemon["name"],
+                    hp=pokemon["hp"],
+                    level=pokemon["level"],
+                    exp=pokemon["exp"],
+                    moves=moves,
+                )
+            )
 
         for item in data["items"]:
             items.append(Item(item["name"], item["count"]))
@@ -41,11 +46,7 @@ class SaveManager:
         for pokeball in data["pokeballs"]:
             pokeballs.append(Item(pokeball["name"], pokeball["count"]))
 
-        return PlayerProfile(
-            pokemon=pokemons,
-            items=items,
-            pokeballs=pokeballs
-        )
+        return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs)
 
     def getPokemon(self, pokemonId) -> PlayerPokemon:
         for pokemon in self.player.pokemon:
@@ -108,16 +109,14 @@ class SaveManager:
             for move in pokemon.moves:
                 moves.append({"name": move.name, "pp": move.pp})
 
-            pokemons.append({
-                "name": pokemon.name,
-                "hp": pokemon.hp,
-                "level": pokemon.level,
-                "exp": pokemon.exp,
-                "moves": moves
-            })
+            pokemons.append(
+                {
+                    "name": pokemon.name,
+                    "hp": pokemon.hp,
+                    "level": pokemon.level,
+                    "exp": pokemon.exp,
+                    "moves": moves,
+                }
+            )
 
-        return {
-            "pokemon": pokemons,
-            "items": items,
-            "pokeballs": pokeballs
-        }
+        return {"pokemon": pokemons, "items": items, "pokeballs": pokeballs}

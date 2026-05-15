@@ -1,10 +1,11 @@
 import arcade
 from src.states.overworld_view import OverworldView, CONFIG
-import src.core.gameContext 
+import src.core.gameContext
+
 
 def main():
     """Start the game"""
-    
+
     window = arcade.Window(
         width=CONFIG.window.width,
         height=CONFIG.window.height,

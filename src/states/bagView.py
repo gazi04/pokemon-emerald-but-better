@@ -1,14 +1,15 @@
 import arcade
 from data.config import Config
-from src.core.gameContext import saveManager,dataLoader
+from src.core.gameContext import saveManager, dataLoader
 from src.ui.bagUi import BagUI
 from src.core.bagSystem import BagSystem
 from src.constants import MAX_VISIBLE_ITEMS
 
 CONFIG = Config.load()
 
+
 class BagView(arcade.View):
-    def __init__(self, previousWindow:arcade.View):
+    def __init__(self, previousWindow: arcade.View):
         super().__init__()
 
         self.bagUi = BagUI()
@@ -90,13 +91,13 @@ class BagView(arcade.View):
         if self.bagIndex == 0:
             self.inventory = self.bagSystem.getItems()
             self.bagUi.changeBag("items")
-            
+
             self.bagUi.setupInvetory()
             self.updateItem()
         else:
             self.inventory = self.bagSystem.getPokeballs()
             self.bagUi.changeBag("pokeball")
-            
+
             self.bagUi.setupInvetory()
             self.updateItem()
 

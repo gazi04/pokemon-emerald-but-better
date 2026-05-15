@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from typing import Optional
 
+
 @dataclass
 class PlayerPokemonMove:
     name: str
     pp: int
+
 
 @dataclass
 class PlayerPokemon:
@@ -14,15 +16,18 @@ class PlayerPokemon:
     exp: int
     moves: list[PlayerPokemonMove]
 
+
 @dataclass
 class Item:
     name: str
     count: int
 
+
 @dataclass
 class Pokeball:
     name: str
     count: int
+
 
 @dataclass
 class PlayerProfile:

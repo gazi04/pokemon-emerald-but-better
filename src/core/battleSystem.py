@@ -3,27 +3,26 @@ from src.entities.pokemonBattle import PokemonBattle
 from src.core.gameContext import saveManager
 import random
 
+
 class BattleSystem:
-    def __init__(self, yourPokemon: PokemonBattle, enemyPokemon:PokemonBattle):
+    def __init__(self, yourPokemon: PokemonBattle, enemyPokemon: PokemonBattle):
         self.yourPokemon = yourPokemon
         self.enemyPokemon = enemyPokemon
-        
+
         self.turnQueue = []
         self.battleState = "intro"
         self.exp = 0
         self.hasEvolved = False
-        
+
     def turn(self, moveIndex) -> list[str]:
         self.battleState = "currently turn"
 
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
 
         if self.yourPokemon.getStat("speed") >= self.enemyPokemon.getStat("speed"):
-            self.turnQueue = [("player", moveIndex),
-                               ("enemy", enemyMoveIndex)]
+            self.turnQueue = [("player", moveIndex), ("enemy", enemyMoveIndex)]
         else:
-            self.turnQueue = [("enemy", enemyMoveIndex),
-                               ("player", moveIndex)]
+            self.turnQueue = [("enemy", enemyMoveIndex), ("player", moveIndex)]
 
         return self.executeNextAction()
 
@@ -61,8 +60,7 @@ class BattleSystem:
                 ]
             )
         else:
-            self.ui.messageQueue.extend(
-                [f"{self.yourPokemon.name} fainted!"])
+            self.ui.messageQueue.extend([f"{self.yourPokemon.name} fainted!"])
 
         return message
 
@@ -84,7 +82,7 @@ class BattleSystem:
             self.battleState = "post turn"
         else:
             self.battleState = "waiting"
-            
+
         return messages
 
     def save(self):
@@ -103,4 +101,3 @@ class BattleSystem:
                 self.yourPokemon.exp,
                 self.yourPokemon.evolution.to,
             )
-

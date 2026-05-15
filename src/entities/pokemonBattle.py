@@ -6,16 +6,16 @@ from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
 from src.model.player import PlayerPokemonMove
 
 
-class PokemonBattle():
+class PokemonBattle:
     def __init__(
         self,
         name: str,
-        data:PokemonProfile,
-        moves:list[PlayerPokemonMove],
-        level:int,
-        isEnemy:bool,
-        currentHp:int = 0,
-        exp:int = 0,
+        data: PokemonProfile,
+        moves: list[PlayerPokemonMove],
+        level: int,
+        isEnemy: bool,
+        currentHp: int = 0,
+        exp: int = 0,
     ):
         self.name = name.capitalize()
 
@@ -51,12 +51,12 @@ class PokemonBattle():
 
     def calculateStats(self):
         self.stats = PokemonStat(
-            ((2 * self.baseStat.hp * self.level) // 100) + 5 + self.level, 
-            ((2 * self.baseStat.attack * self.level) // 100) + 5, 
-            ((2 * self.baseStat.defence * self.level) // 100) + 5, 
-            ((2 * self.baseStat.special_attack * self.level) // 100) + 5, 
-            ((2 * self.baseStat.special_defence * self.level) // 100) + 5, 
-            ((2 * self.baseStat.speed * self.level) // 100) + 5
+            ((2 * self.baseStat.hp * self.level) // 100) + 5 + self.level,
+            ((2 * self.baseStat.attack * self.level) // 100) + 5,
+            ((2 * self.baseStat.defence * self.level) // 100) + 5,
+            ((2 * self.baseStat.special_attack * self.level) // 100) + 5,
+            ((2 * self.baseStat.special_defence * self.level) // 100) + 5,
+            ((2 * self.baseStat.speed * self.level) // 100) + 5,
         )
 
     def takeDamage(self, damage: int):
@@ -140,11 +140,7 @@ class PokemonBattle():
 
         crit = 1
         if self.isCritical():
-            d = (
-                pokemon.stats.defence
-                if isPhysical
-                else pokemon.stats.special_defence
-            )
+            d = pokemon.stats.defence if isPhysical else pokemon.stats.special_defence
             crit = 2
             text.append("A critical hit!")
 
@@ -167,7 +163,9 @@ class PokemonBattle():
 
         return random.randint(1, denominator) == 1
 
-    def executeEffects(self, move: PokemonMove, pokemon: PokemonBattle, text: list[str]):
+    def executeEffects(
+        self, move: PokemonMove, pokemon: PokemonBattle, text: list[str]
+    ):
         for effect in move.effects:
             destination = self if effect.target == "self" else pokemon
 
@@ -222,7 +220,7 @@ class PokemonBattle():
     def getHpRatio(self) -> float:
         return self.currentHp / self.maxHp
 
-    def gainExp(self, exp:int):
+    def gainExp(self, exp: int):
         old_level = self.level
         self.exp += exp
         old_stats = self.stats.copy()
@@ -256,7 +254,7 @@ class PokemonBattle():
     def expNeeded(self):
         return self.level**3
 
-    def getStat(self, stat:str) -> int:
+    def getStat(self, stat: str) -> int:
         if stat == "hp":
             return self.stats.hp
 
