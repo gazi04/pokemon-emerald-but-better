@@ -28,6 +28,8 @@ class PokemonMenuUi:
         self._tooltip = arcade.gui.UIWidget()
         self._tooltip.visible = False
         self._tooltipButtons = []
+        
+        
 
         for obj in uiLayer.tiled_objects:
             w = obj.size.width
@@ -47,28 +49,6 @@ class PokemonMenuUi:
                     x=0, y=0,
                     width=w, height=h
                 ))
-            elif obj.name == "info":
-                text = arcade.gui.UILabel(
-                    text="Info",
-                    text_color=arcade.color.BLACK,
-                    font_name="Pokemon Emerald",
-                    font_size=15,
-                    x=0, y=y - h,
-                    width=w, height=h
-                )
-                self._tooltip.add(text)
-                self._tooltipButtons.append(text)
-            elif obj.name == "move":
-                text = arcade.gui.UILabel(
-                    text="Move",
-                    text_color=arcade.color.BLACK,
-                    font_name="Pokemon Emerald",
-                    font_size=15,
-                    x=0, y=y - h,
-                    width=w, height=h
-                )
-                self._tooltip.add(text)
-                self._tooltipButtons.append(text)
             elif obj.name == "pokemon1":
                 slot = int(obj.name[-1]) - 1
                 button = arcade.gui.UIImage(
@@ -170,6 +150,23 @@ class PokemonMenuUi:
             anchor_y="center",
             font_name="Pokemon Emerald"
         )
+        
+    def setupTooltip(self, options: list[str]):
+        for button in self._tooltipButtons:
+            self._tooltip.remove(button)
+        
+        self._tooltipButtons = []
+        
+        for i, option in enumerate(options):
+            button = arcade.gui.UILabel(
+                text=option,
+                text_color=arcade.color.BLACK,
+                font_name="Pokemon Emerald",
+                font_size=15,
+                x=0, y=(i * 20) + 5, width=self._tooltip.children[0].width - 10, height=20
+            )
+            self._tooltip.add(button)
+            self._tooltipButtons.append(button)
 
     def setValues(self, pokemons: list[PlayerPokemon]):
         SKIP_KEYS = {"hpBar", "profile"}

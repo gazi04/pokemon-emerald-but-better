@@ -4,6 +4,7 @@ from src.core.gameContext import saveManager, dataLoader
 from src.ui.bagUi import BagUI
 from src.core.bagSystem import BagSystem
 from src.constants import MAX_VISIBLE_ITEMS
+from src.states.pokemonMenuView import PokemonMenuView
 
 CONFIG = Config.load()
 
@@ -80,7 +81,7 @@ class BagView(arcade.View):
         elif self.isPressed(CONFIG.controls.cancel, key):
             self.window.show_view(self.previousWindow)
         elif self.isPressed(CONFIG.controls.interact, key) and self.bagIndex == 0:
-            self.bagSystem.useItem(self.currentIndex)
+            self.window.show_view(PokemonMenuView(self, self.bagSystem, self.currentIndex))
             self.updateItem()
             
     def isPressed(self, configKey, key) -> bool:
