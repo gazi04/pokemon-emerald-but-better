@@ -39,6 +39,25 @@ class BagSystem:
                     pokemon.hp = maxHp
                 
         return True
+    
+    def canUseItem(self, itemIndex: int, pokemonId: str) -> bool:
+        if len(self._items) <= 0:
+            return False
+        
+        item = self._items[itemIndex]
+        
+        pokemon = saveManager.getPokemon(pokemonId)
+        pokemonProfile = dataLoader.getPokemon(pokemon.name)
+        
+        maxHp = ((2 * pokemonProfile.stats.hp * pokemon.level) //
+                     100) + 5 + pokemon.level
+        
+        for effect in item.effects:
+            if effect.type == "heal":
+                if pokemon.hp <= 0 or pokemon.hp == maxHp:
+                    return False
+        
+        return True
                 
     def getItems(self):
         return self._items
