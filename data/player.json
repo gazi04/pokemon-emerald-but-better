@@ -15,12 +15,24 @@
                     "pp": 10
                 }
             ]
+        },
+        {
+            "name": "mudkip",
+            "hp": 10,
+            "level": 9,
+            "exp": 46,
+            "moves": [
+                {
+                    "name": "tackle",
+                    "pp": 10
+                }
+            ]
         }
     ],
     "items": [
         {
             "name": "potion",
-            "count": 99
+            "count": 1
         }
     ],
     "pokeballs": [
