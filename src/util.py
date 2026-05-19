@@ -1,11 +1,11 @@
 import json
-from src.core.save_manager import SaveManager
-from src.core.data_loader import StaticDataLoader
-from src.models.player import PlayerProfile
+from src.core.saveManager import SaveManager
+from src.core.dataLoader import DataLoader
+from src.model.player import PlayerProfile
 
 # Global cached instances
 save_manager = SaveManager()
-data_loader = StaticDataLoader()
+data_loader = DataLoader()
 
 
 def loadPlayer():
