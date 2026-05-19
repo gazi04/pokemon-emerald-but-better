@@ -8,10 +8,11 @@ from src.constants import FONT
 
 CONFIG = Config.load()
 
+
 class PokemonMenuView(arcade.View):
     def __init__(self, previousView:arcade.View, bag:BagSystem = None, itemIndex:int = 0, battleSystem: BattleSystem = None):
         super().__init__()
-        
+
         self.previousView = previousView
         self.bag = bag
         self.battleSystem = battleSystem

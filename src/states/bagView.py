@@ -53,7 +53,9 @@ class BagView(arcade.View):
 
         index = self.currentIndex - self.topVisibleIndex
         self.bagUi.setYOfCursor(index)
-        self.bagUi.setText(dataLoader.getItem(self.inventory[self.currentIndex].name).description)
+        self.bagUi.setText(
+            dataLoader.getItem(self.inventory[self.currentIndex].name).description
+        )
 
     def on_key_press(self, key, modifiers):
         if self.isPressed(CONFIG.controls.up, key):
@@ -85,7 +87,7 @@ class BagView(arcade.View):
         elif self.isPressed(CONFIG.controls.interact, key) and self.bagIndex == 0:
             self.window.show_view(PokemonMenuView(self, self.bagSystem, self.currentIndex, battleSystem=self.battleSystem))
             self.updateItem()
-            
+
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
