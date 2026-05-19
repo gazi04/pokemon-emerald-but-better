@@ -2,7 +2,7 @@
     "pokemons": [
         {
             "name": "combusken",
-            "hp": 33,
+            "hp": 13,
             "level": 16,
             "exp": 46,
             "moves": [
@@ -32,7 +32,7 @@
     "items": [
         {
             "name": "potion",
-            "count": 1
+            "count": 3
         }
     ],
     "pokeballs": [

@@ -1,6 +1,5 @@
 import arcade
 from src.entities.pokemonBattle import PokemonBattle
-from src.core.bagSystem import BagSystem
 from src.core.gameContext import saveManager, dataLoader
 import random
 
@@ -9,7 +8,6 @@ class BattleSystem:
     def __init__(self, yourPokemon: PokemonBattle, enemyPokemon: PokemonBattle):
         self.yourPokemon = yourPokemon
         self.enemyPokemon = enemyPokemon
-        self.bag = BagSystem()
 
         self.turnQueue = []
         self.battleState = "intro"
@@ -37,6 +35,14 @@ class BattleSystem:
 
         return self.executeNextAction()
 
+    def _applyItemToPokemon(self, itemIndex: int) -> list[str]:
+        item = saveManager.player.items[itemIndex]
+
+        self.yourPokemon.syncFromSource()
+
+        return [f"{self.yourPokemon.name} used {item.name}!"]
+
+
     def executeNextAction(self) -> list[str]:
         if not self.turnQueue:
             return self.postTurn()
@@ -52,9 +58,7 @@ class BattleSystem:
                 messages.append(f"{self.yourPokemon.name} used {moveName}!")
                 result = self.yourPokemon.useMove(moveIndex, self.enemyPokemon)
             else:
-                itemName = self.bag.getItems()[itemIndex].name
-                self.bag.useItem(itemIndex, self.yourPokemon.name)
-                result = [f"{self.yourPokemon.name} used {itemName}!"]
+                messages.extend(self._applyItemToPokemon(itemIndex))
                 
             messages.extend(result)
         elif attackerKey == "enemy" and self.enemyPokemon.currentHp > 0:
@@ -78,7 +82,7 @@ class BattleSystem:
                 ]
             )
         else:
-            self.ui.messageQueue.extend([f"{self.yourPokemon.name} fainted!"])
+            message.extend([f"{self.yourPokemon.name} fainted!"])
 
         return message
 

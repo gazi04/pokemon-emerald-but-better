@@ -12,17 +12,16 @@ class BagSystem:
         
         item = self._items[itemIndex]
         
-        if self._handleItemEffects(pokemonId, item.name):
+        if self._handleItemEffects(pokemonId.lower(), item.name):
             item.count -= 1
             if item.count <= 0:
                 self._items.pop(itemIndex)
     
     def _handleItemEffects(self, pokemonId:str, itemId:str) -> bool:
         pokemon = saveManager.getPokemon(pokemonId)
-        pokemonProfile = dataLoader.getPokemon(pokemon.name)
+        pokemonProfile = dataLoader.getPokemon(pokemonId)
         
-        maxHp = ((2 * pokemonProfile.stats.hp * pokemon.level) //
-                     100) + 5 + pokemon.level
+        maxHp = ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
         
         if not pokemon:
             return False

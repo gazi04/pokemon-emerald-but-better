@@ -2,17 +2,19 @@ import arcade
 from src.ui.pokemonMenuUi import PokemonMenuUi
 from src.core.bagSystem import BagSystem
 from src.core.pokemonMenuSystem import PokemonMenuSystem
+from src.core.battleSystem import BattleSystem
 from data.config import Config
 from src.constants import FONT
 
 CONFIG = Config.load()
 
 class PokemonMenuView(arcade.View):
-    def __init__(self, previousView:arcade.View, bag:BagSystem = None, itemIndex:int = 0):
+    def __init__(self, previousView:arcade.View, bag:BagSystem = None, itemIndex:int = 0, battleSystem: BattleSystem = None):
         super().__init__()
         
         self.previousView = previousView
         self.bag = bag
+        self.battleSystem = battleSystem
         self.itemIndex = itemIndex
         
         self.system = PokemonMenuSystem()
@@ -72,15 +74,23 @@ class PokemonMenuView(arcade.View):
         self.ui.hideTooltip()
         self.system.resetTooltip()
 
-        if index == 1:
-            if self.bag:
+        if index == 1: 
+            if self.bag and self.battleSystem:
+                self.bag.useItem(self.itemIndex, self.system.team[self.system.teamIndex].name)
+                self.battleSystem.turnUseItem(self.itemIndex)
+                
+                battleView = self.previousView.previousWindow 
+                battleView.onItemUsed(self.itemIndex)
+                self.window.show_view(battleView)
+            elif self.bag:
                 self.bag.useItem(self.itemIndex, self.system.team[self.system.teamIndex].name)
                 self.previousView.updateItem()
                 self.window.show_view(self.previousView)
             elif len(self.system.team) > 1:
                 self.system.startMoving()
-        elif index == 0: 
+        elif index == 0:
             pass
+
     
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
