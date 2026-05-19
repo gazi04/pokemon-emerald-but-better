@@ -128,10 +128,10 @@ class BagUI:
 
     def setYOfCursor(self, index: int):
         self.cursorLabel.y = self.startY - (index * self.spacing) + (self.spacing / 3)
-    
-    def setText(self, text:str):
+
+    def setText(self, text: str):
         self.dialog.text = text
-    
+
     def draw(self):
         self.manager.draw()
         self.cursorLabel.draw()
