@@ -114,11 +114,11 @@ source = { virtual = "." }
 dependencies = [
     { name = "arcade" },
     { name = "pydantic" },
-    { name = "pyright" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "pyright" },
     { name = "ruff" },
 ]
 
@@ -126,11 +126,13 @@ dev = [
 requires-dist = [
     { name = "arcade", specifier = ">=3.3.3" },
     { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "pyright", specifier = ">=1.1.409" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.15.7" }]
+dev = [
+    { name = "pyright", specifier = ">=1.1.409" },
+    { name = "ruff", specifier = ">=0.15.7" },
+]
 
 [[package]]
 name = "pycparser"
