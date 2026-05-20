@@ -1,6 +1,6 @@
 import arcade
 from src.entities.pokemonBattle import PokemonBattle
-from src.core.gameContext import saveManager
+from src.core.gameContext import saveManager, dataLoader
 import random
 
 
@@ -20,11 +20,28 @@ class BattleSystem:
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
 
         if self.yourPokemon.getStat("speed") >= self.enemyPokemon.getStat("speed"):
-            self.turnQueue = [("player", moveIndex), ("enemy", enemyMoveIndex)]
+            self.turnQueue = [("player", moveIndex, -1), ("enemy", enemyMoveIndex, -1)]
         else:
-            self.turnQueue = [("enemy", enemyMoveIndex), ("player", moveIndex)]
+            self.turnQueue = [("enemy", enemyMoveIndex, -1), ("player", moveIndex, -1)]
 
         return self.executeNextAction()
+    
+    def turnUseItem(self, itemIndex: int) -> list[str]:
+        self.battleState = "currently turn"
+
+        enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
+
+        self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
+
+        return self.executeNextAction()
+
+    def _applyItemToPokemon(self, itemIndex: int) -> list[str]:
+        item = saveManager.player.items[itemIndex]
+
+        self.yourPokemon.syncFromSource()
+
+        return [f"{self.yourPokemon.name} used {item.name}!"]
+
 
     def executeNextAction(self) -> list[str]:
         if not self.turnQueue:
@@ -32,12 +49,17 @@ class BattleSystem:
 
         messages = []
 
-        attackerKey, moveIndex = self.turnQueue.pop(0)
+        attackerKey, moveIndex, itemIndex = self.turnQueue.pop(0)
 
         if attackerKey == "player" and self.yourPokemon.currentHp > 0:
-            moveName = self.yourPokemon.moves[moveIndex].name
-            messages.append(f"{self.yourPokemon.name} used {moveName}!")
-            result = self.yourPokemon.useMove(moveIndex, self.enemyPokemon)
+            result = []
+            if itemIndex == -1:
+                moveName = self.yourPokemon.moves[moveIndex].name
+                messages.append(f"{self.yourPokemon.name} used {moveName}!")
+                result = self.yourPokemon.useMove(moveIndex, self.enemyPokemon)
+            else:
+                messages.extend(self._applyItemToPokemon(itemIndex))
+                
             messages.extend(result)
         elif attackerKey == "enemy" and self.enemyPokemon.currentHp > 0:
             moveName = self.enemyPokemon.moves[moveIndex].name
@@ -60,7 +82,7 @@ class BattleSystem:
                 ]
             )
         else:
-            self.ui.messageQueue.extend([f"{self.yourPokemon.name} fainted!"])
+            message.extend([f"{self.yourPokemon.name} fainted!"])
 
         return message
 

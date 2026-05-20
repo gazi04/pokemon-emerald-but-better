@@ -6,8 +6,8 @@ from src.core.gameContext import dataLoader
 
 class PokemonMenuUi:
     def __init__(self):
-        self.manager = arcade.gui.UIManager()
-        self.manager._pixelated = True
+        self._manager = arcade.gui.UIManager()
+        self._manager._pixelated = True
 
         tilemap = arcade.load_tilemap("assets/ui/pokemonMenuUiDesign.tmx")
         uiLayer = tilemap.get_tilemap_layer("ui")
@@ -37,67 +37,31 @@ class PokemonMenuUi:
             y = 600 - obj.coordinates.y
 
             if obj.name == "background":
-                self.manager.add(
-                    arcade.gui.UIImage(
-                        texture=arcade.load_texture(
-                            "assets/ui/sprites/pokemonMenuBg.png"
-                        ),
-                        x=x,
-                        y=y,
-                        width=w,
-                        height=h,
-                    )
-                )
+                self._manager.add(arcade.gui.UIImage(
+                    texture=arcade.load_texture(
+                        "assets/ui/sprites/pokemonMenuBg.png"),
+                    x=x, y=y, width=w, height=h
+                ))
             elif obj.name == "tooltip":
-                self._tooltip.add(
-                    arcade.gui.UIImage(
-                        texture=arcade.load_texture("assets/ui/sprites/box2.png"),
-                        x=0,
-                        y=0,
-                        width=w,
-                        height=h,
-                    )
-                )
-            elif obj.name == "info":
-                text = arcade.gui.UILabel(
-                    text="Info",
-                    text_color=arcade.color.BLACK,
-                    font_name="Pokemon Emerald",
-                    font_size=15,
-                    x=0,
-                    y=y - h,
-                    width=w,
-                    height=h,
-                )
-                self._tooltip.add(text)
-                self._tooltipButtons.append(text)
-            elif obj.name == "move":
-                text = arcade.gui.UILabel(
-                    text="Move",
-                    text_color=arcade.color.BLACK,
-                    font_name="Pokemon Emerald",
-                    font_size=15,
-                    x=0,
-                    y=y - h,
-                    width=w,
-                    height=h,
-                )
-                self._tooltip.add(text)
-                self._tooltipButtons.append(text)
+                self._tooltip.add(arcade.gui.UIImage(
+                    texture=arcade.load_texture("assets/ui/sprites/box2.png"),
+                    x=0, y=0,
+                    width=w, height=h
+                ))
             elif obj.name == "pokemon1":
                 slot = int(obj.name[-1]) - 1
                 button = arcade.gui.UIImage(
                     texture=self._leadTexture, x=x, y=y, width=w, height=h
                 )
                 self._pokemonUis[slot]["profile"] = button
-                self.manager.add(button)
+                self._manager.add(button)
             elif "pokemon" in obj.name and "pokemonSprite" not in obj.name:
                 slot = int(obj.name[-1]) - 1
                 button = arcade.gui.UIImage(
                     texture=self._profileTexture, x=x, y=y, width=w, height=h
                 )
                 self._pokemonUis[slot]["profile"] = button
-                self.manager.add(button)
+                self._manager.add(button)
 
             elif "pokeball" in obj.name:
                 slot = int(obj.name[-1]) - 1
@@ -111,7 +75,7 @@ class PokemonMenuUi:
                     height=h,
                 )
                 self._pokemonUis[slot]["pokeball"] = image
-                self.manager.add(image)
+                self._manager.add(image)
             elif "pokemonSprite" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 image = arcade.gui.UIImage(
@@ -124,7 +88,7 @@ class PokemonMenuUi:
                     height=h,
                 )
                 self._pokemonUis[slot]["pokemon"] = image
-                self.manager.add(image)
+                self._manager.add(image)
             elif "hpText" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 text = arcade.gui.UILabel(
@@ -139,7 +103,7 @@ class PokemonMenuUi:
                     height=h,
                 )
                 self._pokemonUis[slot]["hpText"] = text
-                self.manager.add(text)
+                self._manager.add(text)
             elif "levelText" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 text = arcade.gui.UILabel(
@@ -153,7 +117,7 @@ class PokemonMenuUi:
                     height=h,
                 )
                 self._pokemonUis[slot]["levelText"] = text
-                self.manager.add(text)
+                self._manager.add(text)
             elif "nameText" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 text = arcade.gui.UILabel(
@@ -167,7 +131,7 @@ class PokemonMenuUi:
                     height=h,
                 )
                 self._pokemonUis[slot]["nameText"] = text
-                self.manager.add(text)
+                self._manager.add(text)
             elif "hpBar" in obj.name:
                 slot = int(obj.name[-1]) - 1
                 self._pokemonUis[slot]["hpBar"] = {
@@ -177,32 +141,22 @@ class PokemonMenuUi:
                     "h": h,
                 }
             elif obj.name == "box":
-                self.manager.add(
-                    arcade.gui.UIImage(
-                        texture=arcade.load_texture("assets/ui/sprites/box.png"),
-                        x=x,
-                        y=y,
-                        width=w,
-                        height=h,
-                    )
-                )
+                self._manager.add(arcade.gui.UIImage(
+                    texture=arcade.load_texture("assets/ui/sprites/box.png"),
+                    x=x, y=y, width=w, height=h
+                ))
             elif obj.name == "text":
-                self.manager.add(
-                    arcade.gui.UILabel(
-                        text="Choose Pokemon",
-                        text_color=arcade.color.BLACK,
-                        font_name="Pokemon Emerald",
-                        font_size=25,
-                        x=x,
-                        y=y - h,
-                        width=w,
-                        height=h,
-                    )
-                )
-
-        self.manager.add(self._tooltip)
-
-        self.cursorText = arcade.Text(
+                self._manager.add(arcade.gui.UILabel(
+                    text="Choose Pokemon",
+                    text_color=arcade.color.BLACK,
+                    font_name="Pokemon Emerald",
+                    font_size=25,
+                    x=x, y=y - h, width=w, height=h
+                ))
+        
+        self._manager.add(self._tooltip)
+        
+        self._cursorText = arcade.Text(
             "▶",
             0,
             0,
@@ -211,6 +165,23 @@ class PokemonMenuUi:
             anchor_y="center",
             font_name="Pokemon Emerald",
         )
+        
+    def setupTooltip(self, options: list[str]):
+        for button in self._tooltipButtons:
+            self._tooltip.remove(button)
+        
+        self._tooltipButtons = []
+        
+        for i, option in enumerate(options):
+            button = arcade.gui.UILabel(
+                text=option,
+                text_color=arcade.color.BLACK,
+                font_name="Pokemon Emerald",
+                font_size=15,
+                x=0, y=(i * 20) + 5, width=self._tooltip.children[0].width - 10, height=20
+            )
+            self._tooltip.add(button)
+            self._tooltipButtons.append(button)
 
     def setValues(self, pokemons: list[PlayerPokemon]):
         SKIP_KEYS = {"hpBar", "profile"}
@@ -267,24 +238,20 @@ class PokemonMenuUi:
 
             for key, element in ui.items():
                 if key != "hpBar":
-                    self.manager.remove(element)
-                    self.manager.add(element)
+                    self._manager.remove(element)
+                    self._manager.add(element)
 
     def isTooltipShowing(self) -> bool:
         return self._tooltip.visible
 
     def selectTooltipOption(self, index: int):
-        self.cursorText.x = (
-            self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.left - 10
-        )
-        self.cursorText.y = self._tooltipButtons[
-            len(self._tooltipButtons) - 1 - index
-        ].rect.center_y
+        self._cursorText.x = self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.left - 10
+        self._cursorText.y = self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.center_y
 
     def showTooltip(self, index: int):
         self._tooltip.visible = True
-        self.cursorText.visible = True
-
+        self._cursorText.visible = True
+        
         for i, element in enumerate(self._tooltip.children):
             x = (
                 self._pokemonUis[index]["profile"].rect.right
@@ -309,7 +276,7 @@ class PokemonMenuUi:
 
     def hideTooltip(self):
         self._tooltip.visible = False
-        self.cursorText.visible = False
+        self._cursorText.visible = False
 
     def drawHpBars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
@@ -343,5 +310,5 @@ class PokemonMenuUi:
         )
 
     def draw(self):
-        self.manager.draw()
-        self.cursorText.draw()
+        self._manager.draw()
+        self._cursorText.draw()

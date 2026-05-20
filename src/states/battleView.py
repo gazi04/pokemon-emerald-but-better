@@ -1,8 +1,11 @@
 import arcade
+from src.model.player import PlayerPokemonMove
 from src.entities.pokemonSprites import Pokemon
 from src.core.gameContext import saveManager, dataLoader
 from data.config import Config
 from src.states.evolvingView import EvolvingView
+from src.states.bagView import BagView
+from src.states.pokemonMenuView import PokemonMenuView
 from src.ui.battleUi import BattleUi
 from src.core.battleSystem import BattleSystem
 
@@ -20,20 +23,16 @@ class BattleView(arcade.View):
         self.playerPokemon = saveManager.player.pokemon
 
         self.yourPokemon = Pokemon(
-            self.playerPokemon[0].name,
             dataLoader.getPokemon(self.playerPokemon[0].name),
-            self.playerPokemon[0].moves,
-            level=self.playerPokemon[0].level,
-            isEnemy=False,
-            currentHp=self.playerPokemon[0].hp,
-            exp=self.playerPokemon[0].exp,
+            False,
+            self.playerPokemon[0]
         )
         self.enemyPokemon = Pokemon(
-            pokemon_name,
             pokemon_data,
-            [{"name": "tackle", "pp": 15}],
+            True,
+            name=pokemon_name,
+            moves=[PlayerPokemonMove("tackle", 35)],
             level=level,
-            isEnemy=True,
         )
 
         self.battleSystem = BattleSystem(
@@ -75,12 +74,17 @@ class BattleView(arcade.View):
         self.ui.messageQueue.extend(self.battleSystem.turn(index))
         self.ui.switchMenu("dialog")
         self.ui.nextMessage()
+        
+    def onItemUsed(self, itemIndex: int):
+        self.ui.messageQueue.extend(self.battleSystem.turnUseItem(itemIndex))
+        self.ui.switchMenu("dialog")
+        self.ui.nextMessage()
 
     def whatHappendAfterText(self):
         if self.battleSystem.battleState == "currently turn":
             self.ui.messageQueue.extend(self.battleSystem.executeNextAction())
             self.ui.nextMessage()
-        elif self.battleSystem.battleState in ["intro", "post turn"]:
+        elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
             self.battleSystem.battleState = "waiting"
             arcade.schedule_once(self.resetToMainMenu, 0.5)
         elif self.battleSystem.battleState == "end":
@@ -173,6 +177,10 @@ class BattleView(arcade.View):
             if self.ui.activeMenu == "main":
                 if self.ui.selectionIndex == 0:
                     self.ui.switchMenu("moves")
+                elif self.ui.selectionIndex == 1:
+                    self.window.show_view(BagView(self, battleSystem=self.battleSystem))
+                elif self.ui.selectionIndex == 2:
+                    self.window.show_view(PokemonMenuView(self))
                 elif self.ui.selectionIndex == 3:
                     self.run()
             elif self.ui.activeMenu == "moves":

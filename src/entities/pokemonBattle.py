@@ -1,39 +1,45 @@
-import arcade
 from src.util import calculateMultiplier
 import random
 from src.core.gameContext import dataLoader
 from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
-from src.model.player import PlayerPokemonMove
+from src.model.player import PlayerPokemonMove, PlayerPokemon
 
 
 class PokemonBattle:
     def __init__(
         self,
-        name: str,
         data: PokemonProfile,
-        moves: list[PlayerPokemonMove],
-        level: int,
         isEnemy: bool,
-        currentHp: int = 0,
-        exp: int = 0,
+        playerPokemon: PlayerPokemon = None,
+        name: str = None,
+        moves: list = None,
+        currentHp: int = None,
+        level: int = None
     ):
-        self.name = name.capitalize()
-
-        self.isEnemy = isEnemy
 
         self.baseStat = data.stats.copy()
-        self.level = level
-
+        self.isEnemy = isEnemy
+        
+        self.source = playerPokemon
+        if playerPokemon:
+            self.name = playerPokemon.name.capitalize() 
+            self.moves = playerPokemon.moves
+            self.currentHp = playerPokemon.hp
+            self.level = playerPokemon.level
+            self.exp = playerPokemon.exp
+        else:
+            self.name = name.capitalize()
+            self.moves = moves
+            self.level = level
+            
         self.calculateStats()
+        
+        self.maxHp = self.getStat("hp")
+        self.currentHp = self.maxHp if not playerPokemon else playerPokemon.hp
 
         self.types = data.types
-        self.moves = moves
-        self.baseExp = data.baseExp
-        self.exp = exp
         self.evolution = data.evolution
-
-        self.maxHp = self.getStat("hp")
-        self.currentHp = currentHp or self.maxHp
+        self.baseExp = data.baseExp
 
         self.modifiers = {
             "attack": 0,
@@ -120,9 +126,10 @@ class PokemonBattle:
         d = (
             pokemon.getStat("defence")
             if isPhysical
-            else pokemon.getStat("special_defence")
+            else pokemon.getStat("special defence")
         )
-        a = self.getStat("attack") if isPhysical else self.getStat("special_attack")
+        a = self.getStat("attack") if isPhysical else self.getStat(
+            "special attack")
 
         stab = 1
 
@@ -176,13 +183,16 @@ class PokemonBattle:
                 current_stage = destination.modifiers[stat]
 
                 if change > 0 and current_stage == 6:
-                    text.append(f"{destination.name}'s {stat} won't go any higher!")
+                    text.append(
+                        f"{destination.name}'s {stat} won't go any higher!")
                     continue
                 if change < 0 and current_stage == -6:
-                    text.append(f"{destination.name}'s {stat} won't go any lower!")
+                    text.append(
+                        f"{destination.name}'s {stat} won't go any lower!")
                     continue
 
-                destination.modifiers[stat] = max(-6, min(6, current_stage + change))
+                destination.modifiers[stat] = max(-6,
+                                                  min(6, current_stage + change))
 
                 if change > 0:
                     adj = (
@@ -206,6 +216,14 @@ class PokemonBattle:
 
                     if effect.condition == "sleep":
                         destination.sleepCounter = random.randint(2, 5)
+
+    def syncFromSource(self):
+        if self.source is None:
+            return
+
+        self.currentHp = self.source.hp
+        self.level = self.source.level
+        self.exp = self.source.exp
 
     def afterATurn(self) -> list[str]:
         text = []

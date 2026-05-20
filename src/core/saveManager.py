@@ -48,7 +48,7 @@ class SaveManager:
 
         return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs)
 
-    def getPokemon(self, pokemonId) -> PlayerPokemon:
+    def getPokemon(self, pokemonId: str) -> PlayerPokemon:
         for pokemon in self.player.pokemon:
             if pokemon.name == pokemonId:
                 return pokemon

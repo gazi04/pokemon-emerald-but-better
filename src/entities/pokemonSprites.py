@@ -1,26 +1,25 @@
 import arcade
 from src.entities.pokemonBattle import PokemonBattle
 from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
-from src.model.player import PlayerPokemonMove
+from src.model.player import PlayerPokemonMove, PlayerPokemon
 
 
 class Pokemon(arcade.Sprite):
     def __init__(
-        self,
-        name: str,
-        data: PokemonProfile,
-        moves: list[PlayerPokemonMove],
-        level: int,
-        isEnemy: bool,
-        currentHp: int = 0,
-        exp: int = 0,
-    ):
+            self,
+            data: PokemonProfile, 
+            isEnemy: bool,
+            playerPokemon: PlayerPokemon = None,
+            name: str = None, 
+            moves: list = None, 
+            currentHp: int = None,
+            level: int = None):
         sprite_path = data.sprites.front if isEnemy else data.sprites.back
 
         super().__init__(sprite_path.strip(), scale=3.0)
 
         self.pokemonBattle = PokemonBattle(
-            name, data, moves, level, isEnemy, currentHp, exp
+            data, isEnemy, playerPokemon, name, moves, currentHp, level
         )
 
         if isEnemy:

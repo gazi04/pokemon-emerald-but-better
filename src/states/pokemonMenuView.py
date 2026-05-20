@@ -1,104 +1,97 @@
 import arcade
 from src.ui.pokemonMenuUi import PokemonMenuUi
-from src.core.gameContext import saveManager
+from src.core.bagSystem import BagSystem
+from src.core.pokemonMenuSystem import PokemonMenuSystem
+from src.core.battleSystem import BattleSystem
 from data.config import Config
 from src.constants import FONT
-
 
 CONFIG = Config.load()
 
 
 class PokemonMenuView(arcade.View):
-    def __init__(self, previousView: arcade.View):
+    def __init__(self, previousView:arcade.View, bag:BagSystem = None, itemIndex:int = 0, battleSystem: BattleSystem = None):
         super().__init__()
 
         self.previousView = previousView
-
-        arcade.load_font(FONT)
-
-        self.team = saveManager.player.pokemon
-        self.teamIndex = 0
-        self.tooltipIndex = 0
-
-        self.isMovingPokemon = False
-        self.movingPokemonIndex = 0
-
+        self.bag = bag
+        self.battleSystem = battleSystem
+        self.itemIndex = itemIndex
+        
+        self.system = PokemonMenuSystem()
         self.ui = PokemonMenuUi()
-        self.ui.setValues(self.team)
-
+        
+        tooltipOptions = ["Use", "Info"] if bag else ["Move", "Info"]
+        self.ui.setupTooltip(tooltipOptions)
+        self.ui.setValues(self.system.team)
+    
     def on_draw(self):
         self.clear()
         self.ui.draw()
-        self.ui.drawHpBars(self.team)
+        self.ui.drawHpBars(self.system.team)
 
     def on_key_press(self, key, modifiers):
         if self.ui.isTooltipShowing():
-            self.tooltip(key)
-            return
+            self._handleTooltipInput(key)
+        else:
+            self._handleMenuInput(key)
 
-        if self.isPressed(CONFIG.controls.cancel, key) and not self.isMovingPokemon:
-            self.window.show_view(self.previousView)
-        elif self.isPressed(CONFIG.controls.cancel, key) and self.isMovingPokemon:
-            self.isMovingPokemon = False
-
-        self.handlePokemonSelection(key)
-
-    def handlePokemonSelection(self, key):
-        if self.isPressed(CONFIG.controls.interact, key):
-            if not self.isMovingPokemon:
-                self.ui.showTooltip(self.teamIndex)
+    def _handleMenuInput(self, key):
+        if self.isPressed(CONFIG.controls.cancel, key):
+            if self.system.isMovingPokemon:
+                self.system.cancelMoving()
             else:
-                self.movePokemon(self.teamIndex)
-        elif self.isPressed(CONFIG.controls.down, key):
-            self.teamIndex += 1
-
-            if self.teamIndex == len(self.team):
-                self.teamIndex = 0
-        elif self.isPressed(CONFIG.controls.up, key):
-            self.teamIndex -= 1
-
-            if self.teamIndex == -1:
-                self.teamIndex = len(self.team) - 1
-
-        self.ui.selectPokemon(self.teamIndex)
-
-    def tooltip(self, key):
-        if self.isMovingPokemon:
-            self.handlePokemonSelection(key)
+                self.window.show_view(self.previousView)
             return
 
+        if self.isPressed(CONFIG.controls.interact, key):
+            if self.system.isMovingPokemon:
+                self.system.movePokemon(self.system.teamIndex)
+                self.ui.setValues(self.system.team)
+            else:
+                self.ui.showTooltip(self.system.teamIndex)
+        elif self.isPressed(CONFIG.controls.down, key):
+            self.system.moveTeamIndex(1)
+        elif self.isPressed(CONFIG.controls.up, key):
+            self.system.moveTeamIndex(-1)
+
+        self.ui.selectPokemon(self.system.teamIndex)
+
+    def _handleTooltipInput(self, key):
         if self.isPressed(CONFIG.controls.cancel, key):
             self.ui.hideTooltip()
-            self.tooltipIndex = 0
+            self.system.resetTooltip()
         elif self.isPressed(CONFIG.controls.interact, key):
-            self.ui.hideTooltip()
-            if self.tooltipIndex == 1 and len(self.team) > 1:
-                self.isMovingPokemon = True
-                self.movingPokemonIndex = self.teamIndex
-                print("Start moving pokemon")
-            elif self.tooltipIndex == 0:
-                pass
+            self._tooltipAction()
         elif self.isPressed(CONFIG.controls.down, key):
-            self.tooltipIndex = 1 if self.tooltipIndex == 0 else 0
-
-            self.ui.selectTooltipOption(self.tooltipIndex)
+            self.system.moveTooltipIndex(1, len(self.ui._tooltipButtons))
+            self.ui.selectTooltipOption(self.system.tooltipIndex)
         elif self.isPressed(CONFIG.controls.up, key):
-            self.tooltipIndex = 0 if self.tooltipIndex == 1 else 1
+            self.system.moveTooltipIndex(-1, len(self.ui._tooltipButtons))
+            self.ui.selectTooltipOption(self.system.tooltipIndex)
 
-            self.ui.selectTooltipOption(self.tooltipIndex)
+    def _tooltipAction(self):
+        index = self.system.tooltipIndex
+        self.ui.hideTooltip()
+        self.system.resetTooltip()
 
-    def movePokemon(self, to: int):
-        if to == self.movingPokemonIndex:
-            self.isMovingPokemon = False
-            return
+        if index == 1: 
+            if self.bag and self.battleSystem:
+                self.bag.useItem(self.itemIndex, self.system.team[self.system.teamIndex].name)
+                self.battleSystem.turnUseItem(self.itemIndex)
+                
+                battleView = self.previousView.previousWindow 
+                battleView.onItemUsed(self.itemIndex)
+                self.window.show_view(battleView)
+            elif self.bag:
+                self.bag.useItem(self.itemIndex, self.system.team[self.system.teamIndex].name)
+                self.previousView.updateItem()
+                self.window.show_view(self.previousView)
+            elif len(self.system.team) > 1:
+                self.system.startMoving()
+        elif index == 0:
+            pass
 
-        self.team[to], self.team[self.movingPokemonIndex] = (
-            self.team[self.movingPokemonIndex],
-            self.team[to],
-        )
-
-        self.ui.setValues(self.team)
-        self.isMovingPokemon = False
-
+    
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
