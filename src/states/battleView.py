@@ -70,11 +70,22 @@ class BattleView(arcade.View):
                 button.visible = False
                 button.enabled = False
 
-    def startTurn(self, index):
+    def startTurn(self, index: int):
         self.ui.messageQueue.extend(self.battleSystem.turn(index))
         self.ui.switchMenu("dialog")
         self.ui.nextMessage()
-        
+    
+    def catchPokemon(self, pokeball):
+        result = self.battleSystem.throwPokeball(pokeball)
+        self.ui.messageQueue.extend(result["dialog"])
+
+        if result["caught"]:
+            self.battleSystem.battleState = "end"
+            self.ui.switchMenu("dialog")
+            self.ui.nextMessage()  
+        else:
+            self.startTurn(-1)  
+    
     def onItemUsed(self, itemIndex: int):
         self.ui.messageQueue.extend(self.battleSystem.turnUseItem(itemIndex))
         self.ui.switchMenu("dialog")

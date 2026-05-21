@@ -87,6 +87,12 @@ class BagView(arcade.View):
         elif self.isPressed(CONFIG.controls.interact, key) and self.bagIndex == 0:
             self.window.show_view(PokemonMenuView(self, self.bagSystem, self.currentIndex, battleSystem=self.battleSystem))
             self.updateItem()
+        elif self.isPressed(CONFIG.controls.interact, key) and self.bagIndex == 1 and self.battleSystem:
+            pokeball = self.bagSystem.usePokeball(self.currentIndex)
+            if pokeball:
+                self.previousWindow.catchPokemon(pokeball)
+                self.window.show_view(self.previousWindow)
+                self.updateItem()
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

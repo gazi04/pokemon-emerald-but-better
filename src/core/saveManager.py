@@ -7,7 +7,6 @@ from src.model.player import (
     PlayerPokemon,
 )
 
-
 class SaveManager:
     def __init__(self):
         self.player = None
@@ -48,6 +47,18 @@ class SaveManager:
 
         return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs)
 
+    def addPokemon(self, name: str, hp: int, level: int, moves: list[PlayerPokemonMove]):
+        if len(self.player.pokemon) >= 6:
+            return False
+        
+        self.player.pokemon.append(PlayerPokemon(
+            name=name,
+            hp=hp,
+            level=level,
+            exp=0,
+            moves=moves
+        ))
+    
     def getPokemon(self, pokemonId: str) -> PlayerPokemon:
         for pokemon in self.player.pokemon:
             if pokemon.name == pokemonId:

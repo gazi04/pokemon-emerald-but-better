@@ -1,6 +1,8 @@
 import arcade
+from src.model.player import PlayerPokemonMove
 from src.entities.pokemonBattle import PokemonBattle
 from src.core.gameContext import saveManager, dataLoader
+from src.model.item import Item
 import random
 
 
@@ -13,6 +15,20 @@ class BattleSystem:
         self.battleState = "intro"
         self.exp = 0
         self.hasEvolved = False
+        
+    def throwPokeball(self, pokeball:Item):
+        effect = pokeball.effects[0]
+        if effect.type == "catch":
+            catchRate = 155
+            catchChance = (3 * self.enemyPokemon.maxHp - 2 * self.enemyPokemon.currentHp) * catchRate * effect.catchRate // (3 * self.enemyPokemon.maxHp)
+
+            if random.randint(1, 100) <= catchChance:
+                saveManager.addPokemon(self.enemyPokemon.name.lower(), self.enemyPokemon.currentHp, self.enemyPokemon.level, self.enemyPokemon.moves)
+                return {"dialog": [f"You caught {self.enemyPokemon.name}!"], "caught": True}
+            else:
+                return {"dialog": [f"{self.enemyPokemon.name} broke free!"], "caught": False}
+
+        return {"dialog": ["The pokeball had no effect!"], "caught": False}
 
     def turn(self, moveIndex) -> list[str]:
         self.battleState = "currently turn"
@@ -53,11 +69,11 @@ class BattleSystem:
 
         if attackerKey == "player" and self.yourPokemon.currentHp > 0:
             result = []
-            if itemIndex == -1:
+            if itemIndex == -1 and moveIndex != -1:
                 moveName = self.yourPokemon.moves[moveIndex].name
                 messages.append(f"{self.yourPokemon.name} used {moveName}!")
                 result = self.yourPokemon.useMove(moveIndex, self.enemyPokemon)
-            else:
+            elif itemIndex != -1 and moveIndex == -1:
                 messages.extend(self._applyItemToPokemon(itemIndex))
                 
             messages.extend(result)
