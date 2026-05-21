@@ -68,6 +68,7 @@ class SaveManager:
 
     def updateHp(self, pokemonId, newHp):
         pokemon = self.getPokemon(pokemonId)
+        print(newHp)
 
         if pokemon:
             pokemon.hp = max(newHp, 0)

@@ -24,11 +24,11 @@ class BattleSystem:
 
             if random.randint(1, 100) <= catchChance:
                 saveManager.addPokemon(self.enemyPokemon.name.lower(), self.enemyPokemon.currentHp, self.enemyPokemon.level, self.enemyPokemon.moves)
-                return {"dialog": [f"You caught {self.enemyPokemon.name}!"], "caught": True}
+                return {"dialog": ["You throw a pokeball!", f"You caught {self.enemyPokemon.name}!"], "caught": True}
             else:
-                return {"dialog": [f"{self.enemyPokemon.name} broke free!"], "caught": False}
+                return {"dialog": ["You throw a pokeball!", f"{self.enemyPokemon.name} broke free!"], "caught": False}
 
-        return {"dialog": ["The pokeball had no effect!"], "caught": False}
+        return {"dialog": ["You throw a pokeball!", "The pokeball had no effect!"], "caught": False}
 
     def turn(self, moveIndex) -> list[str]:
         self.battleState = "currently turn"
@@ -124,17 +124,18 @@ class BattleSystem:
         return messages
 
     def save(self):
-        saveManager.updateHp(self.yourPokemon.name, self.yourPokemon.currentHp)
+        name = self.yourPokemon.name.lower()
+        saveManager.updateHp(name, self.yourPokemon.currentHp)
         for move in self.yourPokemon.moves:
-            saveManager.updateMove(self.yourPokemon.name, move.name, move.pp)
+            saveManager.updateMove(name, move.name, move.pp)
 
         if not self.hasEvolved:
             saveManager.updateLevel(
-                self.yourPokemon.name, self.yourPokemon.level, self.yourPokemon.exp
+                name, self.yourPokemon.level, self.yourPokemon.exp
             )
         else:
             saveManager.updateLevel(
-                self.yourPokemon.name,
+                name,
                 self.yourPokemon.level,
                 self.yourPokemon.exp,
                 self.yourPokemon.evolution.to,

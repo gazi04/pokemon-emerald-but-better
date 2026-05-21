@@ -398,8 +398,8 @@ class BattleUi:
         self.enemyPokemon = enemyPokemon
 
         self.messageQueue = [
-            f"A foe {self.yourPokemon.pokemonBattle.name} appeared!",
-            f"Go! {self.enemyPokemon.pokemonBattle.name}!",
+            f"A foe {self.enemyPokemon.pokemonBattle.name} appeared!",
+            f"Go! {self.yourPokemon.pokemonBattle.name}!",
         ]
 
         self.nextMessage()
