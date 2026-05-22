@@ -13,48 +13,64 @@ class PokemonBattle:
         playerPokemon: PlayerPokemon = None,
         name: str = None,
         moves: list = None,
-        currentHp: int = None,
         level: int = None
     ):
-
-        self.baseStat = data.stats.copy()
         self.isEnemy = isEnemy
-        
         self.source = playerPokemon
+
         if playerPokemon:
-            self.name = playerPokemon.name.capitalize() 
-            self.moves = playerPokemon.moves
-            self.currentHp = playerPokemon.hp
-            self.level = playerPokemon.level
-            self.exp = playerPokemon.exp
+            self._loadFromPlayer(playerPokemon)
         else:
             self.name = name.capitalize()
             self.moves = moves
             self.level = level
-            
+
+        self._loadFromProfile(data)
         self.calculateStats()
-        
+
         self.maxHp = self.getStat("hp")
         self.currentHp = self.maxHp if not playerPokemon else playerPokemon.hp
 
+        self._resetBattleState()
+
+    def _loadFromPlayer(self, playerPokemon: PlayerPokemon):
+        self.name = playerPokemon.name.capitalize()
+        self.moves = playerPokemon.moves
+        self.level = playerPokemon.level
+        self.exp = playerPokemon.exp
+
+    def _loadFromProfile(self, data: PokemonProfile):
+        self.baseStat = data.stats.copy()
         self.types = data.types
         self.evolution = data.evolution
         self.baseExp = data.baseExp
 
+    def _resetBattleState(self):
         self.modifiers = {
-            "attack": 0,
+            "attack": 0, 
             "defence": 0,
-            "special attack": 0,
+            "special attack": 0, 
             "special defence": 0,
-            "speed": 0,
+            "speed": 0, 
             "accuracy": 0,
-            "evasion": 0,
+            "evasion": 0, 
             "crits": 0,
         }
-
         self.statusEffect = ""
         self.sleepCounter = 0
 
+    def switchingPokemon(self, playerPokemon: PlayerPokemon, data: PokemonProfile):
+        self.source = playerPokemon        
+
+        self._loadFromPlayer(playerPokemon)
+        self._loadFromProfile(data)          
+        self.calculateStats()
+
+        self.maxHp = self.getStat("hp")
+        self.currentHp = playerPokemon.hp
+
+        self._resetBattleState()            
+        
     def calculateStats(self):
         self.stats = PokemonStat(
             ((2 * self.baseStat.hp * self.level) // 100) + 5 + self.level,

@@ -35,18 +35,14 @@ class BattleSystem:
 
         return self.executeNextAction()
     
-    def _switchPokemon(self) -> list[str]:
+    def switchPokemon(self) -> list[str]:
         pokemon = saveManager.player.pokemon[0]
         pokemonProfile = dataLoader.getPokemon(pokemon.name)
         
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
         
-        self.yourPokemon = PokemonBattle(
-            pokemonProfile,
-            False,
-            pokemon
-        )
+        self.yourPokemon.switchingPokemon(pokemon, pokemonProfile)
         
         return [f"Go {pokemon.name}!"]
 
@@ -67,11 +63,11 @@ class BattleSystem:
 
         if attackerKey == "player" and self.yourPokemon.currentHp > 0:
             result = []
-            if itemIndex == -1:
+            if itemIndex == -1 and moveIndex != -1:
                 moveName = self.yourPokemon.moves[moveIndex].name
                 messages.append(f"{self.yourPokemon.name} used {moveName}!")
                 result = self.yourPokemon.useMove(moveIndex, self.enemyPokemon)
-            else:
+            elif itemIndex != -1 and moveIndex == -1:
                 messages.extend(self._applyItemToPokemon(itemIndex))
                 
             messages.extend(result)

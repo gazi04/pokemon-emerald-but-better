@@ -59,7 +59,7 @@ class PokemonMenuView(arcade.View):
                     success = self.system.confirmSwitch(self.system.teamIndex)
                     if success:
                         self.ui.setValues(self.system.team)
-                        self.battleSystem._switchPokemon()
+                        self.previousView.switchTurn()
                         self.window.show_view(self.previousView)
             else:
                 self.ui.showTooltip(self.system.teamIndex)
