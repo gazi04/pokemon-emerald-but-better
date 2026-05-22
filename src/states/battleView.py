@@ -180,7 +180,7 @@ class BattleView(arcade.View):
                 elif self.ui.selectionIndex == 1:
                     self.window.show_view(BagView(self, battleSystem=self.battleSystem))
                 elif self.ui.selectionIndex == 2:
-                    self.window.show_view(PokemonMenuView(self))
+                    self.window.show_view(PokemonMenuView(self, battleSystem=self.battleSystem))
                 elif self.ui.selectionIndex == 3:
                     self.run()
             elif self.ui.activeMenu == "moves":

@@ -21,7 +21,13 @@ class PokemonMenuView(arcade.View):
         self.system = PokemonMenuSystem()
         self.ui = PokemonMenuUi()
         
-        tooltipOptions = ["Use", "Info"] if bag else ["Move", "Info"]
+        if bag:
+            tooltipOptions = ["Use", "Info"]
+        elif battleSystem:
+            tooltipOptions = ["Switch", "Info"]
+        else:
+            tooltipOptions = ["Move", "Info"]
+            
         self.ui.setupTooltip(tooltipOptions)
         self.ui.setValues(self.system.team)
     
@@ -46,8 +52,15 @@ class PokemonMenuView(arcade.View):
 
         if self.isPressed(CONFIG.controls.interact, key):
             if self.system.isMovingPokemon:
-                self.system.movePokemon(self.system.teamIndex)
-                self.ui.setValues(self.system.team)
+                if not self.battleSystem:
+                    self.system.movePokemon(self.system.teamIndex)
+                    self.ui.setValues(self.system.team)
+                else:
+                    success = self.system.confirmSwitch(self.system.teamIndex)
+                    if success:
+                        self.ui.setValues(self.system.team)
+                        self.battleSystem._switchPokemon()
+                        self.window.show_view(self.previousView)
             else:
                 self.ui.showTooltip(self.system.teamIndex)
         elif self.isPressed(CONFIG.controls.down, key):

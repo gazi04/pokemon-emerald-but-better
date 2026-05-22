@@ -34,6 +34,21 @@ class BattleSystem:
         self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
 
         return self.executeNextAction()
+    
+    def _switchPokemon(self) -> list[str]:
+        pokemon = saveManager.player.pokemon[0]
+        pokemonProfile = dataLoader.getPokemon(pokemon.name)
+        
+        if pokemon.hp <= 0:
+            return [f"{pokemon.name} is unable to battle!"]
+        
+        self.yourPokemon = PokemonBattle(
+            pokemonProfile,
+            False,
+            pokemon
+        )
+        
+        return [f"Go {pokemon.name}!"]
 
     def _applyItemToPokemon(self, itemIndex: int) -> list[str]:
         item = saveManager.player.items[itemIndex]
@@ -41,7 +56,6 @@ class BattleSystem:
         self.yourPokemon.syncFromSource()
 
         return [f"{self.yourPokemon.name} used {item.name}!"]
-
 
     def executeNextAction(self) -> list[str]:
         if not self.turnQueue:
