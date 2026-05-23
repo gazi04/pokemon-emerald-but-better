@@ -1,9 +1,15 @@
 import arcade
-from src.entities.playerController import Player
 from src.states.battleView import BattleView
 from src.states.menuView import MenuView
 from data.config import Config
 from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
+
+# New architectural imports
+from src.model.player import PlayerState
+from src.controllers.player_input import PlayerInput
+from src.systems.movement_system import MovementSystem
+from src.systems.encounter_system import EncounterSystem
+from src.entities.player_sprite import PlayerSprite
 
 CONFIG = Config.load()
 
@@ -19,7 +25,12 @@ class OverworldView(arcade.View):
 
         arcade.load_font(FONT)
 
-        self.player = Player()
+        # Initialize modular player architecture
+        self.player_state = PlayerState()
+        self.player_input = PlayerInput()
+        self.movement_system = MovementSystem()
+        self.encounter_system = EncounterSystem()
+        self.player_sprite = PlayerSprite()
 
         self.keys = set()
         self.camera = None
@@ -36,7 +47,9 @@ class OverworldView(arcade.View):
             self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
         )
 
-        self.player.teleportPlayer(position.x, position.y)
+        # Re-implement teleport logic on the data rather than via the old controller
+        self.player_state.pixel_x = position.x * 2
+        self.player_state.pixel_y = position.y / 2 - 110
 
     def setup(self, map=None, playerPos=None):
         layer_options = {
@@ -50,8 +63,8 @@ class OverworldView(arcade.View):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         if playerPos:
-            self.player.center_x = playerPos[0]
-            self.player.center_y = playerPos[1]
+            self.player_state.pixel_x = playerPos[0]
+            self.player_state.pixel_y = playerPos[1]
 
         self.camera = arcade.Camera2D()
 
@@ -75,28 +88,40 @@ class OverworldView(arcade.View):
             return
 
         self.camera.position = arcade.math.lerp_2d(
-            self.camera.position, self.player.getPosition(), CAMERA_LERP_SPEED
+            self.camera.position,
+            (self.player_state.pixel_x, self.player_state.pixel_y),
+            CAMERA_LERP_SPEED,
         )
 
-        result = self.player.update(
-            delta_time,
+        intent = self.player_input.process_input(
+            self.player_state,
             self.keys,
-            self.scene["collision"],
-            self.scene["bush"],
-            self.scene["transitions"],
             CONFIG.controls,
+            self.scene["collision"],
+            self.scene["transitions"],
         )
 
-        if result:
-            type = result["type"]
+        if intent and intent["type"] == "transition":
+            path = f"assets/map/{intent['map']}.tmx"
+            self.player_state.map_name = intent["map"]
+            self.setup(path, [intent["x"], intent["y"]])
+            intent = None # consume the intent
 
-            if type == "encounter":
-                name, data, level = result["name"], result["data"], result["level"]
-                self.startBattle(name, level, data)
-            elif type == "transition":
-                path = f"assets/map/{result['map']}.tmx"
-                self.player.map = result["map"]
-                self.setup(path, [result["x"], result["y"]])
+        events = self.movement_system.update(delta_time, self.player_state, intent)
+
+        self.player_sprite.sync_with_state(self.player_state)
+
+        for event in events:
+            if event["type"] == "finished_moving":
+                encounter_result = self.encounter_system.check_encounter(
+                    self.player_state, self.scene["bush"]
+                )
+                if encounter_result:
+                    self.startBattle(
+                        encounter_result["name"],
+                        encounter_result["level"],
+                        encounter_result["data"],
+                    )
 
     def on_draw(self):
         self.clear()
@@ -105,7 +130,7 @@ class OverworldView(arcade.View):
         if self.scene and self.canRenderScene:
             self.scene.draw(pixelated=True)
 
-        self.player.draw()
+        self.player_sprite.draw()
 
     def on_key_press(self, key, _):
         self.keys.add(key)
@@ -124,3 +149,4 @@ class OverworldView(arcade.View):
         self.transitionActive = True
         self.transitionTimer = 0.0
         self.pending_battle_data = (name, level, data)
+

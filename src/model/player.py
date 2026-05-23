@@ -34,3 +34,26 @@ class PlayerProfile:
     pokemon: list[PlayerPokemon]
     items: list[Item]
     pokeballs: list[Pokeball]
+
+
+@dataclass
+class PlayerState:
+    profile: Optional[PlayerProfile] = None
+    map_name: str = "littleroot_town"
+    direction: str = "down"
+    
+    # Logic coordinates
+    grid_x: int = 0
+    grid_y: int = 0
+    
+    # Pixel coordinates for view handling
+    pixel_x: float = 0.0
+    pixel_y: float = 0.0
+    target_x: float = 0.0
+    target_y: float = 0.0
+    start_x: float = 0.0
+    start_y: float = 0.0
+    
+    moving: bool = False
+    move_progress: float = 0.0
+    move_duration: float = 0.25
