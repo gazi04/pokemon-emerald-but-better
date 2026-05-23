@@ -2,41 +2,52 @@ import arcade
 import arcade.gui
 from src.constants import TEXT_DELAY
 
-class TypewriterMessageBox(arcade.gui.UIWidget):
-    """
-    Dedicated component to animating text on screen. 
-    Doesn't know about game rules or UI states.
-    """
-    def __init__(self, x: float, y: float, width: float, height: float):
-        super().__init__(x=x, y=y, width=width, height=height)
 
-        self.background_texture = arcade.load_texture("assets/ui/sprites/dialogbox.png")
+class TypewriterMessageBox:
+    """
+    Dedicated component to animating text on screen.
+    Manages the dialogbox sprite and dialog text label directly,
+    added to an external UIManager by the orchestrator.
+    """
+    def __init__(self, bounds: dict, manager: arcade.gui.UIManager):
+        b = bounds.get("dialogBox", {"x": 0, "y": 0, "w": 800, "h": 200})
+        self._manager = manager
+
         self.background = arcade.gui.UIImage(
-            x=x, y=y, width=width, height=height, texture=self.background_texture
+            x=b["x"],
+            y=b["y"],
+            width=b["w"],
+            height=b["h"],
+            texture=arcade.load_texture("assets/ui/sprites/dialogbox.png"),
         )
-        self.add(self.background)
 
-        # y - h equivalent from original code
+        d = bounds.get("dialog", {"x": b["x"], "y": b["y"], "w": b["w"], "h": b["h"]})
         self.dialog_text = arcade.gui.UILabel(
-            x=x,
-            y=y - height, # Using the raw bounds parsed from tiled
-            width=width,
-            height=height,
+            x=d["x"],
+            y=d["y"] - d["h"],
+            width=d["w"],
+            height=d["h"],
             text_color=arcade.color.WHITE,
             font_name="Pokemon Emerald",
             font_size=25,
             align="left",
             multiline=True,
         )
-        self.add(self.dialog_text)
 
         self.target_text = ""
         self.current_text = ""
         self.text_delay_timer = 0.0
         self.is_processing = False
-
         self.message_queue = []
         self.after_text_callback = None
+
+    def show(self):
+        self._manager.add(self.background)
+        self._manager.add(self.dialog_text)
+
+    def hide(self):
+        self._manager.remove(self.background)
+        self._manager.remove(self.dialog_text)
 
     def queue_message(self, message: str):
         self.message_queue.append(message)
@@ -51,6 +62,7 @@ class TypewriterMessageBox(arcade.gui.UIWidget):
             self.target_text = self.message_queue.pop(0)
             self.current_text = ""
             self.dialog_text.text = ""
+            self.dialog_text.trigger_full_render()
             self.is_processing = True
             self.text_delay_timer = 0.0
         else:
@@ -68,11 +80,8 @@ class TypewriterMessageBox(arcade.gui.UIWidget):
             if self.text_delay_timer > TEXT_DELAY:
                 self.current_text += self.target_text[len(self.current_text)]
                 self.dialog_text.text = self.current_text
-                
-                # trigger redraw
                 self.dialog_text.trigger_full_render()
                 self.background.trigger_full_render()
-                
                 self.text_delay_timer = 0.0
         else:
             if self.text_delay_timer > 1.5:

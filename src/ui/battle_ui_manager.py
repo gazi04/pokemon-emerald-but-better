@@ -21,18 +21,10 @@ class BattleUiManager:
         self._build_static_graphics()
         
         # Components
-        dialog_rect = self.bounds.get("dialogBox", {"x": 0, "y": 0, "w": 800, "h": 200})
-        self.message_box = TypewriterMessageBox(
-            x=dialog_rect["x"], y=dialog_rect["y"], 
-            width=dialog_rect["w"], height=dialog_rect["h"]
-        )
+        self.message_box = TypewriterMessageBox(self.bounds, self.manager)
         self.message_box.set_callback(after_text_callback)
-        self.message_box_container = arcade.gui.UIWidget()
-        self.message_box_container.add(self.message_box)
 
-        self.menu_panel = BattleMenuPanel(self.bounds)
-        self.menu_panel_container = arcade.gui.UIWidget()
-        self.menu_panel_container.add(self.menu_panel)
+        self.menu_panel = BattleMenuPanel(self.bounds, self.manager)
 
         self.active_component = None
         
@@ -110,14 +102,13 @@ class BattleUiManager:
 
     def switch_mode(self, mode: str):
         self.active_component = mode
-        self.manager.remove(self.menu_panel_container)
-        self.manager.remove(self.message_box_container)
+        self.menu_panel.hide()
+        self.message_box.hide()
 
         if mode in ("main", "moves"):
             self.menu_panel.switch_menu(mode)
-            self.manager.add(self.menu_panel_container)
         elif mode == "dialog":
-            self.manager.add(self.message_box_container)
+            self.message_box.show()
 
     def queue_messages(self, messages: list[str]):
         for m in messages:
