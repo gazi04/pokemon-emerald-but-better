@@ -100,6 +100,11 @@ class BattleUiManager:
             self.enemy_level_label = arcade.gui.UILabel(x=b["x"], y=b["y"] - b["h"], text_color=arcade.color.BLACK, font_name="Pokemon Emerald", font_size=25)
             self.manager.add(self.enemy_level_label)
 
+        # Dialog box background - always visible (shown in both main and dialog modes)
+        if "dialogBox" in self.bounds:
+            b = self.bounds["dialogBox"]
+            self.manager.add(arcade.gui.UIImage(x=b["x"], y=b["y"], width=b["w"], height=b["h"], texture=arcade.load_texture("assets/ui/sprites/dialogbox.png")))
+
     def switch_mode(self, mode: str):
         self.active_component = mode
         self.menu_panel.hide()
