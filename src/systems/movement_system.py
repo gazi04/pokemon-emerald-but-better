@@ -1,4 +1,7 @@
 from src.model.player import PlayerState
+from src.core.event_bus import global_bus
+from src.core.events import PlayerFinishedMoveEvent
+
 
 class MovementSystem:
     """
@@ -25,8 +28,8 @@ class MovementSystem:
         if player_state.moving:
             duration = player_state.move_duration
             if duration <= 0:
-                duration = 0.25 # Fallback
-                
+                duration = 0.25  # Fallback
+
             player_state.move_progress += delta_time / duration
 
             if player_state.move_progress >= 1.0:
@@ -41,8 +44,15 @@ class MovementSystem:
                 player_state.pixel_x = player_state.target_x
                 player_state.pixel_y = player_state.target_y
                 player_state.moving = False
-                
-                # Emit event
+
+                # Publish event — EncounterSystem reacts automatically
+                global_bus.publish(PlayerFinishedMoveEvent(
+                    grid_x=player_state.pixel_x,
+                    grid_y=player_state.pixel_y,
+                    map_name=player_state.map_name,
+                ))
+
+                # Keep returning the dict event so existing callers aren't broken
                 events.append({
                     "type": "finished_moving",
                     "x": player_state.pixel_x,

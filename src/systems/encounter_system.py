@@ -1,39 +1,51 @@
 import arcade
 import random
+
 from src.util import getEnc
 from src.constants import ENCOUNTER_RATE
 from src.core.gameContext import dataLoader
 from src.model.player import PlayerState
+from src.core.event_bus import global_bus
+from src.core.events import PlayerFinishedMoveEvent, BattleEncounterTriggeredEvent
+
 
 class EncounterSystem:
     """
-    Logic layer: Processes game rules (like grass encounters)
+    Logic layer: Subscribes to PlayerFinishedMoveEvent and publishes
+    BattleEncounterTriggeredEvent when a wild encounter is rolled.
+    No longer called directly by OverworldView.
     """
-    def check_encounter(self, player_state: PlayerState, bush_layer) -> dict:
-        """
-        Check if the player triggers an encounter on their current tile.
-        """
+    def __init__(self, bush_layer, player_state: PlayerState):
+        self._bush_layer = bush_layer
+        self._player_state = player_state
+        global_bus.subscribe(PlayerFinishedMoveEvent, self._on_player_moved)
+
+    def _on_player_moved(self, event: PlayerFinishedMoveEvent):
         hit_bush = arcade.get_sprites_at_point(
-            (player_state.pixel_x, player_state.pixel_y), bush_layer
+            (self._player_state.pixel_x, self._player_state.pixel_y),
+            self._bush_layer,
         )
 
         if not hit_bush:
-            return None
+            return
 
-        if random.random() < ENCOUNTER_RATE:
-            pokemon_list = getEnc()[player_state.map_name]["grass"]
-            pokemon = random.choices(
-                pokemon_list, weights=[p["weight"] for p in pokemon_list]
-            )[0]
-            
-            pokemon_data = dataLoader.getPokemon(pokemon["name"])
-            pokemon_lvl = random.randint(pokemon["levels"][0], pokemon["levels"][1])
-            
-            return {
-                "type": "encounter",
-                "name": pokemon["name"],
-                "data": pokemon_data,
-                "level": pokemon_lvl,
-            }
+        if random.random() >= ENCOUNTER_RATE:
+            return
 
-        return None
+        pokemon_list = getEnc()[self._player_state.map_name]["grass"]
+        pokemon = random.choices(
+            pokemon_list, weights=[p["weight"] for p in pokemon_list]
+        )[0]
+
+        pokemon_data = dataLoader.getPokemon(pokemon["name"])
+        pokemon_lvl = random.randint(pokemon["levels"][0], pokemon["levels"][1])
+
+        global_bus.publish(BattleEncounterTriggeredEvent(
+            pokemon_name=pokemon["name"],
+            pokemon_data=pokemon_data,
+            pokemon_level=pokemon_lvl,
+        ))
+
+    def cleanup(self):
+        """Unsubscribe when the overworld is torn down."""
+        global_bus.unsubscribe(PlayerFinishedMoveEvent, self._on_player_moved)
