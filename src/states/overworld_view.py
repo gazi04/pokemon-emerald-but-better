@@ -4,12 +4,13 @@ from src.states.menuView import MenuView
 from data.config import Config
 from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
 
-# New architectural imports
 from src.model.player import PlayerState
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem
 from src.entities.player_sprite import PlayerSprite
+from src.core.event_bus import global_bus
+from src.core.events import BattleEncounterTriggeredEvent
 
 CONFIG = Config.load()
 
@@ -25,12 +26,13 @@ class OverworldView(arcade.View):
 
         arcade.load_font(FONT)
 
-        # Initialize modular player architecture
         self.player_state = PlayerState()
         self.player_input = PlayerInput()
         self.movement_system = MovementSystem()
-        self.encounter_system = EncounterSystem()
         self.player_sprite = PlayerSprite()
+
+        # EncounterSystem is created after setup() so bush_layer exists
+        self.encounter_system = None
 
         self.keys = set()
         self.camera = None
@@ -47,9 +49,10 @@ class OverworldView(arcade.View):
             self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
         )
 
-        # Re-implement teleport logic on the data rather than via the old controller
         self.player_state.pixel_x = position.x * 2
         self.player_state.pixel_y = position.y / 2 - 110
+
+        global_bus.subscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
 
     def setup(self, map=None, playerPos=None):
         layer_options = {
@@ -67,6 +70,18 @@ class OverworldView(arcade.View):
             self.player_state.pixel_y = playerPos[1]
 
         self.camera = arcade.Camera2D()
+
+        # Re-create EncounterSystem with the new bush layer whenever the map changes
+        if self.encounter_system:
+            self.encounter_system.cleanup()
+
+        self.encounter_system = EncounterSystem(
+            bush_layer=self.scene["bush"],
+            player_state=self.player_state,
+        )
+
+    def _on_battle_triggered(self, event: BattleEncounterTriggeredEvent):
+        self.startBattle(event.pokemon_name, event.pokemon_level, event.pokemon_data)
 
     def on_update(self, delta_time):
         if self.transitionActive:
@@ -105,23 +120,10 @@ class OverworldView(arcade.View):
             path = f"assets/map/{intent['map']}.tmx"
             self.player_state.map_name = intent["map"]
             self.setup(path, [intent["x"], intent["y"]])
-            intent = None # consume the intent
+            intent = None
 
-        events = self.movement_system.update(delta_time, self.player_state, intent)
-
+        self.movement_system.update(delta_time, self.player_state, intent)
         self.player_sprite.sync_with_state(self.player_state)
-
-        for event in events:
-            if event["type"] == "finished_moving":
-                encounter_result = self.encounter_system.check_encounter(
-                    self.player_state, self.scene["bush"]
-                )
-                if encounter_result:
-                    self.startBattle(
-                        encounter_result["name"],
-                        encounter_result["level"],
-                        encounter_result["data"],
-                    )
 
     def on_draw(self):
         self.clear()
@@ -145,8 +147,12 @@ class OverworldView(arcade.View):
     def on_key_release(self, key, _):
         self.keys.discard(key)
 
+    def on_hide_view(self):
+        global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+        if self.encounter_system:
+            self.encounter_system.cleanup()
+
     def startBattle(self, name, level, data):
         self.transitionActive = True
         self.transitionTimer = 0.0
         self.pending_battle_data = (name, level, data)
-
