@@ -49,7 +49,7 @@ class BattleView(arcade.View):
         )
         self.ui.switch_mode("main")
         self.updateUiMoves()
-        
+
         first_move = dataLoader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
         self.ui.menu_panel.update_move_info(
             first_move.type, self.yourPokemon.pokemonBattle.moves[0].pp, first_move.pp
@@ -73,17 +73,26 @@ class BattleView(arcade.View):
     def startTurn(self, index):
         self.ui.queue_messages(self.battleSystem.turn(index))
         self.ui.switch_mode("dialog")
-        
+
     def onItemUsed(self, itemIndex: int):
         self.ui.queue_messages(self.battleSystem.turnUseItem(itemIndex))
         self.ui.switch_mode("dialog")
 
     def whatHappendAfterText(self):
         if self.battleSystem.battleState == "currently turn":
-            self.ui.queue_messages(self.battleSystem.executeNextAction())
+            messages = self.battleSystem.executeNextAction()
+            if messages:
+                self.ui.queue_messages(messages)
+            else:
+                # executeNextAction returned nothing (shouldn't normally happen)
+                # but guard against a silent freeze
+                self.battleSystem.battleState = "waiting"
+                arcade.schedule_once(self.resetToMainMenu, 0.5)
+
         elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
             self.battleSystem.battleState = "waiting"
             arcade.schedule_once(self.resetToMainMenu, 0.5)
+
         elif self.battleSystem.battleState == "end":
             if self.battleSystem.exp > 0:
                 result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
@@ -91,6 +100,7 @@ class BattleView(arcade.View):
 
                 if not result["isLeveledUp"] and not result["evolve"]["hasEvolved"]:
                     self.run()
+                    return
 
                 if result["isLeveledUp"]:
                     self.ui.set_player_info(
@@ -152,23 +162,19 @@ class BattleView(arcade.View):
         if self.isPressed(CONFIG.controls.up, key):
             if num_buttons > 2:
                 self.ui.menu_panel.selection_index = (self.ui.menu_panel.selection_index - 2) % num_buttons
-
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
         elif self.isPressed(CONFIG.controls.down, key):
             if num_buttons > 2:
                 self.ui.menu_panel.selection_index = (self.ui.menu_panel.selection_index + 2) % num_buttons
-
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
         elif self.isPressed(CONFIG.controls.left, key):
             self.ui.menu_panel.selection_index = (self.ui.menu_panel.selection_index - 1) % num_buttons
-
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
         elif self.isPressed(CONFIG.controls.right, key):
             self.ui.menu_panel.selection_index = (self.ui.menu_panel.selection_index + 1) % num_buttons
-
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
         elif self.isPressed(CONFIG.controls.interact, key):
