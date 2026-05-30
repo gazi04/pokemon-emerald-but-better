@@ -52,7 +52,15 @@ class OverworldView(arcade.View):
         self.player_state.pixel_x = position.x * 2
         self.player_state.pixel_y = position.y / 2 - 110
 
+        self._subscribe()
+
+    def _subscribe(self):
         global_bus.subscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+
+    def _unsubscribe(self):
+        global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+        if self.encounter_system:
+            self.encounter_system.cleanup()
 
     def setup(self, map=None, playerPos=None):
         layer_options = {
@@ -147,10 +155,13 @@ class OverworldView(arcade.View):
     def on_key_release(self, key, _):
         self.keys.discard(key)
 
-    def on_hide_view(self):
-        global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+    def on_show_view(self):
+        self._subscribe()
         if self.encounter_system:
-            self.encounter_system.cleanup()
+            self.encounter_system.resubscribe()
+
+    def on_hide_view(self):
+        self._unsubscribe()
 
     def startBattle(self, name, level, data):
         self.transitionActive = True

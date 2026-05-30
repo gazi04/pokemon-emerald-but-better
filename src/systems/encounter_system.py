@@ -13,13 +13,23 @@ class EncounterSystem:
     """
     Logic layer: Subscribes to PlayerFinishedMoveEvent and publishes
     BattleEncounterTriggeredEvent when a wild encounter is rolled.
-    No longer called directly by OverworldView.
     """
 
     def __init__(self, bush_layer, player_state: PlayerState):
         self._bush_layer = bush_layer
         self._player_state = player_state
-        global_bus.subscribe(PlayerFinishedMoveEvent, self._on_player_moved)
+        self._subscribed = False
+        self.resubscribe()
+
+    def resubscribe(self):
+        if not self._subscribed:
+            global_bus.subscribe(PlayerFinishedMoveEvent, self._on_player_moved)
+            self._subscribed = True
+
+    def cleanup(self):
+        if self._subscribed:
+            global_bus.unsubscribe(PlayerFinishedMoveEvent, self._on_player_moved)
+            self._subscribed = False
 
     def _on_player_moved(self, event: PlayerFinishedMoveEvent):
         hit_bush = arcade.get_sprites_at_point(
@@ -48,7 +58,3 @@ class EncounterSystem:
                 pokemon_level=pokemon_lvl,
             )
         )
-
-    def cleanup(self):
-        """Unsubscribe when the overworld is torn down."""
-        global_bus.unsubscribe(PlayerFinishedMoveEvent, self._on_player_moved)
