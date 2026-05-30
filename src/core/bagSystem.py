@@ -1,11 +1,16 @@
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from src.core.gameContext import saveManager, dataLoader
 from src.model.item import Item
 
 
 class BagSystem:
-    def __init__(self):
-        self._items = saveManager.player.items
-        self._pokeballs = saveManager.player.pokeballs
+    def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
+        self.save_manager = save_manager
+        self.data_loader = data_loader
+
+        self._items = save_manager.player.items
+        self._pokeballs = save_manager.player.pokeballs
 
     def useItem(self, itemIndex: int, pokemonId: str):
         if len(self._items) <= 0:
@@ -19,8 +24,8 @@ class BagSystem:
                 self._items.pop(itemIndex)
 
     def _handleItemEffects(self, pokemonId: str, itemId: str) -> bool:
-        pokemon = saveManager.getPokemon(pokemonId)
-        pokemonProfile = dataLoader.getPokemon(pokemonId)
+        pokemon = self.save_manager.getPokemon(pokemonId)
+        pokemonProfile = self.data_loader.getPokemon(pokemonId)
 
         maxHp = (
             ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
@@ -29,7 +34,7 @@ class BagSystem:
         if not pokemon:
             return False
 
-        item = dataLoader.getItem(itemId)
+        item = self.data_loader.getItem(itemId)
 
         for effect in item.effects:
             if effect.type == "heal":
@@ -48,8 +53,8 @@ class BagSystem:
 
         item = self._items[itemIndex]
 
-        pokemon = saveManager.getPokemon(pokemonId)
-        pokemonProfile = dataLoader.getPokemon(pokemon.name)
+        pokemon = self.save_manager.getPokemon(pokemonId)
+        pokemonProfile = self.data_loader.getPokemon(pokemon.name)
 
         maxHp = (
             ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level

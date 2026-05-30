@@ -1,4 +1,6 @@
 import arcade
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from data.config import Config
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent
@@ -8,10 +10,14 @@ CONFIG = Config.load()
 
 
 class MenuView(arcade.View):
-    def __init__(self, overworld: arcade.View):
+    def __init__(
+        self, overworld: arcade.View, save_manager: SaveManager, data_loader: DataLoader
+    ):
         super().__init__()
 
         self.overworld = overworld
+        self.save_manager = save_manager
+        self.data_loader = data_loader
         self.ui = MenuUi()
         self.selectedIndex = 0
 
@@ -46,14 +52,22 @@ class MenuView(arcade.View):
             global_bus.publish(
                 OverlayViewEvent(
                     target="pokemon_menu",
-                    payload={"previous_view": self},
+                    payload={
+                        "previous_view": self,
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                    },
                 )
             )
         elif self.selectedIndex == 1:
             global_bus.publish(
                 OverlayViewEvent(
                     target="bag",
-                    payload={"previous_view": self},
+                    payload={
+                        "previous_view": self,
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                    },
                 )
             )
         elif self.selectedIndex == 2:

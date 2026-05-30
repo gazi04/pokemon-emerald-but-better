@@ -1,9 +1,9 @@
 import arcade
 import random
 
+from src.core.dataLoader import DataLoader
 from src.util import getEnc
 from src.constants import ENCOUNTER_RATE
-from src.core.gameContext import dataLoader
 from src.model.player import PlayerState
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent, BattleEncounterTriggeredEvent
@@ -15,7 +15,8 @@ class EncounterSystem:
     BattleEncounterTriggeredEvent when a wild encounter is rolled.
     """
 
-    def __init__(self, bush_layer, player_state: PlayerState):
+    def __init__(self, bush_layer, player_state: PlayerState, data_loader: DataLoader):
+        self.data_loader = data_loader
         self._bush_layer = bush_layer
         self._player_state = player_state
         self._subscribed = False
@@ -48,7 +49,7 @@ class EncounterSystem:
             pokemon_list, weights=[p["weight"] for p in pokemon_list]
         )[0]
 
-        pokemon_data = dataLoader.getPokemon(pokemon["name"])
+        pokemon_data = self.data_loader.getPokemon(pokemon["name"])
         pokemon_lvl = random.randint(pokemon["levels"][0], pokemon["levels"][1])
 
         global_bus.publish(

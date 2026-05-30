@@ -1,4 +1,6 @@
 import arcade
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from data.config import Config
 from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
 
@@ -18,7 +20,7 @@ CONFIG = Config.load()
 
 
 class OverworldView(arcade.View):
-    def __init__(self):
+    def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
         super().__init__()
 
         arcade.get_window().ctx.default_texture_filter = (
@@ -27,6 +29,9 @@ class OverworldView(arcade.View):
         )
 
         arcade.load_font(FONT)
+
+        self.save_manager = save_manager
+        self.data_loader = data_loader
 
         self.player_state = PlayerState()
         self.player_input = PlayerInput()
@@ -100,6 +105,7 @@ class OverworldView(arcade.View):
         self.encounter_system = EncounterSystem(
             bush_layer=self.scene["bush"],
             player_state=self.player_state,
+            data_loader=self.data_loader,
         )
 
     # ------------------------------------------------------------------
@@ -181,7 +187,15 @@ class OverworldView(arcade.View):
         if self.isPressed(CONFIG.controls.bag, key):
             self.keys.clear()
             # Ask the Director to stack the Menu as an overlay
-            global_bus.publish(OverlayViewEvent(target="menu"))
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="menu",
+                    payload={
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                    },
+                )
+            )
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

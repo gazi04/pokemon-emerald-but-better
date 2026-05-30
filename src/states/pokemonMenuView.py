@@ -1,4 +1,6 @@
 import arcade
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from src.ui.pokemonMenuUi import PokemonMenuUi
 from src.core.bagSystem import BagSystem
 from src.core.pokemonMenuSystem import PokemonMenuSystem
@@ -15,6 +17,8 @@ class PokemonMenuView(arcade.View):
     def __init__(
         self,
         previousView: arcade.View,
+        save_manager: SaveManager,
+        data_loader: DataLoader,
         bag: BagSystem = None,
         itemIndex: int = 0,
         battleSystem: BattleSystem = None,
@@ -26,8 +30,8 @@ class PokemonMenuView(arcade.View):
         self.battleSystem = battleSystem
         self.itemIndex = itemIndex
 
-        self.system = PokemonMenuSystem()
-        self.ui = PokemonMenuUi()
+        self.system = PokemonMenuSystem(save_manager)
+        self.ui = PokemonMenuUi(data_loader)
 
         tooltipOptions = ["Use", "Info"] if bag else ["Move", "Info"]
         self.ui.setupTooltip(tooltipOptions)

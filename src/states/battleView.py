@@ -1,4 +1,6 @@
 import arcade
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from src.model.player import PlayerPokemonMove
 from src.entities.pokemonSprites import Pokemon
 from src.core.gameContext import saveManager, dataLoader
@@ -15,19 +17,27 @@ CONFIG = Config.load()
 
 
 class BattleView(arcade.View):
-    def __init__(self, pokemon_name, pokemon_data, level, overworld_view):
+    def __init__(
+        self,
+        pokemon_name,
+        pokemon_data,
+        level,
+        overworld_view,
+        save_manager: SaveManager,
+        data_loader: DataLoader,
+    ):
         super().__init__()
 
-        # overworld_view is kept only so the flicker transition in OverworldView
-        # still works. The Director owns the actual navigation.
         self.overworld_view = overworld_view
+        self.save_manager = save_manager
+        self.data_loader = data_loader
 
         self.ui = BattleUiManager(self.whatHappendAfterText)
 
-        self.playerPokemon = saveManager.player.pokemon
+        self.playerPokemon = self.save_manager.player.pokemon
 
         self.yourPokemon = Pokemon(
-            dataLoader.getPokemon(self.playerPokemon[0].name),
+            data_loader.getPokemon(self.playerPokemon[0].name),
             False,
             self.playerPokemon[0],
         )
@@ -40,7 +50,10 @@ class BattleView(arcade.View):
         )
 
         self.battleSystem = BattleSystem(
-            self.yourPokemon.pokemonBattle, self.enemyPokemon.pokemonBattle
+            self.yourPokemon.pokemonBattle,
+            self.enemyPokemon.pokemonBattle,
+            self.save_manager,
+            self.data_loader,
         )
 
         self.ui.set_player_info(
@@ -54,7 +67,7 @@ class BattleView(arcade.View):
         self.ui.switch_mode("main")
         self.updateUiMoves()
 
-        first_move = dataLoader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
+        first_move = data_loader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
         self.ui.menu_panel.update_move_info(
             first_move.type,
             self.yourPokemon.pokemonBattle.moves[0].pp,
@@ -207,6 +220,8 @@ class BattleView(arcade.View):
                             payload={
                                 "previous_view": self,
                                 "battle_system": self.battleSystem,
+                                "save_manager": self.save_manager,
+                                "data_loader": self.data_loader,
                             },
                         )
                     )
@@ -215,7 +230,11 @@ class BattleView(arcade.View):
                     global_bus.publish(
                         OverlayViewEvent(
                             target="pokemon_menu",
-                            payload={"previous_view": self},
+                            payload={
+                                "previous_view": self,
+                                "save_manager": self.save_manager,
+                                "data_loader": self.data_loader,
+                            },
                         )
                     )
                 elif self.ui.menu_panel.selection_index == 3:
@@ -233,7 +252,7 @@ class BattleView(arcade.View):
     def moveHover(self, index):
         if index is not None and index < len(self.yourPokemon.pokemonBattle.moves):
             move_name = self.yourPokemon.pokemonBattle.moves[index].name
-            move = dataLoader.getMove(move_name)
+            move = self.data_loader.getMove(move_name)
             self.ui.menu_panel.update_move_info(
                 move.type,
                 self.yourPokemon.pokemonBattle.moves[index].pp,

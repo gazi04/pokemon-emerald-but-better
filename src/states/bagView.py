@@ -1,4 +1,6 @@
 import arcade
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from data.config import Config
 from src.core.gameContext import saveManager, dataLoader
 from src.ui.bagUi import BagUI
@@ -12,11 +14,20 @@ CONFIG = Config.load()
 
 
 class BagView(arcade.View):
-    def __init__(self, previousWindow: arcade.View, battleSystem: BattleSystem = None):
+    def __init__(
+        self,
+        previousWindow: arcade.View,
+        save_manager: SaveManager,
+        data_loader: DataLoader,
+        battleSystem: BattleSystem = None,
+    ):
         super().__init__()
 
+        self.save_manager = save_manager
+        self.data_loader = data_loader
+
         self.bagUi = BagUI()
-        self.bagSystem = BagSystem()
+        self.bagSystem = BagSystem(save_manager, data_loader)
         self.battleSystem = battleSystem
         self.previousWindow = previousWindow
 
@@ -47,7 +58,7 @@ class BagView(arcade.View):
         index = self.currentIndex - self.topVisibleIndex
         self.bagUi.setYOfCursor(index)
         self.bagUi.setText(
-            dataLoader.getItem(self.inventory[self.currentIndex].name).description
+            self.data_loader.getItem(self.inventory[self.currentIndex].name).description
         )
 
     def on_key_press(self, key, modifiers):
@@ -85,6 +96,8 @@ class BagView(arcade.View):
                         "bag": self.bagSystem,
                         "item_index": self.currentIndex,
                         "battle_system": self.battleSystem,
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
                     },
                 )
             )

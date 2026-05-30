@@ -1,5 +1,7 @@
 import random
 
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from src.entities.pokemonBattle import PokemonBattle
 from src.core.gameContext import saveManager
 from src.core.event_bus import global_bus
@@ -7,9 +9,17 @@ from src.core.events import HpChangedEvent, PokemonFaintedEvent
 
 
 class BattleSystem:
-    def __init__(self, yourPokemon: PokemonBattle, enemyPokemon: PokemonBattle):
+    def __init__(
+        self,
+        yourPokemon: PokemonBattle,
+        enemyPokemon: PokemonBattle,
+        save_manager: SaveManager,
+        data_loader: DataLoader,
+    ):
         self.yourPokemon = yourPokemon
         self.enemyPokemon = enemyPokemon
+        self.save_manager = save_manager
+        self.data_loader = data_loader
 
         self.turnQueue = []
         self.battleState = "intro"
@@ -38,7 +48,7 @@ class BattleSystem:
         return self.executeNextAction()
 
     def _applyItemToPokemon(self, itemIndex: int) -> list[str]:
-        item = saveManager.player.items[itemIndex]
+        item = self.save_manager.player.items[itemIndex]
         self.yourPokemon.syncFromSource()
 
         global_bus.publish(
@@ -62,10 +72,13 @@ class BattleSystem:
         if attackerKey == "player" and self.yourPokemon.currentHp > 0:
             if itemIndex == -1:
                 moveName = self.yourPokemon.moves[moveIndex].name
+                # Phase 4: fetch move here, pass data into useMove
+                move_data = self.data_loader.getMove(moveName)
                 messages.append(f"{self.yourPokemon.name} used {moveName}!")
-
                 hp_before = self.enemyPokemon.currentHp
-                result = self.yourPokemon.useMove(moveIndex, self.enemyPokemon)
+                result = self.yourPokemon.useMove(
+                    move_data, moveIndex, self.enemyPokemon
+                )
                 self._publish_hp_change("enemy", hp_before, self.enemyPokemon)
                 messages.extend(result)
             else:
@@ -73,14 +86,13 @@ class BattleSystem:
 
         elif attackerKey == "enemy" and self.enemyPokemon.currentHp > 0:
             moveName = self.enemyPokemon.moves[moveIndex].name
+            move_data = self.data_loader.getMove(moveName)
             messages.append(f"Foe {self.enemyPokemon.name} used {moveName}!")
-
             hp_before = self.yourPokemon.currentHp
-            result = self.enemyPokemon.useMove(moveIndex, self.yourPokemon)
+            result = self.enemyPokemon.useMove(move_data, moveIndex, self.yourPokemon)
             self._publish_hp_change("player", hp_before, self.yourPokemon)
             messages.extend(result)
 
-        # If a pokemon fainted mid-turn, skip remaining queue and go to postTurn
         if self.yourPokemon.currentHp <= 0 or self.enemyPokemon.currentHp <= 0:
             self.turnQueue.clear()
 
@@ -142,16 +154,16 @@ class BattleSystem:
         return messages
 
     def save(self):
-        saveManager.updateHp(self.yourPokemon.name, self.yourPokemon.currentHp)
+        self.save_manager.updateHp(self.yourPokemon.name, self.yourPokemon.currentHp)
         for move in self.yourPokemon.moves:
-            saveManager.updateMove(self.yourPokemon.name, move.name, move.pp)
+            self.save_manager.updateMove(self.yourPokemon.name, move.name, move.pp)
 
         if not self.hasEvolved:
-            saveManager.updateLevel(
+            self.save_manager.updateLevel(
                 self.yourPokemon.name, self.yourPokemon.level, self.yourPokemon.exp
             )
         else:
-            saveManager.updateLevel(
+            self.save_manager.updateLevel(
                 self.yourPokemon.name,
                 self.yourPokemon.level,
                 self.yourPokemon.exp,

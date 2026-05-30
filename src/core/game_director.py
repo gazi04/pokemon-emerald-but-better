@@ -12,6 +12,8 @@ Responsibilities:
 
 import arcade
 
+from src.core.dataLoader import DataLoader
+from src.core.saveManager import SaveManager
 from src.core.event_bus import global_bus
 from src.core.events import SwapViewEvent, CloseViewEvent, OverlayViewEvent
 
@@ -20,6 +22,9 @@ class GameDirector:
     def __init__(self, window: arcade.Window):
         self._window = window
         self._view_cache: dict[str, arcade.View] = {}
+
+        self.save_manager = SaveManager()
+        self.data_loader = DataLoader()
 
         global_bus.subscribe(SwapViewEvent, self._on_swap_view)
         global_bus.subscribe(CloseViewEvent, self._on_close_view)
@@ -67,7 +72,9 @@ class GameDirector:
             # Import here to avoid circular imports at module level
             from src.states.overworld_view import OverworldView
 
-            self._view_cache["overworld"] = OverworldView()
+            self._view_cache["overworld"] = OverworldView(
+                self.save_manager, self.data_loader
+            )
         return self._view_cache["overworld"]
 
     def _build_transient_view(self, target: str, payload: dict):
@@ -77,6 +84,8 @@ class GameDirector:
             from src.states.battleView import BattleView
 
             return BattleView(
+                save_manager=self.save_manager,
+                data_loader=self.data_loader,
                 pokemon_name=payload["pokemon_name"],
                 pokemon_data=payload["pokemon_data"],
                 level=payload["pokemon_level"],
@@ -96,17 +105,21 @@ class GameDirector:
 
     def _build_overlay_view(self, target: str, payload: dict):
         overworld = self._get_or_create_overworld()
+        save_manager = payload.get("save_manager", self.save_manager)
+        data_loader = payload.get("data_loader", self.data_loader)
 
         if target == "menu":
             from src.states.menuView import MenuView
 
-            return MenuView(overworld)
+            return MenuView(overworld, save_manager, data_loader)
 
         if target == "bag":
             from src.states.bagView import BagView
 
             return BagView(
                 previousWindow=payload.get("previous_view", overworld),
+                save_manager=save_manager,
+                data_loader=data_loader,
                 battleSystem=payload.get("battle_system"),
             )
 
@@ -115,6 +128,8 @@ class GameDirector:
 
             return PokemonMenuView(
                 previousView=payload.get("previous_view", overworld),
+                save_manager=save_manager,
+                data_loader=data_loader,
                 bag=payload.get("bag"),
                 itemIndex=payload.get("item_index", 0),
                 battleSystem=payload.get("battle_system"),
