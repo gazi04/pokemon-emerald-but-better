@@ -5,7 +5,8 @@ from src.ui.bagUi import BagUI
 from src.core.bagSystem import BagSystem
 from src.core.battleSystem import BattleSystem
 from src.constants import MAX_VISIBLE_ITEMS
-from src.states.pokemonMenuView import PokemonMenuView
+from src.core.event_bus import global_bus
+from src.core.events import CloseViewEvent, OverlayViewEvent
 
 CONFIG = Config.load()
 
@@ -17,13 +18,10 @@ class BagView(arcade.View):
         self.bagUi = BagUI()
         self.bagSystem = BagSystem()
         self.battleSystem = battleSystem
-
         self.previousWindow = previousWindow
 
         self.inventory = self.bagSystem.getItems()
-
         self.bagIndex = 0
-
         self.currentIndex = 0
         self.topVisibleIndex = 0
 
@@ -33,15 +31,10 @@ class BagView(arcade.View):
     def updateItem(self):
         for i in range(MAX_VISIBLE_ITEMS):
             inventory_index = self.topVisibleIndex + i
-
             if inventory_index < len(self.inventory):
                 item = self.inventory[inventory_index]
                 name = item.name.upper()
-                if item.count > 0:
-                    display = f"{name:<14} x{item.count}"
-                else:
-                    display = name
-
+                display = f"{name:<14} x{item.count}" if item.count > 0 else name
                 self.bagUi.itemLabels[i].text = display
             else:
                 self.bagUi.itemLabels[i].text = ""
@@ -61,36 +54,38 @@ class BagView(arcade.View):
         if self.isPressed(CONFIG.controls.up, key):
             if self.currentIndex > 0:
                 self.currentIndex -= 1
-
                 if self.currentIndex < self.topVisibleIndex:
                     self.topVisibleIndex -= 1
-
                 self.updateItem()
+
         elif self.isPressed(CONFIG.controls.down, key):
             if self.currentIndex < len(self.inventory) - 1:
                 self.currentIndex += 1
-
                 if self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS:
                     self.topVisibleIndex += 1
-
                 self.updateItem()
+
         elif self.isPressed(CONFIG.controls.right, key):
             self.bagIndex = 1 if self.bagIndex == 0 else 0
-
             self.changeBag()
+
         elif self.isPressed(CONFIG.controls.left, key):
             self.bagIndex = 0 if self.bagIndex == 1 else 1
-
             self.changeBag()
+
         elif self.isPressed(CONFIG.controls.cancel, key):
             self.window.show_view(self.previousWindow)
+
         elif self.isPressed(CONFIG.controls.interact, key) and self.bagIndex == 0:
-            self.window.show_view(
-                PokemonMenuView(
-                    self,
-                    self.bagSystem,
-                    self.currentIndex,
-                    battleSystem=self.battleSystem,
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="pokemon_menu",
+                    payload={
+                        "previous_view": self,
+                        "bag": self.bagSystem,
+                        "item_index": self.currentIndex,
+                        "battle_system": self.battleSystem,
+                    },
                 )
             )
             self.updateItem()
@@ -103,15 +98,11 @@ class BagView(arcade.View):
         if self.bagIndex == 0:
             self.inventory = self.bagSystem.getItems()
             self.bagUi.changeBag("items")
-
-            self.bagUi.setupInvetory()
-            self.updateItem()
         else:
             self.inventory = self.bagSystem.getPokeballs()
             self.bagUi.changeBag("pokeball")
-
-            self.bagUi.setupInvetory()
-            self.updateItem()
+        self.bagUi.setupInvetory()
+        self.updateItem()
 
     def on_draw(self):
         self.clear()

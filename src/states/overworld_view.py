@@ -1,6 +1,4 @@
 import arcade
-from src.states.battleView import BattleView
-from src.states.menuView import MenuView
 from data.config import Config
 from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
 
@@ -10,7 +8,11 @@ from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem
 from src.entities.player_sprite import PlayerSprite
 from src.core.event_bus import global_bus
-from src.core.events import BattleEncounterTriggeredEvent
+from src.core.events import (
+    BattleEncounterTriggeredEvent,
+    SwapViewEvent,
+    OverlayViewEvent,
+)
 
 CONFIG = Config.load()
 
@@ -30,8 +32,6 @@ class OverworldView(arcade.View):
         self.player_input = PlayerInput()
         self.movement_system = MovementSystem()
         self.player_sprite = PlayerSprite()
-
-        # EncounterSystem is created after setup() so bush_layer exists
         self.encounter_system = None
 
         self.keys = set()
@@ -48,11 +48,14 @@ class OverworldView(arcade.View):
         position = (
             self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
         )
-
         self.player_state.pixel_x = position.x * 2
         self.player_state.pixel_y = position.y / 2 - 110
 
         self._subscribe()
+
+    # ------------------------------------------------------------------
+    # Subscription management
+    # ------------------------------------------------------------------
 
     def _subscribe(self):
         global_bus.subscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
@@ -61,6 +64,18 @@ class OverworldView(arcade.View):
         global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
         if self.encounter_system:
             self.encounter_system.cleanup()
+
+    def on_show_view(self):
+        self._subscribe()
+        if self.encounter_system:
+            self.encounter_system.resubscribe()
+
+    def on_hide_view(self):
+        self._unsubscribe()
+
+    # ------------------------------------------------------------------
+    # Setup
+    # ------------------------------------------------------------------
 
     def setup(self, map=None, playerPos=None):
         layer_options = {
@@ -79,7 +94,6 @@ class OverworldView(arcade.View):
 
         self.camera = arcade.Camera2D()
 
-        # Re-create EncounterSystem with the new bush layer whenever the map changes
         if self.encounter_system:
             self.encounter_system.cleanup()
 
@@ -88,23 +102,42 @@ class OverworldView(arcade.View):
             player_state=self.player_state,
         )
 
+    # ------------------------------------------------------------------
+    # Event handlers
+    # ------------------------------------------------------------------
+
     def _on_battle_triggered(self, event: BattleEncounterTriggeredEvent):
-        self.startBattle(event.pokemon_name, event.pokemon_level, event.pokemon_data)
+        """Received from EncounterSystem — start the flicker then hand off."""
+        self._start_battle_transition(
+            event.pokemon_name, event.pokemon_level, event.pokemon_data
+        )
+
+    # ------------------------------------------------------------------
+    # Game loop
+    # ------------------------------------------------------------------
 
     def on_update(self, delta_time):
         if self.transitionActive:
             self.transitionTimer += delta_time
 
-            if int(self.transitionTimer / self.flickerInterval) % 2 == 0:
-                self.canRenderScene = True
-            else:
-                self.canRenderScene = False
+            self.canRenderScene = (
+                int(self.transitionTimer / self.flickerInterval) % 2 == 0
+            )
 
             if self.transitionTimer >= self.maxTransitionTime:
                 name, level, data = self.pending_battle_data
-                self.window.show_view(BattleView(name, data, level, self))
+                # Tell the Director to swap to the Battle view
+                global_bus.publish(
+                    SwapViewEvent(
+                        target="battle",
+                        payload={
+                            "pokemon_name": name,
+                            "pokemon_data": data,
+                            "pokemon_level": level,
+                        },
+                    )
+                )
                 self.keys.clear()
-
                 self.transitionActive = False
                 self.canRenderScene = True
                 self.transitionTimer = 0.0
@@ -147,7 +180,8 @@ class OverworldView(arcade.View):
 
         if self.isPressed(CONFIG.controls.bag, key):
             self.keys.clear()
-            self.window.show_view(MenuView(self))
+            # Ask the Director to stack the Menu as an overlay
+            global_bus.publish(OverlayViewEvent(target="menu"))
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
@@ -155,15 +189,11 @@ class OverworldView(arcade.View):
     def on_key_release(self, key, _):
         self.keys.discard(key)
 
-    def on_show_view(self):
-        self._subscribe()
-        if self.encounter_system:
-            self.encounter_system.resubscribe()
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
 
-    def on_hide_view(self):
-        self._unsubscribe()
-
-    def startBattle(self, name, level, data):
+    def _start_battle_transition(self, name, level, data):
         self.transitionActive = True
         self.transitionTimer = 0.0
         self.pending_battle_data = (name, level, data)

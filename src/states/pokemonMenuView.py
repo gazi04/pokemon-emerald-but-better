@@ -3,6 +3,8 @@ from src.ui.pokemonMenuUi import PokemonMenuUi
 from src.core.bagSystem import BagSystem
 from src.core.pokemonMenuSystem import PokemonMenuSystem
 from src.core.battleSystem import BattleSystem
+from src.core.event_bus import global_bus
+from src.core.events import CloseViewEvent
 from data.config import Config
 from src.constants import FONT
 
@@ -83,22 +85,30 @@ class PokemonMenuView(arcade.View):
 
         if index == 1:
             if self.bag and self.battleSystem:
+                # Use item in battle
                 self.bag.useItem(
-                    self.itemIndex, self.system.team[self.system.teamIndex].name
+                    self.itemIndex,
+                    self.system.team[self.system.teamIndex].name,
                 )
                 self.battleSystem.turnUseItem(self.itemIndex)
 
+                # Navigate back to BattleView (still held by previousView chain)
                 battleView = self.previousView.previousWindow
                 battleView.onItemUsed(self.itemIndex)
                 self.window.show_view(battleView)
+
             elif self.bag:
+                # Use item outside battle
                 self.bag.useItem(
-                    self.itemIndex, self.system.team[self.system.teamIndex].name
+                    self.itemIndex,
+                    self.system.team[self.system.teamIndex].name,
                 )
                 self.previousView.updateItem()
                 self.window.show_view(self.previousView)
+
             elif len(self.system.team) > 1:
                 self.system.startMoving()
+
         elif index == 0:
             pass
 

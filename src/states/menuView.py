@@ -1,7 +1,7 @@
 import arcade
 from data.config import Config
-from src.states.bagView import BagView
-from src.states.pokemonMenuView import PokemonMenuView
+from src.core.event_bus import global_bus
+from src.core.events import CloseViewEvent, OverlayViewEvent
 from src.ui.menuUi import MenuUi
 
 CONFIG = Config.load()
@@ -17,9 +17,8 @@ class MenuView(arcade.View):
 
     def on_draw(self):
         self.clear()
-
+        # Draw the live Overworld behind the menu — no references to BagView etc.
         self.overworld.on_draw()
-
         arcade.get_window().default_camera.use()
         self.ui.draw()
 
@@ -30,24 +29,32 @@ class MenuView(arcade.View):
             self.selectedIndex -= 1
             if self.selectedIndex == -1:
                 self.selectedIndex = len(self.ui.buttons) - 1
-
             self.ui.setYOfCursor(self.selectedIndex)
         elif self.isPressed(CONFIG.controls.down, key):
             self.selectedIndex += 1
             if self.selectedIndex == len(self.ui.buttons):
                 self.selectedIndex = 0
-
             self.ui.setYOfCursor(self.selectedIndex)
         elif self.isPressed(CONFIG.controls.cancel, key):
-            self.window.show_view(self.overworld)
+            global_bus.publish(CloseViewEvent())
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def action(self):
         if self.selectedIndex == 0:
-            self.window.show_view(PokemonMenuView(self))
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="pokemon_menu",
+                    payload={"previous_view": self},
+                )
+            )
         elif self.selectedIndex == 1:
-            self.window.show_view(BagView(self))
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="bag",
+                    payload={"previous_view": self},
+                )
+            )
         elif self.selectedIndex == 2:
-            pass
+            pass  # reserved

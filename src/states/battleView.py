@@ -8,6 +8,8 @@ from src.states.bagView import BagView
 from src.states.pokemonMenuView import PokemonMenuView
 from src.ui.battle_ui_manager import BattleUiManager
 from src.core.battleSystem import BattleSystem
+from src.core.event_bus import global_bus
+from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
 
 CONFIG = Config.load()
 
@@ -16,9 +18,11 @@ class BattleView(arcade.View):
     def __init__(self, pokemon_name, pokemon_data, level, overworld_view):
         super().__init__()
 
-        self.ui = BattleUiManager(self.whatHappendAfterText)
-
+        # overworld_view is kept only so the flicker transition in OverworldView
+        # still works. The Director owns the actual navigation.
         self.overworld_view = overworld_view
+
+        self.ui = BattleUiManager(self.whatHappendAfterText)
 
         self.playerPokemon = saveManager.player.pokemon
 
@@ -52,14 +56,15 @@ class BattleView(arcade.View):
 
         first_move = dataLoader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
         self.ui.menu_panel.update_move_info(
-            first_move.type, self.yourPokemon.pokemonBattle.moves[0].pp, first_move.pp
+            first_move.type,
+            self.yourPokemon.pokemonBattle.moves[0].pp,
+            first_move.pp,
         )
 
         self.ui.set_transition(self.yourPokemon, self.enemyPokemon)
 
     def updateUiMoves(self):
         moves = self.yourPokemon.pokemonBattle.moves
-
         for i, button in enumerate(self.ui.menu_panel.move_buttons):
             if i < len(moves):
                 button.text = moves[i].name.upper()
@@ -84,8 +89,6 @@ class BattleView(arcade.View):
             if messages:
                 self.ui.queue_messages(messages)
             else:
-                # executeNextAction returned nothing (shouldn't normally happen)
-                # but guard against a silent freeze
                 self.battleSystem.battleState = "waiting"
                 arcade.schedule_once(self.resetToMainMenu, 0.5)
 
@@ -118,11 +121,14 @@ class BattleView(arcade.View):
                 if result["evolve"]["hasEvolved"]:
                     self.battleSystem.hasEvolved = True
                     self.battleSystem.save()
-                    self.window.show_view(
-                        EvolvingView(
-                            self.overworld_view,
-                            self.yourPokemon.pokemonBattle.name.lower(),
-                            result["evolve"]["to"],
+                    # Ask the Director to swap to the Evolution view
+                    global_bus.publish(
+                        SwapViewEvent(
+                            target="evolving",
+                            payload={
+                                "pokemon": self.yourPokemon.pokemonBattle.name.lower(),
+                                "evolved_pokemon": result["evolve"]["to"],
+                            },
                         )
                     )
             else:
@@ -138,14 +144,10 @@ class BattleView(arcade.View):
 
     def on_draw(self):
         self.clear()
-
         self.window.default_camera.use()
-
         self.ui.draw()
-
         self.enemyPokemon.draw()
         self.yourPokemon.draw()
-
         self.ui.draw_hp_bar(self.yourPokemon.pokemonBattle.getHpRatio(), "player")
         self.ui.draw_exp_bar(self.yourPokemon.pokemonBattle.getExpRatio())
         self.ui.draw_hp_bar(self.enemyPokemon.pokemonBattle.getHpRatio(), "enemy")
@@ -170,6 +172,7 @@ class BattleView(arcade.View):
                 ) % num_buttons
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
+
         elif self.isPressed(CONFIG.controls.down, key):
             if num_buttons > 2:
                 self.ui.menu_panel.selection_index = (
@@ -177,30 +180,49 @@ class BattleView(arcade.View):
                 ) % num_buttons
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
+
         elif self.isPressed(CONFIG.controls.left, key):
             self.ui.menu_panel.selection_index = (
                 self.ui.menu_panel.selection_index - 1
             ) % num_buttons
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
+
         elif self.isPressed(CONFIG.controls.right, key):
             self.ui.menu_panel.selection_index = (
                 self.ui.menu_panel.selection_index + 1
             ) % num_buttons
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
+
         elif self.isPressed(CONFIG.controls.interact, key):
             if self.ui.active_component == "main":
                 if self.ui.menu_panel.selection_index == 0:
                     self.ui.switch_mode("moves")
                 elif self.ui.menu_panel.selection_index == 1:
-                    self.window.show_view(BagView(self, battleSystem=self.battleSystem))
+                    # Ask the Director to overlay the Bag
+                    global_bus.publish(
+                        OverlayViewEvent(
+                            target="bag",
+                            payload={
+                                "previous_view": self,
+                                "battle_system": self.battleSystem,
+                            },
+                        )
+                    )
                 elif self.ui.menu_panel.selection_index == 2:
-                    self.window.show_view(PokemonMenuView(self))
+                    # Ask the Director to overlay the Pokémon menu
+                    global_bus.publish(
+                        OverlayViewEvent(
+                            target="pokemon_menu",
+                            payload={"previous_view": self},
+                        )
+                    )
                 elif self.ui.menu_panel.selection_index == 3:
                     self.run()
             elif self.ui.active_component == "moves":
                 self.startTurn(self.ui.menu_panel.selection_index)
+
         elif self.isPressed(CONFIG.controls.cancel, key):
             if self.ui.active_component == "moves":
                 self.ui.switch_mode("main")
@@ -213,9 +235,12 @@ class BattleView(arcade.View):
             move_name = self.yourPokemon.pokemonBattle.moves[index].name
             move = dataLoader.getMove(move_name)
             self.ui.menu_panel.update_move_info(
-                move.type, self.yourPokemon.pokemonBattle.moves[index].pp, move.pp
+                move.type,
+                self.yourPokemon.pokemonBattle.moves[index].pp,
+                move.pp,
             )
 
     def run(self):
-        self.window.show_view(self.overworld_view)
         self.battleSystem.save()
+        # Tell the Director we are done — it will return to the Overworld
+        global_bus.publish(CloseViewEvent())

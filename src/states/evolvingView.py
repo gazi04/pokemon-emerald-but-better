@@ -2,12 +2,16 @@ import arcade
 import arcade.gui
 import math
 from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE, TEXT_DELAY
+from src.core.event_bus import global_bus
+from src.core.events import CloseViewEvent
 
 
 class EvolvingView(arcade.View):
     def __init__(self, overworldView, pokemon, evolvedPokemon):
         super().__init__()
 
+        # overworldView kept only for Director cache compatibility —
+        # navigation is now done via CloseViewEvent.
         self.overworld = overworldView
 
         tilemap = arcade.load_tilemap(EVOLVING_UI)
@@ -24,7 +28,6 @@ class EvolvingView(arcade.View):
         for obj in uiLayer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
-
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
 
@@ -46,7 +49,6 @@ class EvolvingView(arcade.View):
                     height=h,
                     texture=arcade.load_texture("assets/ui/sprites/background.png"),
                 )
-
                 self.manager.add(self.background)
             elif obj.name == "text":
                 self.dialogText = arcade.gui.UILabel(
@@ -59,7 +61,6 @@ class EvolvingView(arcade.View):
                     font_name="Pokemon Emerald",
                     font_size=25,
                 )
-
                 self.manager.add(self.dialogText)
             elif obj.name == "pokemon1":
                 self.pokemon1 = arcade.gui.UIImage(
@@ -71,7 +72,6 @@ class EvolvingView(arcade.View):
                     width=EVOLVE_IMAGE_SIZE,
                     height=EVOLVE_IMAGE_SIZE,
                 )
-
                 self.manager.add(self.pokemon1)
             elif obj.name == "pokemon2":
                 self.pokemon2 = arcade.gui.UIImage(
@@ -83,7 +83,6 @@ class EvolvingView(arcade.View):
                     width=EVOLVE_IMAGE_SIZE,
                     height=EVOLVE_IMAGE_SIZE,
                 )
-
                 self.manager.add(self.pokemon2)
 
         self.anim_timer = 0
@@ -102,14 +101,12 @@ class EvolvingView(arcade.View):
     def transition(self, pokemonName):
         self.targetText = f"What? {pokemonName} is evolving!"
         self.currentText = ""
-
         arcade.schedule_once(lambda dt: setattr(self, "fadeOutBackground", True), 0.7)
         arcade.schedule_once(lambda dt: setattr(self, "is_evolving", True), 2.7)
 
     def on_draw(self):
         self.clear()
         self.window.default_camera.use()
-
         self.manager.draw()
 
     def on_update(self, delta_time):
@@ -119,7 +116,6 @@ class EvolvingView(arcade.View):
             self.fadeTime -= delta_time
             self.fadeTime = max(0, self.fadeTime)
             t = 1 - (self.fadeTime / self.duration)
-
             fade = 1 - (1 - (1 - t) * (1 - t))
             self.background.alpha = 255 * fade
 
@@ -127,7 +123,6 @@ class EvolvingView(arcade.View):
             self.fadeTime -= delta_time
             self.fadeTime = max(0, self.fadeTime)
             t = 1 - (self.fadeTime / self.duration)
-
             fade = 1 - (1 - t) * (1 - t)
             self.background.alpha = 255 * fade
 
@@ -174,4 +169,5 @@ class EvolvingView(arcade.View):
         arcade.schedule_once(self.end, 1.5)
 
     def end(self, dt):
-        self.window.show_view(self.overworld)
+        # Tell the Director we are done — it returns to the Overworld
+        global_bus.publish(CloseViewEvent())

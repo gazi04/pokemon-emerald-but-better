@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from src.model.pokemon import PokemonProfile
 
 
@@ -53,3 +53,42 @@ class PokemonFaintedEvent:
 
     target: str  # "player" or "enemy"
     pokemon_name: str
+
+
+# ---------------------------------------------------------------------------
+# Navigation — used by the Game Director
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class SwapViewEvent:
+    """
+    Request a full screen takeover.
+    target: string key identifying the destination ("battle", "evolving")
+    payload: arbitrary data the target view needs to construct itself
+    """
+
+    target: str
+    payload: dict = field(default_factory=dict)
+
+
+@dataclass
+class CloseViewEvent:
+    """
+    Generic 'I am done' signal from transient views (Battle, Evolution).
+    The Director will return to the cached Overworld.
+    """
+
+    pass
+
+
+@dataclass
+class OverlayViewEvent:
+    """
+    Request to stack a menu on top of the current view without swapping it.
+    target: string key ("menu", "bag", "pokemon_menu")
+    payload: extra data needed (e.g. battleSystem reference)
+    """
+
+    target: str
+    payload: dict = field(default_factory=dict)
