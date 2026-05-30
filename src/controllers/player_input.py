@@ -2,18 +2,27 @@ from src.model.player import PlayerState
 from src.constants import TILE_SIZE
 import arcade
 
+
 class PlayerInput:
     """
     Controller layer: Translates hardware input into semantic intents (state change requests).
     """
-    def process_input(self, player_state: PlayerState, keys: set, controls_config, collision_tiles, transitions):
+
+    def process_input(
+        self,
+        player_state: PlayerState,
+        keys: set,
+        controls_config,
+        collision_tiles,
+        transitions,
+    ):
         """
         Reads keyboard/gamepad and requests a state change.
         Returns an intent dictionary or None.
         """
         if player_state.moving:
             return None
-            
+
         new_dir = None
         dx = dy = 0
 
@@ -32,7 +41,9 @@ class PlayerInput:
             target_y = player_state.pixel_y + dy
 
             # Check transitions
-            hit_transitions = arcade.get_sprites_at_point((target_x, target_y), transitions)
+            hit_transitions = arcade.get_sprites_at_point(
+                (target_x, target_y), transitions
+            )
             if hit_transitions:
                 return {
                     "type": "transition",
@@ -42,18 +53,13 @@ class PlayerInput:
                 }
 
             # Check collisions
-            hit_list = arcade.get_sprites_at_point((target_x, target_y), collision_tiles)
+            hit_list = arcade.get_sprites_at_point(
+                (target_x, target_y), collision_tiles
+            )
             if not hit_list:
-                return {
-                    "type": "move",
-                    "target_x": target_x,
-                    "target_y": target_y
-                }
+                return {"type": "move", "target_x": target_x, "target_y": target_y}
             else:
-                return {
-                    "type": "turn",
-                    "direction": new_dir
-                }
+                return {"type": "turn", "direction": new_dir}
 
         return None
 

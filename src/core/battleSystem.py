@@ -41,12 +41,14 @@ class BattleSystem:
         item = saveManager.player.items[itemIndex]
         self.yourPokemon.syncFromSource()
 
-        global_bus.publish(HpChangedEvent(
-            target="player",
-            old_hp=self.yourPokemon.currentHp,
-            new_hp=self.yourPokemon.currentHp,
-            max_hp=self.yourPokemon.maxHp,
-        ))
+        global_bus.publish(
+            HpChangedEvent(
+                target="player",
+                old_hp=self.yourPokemon.currentHp,
+                new_hp=self.yourPokemon.currentHp,
+                max_hp=self.yourPokemon.maxHp,
+            )
+        )
 
         return [f"{self.yourPokemon.name} used {item.name}!"]
 
@@ -90,17 +92,21 @@ class BattleSystem:
 
         if diedPokemon.isEnemy:
             self.exp = diedPokemon.getExp()
-            messages.extend([
-                f"Wild {self.enemyPokemon.name} fainted!",
-                f"{self.yourPokemon.name} gained {self.exp} EXP. Points!",
-            ])
+            messages.extend(
+                [
+                    f"Wild {self.enemyPokemon.name} fainted!",
+                    f"{self.yourPokemon.name} gained {self.exp} EXP. Points!",
+                ]
+            )
         else:
             messages.append(f"{self.yourPokemon.name} fainted!")
 
-        global_bus.publish(PokemonFaintedEvent(
-            target="enemy" if diedPokemon.isEnemy else "player",
-            pokemon_name=diedPokemon.name,
-        ))
+        global_bus.publish(
+            PokemonFaintedEvent(
+                target="enemy" if diedPokemon.isEnemy else "player",
+                pokemon_name=diedPokemon.name,
+            )
+        )
 
         return messages
 
@@ -154,9 +160,11 @@ class BattleSystem:
 
     def _publish_hp_change(self, target: str, hp_before: int, pokemon: PokemonBattle):
         # Only publishes the HP change for UI updates — death is handled by postTurn
-        global_bus.publish(HpChangedEvent(
-            target=target,
-            old_hp=hp_before,
-            new_hp=pokemon.currentHp,
-            max_hp=pokemon.maxHp,
-        ))
+        global_bus.publish(
+            HpChangedEvent(
+                target=target,
+                old_hp=hp_before,
+                new_hp=pokemon.currentHp,
+                max_hp=pokemon.maxHp,
+            )
+        )

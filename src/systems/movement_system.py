@@ -7,7 +7,10 @@ class MovementSystem:
     """
     Logic layer: Executes movement intent, updating pixel coordinates for the Sprite.
     """
-    def update(self, delta_time: float, player_state: PlayerState, intent: dict) -> list[dict]:
+
+    def update(
+        self, delta_time: float, player_state: PlayerState, intent: dict
+    ) -> list[dict]:
         """
         Updates the player state.
         Returns a list of resulting events (like "finished_moving").
@@ -36,8 +39,16 @@ class MovementSystem:
                 player_state.move_progress = 1.0
 
             # Lerp coordinates
-            player_state.pixel_x = player_state.start_x + (player_state.target_x - player_state.start_x) * player_state.move_progress
-            player_state.pixel_y = player_state.start_y + (player_state.target_y - player_state.start_y) * player_state.move_progress
+            player_state.pixel_x = (
+                player_state.start_x
+                + (player_state.target_x - player_state.start_x)
+                * player_state.move_progress
+            )
+            player_state.pixel_y = (
+                player_state.start_y
+                + (player_state.target_y - player_state.start_y)
+                * player_state.move_progress
+            )
 
             # If finished moving
             if player_state.move_progress >= 1.0:
@@ -46,17 +57,21 @@ class MovementSystem:
                 player_state.moving = False
 
                 # Publish event — EncounterSystem reacts automatically
-                global_bus.publish(PlayerFinishedMoveEvent(
-                    grid_x=player_state.pixel_x,
-                    grid_y=player_state.pixel_y,
-                    map_name=player_state.map_name,
-                ))
+                global_bus.publish(
+                    PlayerFinishedMoveEvent(
+                        grid_x=player_state.pixel_x,
+                        grid_y=player_state.pixel_y,
+                        map_name=player_state.map_name,
+                    )
+                )
 
                 # Keep returning the dict event so existing callers aren't broken
-                events.append({
-                    "type": "finished_moving",
-                    "x": player_state.pixel_x,
-                    "y": player_state.pixel_y
-                })
+                events.append(
+                    {
+                        "type": "finished_moving",
+                        "x": player_state.pixel_x,
+                        "y": player_state.pixel_y,
+                    }
+                )
 
         return events

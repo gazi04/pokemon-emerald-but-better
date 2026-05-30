@@ -6,14 +6,15 @@ from src.model.player import PlayerPokemonMove, PlayerPokemon
 
 class Pokemon(arcade.Sprite):
     def __init__(
-            self,
-            data: PokemonProfile, 
-            isEnemy: bool,
-            playerPokemon: PlayerPokemon = None,
-            name: str = None, 
-            moves: list = None, 
-            currentHp: int = None,
-            level: int = None):
+        self,
+        data: PokemonProfile,
+        isEnemy: bool,
+        playerPokemon: PlayerPokemon = None,
+        name: str = None,
+        moves: list = None,
+        currentHp: int = None,
+        level: int = None,
+    ):
         sprite_path = data.sprites.front if isEnemy else data.sprites.back
 
         super().__init__(sprite_path.strip(), scale=3.0)

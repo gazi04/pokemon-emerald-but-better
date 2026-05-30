@@ -10,21 +10,27 @@ CONFIG = Config.load()
 
 
 class PokemonMenuView(arcade.View):
-    def __init__(self, previousView:arcade.View, bag:BagSystem = None, itemIndex:int = 0, battleSystem: BattleSystem = None):
+    def __init__(
+        self,
+        previousView: arcade.View,
+        bag: BagSystem = None,
+        itemIndex: int = 0,
+        battleSystem: BattleSystem = None,
+    ):
         super().__init__()
 
         self.previousView = previousView
         self.bag = bag
         self.battleSystem = battleSystem
         self.itemIndex = itemIndex
-        
+
         self.system = PokemonMenuSystem()
         self.ui = PokemonMenuUi()
-        
+
         tooltipOptions = ["Use", "Info"] if bag else ["Move", "Info"]
         self.ui.setupTooltip(tooltipOptions)
         self.ui.setValues(self.system.team)
-    
+
     def on_draw(self):
         self.clear()
         self.ui.draw()
@@ -75,16 +81,20 @@ class PokemonMenuView(arcade.View):
         self.ui.hideTooltip()
         self.system.resetTooltip()
 
-        if index == 1: 
+        if index == 1:
             if self.bag and self.battleSystem:
-                self.bag.useItem(self.itemIndex, self.system.team[self.system.teamIndex].name)
+                self.bag.useItem(
+                    self.itemIndex, self.system.team[self.system.teamIndex].name
+                )
                 self.battleSystem.turnUseItem(self.itemIndex)
-                
-                battleView = self.previousView.previousWindow 
+
+                battleView = self.previousView.previousWindow
                 battleView.onItemUsed(self.itemIndex)
                 self.window.show_view(battleView)
             elif self.bag:
-                self.bag.useItem(self.itemIndex, self.system.team[self.system.teamIndex].name)
+                self.bag.useItem(
+                    self.itemIndex, self.system.team[self.system.teamIndex].name
+                )
                 self.previousView.updateItem()
                 self.window.show_view(self.previousView)
             elif len(self.system.team) > 1:
@@ -92,6 +102,5 @@ class PokemonMenuView(arcade.View):
         elif index == 0:
             pass
 
-    
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

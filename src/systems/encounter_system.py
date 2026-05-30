@@ -15,6 +15,7 @@ class EncounterSystem:
     BattleEncounterTriggeredEvent when a wild encounter is rolled.
     No longer called directly by OverworldView.
     """
+
     def __init__(self, bush_layer, player_state: PlayerState):
         self._bush_layer = bush_layer
         self._player_state = player_state
@@ -40,11 +41,13 @@ class EncounterSystem:
         pokemon_data = dataLoader.getPokemon(pokemon["name"])
         pokemon_lvl = random.randint(pokemon["levels"][0], pokemon["levels"][1])
 
-        global_bus.publish(BattleEncounterTriggeredEvent(
-            pokemon_name=pokemon["name"],
-            pokemon_data=pokemon_data,
-            pokemon_level=pokemon_lvl,
-        ))
+        global_bus.publish(
+            BattleEncounterTriggeredEvent(
+                pokemon_name=pokemon["name"],
+                pokemon_data=pokemon_data,
+                pokemon_level=pokemon_lvl,
+            )
+        )
 
     def cleanup(self):
         """Unsubscribe when the overworld is torn down."""

@@ -14,15 +14,15 @@ class PokemonBattle:
         name: str = None,
         moves: list = None,
         currentHp: int = None,
-        level: int = None
+        level: int = None,
     ):
 
         self.baseStat = data.stats.copy()
         self.isEnemy = isEnemy
-        
+
         self.source = playerPokemon
         if playerPokemon:
-            self.name = playerPokemon.name.capitalize() 
+            self.name = playerPokemon.name.capitalize()
             self.moves = playerPokemon.moves
             self.currentHp = playerPokemon.hp
             self.level = playerPokemon.level
@@ -31,9 +31,9 @@ class PokemonBattle:
             self.name = name.capitalize()
             self.moves = moves
             self.level = level
-            
+
         self.calculateStats()
-        
+
         self.maxHp = self.getStat("hp")
         self.currentHp = self.maxHp if not playerPokemon else playerPokemon.hp
 
@@ -128,8 +128,7 @@ class PokemonBattle:
             if isPhysical
             else pokemon.getStat("special defence")
         )
-        a = self.getStat("attack") if isPhysical else self.getStat(
-            "special attack")
+        a = self.getStat("attack") if isPhysical else self.getStat("special attack")
 
         stab = 1
 
@@ -183,16 +182,13 @@ class PokemonBattle:
                 current_stage = destination.modifiers[stat]
 
                 if change > 0 and current_stage == 6:
-                    text.append(
-                        f"{destination.name}'s {stat} won't go any higher!")
+                    text.append(f"{destination.name}'s {stat} won't go any higher!")
                     continue
                 if change < 0 and current_stage == -6:
-                    text.append(
-                        f"{destination.name}'s {stat} won't go any lower!")
+                    text.append(f"{destination.name}'s {stat} won't go any lower!")
                     continue
 
-                destination.modifiers[stat] = max(-6,
-                                                  min(6, current_stage + change))
+                destination.modifiers[stat] = max(-6, min(6, current_stage + change))
 
                 if change > 0:
                     adj = (

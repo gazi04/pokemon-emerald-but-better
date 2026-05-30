@@ -1,12 +1,15 @@
 import json
 
+
 def getConfigs():
     with open("data/config.json", "r") as f:
         return json.load(f)
 
+
 def getEnc():
     with open("data/encounters.json", "r") as f:
         return json.load(f)
+
 
 def calculateMultiplier(atk_type, def_types):
     with open("data/types.json", "r") as f:

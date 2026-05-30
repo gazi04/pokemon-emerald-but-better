@@ -9,12 +9,11 @@ class TypewriterMessageBox:
     Manages the dialogbox sprite and dialog text label directly,
     added to an external UIManager by the orchestrator.
     """
+
     def __init__(self, bounds: dict, manager: arcade.gui.UIManager):
         b = bounds.get("dialogBox", {"x": 0, "y": 0, "w": 800, "h": 200})
         self._manager = manager
 
-        # Background is managed by BattleUiManager as a static widget (always visible).
-        # We only manage the text label here.
         d = bounds.get("dialog", {"x": b["x"], "y": b["y"], "w": b["w"], "h": b["h"]})
         self.dialog_text = arcade.gui.UILabel(
             x=d["x"],
