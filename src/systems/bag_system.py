@@ -1,7 +1,5 @@
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
-from src.core.game_context import saveManager, dataLoader
-from src.model.item import Item
 
 
 class BagSystem:

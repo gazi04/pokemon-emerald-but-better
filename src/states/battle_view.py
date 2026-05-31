@@ -3,11 +3,7 @@ from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.model.player import PlayerPokemonMove
 from src.entities.pokemon_sprites import Pokemon
-from src.core.game_context import saveManager, dataLoader
 from data.config import Config
-from src.states.evolving_view import EvolvingView
-from src.states.bag_view import BagView
-from src.states.pokemon_menu_view import PokemonMenuView
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
 from src.core.event_bus import global_bus

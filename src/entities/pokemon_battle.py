@@ -1,6 +1,6 @@
 import random
 from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
-from src.model.player import PlayerPokemonMove, PlayerPokemon
+from src.model.player import PlayerPokemon
 
 
 class PokemonBattle:

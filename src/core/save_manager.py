@@ -2,7 +2,6 @@ import json
 from src.model.player import (
     PlayerProfile,
     Item,
-    Pokeball,
     PlayerPokemonMove,
     PlayerPokemon,
 )

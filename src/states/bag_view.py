@@ -2,13 +2,12 @@ import arcade
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from data.config import Config
-from src.core.game_context import saveManager, dataLoader
 from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
 from src.systems.battle_system import BattleSystem
 from src.constants import MAX_VISIBLE_ITEMS
 from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent, OverlayViewEvent
+from src.core.events import OverlayViewEvent
 
 CONFIG = Config.load()
 

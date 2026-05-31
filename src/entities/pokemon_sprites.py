@@ -1,7 +1,7 @@
 import arcade
 from src.entities.pokemon_battle import PokemonBattle
-from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
-from src.model.player import PlayerPokemonMove, PlayerPokemon
+from src.model.pokemon import PokemonProfile
+from src.model.player import PlayerPokemon
 
 
 class Pokemon(arcade.Sprite):

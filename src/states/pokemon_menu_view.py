@@ -5,10 +5,7 @@ from src.ui.pokemon_menu_ui import PokemonMenuUi
 from src.systems.bag_system import BagSystem
 from src.systems.pokemon_menu_system import PokemonMenuSystem
 from src.systems.battle_system import BattleSystem
-from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent
 from data.config import Config
-from src.constants import FONT
 
 CONFIG = Config.load()
 
