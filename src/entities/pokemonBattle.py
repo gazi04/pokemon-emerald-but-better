@@ -1,4 +1,3 @@
-from src.util import calculateMultiplier
 import random
 from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
 from src.model.player import PlayerPokemonMove, PlayerPokemon
@@ -53,6 +52,10 @@ class PokemonBattle:
         self.statusEffect = ""
         self.sleepCounter = 0
 
+    # ------------------------------------------------------------------
+    # Stat management
+    # ------------------------------------------------------------------
+
     def calculateStats(self):
         self.stats = PokemonStat(
             ((2 * self.baseStat.hp * self.level) // 100) + 5 + self.level,
@@ -63,106 +66,85 @@ class PokemonBattle:
             ((2 * self.baseStat.speed * self.level) // 100) + 5,
         )
 
+    def getStat(self, stat: str) -> int:
+        if stat == "hp":
+            return self.stats.hp
+
+        stage = self.modifiers.get(stat, 0)
+        if stage > 0:
+            fraction = (2 + stage) / 2
+        elif stage < 0:
+            fraction = 2 / (2 + abs(stage))
+        else:
+            fraction = 1.0
+
+        if stat == "speed" and self.statusEffect == "paralyzed":
+            return round(self.stats.speed * fraction * 0.5)
+        elif stat == "speed":
+            return round(self.stats.speed * fraction)
+        elif stat == "attack":
+            return round(self.stats.attack * fraction)
+        elif stat == "defence":
+            return round(self.stats.defence * fraction)
+        elif stat == "special attack":
+            return round(self.stats.special_attack * fraction)
+        elif stat == "special defence":
+            return round(self.stats.special_defence * fraction)
+
+    # ------------------------------------------------------------------
+    # HP mutation — the only mutator that touches another pokemon
+    # is takeDamage(), called by BattleSystem after the calculator runs
+    # ------------------------------------------------------------------
+
     def takeDamage(self, damage: int):
-        self.currentHp -= damage
-        if self.currentHp <= 0:
-            self.currentHp = 0
+        self.currentHp = max(0, self.currentHp - damage)
 
-    def useMove(
-        self, move_data: PokemonMove, index: int, pokemon: "PokemonBattle"
-    ) -> list[str]:
-        text = []
+    # ------------------------------------------------------------------
+    # Move gating — status and PP checks
+    # Returns (messages, can_move) so BattleSystem decides what to do
+    # ------------------------------------------------------------------
 
+    def check_can_move(self, move_index: int) -> tuple[list[str], bool]:
+        """
+        Check status effects and PP before a move executes.
+        Returns (messages, can_move).
+        BattleSystem calls this; it never mutates the defender.
+        """
         if self.statusEffect == "paralyzed" and random.random() < 0.25:
-            return ["The Pokémon is fully paralyzed!"]
+            return (["The Pokémon is fully paralyzed!"], False)
 
         if self.sleepCounter != 0 and self.statusEffect == "sleep":
             self.sleepCounter -= 1
-            return [f"{self.name} was fast asleep."]
-        elif self.sleepCounter == 0 and self.statusEffect == "sleep":
+            return ([f"{self.name} was fast asleep."], False)
+
+        if self.sleepCounter == 0 and self.statusEffect == "sleep":
             self.statusEffect = ""
-            text.append(f"{self.name} woke up!")
+            # Woke up — still can't move this turn
+            return ([f"{self.name} woke up!"], False)
 
-        if self.moves[index].pp <= 0:
-            return ["But there is no PP left!"]
+        if self.moves[move_index].pp <= 0:
+            return (["But there is no PP left!"], False)
 
-        self.moves[index].pp -= 1
+        # Decrement PP here — move is confirmed to execute
+        self.moves[move_index].pp -= 1
+        return ([], True)
 
-        if not self.moveAccuracy(move_data.accuracy):
-            return ["It missed."]
+    # ------------------------------------------------------------------
+    # Effect application — stat stage changes and status conditions
+    # This is state mutation that belongs in the model; it returns
+    # messages instead of accepting a mutable list parameter.
+    # ------------------------------------------------------------------
 
-        self.damageFoePokemon(move_data, pokemon, text)
-        self.executeEffects(move_data, pokemon, text)
+    def executeEffects(self, move: PokemonMove, target: "PokemonBattle") -> list[str]:
+        """
+        Apply stat/status effects from a move.
+        Returns UI messages. Mutates self and target's modifiers/status.
+        Called by BattleSystem after damage is applied.
+        """
+        messages = []
 
-        return text
-
-    def moveAccuracy(self, accuracy) -> bool:
-        if not accuracy:
-            return True
-
-        stage = self.modifiers["accuracy"] - self.modifiers["evasion"]
-        stage = max(-6, min(6, stage))
-
-        multiplier = 1
-        if stage < 0:
-            multiplier = 3 / (3 - abs(stage))
-        elif stage > 0:
-            multiplier = (3 + stage) / 3
-
-        finalAccuracy = accuracy * multiplier
-        return random.randint(1, 100) <= finalAccuracy
-
-    def damageFoePokemon(self, move: PokemonMove, pokemon: "PokemonBattle", text: list):
-        if not move.power:
-            return
-        if move.category == "status":
-            return
-
-        isPhysical = move.category == "physical"
-
-        d = (
-            pokemon.getStat("defence")
-            if isPhysical
-            else pokemon.getStat("special defence")
-        )
-        a = self.getStat("attack") if isPhysical else self.getStat("special attack")
-
-        stab = 1.5 if move.type in self.types else 1
-
-        mult = calculateMultiplier(move.type, pokemon.types)
-
-        if mult >= 2:
-            text.append("Its super effective.")
-        elif mult < 1:
-            text.append("Its not very effective.")
-        elif mult == 0:
-            text.append("No effect.")
-
-        crit = 1
-        if self.isCritical():
-            d = pokemon.stats.defence if isPhysical else pokemon.stats.special_defence
-            crit = 2
-            text.append("A critical hit!")
-
-        damage = (
-            (((2 * self.level / 5 + 1) * move.power * a / d) / 50 + 2)
-            * stab
-            * mult
-            * crit
-        )
-
-        pokemon.takeDamage(round(damage))
-
-    def isCritical(self) -> bool:
-        tier = min(self.modifiers["crits"], 4)
-        probabilities = {0: 16, 1: 8, 2: 4, 3: 3, 4: 2}
-        return random.randint(1, probabilities[tier]) == 1
-
-    def executeEffects(
-        self, move: PokemonMove, pokemon: "PokemonBattle", text: list[str]
-    ):
         for effect in move.effects:
-            destination = self if effect.target == "self" else pokemon
+            destination = self if effect.target == "self" else target
 
             if effect.type == "stat":
                 stat = effect.stat
@@ -170,10 +152,10 @@ class PokemonBattle:
                 current_stage = destination.modifiers[stat]
 
                 if change > 0 and current_stage == 6:
-                    text.append(f"{destination.name}'s {stat} won't go any higher!")
+                    messages.append(f"{destination.name}'s {stat} won't go any higher!")
                     continue
                 if change < 0 and current_stage == -6:
-                    text.append(f"{destination.name}'s {stat} won't go any lower!")
+                    messages.append(f"{destination.name}'s {stat} won't go any lower!")
                     continue
 
                 destination.modifiers[stat] = max(-6, min(6, current_stage + change))
@@ -184,14 +166,14 @@ class PokemonBattle:
                         if change == 2
                         else ("drastically " if change >= 3 else "")
                     )
-                    text.append(f"{destination.name}'s {stat} {adj}rose!")
+                    messages.append(f"{destination.name}'s {stat} {adj}rose!")
                 elif change < 0:
                     adj = (
                         "harshly "
                         if change == -2
                         else ("severely " if change <= -3 else "")
                     )
-                    text.append(f"{destination.name}'s {stat} {adj}fell!")
+                    messages.append(f"{destination.name}'s {stat} {adj}fell!")
             else:
                 chance = effect.chance if effect.chance else 100
                 if chance >= random.randint(1, 100):
@@ -199,20 +181,30 @@ class PokemonBattle:
                     if effect.condition == "sleep":
                         destination.sleepCounter = random.randint(2, 5)
 
+        return messages
+
+    # ------------------------------------------------------------------
+    # Post-turn tick — self-contained state mutation
+    # ------------------------------------------------------------------
+
+    def afterATurn(self) -> list[str]:
+        messages = []
+        if self.statusEffect == "poison":
+            damage = max(1, int(self.maxHp / 12.5))
+            self.takeDamage(damage)
+            messages.append(f"{self.name} is hurt by poison!")
+        return messages
+
+    # ------------------------------------------------------------------
+    # Exp and levelling
+    # ------------------------------------------------------------------
+
     def syncFromSource(self):
         if self.source is None:
             return
         self.currentHp = self.source.hp
         self.level = self.source.level
         self.exp = self.source.exp
-
-    def afterATurn(self) -> list[str]:
-        text = []
-        if self.statusEffect == "poison":
-            damage = self.maxHp // 12.5
-            self.takeDamage(damage)
-            text.append(f"{self.name} is hurt by poison!")
-        return text
 
     def getHpRatio(self) -> float:
         return self.currentHp / self.maxHp
@@ -250,26 +242,3 @@ class PokemonBattle:
 
     def expNeeded(self):
         return self.level**3
-
-    def getStat(self, stat: str) -> int:
-        if stat == "hp":
-            return self.stats.hp
-
-        fraction = 1
-        if self.modifiers[stat] > 0:
-            fraction = (2 + self.modifiers[stat]) / 2
-        elif self.modifiers[stat] < 0:
-            fraction = 2 / (2 + abs(self.modifiers[stat]))
-
-        if stat == "speed" and self.statusEffect == "paralyzed":
-            return round(self.stats.speed * fraction * 0.5)
-        elif stat == "speed":
-            return round(self.stats.speed * fraction)
-        elif stat == "attack":
-            return round(self.stats.attack * fraction)
-        elif stat == "defence":
-            return round(self.stats.defence * fraction)
-        elif stat == "special attack":
-            return round(self.stats.special_attack * fraction)
-        elif stat == "special defence":
-            return round(self.stats.special_defence * fraction)

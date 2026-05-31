@@ -1,9 +1,9 @@
 import arcade
-from src.core.dataLoader import DataLoader
-from src.core.saveManager import SaveManager
 from data.config import Config
-from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED
+from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
 
+from src.core.saveManager import SaveManager
+from src.core.dataLoader import DataLoader
 from src.model.player import PlayerState
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
@@ -23,15 +23,14 @@ class OverworldView(arcade.View):
     def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
         super().__init__()
 
+        self.save_manager = save_manager
+        self.data_loader = data_loader
+
         arcade.get_window().ctx.default_texture_filter = (
             arcade.gl.NEAREST,
             arcade.gl.NEAREST,
         )
-
         arcade.load_font(FONT)
-
-        self.save_manager = save_manager
-        self.data_loader = data_loader
 
         self.player_state = PlayerState()
         self.player_input = PlayerInput()
@@ -102,18 +101,35 @@ class OverworldView(arcade.View):
         if self.encounter_system:
             self.encounter_system.cleanup()
 
+        bush_tiles = self._extract_bush_tiles()
+
         self.encounter_system = EncounterSystem(
-            bush_layer=self.scene["bush"],
+            bush_tiles=bush_tiles,
             player_state=self.player_state,
             data_loader=self.data_loader,
         )
+
+    def _extract_bush_tiles(self) -> set[tuple[int, int]]:
+        """
+        Build a set of integer (grid_x, grid_y) tuples from the bush
+        SpriteList. Done once at map load — O(1) lookup at runtime.
+        The bush layer sprites are scaled 2x, but their center_x/center_y
+        are in pixel space. Dividing by TILE_SIZE gives grid coords that
+        match MovementSystem's grid_x = round(pixel_x / TILE_SIZE).
+        """
+        tiles: set[tuple[int, int]] = set()
+        bush_layer = self.scene["bush"]
+        for sprite in bush_layer:
+            gx = round(sprite.center_x / TILE_SIZE)
+            gy = round(sprite.center_y / TILE_SIZE)
+            tiles.add((gx, gy))
+        return tiles
 
     # ------------------------------------------------------------------
     # Event handlers
     # ------------------------------------------------------------------
 
     def _on_battle_triggered(self, event: BattleEncounterTriggeredEvent):
-        """Received from EncounterSystem — start the flicker then hand off."""
         self._start_battle_transition(
             event.pokemon_name, event.pokemon_level, event.pokemon_data
         )
@@ -125,14 +141,12 @@ class OverworldView(arcade.View):
     def on_update(self, delta_time):
         if self.transitionActive:
             self.transitionTimer += delta_time
-
             self.canRenderScene = (
                 int(self.transitionTimer / self.flickerInterval) % 2 == 0
             )
 
             if self.transitionTimer >= self.maxTransitionTime:
                 name, level, data = self.pending_battle_data
-                # Tell the Director to swap to the Battle view
                 global_bus.publish(
                     SwapViewEvent(
                         target="battle",
@@ -175,18 +189,14 @@ class OverworldView(arcade.View):
     def on_draw(self):
         self.clear()
         self.camera.use()
-
         if self.scene and self.canRenderScene:
             self.scene.draw(pixelated=True)
-
         self.player_sprite.draw()
 
     def on_key_press(self, key, _):
         self.keys.add(key)
-
         if self.isPressed(CONFIG.controls.bag, key):
             self.keys.clear()
-            # Ask the Director to stack the Menu as an overlay
             global_bus.publish(
                 OverlayViewEvent(
                     target="menu",
@@ -202,10 +212,6 @@ class OverworldView(arcade.View):
 
     def on_key_release(self, key, _):
         self.keys.discard(key)
-
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
 
     def _start_battle_transition(self, name, level, data):
         self.transitionActive = True

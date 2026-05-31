@@ -24,6 +24,7 @@ class PokemonStat:
 
 @dataclass
 class PokemonMove:
+    name: str
     category: str
     type: str
     power: int
@@ -31,7 +32,8 @@ class PokemonMove:
     pp: int
     effects: list[PokemonMoveEffect]
 
-    def __init__(self, move: dict, effects: list[PokemonMoveEffect]):
+    def __init__(self, name: str, move: dict, effects: list[PokemonMoveEffect]):
+        self.name = name
         self.category = move["category"]
         self.type = move["type"]
         self.power = move["power"]

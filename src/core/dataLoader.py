@@ -49,7 +49,7 @@ class DataLoader:
         for name, move in data.items():
             effects = [PokemonMoveEffect(effect) for effect in move["effects"]]
 
-            self.moves[name] = PokemonMove(move, effects)
+            self.moves[name] = PokemonMove(name, move, effects)
 
     def _loadItems(self):
         with open("data/items.json", "r") as f:

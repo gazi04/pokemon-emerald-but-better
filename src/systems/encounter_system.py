@@ -1,24 +1,23 @@
-import arcade
 import random
 
-from src.core.dataLoader import DataLoader
 from src.util import getEnc
 from src.constants import ENCOUNTER_RATE
+from src.core.dataLoader import DataLoader
 from src.model.player import PlayerState
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent, BattleEncounterTriggeredEvent
 
 
 class EncounterSystem:
-    """
-    Logic layer: Subscribes to PlayerFinishedMoveEvent and publishes
-    BattleEncounterTriggeredEvent when a wild encounter is rolled.
-    """
-
-    def __init__(self, bush_layer, player_state: PlayerState, data_loader: DataLoader):
-        self.data_loader = data_loader
-        self._bush_layer = bush_layer
+    def __init__(
+        self,
+        bush_tiles: set[tuple[int, int]],
+        player_state: PlayerState,
+        data_loader: DataLoader,
+    ):
+        self._bush_tiles = bush_tiles  # set of (grid_x, grid_y) integer pairs
         self._player_state = player_state
+        self.data_loader = data_loader
         self._subscribed = False
         self.resubscribe()
 
@@ -33,12 +32,8 @@ class EncounterSystem:
             self._subscribed = False
 
     def _on_player_moved(self, event: PlayerFinishedMoveEvent):
-        hit_bush = arcade.get_sprites_at_point(
-            (self._player_state.pixel_x, self._player_state.pixel_y),
-            self._bush_layer,
-        )
-
-        if not hit_bush:
+        # Pure logical check — O(1) set lookup, no arcade context needed
+        if (event.grid_x, event.grid_y) not in self._bush_tiles:
             return
 
         if random.random() >= ENCOUNTER_RATE:
