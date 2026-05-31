@@ -43,13 +43,13 @@ def calculate_damage(
 
     # --- Stat selection ---
     a = _get_stat(
-        "attack" if is_physical else "special attack",
+        "attack" if is_physical else "special_attack",
         attacker_stats,
         attacker_modifiers,
         attacker_status,
     )
     d = _get_stat(
-        "defence" if is_physical else "special defence",
+        "defence" if is_physical else "special_defence",
         defender_stats,
         defender_modifiers,
         "",
