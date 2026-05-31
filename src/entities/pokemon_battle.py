@@ -1,4 +1,5 @@
 import random
+from typing import Optional, cast
 from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
 from src.model.player import PlayerPokemon
 
@@ -8,13 +9,13 @@ class PokemonBattle:
         self,
         data: PokemonProfile,
         isEnemy: bool,
-        playerPokemon: PlayerPokemon = None,
-        name: str = None,
-        moves: list = None,
-        currentHp: int = None,
-        level: int = None,
+        playerPokemon: Optional[PlayerPokemon] = None,
+        name: Optional[str] = None,
+        moves: Optional[list] = None,
+        currentHp: Optional[int] = None,
+        level: Optional[int] = None,
     ):
-        self.baseStat = data.stats.copy()
+        self.baseStat = cast(PokemonStat, data.stats).copy()
         self.isEnemy = isEnemy
 
         self.source = playerPokemon
@@ -25,9 +26,10 @@ class PokemonBattle:
             self.level = playerPokemon.level
             self.exp = playerPokemon.exp
         else:
-            self.name = name.capitalize()
-            self.moves = moves
-            self.level = level
+            self.name = name.capitalize() if name else "Unknown"
+            self.moves = moves if moves else []
+            self.level = level if level else 1
+            self.exp = 0
 
         self.calculateStats()
 
@@ -91,6 +93,8 @@ class PokemonBattle:
         elif stat == "special_defence":
             return round(self.stats.special_defence * fraction)
 
+        return 0
+
     # ------------------------------------------------------------------
     # HP mutation — the only mutator that touches another pokemon
     # is takeDamage(), called by BattleSystem after the calculator runs
@@ -147,8 +151,8 @@ class PokemonBattle:
             destination = self if effect.target == "self" else target
 
             if effect.type == "stat":
-                stat = effect.stat
-                change = effect.change
+                stat = cast(str, effect.stat)
+                change = cast(int, effect.change)
                 current_stage = destination.modifiers[stat]
 
                 if change > 0 and current_stage == 6:
@@ -175,7 +179,7 @@ class PokemonBattle:
                     )
                     messages.append(f"{destination.name}'s {stat} {adj}fell!")
             else:
-                chance = effect.chance if effect.chance else 100
+                chance = cast(int, effect.chance if effect.chance else 100)
                 if chance >= random.randint(1, 100):
                     destination.statusEffect = effect.condition
                     if effect.condition == "sleep":

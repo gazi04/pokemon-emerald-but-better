@@ -1,6 +1,7 @@
 import arcade
+from typing import Optional, cast
 from src.entities.pokemon_battle import PokemonBattle
-from src.model.pokemon import PokemonProfile
+from src.model.pokemon import PokemonProfile, PokemonSprites
 from src.model.player import PlayerPokemon
 
 
@@ -9,13 +10,14 @@ class Pokemon(arcade.Sprite):
         self,
         data: PokemonProfile,
         isEnemy: bool,
-        playerPokemon: PlayerPokemon = None,
-        name: str = None,
-        moves: list = None,
-        currentHp: int = None,
-        level: int = None,
+        playerPokemon: Optional[PlayerPokemon] = None,
+        name: Optional[str] = None,
+        moves: Optional[list] = None,
+        currentHp: Optional[int] = None,
+        level: Optional[int] = None,
     ):
-        sprite_path = data.sprites.front if isEnemy else data.sprites.back
+        sprites = cast(PokemonSprites, data.sprites)
+        sprite_path = sprites.front if isEnemy else sprites.back
 
         super().__init__(sprite_path.strip(), scale=3.0)
 

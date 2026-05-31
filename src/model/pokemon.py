@@ -47,9 +47,9 @@ class PokemonMoveEffect:
     target: str
     type: str
     stat: Optional[str] = None
-    change: Optional[str] = None
+    change: Optional[int] = None
     condition: Optional[str] = None
-    chance: Optional[str] = None
+    chance: Optional[int] = None
 
     def __init__(self, effect: dict):
         self.target = effect["target"]
@@ -80,15 +80,15 @@ class PokemonEvolution:
 class PokemonProfile:
     baseExp: int
     evolution: Optional[PokemonEvolution] = None
-    sprites: PokemonSprites = None
-    abilities: list[str] = None
-    types: list[str] = None
-    stats: PokemonStat = None
+    sprites: Optional[PokemonSprites] = None
+    abilities: Optional[list[str]] = None
+    types: Optional[list[str]] = None
+    stats: Optional[PokemonStat] = None
 
     def __init__(
         self,
         pokemon: dict,
-        evolution: PokemonEvolution,
+        evolution: Optional[PokemonEvolution],
         sprites: PokemonSprites,
         stats: PokemonStat,
     ):

@@ -1,6 +1,8 @@
 import arcade
 import arcade.gui
 import math
+
+import pytiled_parser
 from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE, TEXT_DELAY
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent
@@ -10,12 +12,16 @@ class EvolvingView(arcade.View):
     def __init__(self, overworldView, pokemon, evolvedPokemon):
         super().__init__()
 
-        # overworldView kept only for Director cache compatibility —
-        # navigation is now done via CloseViewEvent.
         self.overworld = overworldView
 
         tilemap = arcade.load_tilemap(EVOLVING_UI)
         uiLayer = tilemap.get_tilemap_layer("ui")
+
+        if not isinstance(uiLayer, pytiled_parser.ObjectLayer):
+            raise ValueError(
+                f"Expected an ObjectLayer named 'ui' from map '{EVOLVING_UI}', "
+                f"but got {type(uiLayer)}"
+            )
 
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -91,8 +97,8 @@ class EvolvingView(arcade.View):
         self.pokemon2.visible = False
         self.whichPokemon = False
 
-        self.fadeTime = 2
-        self.duration = 1
+        self.fadeTime = 2.0
+        self.duration = 1.0
         self.fadeOutBackground = False
         self.fadeInBackground = False
 
@@ -114,17 +120,17 @@ class EvolvingView(arcade.View):
 
         if self.fadeOutBackground:
             self.fadeTime -= delta_time
-            self.fadeTime = max(0, self.fadeTime)
-            t = 1 - (self.fadeTime / self.duration)
-            fade = 1 - (1 - (1 - t) * (1 - t))
-            self.background.alpha = 255 * fade
+            self.fadeTime = max(0.0, self.fadeTime)
+            t = 1.0 - (self.fadeTime / self.duration)
+            fade = 1.0 - (1.0 - (1.0 - t) * (1.0 - t))
+            self.background.alpha = int(255 * fade)
 
         if self.fadeInBackground:
             self.fadeTime -= delta_time
-            self.fadeTime = max(0, self.fadeTime)
-            t = 1 - (self.fadeTime / self.duration)
-            fade = 1 - (1 - t) * (1 - t)
-            self.background.alpha = 255 * fade
+            self.fadeTime = max(0.0, self.fadeTime)
+            t = 1.0 - (self.fadeTime / self.duration)
+            fade = 1.0 - (1.0 - t) * (1.0 - t)
+            self.background.alpha = int(255 * fade)
 
         if self.is_evolving:
             self.anim_timer += delta_time
@@ -157,7 +163,7 @@ class EvolvingView(arcade.View):
     def finish_evolution(self):
         self.is_evolving = False
         self.fadeInBackground = True
-        self.fadeTime = 2
+        self.fadeTime = 2.0
 
         self.pokemon1.visible = False
         self.pokemon2.visible = True

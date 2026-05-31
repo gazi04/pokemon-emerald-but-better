@@ -1,4 +1,5 @@
 import arcade
+from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.ui.pokemon_menu_ui import PokemonMenuUi
@@ -16,9 +17,9 @@ class PokemonMenuView(arcade.View):
         previousView: arcade.View,
         save_manager: SaveManager,
         data_loader: DataLoader,
-        bag: BagSystem = None,
+        bag: Optional[BagSystem] = None,
         itemIndex: int = 0,
-        battleSystem: BattleSystem = None,
+        battleSystem: Optional[BattleSystem] = None,
     ):
         super().__init__()
 
@@ -39,11 +40,11 @@ class PokemonMenuView(arcade.View):
         self.ui.draw()
         self.ui.drawHpBars(self.system.team)
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, symbol: int, modifiers: int):
         if self.ui.isTooltipShowing():
-            self._handleTooltipInput(key)
+            self._handleTooltipInput(symbol)
         else:
-            self._handleMenuInput(key)
+            self._handleMenuInput(symbol)
 
     def _handleMenuInput(self, key):
         if self.isPressed(CONFIG.controls.cancel, key):

@@ -1,4 +1,5 @@
 import arcade
+from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.model.player import PlayerPokemonMove
@@ -32,8 +33,15 @@ class BattleView(arcade.View):
 
         self.playerPokemon = self.save_manager.player.pokemon
 
+        player_profile = data_loader.getPokemon(self.playerPokemon[0].name)
+        if player_profile is None:
+            raise ValueError(f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded.")
+
+        if pokemon_data is None:
+            raise ValueError(f"Enemy pokemon data for '{pokemon_name}' cannot be None.")
+
         self.yourPokemon = Pokemon(
-            data_loader.getPokemon(self.playerPokemon[0].name),
+            player_profile,
             False,
             self.playerPokemon[0],
         )
@@ -64,11 +72,14 @@ class BattleView(arcade.View):
         self.updateUiMoves()
 
         first_move = data_loader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
-        self.ui.menu_panel.update_move_info(
-            first_move.type,
-            self.yourPokemon.pokemonBattle.moves[0].pp,
-            first_move.pp,
-        )
+        if first_move is not None:
+            self.ui.menu_panel.update_move_info(
+                first_move.type,
+                self.yourPokemon.pokemonBattle.moves[0].pp,
+                first_move.pp,
+            )
+        else:
+            self.ui.menu_panel.update_move_info("Normal", self.yourPokemon.pokemonBattle.moves[0].pp, 35)
 
         self.ui.set_transition(self.yourPokemon, self.enemyPokemon)
 
@@ -164,7 +175,7 @@ class BattleView(arcade.View):
     def on_update(self, delta_time):
         self.ui.update(delta_time)
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, symbol: int, modifiers: int):
         if self.ui.active_component == "main":
             current_list = self.ui.menu_panel.main_buttons
             num_buttons = len(current_list)
@@ -174,7 +185,7 @@ class BattleView(arcade.View):
         else:
             return
 
-        if self.isPressed(CONFIG.controls.up, key):
+        if self.isPressed(CONFIG.controls.up, symbol):
             if num_buttons > 2:
                 self.ui.menu_panel.selection_index = (
                     self.ui.menu_panel.selection_index - 2
@@ -182,7 +193,7 @@ class BattleView(arcade.View):
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.down, key):
+        elif self.isPressed(CONFIG.controls.down, symbol):
             if num_buttons > 2:
                 self.ui.menu_panel.selection_index = (
                     self.ui.menu_panel.selection_index + 2
@@ -190,21 +201,21 @@ class BattleView(arcade.View):
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.left, key):
+        elif self.isPressed(CONFIG.controls.left, symbol):
             self.ui.menu_panel.selection_index = (
                 self.ui.menu_panel.selection_index - 1
             ) % num_buttons
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.right, key):
+        elif self.isPressed(CONFIG.controls.right, symbol):
             self.ui.menu_panel.selection_index = (
                 self.ui.menu_panel.selection_index + 1
             ) % num_buttons
             if self.ui.active_component == "moves":
                 self.moveHover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.interact, key):
+        elif self.isPressed(CONFIG.controls.interact, symbol):
             if self.ui.active_component == "main":
                 if self.ui.menu_panel.selection_index == 0:
                     self.ui.switch_mode("moves")
@@ -238,22 +249,25 @@ class BattleView(arcade.View):
             elif self.ui.active_component == "moves":
                 self.startTurn(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.cancel, key):
+        elif self.isPressed(CONFIG.controls.cancel, symbol):
             if self.ui.active_component == "moves":
                 self.ui.switch_mode("main")
 
-    def isPressed(self, configKey, key) -> bool:
-        return getattr(arcade.key, configKey, None) == key
+    def isPressed(self, configKey, symbol) -> bool:
+        return getattr(arcade.key, configKey, None) == symbol
 
     def moveHover(self, index):
         if index is not None and index < len(self.yourPokemon.pokemonBattle.moves):
             move_name = self.yourPokemon.pokemonBattle.moves[index].name
             move = self.data_loader.getMove(move_name)
-            self.ui.menu_panel.update_move_info(
-                move.type,
-                self.yourPokemon.pokemonBattle.moves[index].pp,
-                move.pp,
-            )
+            
+            # FIX 6 & 7: Wrapped with an if statement to verify 'move' is found before grabbing properties
+            if move is not None:
+                self.ui.menu_panel.update_move_info(
+                    move.type,
+                    self.yourPokemon.pokemonBattle.moves[index].pp,
+                    move.pp,
+                )
 
     def run(self):
         self.battleSystem.save()

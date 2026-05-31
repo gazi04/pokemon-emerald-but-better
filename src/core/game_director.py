@@ -11,6 +11,7 @@ Responsibilities:
 """
 
 import arcade
+from typing import Any, cast
 
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
@@ -120,7 +121,7 @@ class GameDirector:
                 previousWindow=payload.get("previous_view", overworld),
                 save_manager=save_manager,
                 data_loader=data_loader,
-                battleSystem=payload.get("battle_system"),
+                battleSystem=cast(Any, payload.get("battle_system")),
             )
 
         if target == "pokemon_menu":
@@ -130,9 +131,9 @@ class GameDirector:
                 previousView=payload.get("previous_view", overworld),
                 save_manager=save_manager,
                 data_loader=data_loader,
-                bag=payload.get("bag"),
+                bag=cast(Any, payload.get("bag")),
                 itemIndex=payload.get("item_index", 0),
-                battleSystem=payload.get("battle_system"),
+                battleSystem=cast(Any, payload.get("battle_system")),
             )
 
         return None

@@ -28,20 +28,20 @@ class MenuView(arcade.View):
         arcade.get_window().default_camera.use()
         self.ui.draw()
 
-    def on_key_press(self, key, modifiers):
-        if self.isPressed(CONFIG.controls.interact, key):
+    def on_key_press(self, symbol: int, modifiers: int):
+        if self.isPressed(CONFIG.controls.interact, symbol):
             self.action()
-        elif self.isPressed(CONFIG.controls.up, key):
+        elif self.isPressed(CONFIG.controls.up, symbol):
             self.selectedIndex -= 1
             if self.selectedIndex == -1:
                 self.selectedIndex = len(self.ui.buttons) - 1
             self.ui.setYOfCursor(self.selectedIndex)
-        elif self.isPressed(CONFIG.controls.down, key):
+        elif self.isPressed(CONFIG.controls.down, symbol):
             self.selectedIndex += 1
             if self.selectedIndex == len(self.ui.buttons):
                 self.selectedIndex = 0
             self.ui.setYOfCursor(self.selectedIndex)
-        elif self.isPressed(CONFIG.controls.cancel, key):
+        elif self.isPressed(CONFIG.controls.cancel, symbol):
             global_bus.publish(CloseViewEvent())
 
     def isPressed(self, configKey, key) -> bool:
