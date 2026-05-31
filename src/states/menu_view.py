@@ -1,10 +1,10 @@
 import arcade
-from src.core.dataLoader import DataLoader
-from src.core.saveManager import SaveManager
+from src.core.data_loader import DataLoader
+from src.core.save_manager import SaveManager
 from data.config import Config
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent
-from src.ui.menuUi import MenuUi
+from src.ui.menu_ui import MenuUi
 
 CONFIG = Config.load()
 

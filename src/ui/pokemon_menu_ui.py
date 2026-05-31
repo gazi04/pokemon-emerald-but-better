@@ -1,6 +1,6 @@
 import arcade
 import arcade.gui
-from src.core.dataLoader import DataLoader
+from src.core.data_loader import DataLoader
 from src.model.player import PlayerPokemon
 
 

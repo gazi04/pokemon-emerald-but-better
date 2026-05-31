@@ -1,4 +1,4 @@
-from src.core.saveManager import SaveManager
+from src.core.save_manager import SaveManager
 
 
 class PokemonMenuSystem:

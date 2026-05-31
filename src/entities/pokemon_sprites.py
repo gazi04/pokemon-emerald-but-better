@@ -1,5 +1,5 @@
 import arcade
-from src.entities.pokemonBattle import PokemonBattle
+from src.entities.pokemon_battle import PokemonBattle
 from src.model.pokemon import PokemonMove, PokemonProfile, PokemonStat
 from src.model.player import PlayerPokemonMove, PlayerPokemon
 

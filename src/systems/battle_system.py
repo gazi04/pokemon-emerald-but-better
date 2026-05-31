@@ -1,8 +1,8 @@
 import random
 
-from src.entities.pokemonBattle import PokemonBattle
-from src.core.saveManager import SaveManager
-from src.core.dataLoader import DataLoader
+from src.entities.pokemon_battle import PokemonBattle
+from src.core.save_manager import SaveManager
+from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
 from src.core.event_bus import global_bus
 from src.core.events import HpChangedEvent, PokemonFaintedEvent

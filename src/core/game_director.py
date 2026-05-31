@@ -12,8 +12,8 @@ Responsibilities:
 
 import arcade
 
-from src.core.dataLoader import DataLoader
-from src.core.saveManager import SaveManager
+from src.core.data_loader import DataLoader
+from src.core.save_manager import SaveManager
 from src.core.event_bus import global_bus
 from src.core.events import SwapViewEvent, CloseViewEvent, OverlayViewEvent
 
@@ -81,7 +81,7 @@ class GameDirector:
         overworld = self._get_or_create_overworld()
 
         if target == "battle":
-            from src.states.battleView import BattleView
+            from src.states.battle_view import BattleView
 
             return BattleView(
                 save_manager=self.save_manager,
@@ -93,7 +93,7 @@ class GameDirector:
             )
 
         if target == "evolving":
-            from src.states.evolvingView import EvolvingView
+            from src.states.evolving_view import EvolvingView
 
             return EvolvingView(
                 overworldView=overworld,
@@ -109,12 +109,12 @@ class GameDirector:
         data_loader = payload.get("data_loader", self.data_loader)
 
         if target == "menu":
-            from src.states.menuView import MenuView
+            from src.states.menu_view import MenuView
 
             return MenuView(overworld, save_manager, data_loader)
 
         if target == "bag":
-            from src.states.bagView import BagView
+            from src.states.bag_view import BagView
 
             return BagView(
                 previousWindow=payload.get("previous_view", overworld),
@@ -124,7 +124,7 @@ class GameDirector:
             )
 
         if target == "pokemon_menu":
-            from src.states.pokemonMenuView import PokemonMenuView
+            from src.states.pokemon_menu_view import PokemonMenuView
 
             return PokemonMenuView(
                 previousView=payload.get("previous_view", overworld),

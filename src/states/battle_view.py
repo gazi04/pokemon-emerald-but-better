@@ -1,15 +1,15 @@
 import arcade
-from src.core.dataLoader import DataLoader
-from src.core.saveManager import SaveManager
+from src.core.data_loader import DataLoader
+from src.core.save_manager import SaveManager
 from src.model.player import PlayerPokemonMove
-from src.entities.pokemonSprites import Pokemon
-from src.core.gameContext import saveManager, dataLoader
+from src.entities.pokemon_sprites import Pokemon
+from src.core.game_context import saveManager, dataLoader
 from data.config import Config
-from src.states.evolvingView import EvolvingView
-from src.states.bagView import BagView
-from src.states.pokemonMenuView import PokemonMenuView
+from src.states.evolving_view import EvolvingView
+from src.states.bag_view import BagView
+from src.states.pokemon_menu_view import PokemonMenuView
 from src.ui.battle_ui_manager import BattleUiManager
-from src.core.battleSystem import BattleSystem
+from src.systems.battle_system import BattleSystem
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
 

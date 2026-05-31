@@ -2,8 +2,8 @@ import arcade
 from data.config import Config
 from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
 
-from src.core.saveManager import SaveManager
-from src.core.dataLoader import DataLoader
+from src.core.save_manager import SaveManager
+from src.core.data_loader import DataLoader
 from src.model.player import PlayerState
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
