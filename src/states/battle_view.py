@@ -1,5 +1,4 @@
 import arcade
-from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.model.player import PlayerPokemonMove
@@ -35,7 +34,9 @@ class BattleView(arcade.View):
 
         player_profile = data_loader.getPokemon(self.playerPokemon[0].name)
         if player_profile is None:
-            raise ValueError(f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded.")
+            raise ValueError(
+                f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
+            )
 
         if pokemon_data is None:
             raise ValueError(f"Enemy pokemon data for '{pokemon_name}' cannot be None.")
@@ -79,7 +80,9 @@ class BattleView(arcade.View):
                 first_move.pp,
             )
         else:
-            self.ui.menu_panel.update_move_info("Normal", self.yourPokemon.pokemonBattle.moves[0].pp, 35)
+            self.ui.menu_panel.update_move_info(
+                "Normal", self.yourPokemon.pokemonBattle.moves[0].pp, 35
+            )
 
         self.ui.set_transition(self.yourPokemon, self.enemyPokemon)
 
@@ -260,7 +263,7 @@ class BattleView(arcade.View):
         if index is not None and index < len(self.yourPokemon.pokemonBattle.moves):
             move_name = self.yourPokemon.pokemonBattle.moves[index].name
             move = self.data_loader.getMove(move_name)
-            
+
             # FIX 6 & 7: Wrapped with an if statement to verify 'move' is found before grabbing properties
             if move is not None:
                 self.ui.menu_panel.update_move_info(
