@@ -1,11 +1,13 @@
 import arcade
 import arcade.gui
+from src.core.data_loader import DataLoader
 from src.model.player import PlayerPokemon
-from src.core.gameContext import dataLoader
 
 
 class PokemonMenuUi:
-    def __init__(self):
+    def __init__(self, data_loader: DataLoader):
+        self.data_loader = data_loader
+
         self._manager = arcade.gui.UIManager()
         self._manager._pixelated = True
 
@@ -37,17 +39,27 @@ class PokemonMenuUi:
             y = 600 - obj.coordinates.y
 
             if obj.name == "background":
-                self._manager.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture(
-                        "assets/ui/sprites/pokemonMenuBg.png"),
-                    x=x, y=y, width=w, height=h
-                ))
+                self._manager.add(
+                    arcade.gui.UIImage(
+                        texture=arcade.load_texture(
+                            "assets/ui/sprites/pokemonMenuBg.png"
+                        ),
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
+                    )
+                )
             elif obj.name == "tooltip":
-                self._tooltip.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/box2.png"),
-                    x=0, y=0,
-                    width=w, height=h
-                ))
+                self._tooltip.add(
+                    arcade.gui.UIImage(
+                        texture=arcade.load_texture("assets/ui/sprites/box2.png"),
+                        x=0,
+                        y=0,
+                        width=w,
+                        height=h,
+                    )
+                )
             elif obj.name == "pokemon1":
                 slot = int(obj.name[-1]) - 1
                 button = arcade.gui.UIImage(
@@ -141,21 +153,31 @@ class PokemonMenuUi:
                     "h": h,
                 }
             elif obj.name == "box":
-                self._manager.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/box.png"),
-                    x=x, y=y, width=w, height=h
-                ))
+                self._manager.add(
+                    arcade.gui.UIImage(
+                        texture=arcade.load_texture("assets/ui/sprites/box.png"),
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
+                    )
+                )
             elif obj.name == "text":
-                self._manager.add(arcade.gui.UILabel(
-                    text="Choose Pokemon",
-                    text_color=arcade.color.BLACK,
-                    font_name="Pokemon Emerald",
-                    font_size=25,
-                    x=x, y=y - h, width=w, height=h
-                ))
-        
+                self._manager.add(
+                    arcade.gui.UILabel(
+                        text="Choose Pokemon",
+                        text_color=arcade.color.BLACK,
+                        font_name="Pokemon Emerald",
+                        font_size=25,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
+                    )
+                )
+
         self._manager.add(self._tooltip)
-        
+
         self._cursorText = arcade.Text(
             "▶",
             0,
@@ -165,20 +187,23 @@ class PokemonMenuUi:
             anchor_y="center",
             font_name="Pokemon Emerald",
         )
-        
+
     def setupTooltip(self, options: list[str]):
         for button in self._tooltipButtons:
             self._tooltip.remove(button)
-        
+
         self._tooltipButtons = []
-        
+
         for i, option in enumerate(options):
             button = arcade.gui.UILabel(
                 text=option,
                 text_color=arcade.color.BLACK,
                 font_name="Pokemon Emerald",
                 font_size=15,
-                x=0, y=(i * 20) + 5, width=self._tooltip.children[0].width - 10, height=20
+                x=0,
+                y=(i * 20) + 5,
+                width=self._tooltip.children[0].width - 10,
+                height=20,
             )
             self._tooltip.add(button)
             self._tooltipButtons.append(button)
@@ -189,7 +214,7 @@ class PokemonMenuUi:
         for i, slot in enumerate(self._pokemonUis):
             if i < len(pokemons):
                 pokemon = pokemons[i]
-                pokemonProfile = dataLoader.getPokemon(pokemon.name)
+                pokemonProfile = self.data_loader.getPokemon(pokemon.name)
                 maxHp = (
                     ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
                     + 5
@@ -245,13 +270,17 @@ class PokemonMenuUi:
         return self._tooltip.visible
 
     def selectTooltipOption(self, index: int):
-        self._cursorText.x = self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.left - 10
-        self._cursorText.y = self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.center_y
+        self._cursorText.x = (
+            self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.left - 10
+        )
+        self._cursorText.y = self._tooltipButtons[
+            len(self._tooltipButtons) - 1 - index
+        ].rect.center_y
 
     def showTooltip(self, index: int):
         self._tooltip.visible = True
         self._cursorText.visible = True
-        
+
         for i, element in enumerate(self._tooltip.children):
             x = (
                 self._pokemonUis[index]["profile"].rect.right
@@ -280,7 +309,7 @@ class PokemonMenuUi:
 
     def drawHpBars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
-            pokemonProfile = dataLoader.getPokemon(pokemon.name)
+            pokemonProfile = self.data_loader.getPokemon(pokemon.name)
             maxHp = (
                 ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
                 + 5

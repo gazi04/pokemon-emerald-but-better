@@ -1,4 +1,3 @@
-from .playerController import Player
+from .player_sprite import PlayerSprite
 
-
-__all__ = ["Player"]
+__all__ = ["PlayerSprite"]

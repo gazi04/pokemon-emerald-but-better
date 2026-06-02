@@ -1,8 +1,8 @@
 import json
+from typing import Optional
 from src.model.player import (
     PlayerProfile,
     Item,
-    Pokeball,
     PlayerPokemonMove,
     PlayerPokemon,
 )
@@ -10,7 +10,6 @@ from src.model.player import (
 
 class SaveManager:
     def __init__(self):
-        self.player = None
         self.loadData()
 
     def loadData(self):
@@ -48,7 +47,10 @@ class SaveManager:
 
         return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs)
 
-    def getPokemon(self, pokemonId: str) -> PlayerPokemon:
+    def getPokemon(self, pokemonId: str) -> Optional[PlayerPokemon]:
+        if not self.player:
+            return None
+
         for pokemon in self.player.pokemon:
             if pokemon.name == pokemonId:
                 return pokemon
@@ -96,6 +98,9 @@ class SaveManager:
         items = []
         pokeballs = []
         pokemons = []
+
+        if not self.player:
+            return {"pokemon": [], "items": [], "pokeballs": []}
 
         for item in self.player.items:
             items.append({"name": item.name, "count": item.count})
