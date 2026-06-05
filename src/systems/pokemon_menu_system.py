@@ -1,24 +1,29 @@
-from src.core.gameContext import saveManager
+from src.core.save_manager import SaveManager
+
 
 class PokemonMenuSystem:
-    def __init__(self):
-        self.team = saveManager.player.pokemon
-        
+    def __init__(self, save_manager: SaveManager):
+        self.save_manager = save_manager
+        self.team = save_manager.player.pokemon
+
         self.movingPokemonIndex = 0
         self.isMovingPokemon = False
-        
+
         self.teamIndex = 0
         self.tooltipIndex = 0
-    
+
     def movePokemon(self, to: int):
         if to == self.movingPokemonIndex:
             self.isMovingPokemon = False
             return
-        
-        self.team[to], self.team[self.movingPokemonIndex] = self.team[self.movingPokemonIndex], self.team[to]
-        
+
+        self.team[to], self.team[self.movingPokemonIndex] = (
+            self.team[self.movingPokemonIndex],
+            self.team[to],
+        )
+
         self.isMovingPokemon = False
-        
+
     def moveTeamIndex(self, direction: int):
         self.teamIndex = (self.teamIndex + direction) % len(self.team)
 
