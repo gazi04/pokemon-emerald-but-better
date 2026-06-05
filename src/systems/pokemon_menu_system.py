@@ -33,11 +33,12 @@ class PokemonMenuSystem:
         return True
         
     def movePokemon(self, to: int):
-        self.cancelMoving()
         if to == self.movingPokemonIndex:
+            self.cancelMoving()
             return
         
         self.team[to], self.team[self.movingPokemonIndex] = self.team[self.movingPokemonIndex], self.team[to]
+        self.cancelMoving()
         
     def moveTeamIndex(self, direction: int):
         self.teamIndex = (self.teamIndex + direction) % len(self.team)
