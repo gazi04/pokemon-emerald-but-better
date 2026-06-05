@@ -1,18 +1,14 @@
 {
-    "pokemons": [
+    "pokemon": [
         {
-            "name": "combusken",
-            "hp": 13,
-            "level": 16,
-            "exp": 46,
+            "name": "zigzagoon",
+            "hp": 10,
+            "level": 4,
+            "exp": 1,
             "moves": [
                 {
-                    "name": "close combat",
-                    "pp": 1
-                },
-                {
                     "name": "tackle",
-                    "pp": 10
+                    "pp": 25
                 }
             ]
         },
@@ -27,18 +23,34 @@
                     "pp": 10
                 }
             ]
+        },
+        {
+            "name": "combusken",
+            "hp": 33,
+            "level": 16,
+            "exp": 46,
+            "moves": [
+                {
+                    "name": "close combat",
+                    "pp": 1
+                },
+                {
+                    "name": "tackle",
+                    "pp": 10
+                }
+            ]
         }
     ],
     "items": [
         {
             "name": "potion",
-            "count": 3
+            "count": 2
         }
     ],
     "pokeballs": [
         {
             "name": "pokeball",
-            "count": 99
+            "count": 95
         }
     ]
 }

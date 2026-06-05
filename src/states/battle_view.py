@@ -106,7 +106,23 @@ class BattleView(arcade.View):
         self.ui.queue_messages(self.battleSystem.turnUseItem(itemIndex))
         self.ui.switch_mode("dialog")
 
+    def startCatchAttempt(self, result: dict):
+        """Called by BagView after a pokeball is thrown."""
+        self.ui.queue_messages(result["messages"])
+        self.ui.switch_mode("dialog")
+
     def whatHappendAfterText(self):
+        if self.battleSystem.battleState == "caught":
+            enemy = self.battleSystem.enemyPokemon
+            self.save_manager.addPokemon(
+                name=enemy.name.lower(),
+                hp=enemy.currentHp,
+                level=enemy.level,
+                moves=enemy.moves,
+            )
+            self.run()
+            return
+
         if self.battleSystem.battleState == "currently turn":
             messages = self.battleSystem.executeNextAction()
             if messages:
@@ -274,5 +290,6 @@ class BattleView(arcade.View):
 
     def run(self):
         self.battleSystem.save()
+        self.save_manager.flushToDisk()
         # Tell the Director we are done — it will return to the Overworld
         global_bus.publish(CloseViewEvent())

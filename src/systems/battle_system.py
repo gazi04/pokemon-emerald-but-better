@@ -44,14 +44,13 @@ class BattleSystem:
         self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
         return self.executeNextAction()
     
-    def throwPokeball(self, pokeball:Item):
+    def attemp_catch(self, pokeball:Item):
         effect = pokeball.effects[0]
         if effect.type == "catch":
             catchRate = 155
             catchChance = (3 * self.enemyPokemon.maxHp - 2 * self.enemyPokemon.currentHp) * catchRate * effect.catchRate // (3 * self.enemyPokemon.maxHp)
 
             if random.randint(1, 100) <= catchChance:
-                self.save_manager.addPokemon(self.enemyPokemon.name.lower(), self.enemyPokemon.currentHp, self.enemyPokemon.level, self.enemyPokemon.moves)
                 return {"dialog": [f"You caught {self.enemyPokemon.name}!"], "caught": True}
             else:
                 return {"dialog": [f"{self.enemyPokemon.name} broke free!"], "caught": False}
@@ -198,18 +197,62 @@ class BattleSystem:
 
         return messages
 
+    def attempt_catch(self, item_data: Item) -> dict:
+        ball_modifier = 1
+        for effect in item_data.effects:
+            if effect.type == "catch":
+                ball_modifier = effect.catchRate or 1
+
+        enemy = self.enemyPokemon
+        pokemon_profile = self.data_loader.getPokemon(enemy.name.lower())
+        catch_rate = pokemon_profile.catch_rate if pokemon_profile else 45
+
+        hp_modifier = 1 - (enemy.currentHp / enemy.maxHp) * 0.5
+
+        status_modifier = 1.0
+        if enemy.statusEffect in ("sleep", "freeze"):
+            status_modifier = 2.0
+        elif enemy.statusEffect in ("paralyzed", "burned", "poisoned"):
+            status_modifier = 1.5
+
+        catch_probability = min(
+            (catch_rate * ball_modifier * hp_modifier * status_modifier) / 255, 1.0
+        )
+
+        if random.random() < catch_probability:
+            self.battleState = "caught"
+            return {
+                "success": True,
+                "messages": [
+                    f"You threw a Pokeball!",
+                    f"Gotcha! {enemy.name} was caught!",
+                ],
+            }
+        else:
+            enemy_move_index = random.randint(0, len(self.enemyPokemon.moves) - 1)
+            self.turnQueue = [("enemy", enemy_move_index, -1)]
+            self.battleState = "currently turn"
+            return {
+                "success": False,
+                "messages": [
+                    f"You threw a Pokeball!",
+                    f"Oh no! {enemy.name} broke free!",
+                ],
+            }
+
     def save(self):
-        self.save_manager.updateHp(self.yourPokemon.name, self.yourPokemon.currentHp)
+        pokemonName = self.yourPokemon.name.lower()
+        self.save_manager.updateHp(pokemonName, self.yourPokemon.currentHp)
         for move in self.yourPokemon.moves:
-            self.save_manager.updateMove(self.yourPokemon.name, move.name, move.pp)
+            self.save_manager.updateMove(pokemonName, move.name, move.pp)
 
         if not self.hasEvolved:
             self.save_manager.updateLevel(
-                self.yourPokemon.name, self.yourPokemon.level, self.yourPokemon.exp
+                pokemonName, self.yourPokemon.level, self.yourPokemon.exp
             )
         else:
             self.save_manager.updateLevel(
-                self.yourPokemon.name,
+                pokemonName,
                 self.yourPokemon.level,
                 self.yourPokemon.exp,
                 self.yourPokemon.evolution.to,

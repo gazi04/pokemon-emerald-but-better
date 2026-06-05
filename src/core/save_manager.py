@@ -22,7 +22,7 @@ class SaveManager:
         items = []
         pokeballs = []
 
-        for pokemon in data["pokemons"]:
+        for pokemon in data["pokemon"]:
             moves = []
 
             for move in pokemon["moves"]:
