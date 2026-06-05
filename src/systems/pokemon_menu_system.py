@@ -1,12 +1,14 @@
-from src.core.gameContext import saveManager
+from src.core.save_manager import SaveManager
+
 
 class PokemonMenuSystem:
-    def __init__(self):
-        self.team = saveManager.player.pokemon
-        
+    def __init__(self, save_manager: SaveManager):
+        self.save_manager = save_manager
+        self.team = save_manager.player.pokemon
+
         self.movingPokemonIndex = 0
         self.isMovingPokemon = False
-        
+
         self.teamIndex = 0
         self.tooltipIndex = 0
         

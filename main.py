@@ -1,11 +1,11 @@
 import arcade
-from src.states.overworld_view import OverworldView, CONFIG
-import src.core.gameContext
+from data.config import Config
+from src.core.game_director import GameDirector
+
+CONFIG = Config.load()
 
 
 def main():
-    """Start the game"""
-
     window = arcade.Window(
         width=CONFIG.window.width,
         height=CONFIG.window.height,
@@ -14,8 +14,9 @@ def main():
         resizable=CONFIG.window.resizable,
     )
 
-    start_view = OverworldView()
-    window.show_view(start_view)
+    director = GameDirector(window)
+    director.start()
+
     arcade.run()
 
 
