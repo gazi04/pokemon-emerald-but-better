@@ -105,7 +105,22 @@ class BattleView(arcade.View):
     def onItemUsed(self, itemIndex: int):
         self.ui.queue_messages(self.battleSystem.turnUseItem(itemIndex))
         self.ui.switch_mode("dialog")
-
+        
+    def switch_turn(self):
+        self.battleSystem.battleState = "switching"
+        
+        self.ui.switch_mode("dialog")
+        self.ui.queue_messages(self.battleSystem.switch_pokemon())
+        
+        self.ui.set_player_info(
+            self.yourPokemon.pokemonBattle.name.upper(),
+            self.yourPokemon.pokemonBattle.level,
+        )
+        self.updateUiMoves()
+        
+        texture = self.data_loader.getPokemon(self.yourPokemon.pokemonBattle.name.lower()).sprites.back
+        self.yourPokemon.setNewTexture(texture)
+        
     def whatHappendAfterText(self):
         if self.battleSystem.battleState == "currently turn":
             messages = self.battleSystem.executeNextAction()
@@ -118,7 +133,11 @@ class BattleView(arcade.View):
         elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
             self.battleSystem.battleState = "waiting"
             arcade.schedule_once(self.resetToMainMenu, 0.5)
-
+        
+        elif self.battleSystem.battleState == "switching":
+            self.ui.queue_messages(self.battleSystem.switch_turn())
+            self.ui.switch_mode("dialog")
+        
         elif self.battleSystem.battleState == "end":
             if self.battleSystem.exp > 0:
                 result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
@@ -244,6 +263,7 @@ class BattleView(arcade.View):
                                 "previous_view": self,
                                 "save_manager": self.save_manager,
                                 "data_loader": self.data_loader,
+                                "battle_system": self.battleSystem
                             },
                         )
                     )

@@ -42,6 +42,24 @@ class BattleSystem:
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
         self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
         return self.executeNextAction()
+    
+    def switch_turn(self) -> list[str]:
+        self.battleState = "currently turn"
+        enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
+        
+        self.turnQueue = [("enemy", enemyMoveIndex, -1)]
+        return self.executeNextAction()
+    
+    def switch_pokemon(self) -> list[str]:
+        pokemon = self.save_manager.player.pokemon[0]
+        pokemonProfile = self.data_loader.getPokemon(pokemon.name)
+        
+        if pokemon.hp <= 0:
+            return [f"{pokemon.name} is unable to battle!"]
+        
+        self.yourPokemon.switching_pokemon(pokemon, pokemonProfile)
+        
+        return [f"Go {pokemon.name}!"]
 
     def executeNextAction(self) -> list[str]:
         if not self.turnQueue:
