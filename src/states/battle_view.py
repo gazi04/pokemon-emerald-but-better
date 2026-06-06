@@ -76,7 +76,7 @@ class BattleView(arcade.View):
                 moves=first.moves,
                 level=first.level,
             )
-
+            trainer_data.party.pop(0)
 
         self.battleSystem = BattleSystem(
             self.yourPokemon.pokemonBattle,
@@ -148,6 +148,12 @@ class BattleView(arcade.View):
 
         elif self.battleSystem.battleState == "trainer switch":
             next_data = self.battleSystem.next_trainer_pokemon
+            
+            if not next_data:
+                self.ui.queue_messages([f"Trainer was defeated!!!"])
+                self.battleSystem.battleState = "end"
+                return
+            
             profile = self.data_loader.getPokemon(next_data.name)
 
             self.enemyPokemon.pokemonBattle = PokemonBattle(

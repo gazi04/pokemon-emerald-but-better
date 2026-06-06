@@ -217,7 +217,7 @@ class OverworldView(arcade.View):
                     payload={
                         "save_manager": self.save_manager,
                         "data_loader": self.data_loader,
-                        "trainer_data": Trainer([PlayerPokemon("zigzagoon", 10, 3, 0, [PlayerPokemonMove("tackle", 15)]), PlayerPokemon("zigzagoon", 10, 3, 0, [PlayerPokemonMove("tackle", 15)])])
+                        "trainer_data": Trainer([PlayerPokemon("zigzagoon", 10, 3, 0, [PlayerPokemonMove("tackle", 15)]), PlayerPokemon("poochyena", 10, 3, 0, [PlayerPokemonMove("tackle", 15)])])
                     },
                 )
             )
