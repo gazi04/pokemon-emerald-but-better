@@ -176,6 +176,8 @@ class BattleView(arcade.View):
 
         profile = self.data_loader.getPokemon(next_data.name)
 
+        texture = profile.sprites.front
+        self.enemyPokemon.texture = arcade.load_texture(texture)
         self.enemyPokemon.pokemonBattle = PokemonBattle(
             profile,
             True,
@@ -183,10 +185,11 @@ class BattleView(arcade.View):
             moves=next_data.moves,
             level=next_data.level,
         )
+        self.battleSystem.enemyPokemon = self.enemyPokemon.pokemonBattle
 
         self.ui.set_enemy_info(next_data.name.upper(), next_data.level)
         self.ui.queue_messages([f"Trainer sent out {next_data.name}!"])
-        self._ending_turn()
+        self.battleSystem.battleState = "waiting"
 
     def _handle_battle_finishing(self):
         if self.battleSystem.exp <= 0:
