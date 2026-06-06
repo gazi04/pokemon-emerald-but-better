@@ -182,7 +182,6 @@ class BattleSystem:
             
             if self.is_trainer and self.trainer_party:
                 self.next_trainer_pokemon = self.trainer_party.pop(0)
-                messages.append(f"Trainer sent out {self.next_trainer_pokemon.name}!")
                 self.battleState = "trainer switch"
         else:
             messages.append(f"{self.yourPokemon.name} fainted!")

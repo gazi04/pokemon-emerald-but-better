@@ -223,7 +223,7 @@ class PokemonBattle:
             self.currentHp = self.maxHp
             self.levelUp()
 
-        hasEvolved = self.evolution and self.evolution.levelCap == self.level
+        hasEvolved = self.evolution and self.evolution.levelCap <= self.level
 
         return {
             "isLeveledUp": self.level > old_level,

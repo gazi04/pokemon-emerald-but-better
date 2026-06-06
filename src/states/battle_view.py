@@ -139,7 +139,9 @@ class BattleView(arcade.View):
         elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
             self._ending_turn()
         elif self.battleSystem.battleState == "trainer switch":
-            self._trainer_switching_pokemon()
+            self._trainer_give_exp()
+        elif self.battleSystem.battleState == "trainer sending":
+            self._trainer_send_next_pokemon()
         elif self.battleSystem.battleState == "end":
             self._handle_battle_finishing()
 
@@ -154,11 +156,21 @@ class BattleView(arcade.View):
         self.battleSystem.battleState = "waiting"
         arcade.schedule_once(self._reset_to_main_menu, 0.5)
 
-    def _trainer_switching_pokemon(self):
+    def _trainer_give_exp(self):
+        result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
+        self.battleSystem.exp = 0
+        self.battleSystem.battleState = "trainer sending"
+
+        if result["isLeveledUp"]:
+            self._on_level_up(self.yourPokemon.pokemonBattle)
+        else:
+            self._trainer_send_next_pokemon()
+
+    def _trainer_send_next_pokemon(self):
         next_data = self.battleSystem.next_trainer_pokemon
 
         if not next_data:
-            self.ui.queue_messages([f"Trainer was defeated!!!"])
+            self.ui.queue_messages(["Trainer was defeated!!!"])
             self.battleSystem.battleState = "end"
             return
 
@@ -169,10 +181,11 @@ class BattleView(arcade.View):
             True,
             name=next_data.name,
             moves=next_data.moves,
-            level=next_data.level
+            level=next_data.level,
         )
 
         self.ui.set_enemy_info(next_data.name.upper(), next_data.level)
+        self.ui.queue_messages([f"Trainer sent out {next_data.name}!"])
         self._ending_turn()
 
     def _handle_battle_finishing(self):
