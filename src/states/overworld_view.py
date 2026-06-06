@@ -206,6 +206,21 @@ class OverworldView(arcade.View):
                     },
                 )
             )
+            
+        if self.isPressed("SPACE", key):
+            self.keys.clear()
+            from src.model.trainer import Trainer
+            from src.model.player import PlayerPokemon, PlayerPokemonMove
+            global_bus.publish(
+                SwapViewEvent(
+                    target="battle_trainer",
+                    payload={
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                        "trainer_data": Trainer([PlayerPokemon("zigzagoon", 10, 3, 0, [PlayerPokemonMove("tackle", 15)]), PlayerPokemon("zigzagoon", 10, 3, 0, [PlayerPokemonMove("tackle", 15)])])
+                    },
+                )
+            )
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

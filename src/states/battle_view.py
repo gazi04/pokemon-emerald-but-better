@@ -2,7 +2,9 @@ import arcade
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.model.player import PlayerPokemonMove
+from src.model.trainer import Trainer
 from src.entities.pokemon_sprites import Pokemon
+from src.entities.pokemon_battle import PokemonBattle
 from data.config import Config
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
@@ -15,12 +17,14 @@ CONFIG = Config.load()
 class BattleView(arcade.View):
     def __init__(
         self,
-        pokemon_name,
-        pokemon_data,
-        level,
         overworld_view,
         save_manager: SaveManager,
         data_loader: DataLoader,
+        foe_pokemon_name=None,
+        foe_pokemon_data=None,
+        foe_level=None,
+        is_trainer=False,
+        trainer_data:Trainer=None
     ):
         super().__init__()
 
@@ -38,27 +42,49 @@ class BattleView(arcade.View):
                 f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
             )
 
-        if pokemon_data is None:
-            raise ValueError(f"Enemy pokemon data for '{pokemon_name}' cannot be None.")
-
         self.yourPokemon = Pokemon(
             player_profile,
             False,
             self.playerPokemon[0],
         )
-        self.enemyPokemon = Pokemon(
-            pokemon_data,
-            True,
-            name=pokemon_name,
-            moves=[PlayerPokemonMove("tackle", 35)],
-            level=level,
-        )
+
+        self.is_trainer = is_trainer
+
+        if not is_trainer:
+            if foe_pokemon_data is None:
+                raise ValueError(
+                    f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None.")
+
+            self.enemyPokemon = Pokemon(
+                foe_pokemon_data,
+                True,
+                name=foe_pokemon_name,
+                moves=[PlayerPokemonMove("tackle", 35)],
+                level=foe_level,
+            )
+        else:
+            first = trainer_data.party[0]
+            first_profile = data_loader.getPokemon(first.name)
+            if first_profile is None:
+                raise ValueError(
+                    f"Trainer pokemon '{first.name}' not found in data.")
+
+            self.enemyPokemon = Pokemon(
+                first_profile,
+                True,
+                name=first.name,
+                moves=first.moves,
+                level=first.level,
+            )
+
 
         self.battleSystem = BattleSystem(
             self.yourPokemon.pokemonBattle,
             self.enemyPokemon.pokemonBattle,
             self.save_manager,
             self.data_loader,
+            is_trainer,
+            trainer_data,
         )
 
         self.ui.set_player_info(
@@ -72,7 +98,8 @@ class BattleView(arcade.View):
         self.ui.switch_mode("main")
         self.updateUiMoves()
 
-        first_move = data_loader.getMove(self.yourPokemon.pokemonBattle.moves[0].name)
+        first_move = data_loader.getMove(
+            self.yourPokemon.pokemonBattle.moves[0].name)
         if first_move is not None:
             self.ui.menu_panel.update_move_info(
                 first_move.type,
@@ -119,9 +146,26 @@ class BattleView(arcade.View):
             self.battleSystem.battleState = "waiting"
             arcade.schedule_once(self.resetToMainMenu, 0.5)
 
+        elif self.battleSystem.battleState == "trainer switch":
+            next_data = self.battleSystem.next_trainer_pokemon
+            profile = self.data_loader.getPokemon(next_data.name)
+
+            self.enemyPokemon.pokemonBattle = PokemonBattle(
+                profile,
+                True, 
+                name=next_data.name, 
+                moves=next_data.moves, 
+                level=next_data.level
+            )
+            
+            self.ui.set_enemy_info(next_data.name.upper(), next_data.level)
+            self.battleSystem.battleState = "waiting"
+            arcade.schedule_once(self.resetToMainMenu, 0.5)
+
         elif self.battleSystem.battleState == "end":
             if self.battleSystem.exp > 0:
-                result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
+                result = self.yourPokemon.pokemonBattle.gainExp(
+                    self.battleSystem.exp)
                 self.battleSystem.exp = 0
 
                 if not result["isLeveledUp"] and not result["evolve"]["hasEvolved"]:
@@ -171,9 +215,11 @@ class BattleView(arcade.View):
         self.ui.draw()
         self.enemyPokemon.draw()
         self.yourPokemon.draw()
-        self.ui.draw_hp_bar(self.yourPokemon.pokemonBattle.getHpRatio(), "player")
+        self.ui.draw_hp_bar(
+            self.yourPokemon.pokemonBattle.getHpRatio(), "player")
         self.ui.draw_exp_bar(self.yourPokemon.pokemonBattle.getExpRatio())
-        self.ui.draw_hp_bar(self.enemyPokemon.pokemonBattle.getHpRatio(), "enemy")
+        self.ui.draw_hp_bar(
+            self.enemyPokemon.pokemonBattle.getHpRatio(), "enemy")
 
     def on_update(self, delta_time):
         self.ui.update(delta_time)
