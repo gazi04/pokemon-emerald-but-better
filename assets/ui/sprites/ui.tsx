@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="25" columns="0">
+<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="30" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="box.png" width="120" height="48"/>
@@ -75,5 +75,20 @@
  </tile>
  <tile id="24">
   <image source="pokemonProfileSelected.png" width="142" height="22"/>
+ </tile>
+ <tile id="25">
+  <image source="pokemon_moves.png" width="160" height="139"/>
+ </tile>
+ <tile id="26">
+  <image source="pokemon_profile.png" width="80" height="144"/>
+ </tile>
+ <tile id="27">
+  <image source="pokemon_stats.png" width="160" height="139"/>
+ </tile>
+ <tile id="28">
+  <image source="pokmon_info.png" width="160" height="139"/>
+ </tile>
+ <tile id="29">
+  <image source="top_bar.png" width="240" height="16"/>
  </tile>
 </tileset>
