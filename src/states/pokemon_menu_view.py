@@ -28,6 +28,7 @@ class PokemonMenuView(arcade.View):
         self.battleSystem = battleSystem
         self.itemIndex = itemIndex
 
+        self.data_loader = data_loader
         self.system = PokemonMenuSystem(save_manager)
         self.ui = PokemonMenuUi(data_loader)
 
@@ -112,7 +113,12 @@ class PokemonMenuView(arcade.View):
                 self.system.startMoving()
 
         elif index == 0:
-            pass
+            from src.states.pokemon_info_view import PokemonInfoView
+            self.window.show_view(PokemonInfoView(
+                previous_view=self,
+                pokemon=self.system.team[self.system.teamIndex],
+                data_loader=self.data_loader,
+            ))
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
