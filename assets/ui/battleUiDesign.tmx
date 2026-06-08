@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="43">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="46">
  <tileset firstgid="1" source="sprites/ui.tsx"/>
  <objectgroup id="3" name="background">
   <object id="14" name="background" gid="5" x="-12" y="13848" width="25656" height="13904"/>
@@ -26,9 +26,7 @@
   <object id="32" name="move4" x="9070.5" y="17094.5" width="6508.5" height="1075">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="33" name="type" x="20822.5" y="16982.5" width="3891" height="1171">
-   <text wrap="1">Hello World</text>
-  </object>
+  <object id="43" name="type" gid="31" x="21340" y="18118" width="2456.4" height="1075.2"/>
  </objectgroup>
  <objectgroup id="2" name="ui-bottom" visible="0">
   <object id="5" name="dialogBox" gid="2" x="4" y="19204" width="25584" height="5424" visible="0"/>

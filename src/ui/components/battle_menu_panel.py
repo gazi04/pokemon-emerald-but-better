@@ -19,6 +19,27 @@ class BattleMenuPanel:
         self.main_buttons = []  # Just the interactive buttons (for cursor)
         self.move_buttons = []  # Just the move buttons (for cursor)
 
+        self.type_textures = {
+            "normal": arcade.load_texture("assets/sprite/types/normal.png"),
+            "fire": arcade.load_texture("assets/sprite/types/fire.png"),
+            "water": arcade.load_texture("assets/sprite/types/water.png"),
+            "grass": arcade.load_texture("assets/sprite/types/grass.png"),
+            "electric": arcade.load_texture("assets/sprite/types/electric.png"),
+            "ice": arcade.load_texture("assets/sprite/types/ice.png"),
+            "fighting": arcade.load_texture("assets/sprite/types/fighting.png"),
+            "poison": arcade.load_texture("assets/sprite/types/poison.png"),
+            "ground": arcade.load_texture("assets/sprite/types/ground.png"),
+            "flying": arcade.load_texture("assets/sprite/types/flying.png"),
+            "psychic": arcade.load_texture("assets/sprite/types/psychic.png"),
+            "bug": arcade.load_texture("assets/sprite/types/bug.png"),
+            "rock": arcade.load_texture("assets/sprite/types/rock.png"),
+            "ghost": arcade.load_texture("assets/sprite/types/ghost.png"),
+            "dragon": arcade.load_texture("assets/sprite/types/dragon.png"),
+            "dark": arcade.load_texture("assets/sprite/types/dark.png"),
+            "steel": arcade.load_texture("assets/sprite/types/steel.png"),
+            "fairy": arcade.load_texture("assets/sprite/types/psychic.png"),
+        }
+
         self._build_main_menu(bounds)
         self._build_move_menu(bounds)
 
@@ -88,40 +109,19 @@ class BattleMenuPanel:
                 )
             )
 
-        move_style = {
-            "normal": arcade.gui.UIFlatButton.UIStyle(
-                font_size=24,
-                font_name="Pokemon Emerald",
-                font_color=arcade.color.BLACK,
-                bg=arcade.color.WHITE,
-                border_width=0,
-            ),
-            "hover": arcade.gui.UIFlatButton.UIStyle(
-                font_size=24,
-                font_name="Pokemon Emerald",
-                font_color=arcade.color.GRAY,
-                bg=arcade.color.WHITE,
-                border_width=0,
-            ),
-            "press": arcade.gui.UIFlatButton.UIStyle(
-                font_size=22,
-                font_name="Pokemon Emerald",
-                font_color=arcade.color.WHITE,
-                bg=arcade.color.WHITE,
-                border_width=0,
-            ),
-        }
-
         for i in range(1, 5):
             name = f"move{i}"
             if name in bounds:
                 b = bounds[name]
-                btn = arcade.gui.UIFlatButton(
+                btn = arcade.gui.UILabel(
                     x=b["x"],
                     y=b["y"] - b["h"],
                     width=b["w"],
                     height=b["h"],
-                    style=move_style,
+                    text_color=arcade.color.BLACK,
+                    font_name="Pokemon Emerald",
+                    font_size=25,
+                    align="center"
                 )
                 self.move_widgets.append(btn)
                 self.move_buttons.append(btn)
@@ -154,9 +154,10 @@ class BattleMenuPanel:
 
         if "type" in bounds:
             b = bounds["type"]
-            self.type_label = arcade.gui.UILabel(
+            self.type_label = arcade.gui.UIImage(
+                texture=self.type_textures["normal"],
                 x=b["x"],
-                y=b["y"] - b["h"],
+                y=b["y"],
                 width=b["w"],
                 height=b["h"],
                 text_color=arcade.color.BLACK,
@@ -190,7 +191,7 @@ class BattleMenuPanel:
 
     def update_move_info(self, type_str: str, curr_pp: int, max_pp: int):
         if hasattr(self, "type_label"):
-            self.type_label.text = type_str
+            self.type_label.texture = self.type_textures[type_str]
         if hasattr(self, "curr_pp_label"):
             self.curr_pp_label.text = str(curr_pp)
         if hasattr(self, "max_pp_label"):

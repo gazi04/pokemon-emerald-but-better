@@ -5,10 +5,8 @@ from src.model.player import PlayerPokemon
 from src.model.pokemon import PokemonProfile, PokemonStat
 from src.core.data_loader import DataLoader
 
-_MAP_H = 600
 _FONT = "Pokemon Emerald"
 
-# Right-panel background per tab
 _TAB_BG = [
     "assets/ui/sprites/pokmon_info.png",
     "assets/ui/sprites/pokemon_stats.png",
@@ -28,6 +26,11 @@ class PokemonInformacion:
 
         self._current_tab = 0
         self._tab: list[list[arcade.Text]] = [[], [], []]
+        self._tab_sprites: list[arcade.SpriteList] = [
+            arcade.SpriteList(),
+            arcade.SpriteList(),
+            arcade.SpriteList(),
+        ]
 
         tilemap = arcade.load_tilemap(POKEMON_INFORMACION_UI)
 
@@ -81,30 +84,41 @@ class PokemonInformacion:
                 ))
 
         abilities = _profile.abilities or []
-        ability_str = abilities[0].upper() if abilities else "—"
-        types_str = " / ".join(t.upper() for t in (_profile.types or []))
+        ability = abilities[0].upper() if abilities else "—"
 
         _label_map_info = {
             "name": pokemon.name.upper(),
-            "type": types_str,
-            "abylity_name": ability_str,
+            "abylity_name": ability,
             "ability_description": "—",
         }
 
         for obj in tilemap.get_tilemap_layer("pokemon_profile").tiled_objects:
-            val = _label_map_info.get(obj.name)
-            if val is not None:
-                self._tab[0].append(arcade.Text(
-                    val,
-                    x=obj.coordinates.x,
-                    y=600 - obj.coordinates.y,
-                    color=arcade.color.BLACK,
-                    font_size=30,
-                    font_name=_FONT,
-                    anchor_y="top",
-                    width=int(obj.size.width),
-                    multiline=True,
-                ))
+            x = obj.coordinates.x
+            y = 600 - obj.coordinates.y
+            w = obj.size.width
+            h = obj.size.height
+
+            if obj.name == "type":
+                cursor_x = x
+                for type_name in (_profile.types or []):
+                    sprite = self._make_type_sprite(type_name, cursor_x, y - h / 2, h)
+                    self._tab_sprites[0].append(sprite)
+                    cursor_x += sprite.width + 8
+
+            else:
+                val = _label_map_info.get(obj.name)
+                if val is not None:
+                    self._tab[0].append(arcade.Text(
+                        val,
+                        x=x,
+                        y=y,
+                        color=arcade.color.BLACK,
+                        font_size=30,
+                        font_name=_FONT,
+                        anchor_y="top",
+                        width=w,
+                        multiline=True,
+                    ))
 
         lvl = pokemon.level
 
@@ -177,8 +191,15 @@ class PokemonInformacion:
                 )
                 self._tab[2].append(self.description)
             elif "move" in obj.name and move_index < len(pokemon.moves):
-                move_data = pokemon.moves[move_index]
+                move_data    = pokemon.moves[move_index]
                 move_profile = data_loader.getMove(move_data.name)
+
+                type_y = y - h / 2
+
+                if move_profile is not None:
+                    type = self._make_type_sprite(move_profile.type, x - 115, type_y, h)
+                    self._tab_sprites[2].append(type)
+                    
                 move_text = arcade.Text(
                     f"{move_data.name.capitalize():<28} {move_data.pp}/{move_profile.pp}",
                     x=x,
@@ -190,7 +211,7 @@ class PokemonInformacion:
                     width=w,
                     multiline=True,
                 )
-                
+
                 self._moves.append(move_text)
                 self._tab[2].append(move_text)
                 move_index += 1
@@ -224,6 +245,15 @@ class PokemonInformacion:
     def _stat(self, base: int, lvl: int) -> int:
         return ((2 * base * lvl) // 100) + 5
 
+    def _make_type_sprite(self, type_name: str, x: float, cy: float, badge_h: float) -> arcade.Sprite:
+        path = f"assets/sprite/types/{type_name.lower()}.png"
+        tex = arcade.load_texture(path)
+        scale = badge_h / tex.height
+        sprite = arcade.Sprite(path, scale=scale)
+        sprite.left = x
+        sprite.center_y = cy
+        return sprite
+
     def setTab(self, index: int):
         self._current_tab = index % 3
         self._bg_image.texture = arcade.load_texture(_TAB_BG[self._current_tab])
@@ -239,6 +269,7 @@ class PokemonInformacion:
 
     def draw(self):
         self._manager.draw()
+        self._tab_sprites[self._current_tab].draw(pixelated=True)
         for text in self._tab[self._current_tab]:
             text.draw()
         for t in self._tab_indicator_texts:

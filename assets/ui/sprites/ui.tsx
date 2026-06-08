@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="30" columns="0">
+<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="31" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="box.png" width="120" height="48"/>
@@ -90,5 +90,8 @@
  </tile>
  <tile id="29">
   <image source="top_bar.png" width="240" height="16"/>
+ </tile>
+ <tile id="30">
+  <image source="../../sprite/types/normal.png" width="32" height="14"/>
  </tile>
 </tileset>
