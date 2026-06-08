@@ -3,6 +3,7 @@ import arcade.gui
 from src.constants import POKEMON_INFORMACION_UI, FONT
 from src.model.player import PlayerPokemon
 from src.model.pokemon import PokemonProfile, PokemonStat
+from src.core.data_loader import DataLoader
 
 _MAP_H = 600
 _FONT = "Pokemon Emerald"
@@ -17,9 +18,13 @@ _TAB_NAMES = ["INFO", "STATS", "MOVES"]
 
 
 class PokemonInformacion:
-    def __init__(self, pokemon: PlayerPokemon, profile: PokemonProfile):
+    def __init__(self, pokemon: PlayerPokemon, data_loader: DataLoader):
         self._manager = arcade.gui.UIManager()
         self._manager._pixelated = True
+        
+        _profile = data_loader.getPokemon(pokemon.name)
+        if _profile is None:
+            raise ValueError(f"No profile found for '{pokemon.name}'")
 
         self._current_tab = 0
         self._tab: list[list[arcade.Text]] = [[], [], []]
@@ -55,7 +60,7 @@ class PokemonInformacion:
                 ))
             elif obj.name == "pokemon":
                 self._manager.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture(profile.sprites.front),
+                    texture=arcade.load_texture(_profile.sprites.front),
                     x=x, y=y, width=w, height=h,
                 ))
             elif obj.name == "pokemon_name":
@@ -75,9 +80,9 @@ class PokemonInformacion:
                     x=x, y=y - h, width=w, height=h,
                 ))
 
-        abilities = profile.abilities or []
+        abilities = _profile.abilities or []
         ability_str = abilities[0].upper() if abilities else "—"
-        types_str = " / ".join(t.upper() for t in (profile.types or []))
+        types_str = " / ".join(t.upper() for t in (_profile.types or []))
 
         _label_map_info = {
             "name": pokemon.name.upper(),
@@ -114,7 +119,7 @@ class PokemonInformacion:
             "exp_needed_count": str(exp_to_next),
         }
 
-        stats = self._generate_stats(profile.stats, lvl)
+        stats = self._generate_stats(_profile.stats, lvl)
 
         for obj in tilemap.get_tilemap_layer("pokemon_stats").tiled_objects:
             x = obj.coordinates.x
@@ -148,8 +153,47 @@ class PokemonInformacion:
                         width=w,
                         multiline=False,
                     ))
+        
+        self._moves = []
+        move_index = 0
 
-        # moves
+        for obj in tilemap.get_tilemap_layer("pokemon_moves").tiled_objects:
+            x = obj.coordinates.x
+            y = 600 - obj.coordinates.y
+            w = obj.size.width
+            h = obj.size.height
+            
+            if obj.name == "description":
+                self.description = arcade.Text(
+                    "Description",
+                    x=x,
+                    y=y,
+                    color=arcade.color.BLACK,
+                    font_size=30,
+                    font_name=_FONT,
+                    anchor_y="top",
+                    width=w,
+                    multiline=True,
+                )
+                self._tab[2].append(self.description)
+            elif "move" in obj.name and move_index < len(pokemon.moves):
+                move_data = pokemon.moves[move_index]
+                move_profile = data_loader.getMove(move_data.name)
+                move_text = arcade.Text(
+                    f"{move_data.name.capitalize():<28} {move_data.pp}/{move_profile.pp}",
+                    x=x,
+                    y=y,
+                    color=arcade.color.BLACK,
+                    font_size=30,
+                    font_name=_FONT,
+                    anchor_y="top",
+                    width=w,
+                    multiline=True,
+                )
+                
+                self._moves.append(move_text)
+                self._tab[2].append(move_text)
+                move_index += 1
 
         self._tab_indicator_texts: list[arcade.Text] = []
         for i, name in enumerate(_TAB_NAMES):

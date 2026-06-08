@@ -18,11 +18,7 @@ class PokemonInfoView(arcade.View):
         super().__init__()
         self.previous_view = previous_view
 
-        profile = data_loader.getPokemon(pokemon.name)
-        if profile is None:
-            raise ValueError(f"No profile found for '{pokemon.name}'")
-
-        self.ui = PokemonInformacion(pokemon, profile)
+        self.ui = PokemonInformacion(pokemon, data_loader)
 
     def on_draw(self):
         self.clear()

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="7" nextobjectid="28">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="7" nextobjectid="34">
  <tileset firstgid="1" source="sprites/ui.tsx"/>
- <objectgroup id="2" name="pokemon_profile">
+ <objectgroup id="2" name="pokemon_profile" visible="0">
   <object id="9" name="ability_description" x="297.167" y="343.833" width="467" height="40.3333">
    <text wrap="1">Hello World</text>
   </object>
@@ -53,7 +53,23 @@
    <text wrap="1">Hello World</text>
   </object>
  </objectgroup>
- <objectgroup id="6" name="pokemo_moves"/>
+ <objectgroup id="6" name="pokemon_moves">
+  <object id="29" name="description" x="301.167" y="469.167" width="468.333" height="85.6667">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="30" name="move1" x="404.5" y="148.167" width="370.333" height="33.6667">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="33" name="move2" x="404.5" y="208.167" width="370.333" height="33.6667">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="32" name="move3" x="404.5" y="268.167" width="370.333" height="33.6667">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="31" name="move4" x="404.5" y="321.167" width="370.333" height="33.6667">
+   <text wrap="1">Hello World</text>
+  </object>
+ </objectgroup>
  <objectgroup id="3" name="profile">
   <object id="14" name="profile" gid="27" x="0.98217" y="600.701" width="265.369" height="527.931"/>
   <object id="11" name="pokemon_level" x="32.0567" y="440.951" width="197.667" height="44.3333">
@@ -66,6 +82,6 @@
  </objectgroup>
  <objectgroup id="4" name="static">
   <object id="3" name="bar" gid="30" x="-0.666667" y="72.6667" width="802.667" height="72"/>
-  <object id="2" name="bg" gid="29" x="263.641" y="600.167" width="535.74" height="507.187"/>
+  <object id="2" name="bg" gid="26" x="263.641" y="600.167" width="535.74" height="507.187"/>
  </objectgroup>
 </map>
