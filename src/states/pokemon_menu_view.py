@@ -7,6 +7,8 @@ from src.systems.bag_system import BagSystem
 from src.systems.pokemon_menu_system import PokemonMenuSystem
 from src.systems.battle_system import BattleSystem
 from data.config import Config
+from src.core.event_bus import global_bus
+from src.core.events import OverlayViewEvent
 
 CONFIG = Config.load()
 
@@ -113,12 +115,16 @@ class PokemonMenuView(arcade.View):
                 self.system.startMoving()
 
         elif index == 0:
-            from src.states.pokemon_info_view import PokemonInfoView
-            self.window.show_view(PokemonInfoView(
-                previous_view=self,
-                pokemon=self.system.team[self.system.teamIndex],
-                data_loader=self.data_loader,
-            ))
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="pokemon_informacion",
+                    payload={
+                        "previous_view": self,
+                        "pokemon": self.system.team[self.system.teamIndex],
+                        "data_loader": self.data_loader
+                    },
+                )
+            )
 
     def isPressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

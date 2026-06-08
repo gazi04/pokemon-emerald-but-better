@@ -22,26 +22,18 @@ def _ay(tiled_y: float, h: float = 0) -> float:
 
 
 class PokemonInformacion:
-    """
-    Renders the full Pokémon info screen.
-    Three tabs (INFO / STATS / MOVES) navigated with left / right.
-    Call draw() every frame.
-    """
-
     def __init__(self, pokemon: PlayerPokemon, profile: PokemonProfile):
         self.manager = arcade.gui.UIManager()
         self.manager._pixelated = True
 
         self._current_tab = 0
-        # arcade.Text objects shown per tab
         self._tab_texts: list[list[arcade.Text]] = [[], [], []]
 
         tilemap = arcade.load_tilemap(POKEMON_INFORMACION_UI)
 
-        # ── Static layer — top bar + swappable right-panel bg ─────────
         for obj in tilemap.get_tilemap_layer("static").tiled_objects:
             x = obj.coordinates.x
-            y = obj.coordinates.y   # gid: y = bottom in Tiled → arcade bottom
+            y = obj.coordinates.y   
             w, h = obj.size.width, obj.size.height
 
             if obj.name == "bar":
@@ -56,7 +48,6 @@ class PokemonInformacion:
                 )
                 self.manager.add(self._bg_image)
 
-        # ── Left panel — always visible ───────────────────────────────
         for obj in tilemap.get_tilemap_layer("profile").tiled_objects:
             x = obj.coordinates.x
             y = obj.coordinates.y
@@ -89,7 +80,6 @@ class PokemonInformacion:
                     x=x, y=_ay(y, h), width=w, height=h,
                 ))
 
-        # ── Tab 0: INFO (pokemon_profile layer) ───────────────────────
         abilities   = profile.abilities or []
         ability_str = abilities[0].upper() if abilities else "—"
         types_str   = " / ".join(t.upper() for t in (profile.types or []))
@@ -115,7 +105,6 @@ class PokemonInformacion:
                     multiline=True,
                 ))
 
-        # ── Tab 1: STATS (pokemon_stats layer) ────────────────────────
         bs  = profile.stats
         lvl = pokemon.level
 
@@ -148,7 +137,6 @@ class PokemonInformacion:
             h  = int(obj.size.height)
 
             if obj.name == "stats_1":
-                # Render each stat as its own line inside this box
                 row_h = h / len(stat_rows)
                 for i, (name, val) in enumerate(stat_rows):
                     self._tab_texts[1].append(arcade.Text(
@@ -175,7 +163,6 @@ class PokemonInformacion:
                         multiline=False,
                     ))
 
-        # ── Tab 2: MOVES (pokemo_moves layer is empty — render manually) ──
         move_panel_x = 300
         move_top_y   = 470
 
@@ -200,7 +187,6 @@ class PokemonInformacion:
                 anchor_y="top",
             ))
 
-        # ── Tab indicator strip inside the top bar ────────────────────
         self._tab_indicator_texts: list[arcade.Text] = []
         for i, name in enumerate(_TAB_NAMES):
             self._tab_indicator_texts.append(arcade.Text(
@@ -225,8 +211,6 @@ class PokemonInformacion:
         )
 
         self.setTab(0)
-
-    # ── Public API ────────────────────────────────────────────────────
 
     def setTab(self, index: int):
         self._current_tab = index % 3
