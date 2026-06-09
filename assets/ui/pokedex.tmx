@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="3" nextobjectid="5">
+ <tileset firstgid="1" source="sprites/ui.tsx"/>
+ <objectgroup id="2" name="pokedex">
+  <object id="1" name="bg" gid="27" x="2.66667" y="600" width="798.667" height="598.667"/>
+  <object id="3" name="own" x="37.8335" y="265.833" width="148.333" height="23">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="2" name="seen" x="35.8333" y="142.5" width="148.333" height="23">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="4" name="pokemon" gid="12" x="250.333" y="367.333" width="144" height="144"/>
+ </objectgroup>
+</map>
