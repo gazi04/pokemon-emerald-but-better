@@ -4,16 +4,6 @@ from arcade import SpriteList
 from src.core.data_loader import DataLoader
 from src.constants import POKEDEX_UI
 
-
-# ── List layout constants ──────────────────────────────────────────────────────
-
-_VISIBLE      = 15            # max entries shown at once
-_TRACK_COLOR  = (40, 40, 40)  # near-black charcoal  (track line)
-_THUMB_COLOR  = (0,  0,  0)   # solid black           (thumb block)
-_TRACK_W      = 2             # track line width in pixels
-_THUMB_W      = 6             # thumb width (slightly wider than the track)
-
-
 class PodedexUi:
     """Full Pokédex UI — background, stats, sprite panel and scrollable list."""
 
@@ -33,13 +23,11 @@ class PodedexUi:
         self._seen = seen
         self._selected = 0
         self._scroll_top = 0
+        
+        self._visible = 15
+        self._middle_row = self._visible // 2
 
         tilemap = arcade.load_tilemap(POKEDEX_UI)
-
-        # Will be set while iterating the TMX layer
-        self._sprite_cx: float = 322.33   # defaults match actual TMX values
-        self._sprite_cy: float = 304.67
-        self._sprite_box: int = 144
 
         for obj in tilemap.get_tilemap_layer("pokedex").tiled_objects:
             x = obj.coordinates.x
@@ -81,21 +69,27 @@ class PodedexUi:
                 self._manager.add(self._pokemon)
                 
             else:
-                self._item = {
+                self._item_structure = {
                     "x": x,
-                    "y": y - h,
+                    "top": 526,
+                    "middle": y - h,
                     "w": w,
                     "h": h
                 }
+                self._list_top = 526        
+                self._list_bottom = 74
 
-        # ── Scrollable list entry labels ──────────────────────────────
         self._entry_texts: list[arcade.Text] = []
         for i, name in enumerate(all_pokemon):
             badge = self._status_badge(name)
-            label = f"No.{i + 1:0>3}  {badge}  {name.upper()}"
+            if badge != "?":
+                label = f"No.{i + 1:0>3}  {badge}  {name.upper()}"
+            else:
+                label = f"No.{i + 1:0>3}  ------------"
+                
             self._entry_texts.append(arcade.Text(
                 label,
-                x=self._item["x"], y=0,
+                x=self._item_structure["x"], y=0,
                 color=arcade.color.BLACK,
                 font_size=28,
                 font_name="Pokemon Emerald",
@@ -103,65 +97,66 @@ class PodedexUi:
 
         self._cursor = arcade.Text(
             "▶",
-            x=self._item["x"] - 20, y=0,
+            x=self._item_structure["x"] - 20, y=self._item_structure["middle"],
             color=arcade.color.BLACK,
             font_size=28, font_name="Pokemon Emerald",
         )
 
-        self.select(0)
+        self._select(0)
 
-    # ──────────────────────────────────────────────────────────────────
-    # Public navigation API
-    # ──────────────────────────────────────────────────────────────────
+    def move_up(self) -> None:
+        self._select(self._selected - 1)
 
-    def select(self, index: int) -> None:
+    def move_down(self) -> None:
+        self._select(self._selected + 1)
+        
+    def _select(self, index: int) -> None:
         self._selected = max(0, min(index, len(self._all_pokemon) - 1))
 
-        # Scroll window: keep selected entry visible
-        if self._selected < self._scroll_top:
-            self._scroll_top = self._selected
-        elif self._selected >= self._scroll_top + _VISIBLE:
-            self._scroll_top = self._selected - _VISIBLE + 1
+        self._scroll_top = self._selected - self._middle_row
+        max_scroll = max(0, len(self._all_pokemon) - self._visible)
+        self._scroll_top = max(0, min(self._scroll_top, max_scroll))
 
         self._refresh_pokemon_display()
 
-    def move_up(self) -> None:
-        self.select(self._selected - 1)
-
-    def move_down(self) -> None:
-        self.select(self._selected + 1)
-
-    def get_selected_name(self) -> str:
-        return self._all_pokemon[self._selected]
-
-    # ──────────────────────────────────────────────────────────────────
-    # Internal helpers
-    # ──────────────────────────────────────────────────────────────────
-
     def _status_badge(self, name: str) -> str:
         if name in self._owned:
-            return "★"   # ★
+            return "★"   
         if name in self._seen:
-            return "•"   # •
+            return "•"   
         return "?"
 
     def _refresh_pokemon_display(self) -> None:
         name = self._all_pokemon[self._selected]
-        profile = self.data_loader.getPokemon(name)
-        is_known = (name in self._owned) or (name in self._seen)
+        is_known = name in self._owned or name in self._seen
+
+        if is_known:
+            profile = self.data_loader.getPokemon(name)
+            texture = arcade.load_texture(profile.sprites.front)
+        else:
+            texture = arcade.load_texture("assets/sprite/pokemon/question_mark.png")
+
+        self._pokemon.texture = texture
+        self._manager.trigger_render()
 
     def draw(self) -> None:
         self._manager.draw()
 
-        for i in range(_VISIBLE):
-            idx = self._scroll_top + i
-            if idx >= len(self._entry_texts):
-                break
-            entry_y = self._item["y"] - i * self._item["h"]
-            text = self._entry_texts[idx]
-            text.y = entry_y
-            text.draw()
+        middle_y = self._item_structure["middle"]
+        row_h = self._item_structure["h"]
 
-        visible_row = self._selected - self._scroll_top
-        self._cursor.y = self._item["y"] - visible_row * self._item["h"]
+        for i in range(self._visible):
+            index = self._scroll_top + i
+            if index >= len(self._entry_texts):
+                break
+
+            row_offset = i - (self._selected - self._scroll_top)
+            entry_y = middle_y - row_offset * row_h
+            
+            if entry_y > self._list_top or entry_y < self._list_bottom:
+                    continue
+
+            self._entry_texts[index].y = entry_y
+            self._entry_texts[index].draw()
+
         self._cursor.draw()
