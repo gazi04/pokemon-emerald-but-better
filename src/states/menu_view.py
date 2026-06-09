@@ -51,7 +51,7 @@ class MenuView(arcade.View):
         if self.selectedIndex == 0:
             global_bus.publish(
                 OverlayViewEvent(
-                    target="pokemon_menu",
+                    target="pokedex",
                     payload={
                         "previous_view": self,
                         "save_manager": self.save_manager,
@@ -62,7 +62,7 @@ class MenuView(arcade.View):
         elif self.selectedIndex == 1:
             global_bus.publish(
                 OverlayViewEvent(
-                    target="bag",
+                    target="pokemon_menu",
                     payload={
                         "previous_view": self,
                         "save_manager": self.save_manager,
@@ -71,4 +71,15 @@ class MenuView(arcade.View):
                 )
             )
         elif self.selectedIndex == 2:
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="bag",
+                    payload={
+                        "previous_view": self,
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                    },
+                )
+            )
+        elif self.selectedIndex == 3:
             pass  # reserved

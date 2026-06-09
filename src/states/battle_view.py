@@ -54,6 +54,8 @@ class BattleView(arcade.View):
             level=level,
         )
 
+        self.save_manager.markSeen(pokemon_name)
+
         self.battleSystem = BattleSystem(
             self.yourPokemon.pokemonBattle,
             self.enemyPokemon.pokemonBattle,
