@@ -13,6 +13,14 @@
                 {
                     "name": "tackle",
                     "pp": 10
+                },
+                {
+                    "name": "sludge bomb",
+                    "pp": 4
+                },
+                {
+                    "name": "dragon dance",
+                    "pp": 1
                 }
             ]
         },

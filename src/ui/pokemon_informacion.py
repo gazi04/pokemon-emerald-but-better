@@ -12,8 +12,6 @@ _TAB_BG = [
     "assets/ui/sprites/pokemon_stats.png",
     "assets/ui/sprites/pokemon_moves.png",
 ]
-_TAB_NAMES = ["INFO", "STATS", "MOVES"]
-
 
 class PokemonInformacion:
     def __init__(self, pokemon: PlayerPokemon, data_loader: DataLoader):
@@ -50,6 +48,14 @@ class PokemonInformacion:
                     x=x, y=y, width=w, height=h,
                 )
                 self._manager.add(self._bg_image)
+            elif obj.name == "tab":
+                self._tab_label = arcade.gui.UILabel(
+                    text="",
+                    font_name=_FONT,
+                    font_size=40,
+                    x=x, y=y-h, width=w, height=h
+                )
+                self._manager.add(self._tab_label)
 
         for obj in tilemap.get_tilemap_layer("profile").tiled_objects:
             x = obj.coordinates.x
@@ -168,7 +174,9 @@ class PokemonInformacion:
                         multiline=False,
                     ))
         
-        self._moves = []
+        self._moves: list[arcade.Text] = []
+        self._move_profiles = []   # parallel list of PokemonMove | None
+        self._current_move = 0
         move_index = 0
 
         for obj in tilemap.get_tilemap_layer("pokemon_moves").tiled_objects:
@@ -183,7 +191,7 @@ class PokemonInformacion:
                     x=x,
                     y=y,
                     color=arcade.color.BLACK,
-                    font_size=30,
+                    font_size=26,
                     font_name=_FONT,
                     anchor_y="top",
                     width=w,
@@ -201,7 +209,7 @@ class PokemonInformacion:
                     self._tab_sprites[2].append(type)
                     
                 move_text = arcade.Text(
-                    f"{move_data.name.capitalize():<28} {move_data.pp}/{move_profile.pp}",
+                    f"{move_data.name.capitalize():<28}{move_data.pp}/{move_profile.pp}",
                     x=x,
                     y=y,
                     color=arcade.color.BLACK,
@@ -209,26 +217,26 @@ class PokemonInformacion:
                     font_name=_FONT,
                     anchor_y="top",
                     width=w,
-                    multiline=True,
                 )
 
                 self._moves.append(move_text)
+                self._move_profiles.append(move_profile)
                 self._tab[2].append(move_text)
                 move_index += 1
-
-        self._tab_indicator_texts: list[arcade.Text] = []
-        for i, name in enumerate(_TAB_NAMES):
-            self._tab_indicator_texts.append(arcade.Text(
-                name,
-                x=320 + i * 110,
-                y=555,
-                color=arcade.color.WHITE,
-                font_size=13,
-                font_name=_FONT,
-                anchor_y="center",
-            ))
-            
-        self.setTab(0)
+        
+        self._cursor_label = arcade.Text(
+            text="▶",
+            x=0, y=0,
+            color=arcade.color.BLACK, 
+            font_size=33,       
+            font_name=_FONT,
+            anchor_y="top",
+        )
+        self._tab[2].append(self._cursor_label)
+        self._set_cursor(self._current_move)
+        self._set_description()
+        
+        self._set_tab(0)
 
     def _generate_stats(self, stats: PokemonStat, lvl: int) -> dict[str, PokemonStat]:
         pokemon_stats = {}
@@ -253,24 +261,88 @@ class PokemonInformacion:
         sprite.left = x
         sprite.center_y = cy
         return sprite
+        
+    def next_move(self):
+        self._set_cursor(self._current_move + 1)
+        self._set_description()
 
-    def setTab(self, index: int):
+    def prev_move(self):
+        self._set_cursor(self._current_move - 1)
+        self._set_description()
+        
+    def _set_cursor(self, index: int):
+        self._current_move = index % len(self._moves)
+        move_text = self._moves[self._current_move]
+        
+        self._cursor_label.x = move_text.left - 30
+        self._cursor_label.y = move_text.y + 5
+        
+    def _set_description(self):
+        if not hasattr(self, "description") or not self._move_profiles:
+            return
+
+        move = self._move_profiles[self._current_move]
+        if move is None:
+            self.description.text = "—"
+            return
+
+        cat = move.category.capitalize()
+        power = str(move.power)   if move.power    else "—"
+        acc = f"{move.accuracy}%" if move.accuracy else "—"
+        header = f"{cat}   PWR {power}   ACC {acc}"
+
+        effect_lines: list[str] = []
+        for eff in move.effects:
+            target = "user" if eff.target in ("self",) else "foe"
+
+            if eff.type == "stat" and eff.stat and eff.change is not None:
+                stat_name = eff.stat.replace("_", " ").title()
+                if eff.change > 0:
+                    verb = "sharply raises" if eff.change >= 2 else "raises"
+                else:
+                    verb = "harshly lowers" if eff.change <= -2 else "lowers"
+                effect_lines.append(f"{verb.capitalize()} the {target}'s {stat_name}.")
+
+            elif eff.type == "status condition" and eff.condition:
+                condition_text = {
+                    "poison":   "poisons",
+                    "paralyzed": "paralyzes",
+                    "sleep":    "puts to sleep",
+                    "burned":   "burns",
+                    "freeze":   "freezes",
+                }.get(eff.condition, f"inflicts {eff.condition} on")
+
+                chance = eff.chance
+                if chance and chance < 100:
+                    effect_lines.append(f"May {condition_text} the {target}. ({chance}%)")
+                else:
+                    effect_lines.append(f"{condition_text.capitalize()} the {target}.")
+
+        lines = [header] + effect_lines
+        self.description.text = "\n".join(lines)
+
+    def get_current_tab(self) -> int:
+        return self._current_tab
+
+    def next_tab(self):
+        self._set_tab(self._current_tab + 1)
+
+    def prev_tab(self):
+        self._set_tab(self._current_tab - 1)
+        
+    def _set_tab(self, index: int):
         self._current_tab = index % 3
         self._bg_image.texture = arcade.load_texture(_TAB_BG[self._current_tab])
-
-        for i, t in enumerate(self._tab_indicator_texts):
-            t.color = arcade.color.YELLOW if i == self._current_tab else arcade.color.WHITE
-
-    def nextTab(self):
-        self.setTab(self._current_tab + 1)
-
-    def prevTab(self):
-        self.setTab(self._current_tab - 1)
+        
+        if index == 0:
+            self._tab_label.text = "Pokemon Info"
+        elif index == 1:
+            self._tab_label.text = "Pokemon Stats"
+        else:
+            self._tab_label.text = "Pokemon Moves"
 
     def draw(self):
         self._manager.draw()
         self._tab_sprites[self._current_tab].draw(pixelated=True)
         for text in self._tab[self._current_tab]:
             text.draw()
-        for t in self._tab_indicator_texts:
-            t.draw()
