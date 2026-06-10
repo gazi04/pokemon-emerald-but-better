@@ -92,3 +92,22 @@ class OverlayViewEvent:
 
     target: str
     payload: dict = field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Save / Load
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class SaveGameRequestEvent:
+    """Published by MenuView when the player selects Save."""
+
+    pass
+
+
+@dataclass
+class SaveCompletedEvent:
+    """Published by SaveManager after the disk write finishes."""
+
+    success: bool
