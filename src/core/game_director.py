@@ -87,10 +87,21 @@ class GameDirector:
             return BattleView(
                 save_manager=self.save_manager,
                 data_loader=self.data_loader,
-                pokemon_name=payload["pokemon_name"],
-                pokemon_data=payload["pokemon_data"],
-                level=payload["pokemon_level"],
-                overworld_view=overworld,  # kept for flicker transition only
+                overworld_view=overworld,
+                foe_pokemon_name=payload["pokemon_name"],
+                foe_pokemon_data=payload["pokemon_data"],
+                foe_level=payload["pokemon_level"],  # kept for flicker transition only
+            )
+            
+        if target == "battle_trainer":
+            from src.states.battle_view import BattleView
+
+            return BattleView(
+                save_manager=self.save_manager,
+                data_loader=self.data_loader,
+                overworld_view=overworld,
+                is_trainer=True,
+                trainer_data=payload["trainer_data"]
             )
 
         if target == "evolving":
