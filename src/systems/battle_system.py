@@ -7,6 +7,9 @@ from src.core.combat_calculator import calculate_damage
 from src.core.event_bus import global_bus
 from src.core.events import HpChangedEvent, PokemonFaintedEvent
 from src.model.item import Item
+from src.model.trainer import Trainer
+from src.model.player import PlayerPokemon
+from typing import Optional
 
 
 class BattleSystem:
@@ -16,6 +19,8 @@ class BattleSystem:
         enemyPokemon: PokemonBattle,
         save_manager: SaveManager,
         data_loader: DataLoader,
+        is_trainer=False,
+        trainer_data: Optional[Trainer] = None
     ):
         self.yourPokemon = yourPokemon
         self.enemyPokemon = enemyPokemon
@@ -26,6 +31,10 @@ class BattleSystem:
         self.battleState = "intro"
         self.exp = 0
         self.hasEvolved = False
+        
+        self.is_trainer = is_trainer
+        self.trainer_party = trainer_data.party or []
+        self.next_trainer_pokemon: PlayerPokemon = None
 
     def turn(self, moveIndex: int) -> list[str]:
         self.battleState = "currently turn"
@@ -179,12 +188,15 @@ class BattleSystem:
 
         if diedPokemon.isEnemy:
             self.exp = diedPokemon.getExp()
-            messages.extend(
-                [
-                    f"Wild {self.enemyPokemon.name} fainted!",
-                    f"{self.yourPokemon.name} gained {self.exp} EXP. Points!",
+            messages.extend([
+                    f"{self.enemyPokemon.name} fainted!",
+                    f"{self.yourPokemon.name} gained {self.exp} EXP. Points!"
                 ]
             )
+            
+            if self.is_trainer and self.trainer_party:
+                self.next_trainer_pokemon = self.trainer_party.pop(0)
+                self.battleState = "trainer switch"
         else:
             messages.append(f"{self.yourPokemon.name} fainted!")
 
