@@ -17,19 +17,12 @@ class PokemonMenuSystem:
         self.movingPokemonIndex = fromIndex  
 
     def confirmSwitch(self, toIndex: int) -> bool:
-        if not self.isMovingPokemon:
-            return False
-        
-        if self.movingPokemonIndex != 0 and toIndex != 0:
-            return False
-        
-        if self.movingPokemonIndex == toIndex:
+        if toIndex == 0:
             return False
 
         team = self.team
-        team[self.movingPokemonIndex], team[toIndex] = team[toIndex], team[self.movingPokemonIndex]
+        team[0], team[toIndex] = team[toIndex], team[0]
         
-        self.cancelMoving()
         return True
         
     def movePokemon(self, to: int):

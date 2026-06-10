@@ -53,43 +53,37 @@ class PokemonMenuView(arcade.View):
             self._handleMenuInput(symbol)
 
     def _handleMenuInput(self, key):
-        if self.isPressed(CONFIG.controls.cancel, key):
+        if self._is_pressed(CONFIG.controls.cancel, key):
             if self.system.isMovingPokemon:
                 self.system.cancelMoving()
             else:
                 self.window.show_view(self.previousView)
             return
 
-        if self.isPressed(CONFIG.controls.interact, key):
+        if self._is_pressed(CONFIG.controls.interact, key):
             if self.system.isMovingPokemon:
                 if not self.battleSystem:
                     self.system.movePokemon(self.system.teamIndex)
                     self.ui.setValues(self.system.team)
-                else:
-                    success = self.system.confirmSwitch(self.system.teamIndex)
-                    if success:
-                        self.ui.setValues(self.system.team)
-                        self.previousView.switch_turn()
-                        self.window.show_view(self.previousView)
             else:
                 self.ui.showTooltip(self.system.teamIndex)
-        elif self.isPressed(CONFIG.controls.down, key):
+        elif self._is_pressed(CONFIG.controls.down, key):
             self.system.moveTeamIndex(1)
-        elif self.isPressed(CONFIG.controls.up, key):
+        elif self._is_pressed(CONFIG.controls.up, key):
             self.system.moveTeamIndex(-1)
 
         self.ui.selectPokemon(self.system.teamIndex)
 
     def _handleTooltipInput(self, key):
-        if self.isPressed(CONFIG.controls.cancel, key):
+        if self._is_pressed(CONFIG.controls.cancel, key):
             self.ui.hideTooltip()
             self.system.resetTooltip()
-        elif self.isPressed(CONFIG.controls.interact, key):
+        elif self._is_pressed(CONFIG.controls.interact, key):
             self._tooltipAction()
-        elif self.isPressed(CONFIG.controls.down, key):
+        elif self._is_pressed(CONFIG.controls.down, key):
             self.system.moveTooltipIndex(1, len(self.ui._tooltipButtons))
             self.ui.selectTooltipOption(self.system.tooltipIndex)
-        elif self.isPressed(CONFIG.controls.up, key):
+        elif self._is_pressed(CONFIG.controls.up, key):
             self.system.moveTooltipIndex(-1, len(self.ui._tooltipButtons))
             self.ui.selectTooltipOption(self.system.tooltipIndex)
 
@@ -122,10 +116,21 @@ class PokemonMenuView(arcade.View):
                 self.window.show_view(self.previousView)
 
             elif len(self.system.team) > 1:
-                self.system.startMoving()
+                self._move_pokemon()
 
         elif index == 0:
             pass
+        
+    def _move_pokemon(self):
+        if not self.battleSystem:
+            self.system.startMoving()
+            return
+        
+        success = self.system.confirmSwitch(self.system.teamIndex)
+        if success:
+            self.ui.setValues(self.system.team)
+            self.previousView.switch_turn()
+            self.window.show_view(self.previousView)
 
-    def isPressed(self, configKey, key) -> bool:
+    def _is_pressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

@@ -111,7 +111,7 @@ class BattleView(arcade.View):
                 "Normal", self.yourPokemon.pokemonBattle.moves[0].pp, 35
             )
 
-        self.ui.set_transition(self.yourPokemon, self.enemyPokemon)
+        self.ui.set_transition(self.yourPokemon, self.enemyPokemon, is_trainer)
 
     def updateUiMoves(self):
         moves = self.yourPokemon.pokemonBattle.moves
