@@ -1,6 +1,18 @@
 {
     "pokemons": [
         {
+            "name": "mudkip",
+            "hp": 13,
+            "level": 3,
+            "exp": 26,
+            "moves": [
+                {
+                    "name": "close combat",
+                    "pp": 10
+                }
+            ]
+        },
+        {
             "name": "combusken",
             "hp": 13,
             "level": 16,
@@ -10,18 +22,6 @@
                     "name": "close combat",
                     "pp": 1
                 },
-                {
-                    "name": "tackle",
-                    "pp": 10
-                }
-            ]
-        },
-        {
-            "name": "mudkip",
-            "hp": 10,
-            "level": 9,
-            "exp": 46,
-            "moves": [
                 {
                     "name": "tackle",
                     "pp": 10
