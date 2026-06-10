@@ -342,7 +342,13 @@ class BattleView(arcade.View):
                         )
                     )
                 elif self.ui.menu_panel.selection_index == 3:
-                    self.run()
+                    if not self.is_trainer:
+                        self.run()
+                    else:
+                        self.ui.queue_messages(["You cant run away from trainers!"])
+                        self.ui.switch_mode("dialog")
+                        arcade.schedule_once(self._reset_to_main_menu, 2)
+                        
             elif self.ui.active_component == "moves":
                 self.startTurn(self.ui.menu_panel.selection_index)
 
