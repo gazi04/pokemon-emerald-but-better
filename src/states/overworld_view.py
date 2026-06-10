@@ -9,9 +9,11 @@ from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem
 from src.entities.player_sprite import PlayerSprite
+from src.entities.npc import Npc
 from src.core.event_bus import global_bus
 from src.core.events import (
     BattleEncounterTriggeredEvent,
+    NpcInteractEvent,
     SwapViewEvent,
     OverlayViewEvent,
 )
@@ -63,9 +65,11 @@ class OverworldView(arcade.View):
 
     def _subscribe(self):
         global_bus.subscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+        global_bus.subscribe(NpcInteractEvent, self._on_npc_interaction)
 
     def _unsubscribe(self):
         global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+        global_bus.unsubscribe(NpcInteractEvent, self._on_npc_interaction)
         if self.encounter_system:
             self.encounter_system.cleanup()
 
@@ -91,6 +95,23 @@ class OverworldView(arcade.View):
             map or CONFIG.game.starting_map, scaling=2.0, layer_options=layer_options
         )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
+        
+        self.npcs = arcade.SpriteList(use_spatial_hash=True)
+        npc_layer = self.tile_map.get_tilemap_layer("npc")
+        if npc_layer:
+            self.scene.remove_sprite_list_by_name("npc")
+            for obj in npc_layer.tiled_objects:
+                tex_path = "assets/sprite/npc/poke_mark/npc.png"
+                npc = Npc(
+                    texture=tex_path,
+                    x=obj.coordinates.x * 2 + obj.size.width,
+                    y = (
+                        self.tile_map.height * self.tile_map.tile_height
+                        - obj.coordinates.y
+                    ) * 2 + obj.size.height / 2,
+                    npc_id=obj.properties.get("npc_id", ""),
+                )
+                self.npcs.append(npc)
 
         if playerPos:
             self.player_state.pixel_x = playerPos[0]
@@ -134,6 +155,9 @@ class OverworldView(arcade.View):
             event.pokemon_name, event.pokemon_level, event.pokemon_data
         )
 
+    def _on_npc_interaction(self, event: NpcInteractEvent):
+        print(event.npc_id)
+
     # ------------------------------------------------------------------
     # Game loop
     # ------------------------------------------------------------------
@@ -175,6 +199,7 @@ class OverworldView(arcade.View):
             CONFIG.controls,
             self.scene["collision"],
             self.scene["transitions"],
+            self.npcs
         )
 
         if intent and intent["type"] == "transition":
@@ -191,6 +216,7 @@ class OverworldView(arcade.View):
         self.camera.use()
         if self.scene and self.canRenderScene:
             self.scene.draw(pixelated=True)
+        self.npcs.draw(pixelated=True)
         self.player_sprite.draw()
 
     def on_key_press(self, key, _):

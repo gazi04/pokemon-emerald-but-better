@@ -66,7 +66,7 @@
   </object>
  </objectgroup>
  <objectgroup id="5" name="npc">
-  <object id="3" gid="2432" x="96.0625" y="127.938" width="16" height="16">
+  <object id="3" gid="2432" x="79.5625" y="128.438" width="16" height="16">
    <properties>
     <property name="npc_id" value="poke-mart-npc"/>
    </properties>
