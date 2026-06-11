@@ -113,7 +113,7 @@ class BattleView(arcade.View):
                 "Normal", self.yourPokemon.pokemonBattle.moves[0].pp, 35
             )
 
-        self.ui.set_transition(self.yourPokemon, self.enemyPokemon)
+        self.ui.set_transition(self.yourPokemon, self.enemyPokemon, is_trainer)
 
     def updateUiMoves(self):
         moves = self.yourPokemon.pokemonBattle.moves
@@ -134,12 +134,22 @@ class BattleView(arcade.View):
     def onItemUsed(self, itemIndex: int):
         self.ui.queue_messages(self.battleSystem.turnUseItem(itemIndex))
         self.ui.switch_mode("dialog")
-
-    def startCatchAttempt(self, result: dict):
-        """Called by BagView after a pokeball is thrown."""
-        self.ui.queue_messages(result["messages"])
+        
+    def switch_turn(self):
+        self.battleSystem.battleState = "switching"
+        
         self.ui.switch_mode("dialog")
-
+        self.ui.queue_messages(self.battleSystem.switch_pokemon())
+        
+        self.ui.set_player_info(
+            self.yourPokemon.pokemonBattle.name.upper(),
+            self.yourPokemon.pokemonBattle.level,
+        )
+        self.updateUiMoves()
+        
+        texture = self.data_loader.getPokemon(self.yourPokemon.pokemonBattle.name.lower()).sprites.back
+        self.yourPokemon.setNewTexture(texture)
+        
     def whatHappendAfterText(self):
         if self.battleSystem.battleState == "caught":
             enemy = self.battleSystem.enemyPokemon
@@ -156,6 +166,11 @@ class BattleView(arcade.View):
             self._on_continue_turn()
         elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
             self._ending_turn()
+            
+        elif self.battleSystem.battleState == "switching":
+            self.ui.queue_messages(self.battleSystem.switch_turn())
+            self.ui.switch_mode("dialog")
+        
         elif self.battleSystem.battleState == "trainer switch":
             self._trainer_give_exp()
         elif self.battleSystem.battleState == "trainer sending":
@@ -340,6 +355,7 @@ class BattleView(arcade.View):
                                 "previous_view": self,
                                 "save_manager": self.save_manager,
                                 "data_loader": self.data_loader,
+                                "battle_system": self.battleSystem
                             },
                         )
                     )

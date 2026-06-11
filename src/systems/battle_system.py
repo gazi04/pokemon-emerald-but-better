@@ -53,18 +53,23 @@ class BattleSystem:
         self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
         return self.executeNextAction()
     
-    def attemp_catch(self, pokeball:Item):
-        effect = pokeball.effects[0]
-        if effect.type == "catch":
-            catchRate = 155
-            catchChance = (3 * self.enemyPokemon.maxHp - 2 * self.enemyPokemon.currentHp) * catchRate * effect.catchRate // (3 * self.enemyPokemon.maxHp)
-
-            if random.randint(1, 100) <= catchChance:
-                return {"dialog": [f"You caught {self.enemyPokemon.name}!"], "caught": True}
-            else:
-                return {"dialog": [f"{self.enemyPokemon.name} broke free!"], "caught": False}
-
-        return {"dialog": ["The pokeball had no effect!"], "caught": False}
+    def switch_turn(self) -> list[str]:
+        self.battleState = "currently turn"
+        enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
+        
+        self.turnQueue = [("enemy", enemyMoveIndex, -1)]
+        return self.executeNextAction()
+    
+    def switch_pokemon(self) -> list[str]:
+        pokemon = self.save_manager.player.pokemon[0]
+        pokemonProfile = self.data_loader.getPokemon(pokemon.name)
+        
+        if pokemon.hp <= 0:
+            return [f"{pokemon.name} is unable to battle!"]
+        
+        self.yourPokemon.switching_pokemon(pokemon, pokemonProfile)
+        
+        return [f"Go {pokemon.name}!"]
 
     def executeNextAction(self) -> list[str]:
         if not self.turnQueue:
