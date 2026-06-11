@@ -120,7 +120,6 @@ class SaveManager:
 
             os.replace(SAVE_TMP_PATH, SAVE_PATH)
             self.saved_position = data["position"]
-            print(f"DEBUG: The games is saved successfully.")
             return True
         except Exception:
             return False
