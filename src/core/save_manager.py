@@ -45,12 +45,13 @@ class SaveManager:
             pokeballs.append(Item(pokeball["name"], pokeball["count"]))
 
         seen = data.get("seen", [])
-        return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs, seen=seen)
+        money = data["money"]
+        return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs, seen=seen, money=money)
 
     def addPokemon(self, name: str, hp: int, level: int, moves: list[PlayerPokemonMove]):
         if len(self.player.pokemon) >= 6:
             return False
-        
+
         self.player.pokemon.append(PlayerPokemon(
             name=name,
             hp=hp,
@@ -58,7 +59,11 @@ class SaveManager:
             exp=0,
             moves=moves
         ))
-        
+
+    def addMoney(self, amount: int):
+        """Add money to the player's wallet."""
+        self.player.money += amount
+
     def getPokemon(self, pokemonId: str) -> Optional[PlayerPokemon]:
         if not self.player:
             return None
@@ -154,4 +159,5 @@ class SaveManager:
             "items": items,
             "pokeballs": pokeballs,
             "seen": list(self.player.seen),
+            "money": self.player.money
         }

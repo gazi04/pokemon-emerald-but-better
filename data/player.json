@@ -53,5 +53,6 @@
             "count": 95
         }
     ],
-    "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"]
+    "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"],
+    "money": 1000
 }

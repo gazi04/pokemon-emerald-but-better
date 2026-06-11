@@ -1,7 +1,7 @@
 import arcade
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
-from src.model.player import PlayerPokemonMove
+from src.model.player import PlayerPokemonMove, PlayerPokemon
 from src.model.trainer import Trainer
 from src.entities.pokemon_sprites import Pokemon
 from src.entities.pokemon_battle import PokemonBattle
@@ -49,6 +49,8 @@ class BattleView(arcade.View):
         )
 
         self.is_trainer = is_trainer
+        self.trainer_data = trainer_data
+        self.prize_money = 0
 
         if not is_trainer:
             if foe_pokemon_data is None:
@@ -76,6 +78,8 @@ class BattleView(arcade.View):
                 moves=first.moves,
                 level=first.level,
             )
+            
+            self.prize_money = (first.level + sum(p.level for p in trainer_data.party)) * 10
             trainer_data.party.pop(0)
 
         self.save_manager.markSeen(pokemon_name)
@@ -153,12 +157,13 @@ class BattleView(arcade.View):
     def whatHappendAfterText(self):
         if self.battleSystem.battleState == "caught":
             enemy = self.battleSystem.enemyPokemon
-            self.save_manager.addPokemon(
+            self.save_manager.addPokemon(PlayerPokemon(
                 name=enemy.name.lower(),
                 hp=enemy.currentHp,
                 level=enemy.level,
-                moves=enemy.moves,
-            )
+                exp=0,
+                moves=enemy.moves
+            ))
             self.run()
             return
 
@@ -203,7 +208,10 @@ class BattleView(arcade.View):
         next_data = self.battleSystem.next_trainer_pokemon
 
         if not next_data:
-            self.ui.queue_messages(["Trainer was defeated!!!"])
+            messages = ["Trainer was defeated!!!"]
+            if self.prize_money > 0:
+                messages.append(f"You got ${self.prize_money}!")
+            self.ui.queue_messages(messages)
             self.battleSystem.battleState = "end"
             return
 
@@ -392,6 +400,11 @@ class BattleView(arcade.View):
 
     def run(self):
         self.battleSystem.save()
+
+        # Award prize money if trainer battle was won
+        if self.is_trainer and self.prize_money > 0:
+            self.save_manager.addMoney(self.prize_money)
+
         self.save_manager.flushToDisk()
         # Tell the Director we are done — it will return to the Overworld
         global_bus.publish(CloseViewEvent())
