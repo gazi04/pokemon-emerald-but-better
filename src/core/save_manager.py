@@ -1,4 +1,6 @@
 import json
+import os
+import shutil
 from typing import Optional
 from src.model.player import (
     PlayerProfile,
@@ -6,16 +8,25 @@ from src.model.player import (
     PlayerPokemonMove,
     PlayerPokemon,
 )
+SAVE_PATH = "data/save.json"
+SAVE_TMP_PATH = "data/save.tmp.json"
+SAVE_BAK_PATH = "data/save.bak.json"
+DEFAULT_PATH = "data/player.json"
 
 class SaveManager:
     def __init__(self):
+        self.saved_position: Optional[dict] = None
         self.loadData()
 
     def loadData(self):
-        with open("data/player.json", "r") as f:
+        path = SAVE_PATH if os.path.exists(SAVE_PATH) else DEFAULT_PATH
+        with open(path, "r") as f:
             data = json.load(f)
 
         self.player = self.parsePlayer(data)
+
+        if "position" in data:
+            self.saved_position = data["position"]
 
     def parsePlayer(self, data) -> PlayerProfile:
         pokemons = []
@@ -62,9 +73,10 @@ class SaveManager:
     def getPokemon(self, pokemonId: str) -> Optional[PlayerPokemon]:
         if not self.player:
             return None
-        
+          
+        target = pokemonId.lower()
         for pokemon in self.player.pokemon:
-            if pokemon.name == pokemonId:
+            if pokemon.name.lower() == target:
                 return pokemon
 
         return None
@@ -76,14 +88,14 @@ class SaveManager:
         if pokemon:
             pokemon.hp = max(newHp, 0)
 
-    def updateMove(self, pokemonId, move, pp):
+    def updateMove(self, pokemonId, moveName, pp):
         pokemon = self.getPokemon(pokemonId)
 
         if not pokemon:
             return
 
         for move in pokemon.moves:
-            if move.name == move:
+            if move.name == moveName:
                 move.pp = pp
 
     def addPokemon(self, pokemon: PlayerPokemon):
@@ -110,14 +122,31 @@ class SaveManager:
         if evolvedName:
             pokemon.name = evolvedName
 
-    def flushToDisk(self):
-        if not self.player:
-            return
-
+    def compile_save_state(self, player_state) -> dict:
         data = self.deparsePlayer()
+        data["position"] = {
+            "map_name": player_state.map_name,
+            "direction": player_state.direction,
+            "pixel_x": player_state.pixel_x,
+            "pixel_y": player_state.pixel_y,
+        }
+        return data
 
-        with open("data/player.json", "w") as f:
-            json.dump(data, f, indent=4)
+    def flush_save(self, player_state) -> bool:
+        try:
+            data = self.compile_save_state(player_state)
+
+            with open(SAVE_TMP_PATH, "w") as f:
+                json.dump(data, f, indent=4)
+
+            if os.path.exists(SAVE_PATH):
+                shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)
+
+            os.replace(SAVE_TMP_PATH, SAVE_PATH)
+            self.saved_position = data["position"]
+            return True
+        except Exception:
+            return False
 
     def deparsePlayer(self):
         items = []
@@ -125,7 +154,7 @@ class SaveManager:
         pokemons = []
 
         if not self.player:
-            return {"pokemon": [], "items": [], "pokeballs": []}
+            return {"pokemons": [], "items": [], "pokeballs": []}
 
         for item in self.player.items:
             items.append({"name": item.name, "count": item.count})
@@ -149,9 +178,12 @@ class SaveManager:
                 }
             )
 
-        return {
-            "pokemons": pokemons,
-            "items": items,
-            "pokeballs": pokeballs,
-            "seen": list(self.player.seen),
-        }
+        return {"pokemons": pokemons, "items": items, "pokeballs": pokeballs}
+
+    # Legacy alias kept for compatibility
+    def flushToDisk(self):
+        if not self.player:
+            return
+        data = self.deparsePlayer()
+        with open(DEFAULT_PATH, "w") as f:
+            json.dump(data, f, indent=4)

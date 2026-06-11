@@ -53,5 +53,11 @@
             "count": 95
         }
     ],
-    "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"]
+    "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"],
+    "position": {
+        "map_name": "littleroot_town",
+        "direction": "left",
+        "pixel_x": 3183.0,
+        "pixel_y": 624.0
+    }
 }

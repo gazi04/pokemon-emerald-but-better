@@ -47,13 +47,21 @@ class OverworldView(arcade.View):
         self.canRenderScene = True
         self.flickerInterval = FLICKER_INTERVAL
 
-        self.setup()
-
-        position = (
-            self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
-        )
-        self.player_state.pixel_x = position.x * 2
-        self.player_state.pixel_y = position.y / 2 - 110
+        saved = save_manager.saved_position
+        if saved:
+            self.player_state.map_name = saved.get("map_name", self.player_state.map_name)
+            self.player_state.direction = saved.get("direction", self.player_state.direction)
+            map_path = f"assets/map/{self.player_state.map_name}.tmx"
+            self.setup(map_path)
+            self.player_state.pixel_x = saved["pixel_x"]
+            self.player_state.pixel_y = saved["pixel_y"]
+        else:
+            self.setup()
+            position = (
+                self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
+            )
+            self.player_state.pixel_x = position.x * 2
+            self.player_state.pixel_y = position.y / 2 - 110
 
     # ------------------------------------------------------------------
     # Subscription management
