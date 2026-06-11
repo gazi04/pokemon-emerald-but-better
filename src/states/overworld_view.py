@@ -57,8 +57,6 @@ class OverworldView(arcade.View):
         self.player_state.pixel_x = position.x * 2
         self.player_state.pixel_y = position.y / 2 - 110
 
-        self._subscribe()
-
     # ------------------------------------------------------------------
     # Subscription management
     # ------------------------------------------------------------------
@@ -230,6 +228,21 @@ class OverworldView(arcade.View):
                     payload={
                         "save_manager": self.save_manager,
                         "data_loader": self.data_loader,
+                    },
+                )
+            )
+            
+        if self.isPressed("SPACE", key):
+            self.keys.clear()
+            from src.model.trainer import Trainer
+            from src.model.player import PlayerPokemon, PlayerPokemonMove
+            global_bus.publish(
+                SwapViewEvent(
+                    target="battle_trainer",
+                    payload={
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                        "trainer_data": Trainer([PlayerPokemon("zigzagoon", 10, 3, 0, [PlayerPokemonMove("tackle", 15)]), PlayerPokemon("poochyena", 10, 3, 0, [PlayerPokemonMove("tackle", 15)])])
                     },
                 )
             )
