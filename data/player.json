@@ -1,20 +1,32 @@
 {
-    "pokemons": [
+    "pokemon": [
         {
-            "name": "mudkip",
-            "hp": 13,
-            "level": 3,
-            "exp": 26,
+            "name": "zigzagoon",
+            "hp": 10,
+            "level": 4,
+            "exp": 1,
             "moves": [
                 {
-                    "name": "close combat",
+                    "name": "tackle",
+                    "pp": 25
+                }
+            ]
+        },
+        {
+            "name": "mudkip",
+            "hp": 10,
+            "level": 9,
+            "exp": 46,
+            "moves": [
+                {
+                    "name": "tackle",
                     "pp": 10
                 }
             ]
         },
         {
             "name": "combusken",
-            "hp": 13,
+            "hp": 33,
             "level": 16,
             "exp": 46,
             "moves": [
@@ -32,13 +44,13 @@
     "items": [
         {
             "name": "potion",
-            "count": 3
+            "count": 2
         }
     ],
     "pokeballs": [
         {
             "name": "pokeball",
-            "count": 99
+            "count": 95
         }
     ],
     "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"],

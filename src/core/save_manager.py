@@ -8,12 +8,10 @@ from src.model.player import (
     PlayerPokemonMove,
     PlayerPokemon,
 )
-
 SAVE_PATH = "data/save.json"
 SAVE_TMP_PATH = "data/save.tmp.json"
 SAVE_BAK_PATH = "data/save.bak.json"
 DEFAULT_PATH = "data/player.json"
-
 
 class SaveManager:
     def __init__(self):
@@ -35,7 +33,7 @@ class SaveManager:
         items = []
         pokeballs = []
 
-        for pokemon in data["pokemons"]:
+        for pokemon in data["pokemon"]:
             moves = []
 
             for move in pokemon["moves"]:
@@ -57,12 +55,25 @@ class SaveManager:
         for pokeball in data["pokeballs"]:
             pokeballs.append(Item(pokeball["name"], pokeball["count"]))
 
-        return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs)
+        seen = data.get("seen", [])
+        return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs, seen=seen)
 
+    def addPokemon(self, name: str, hp: int, level: int, moves: list[PlayerPokemonMove]):
+        if len(self.player.pokemon) >= 6:
+            return False
+        
+        self.player.pokemon.append(PlayerPokemon(
+            name=name,
+            hp=hp,
+            level=level,
+            exp=0,
+            moves=moves
+        ))
+        
     def getPokemon(self, pokemonId: str) -> Optional[PlayerPokemon]:
         if not self.player:
             return None
-
+          
         target = pokemonId.lower()
         for pokemon in self.player.pokemon:
             if pokemon.name.lower() == target:
@@ -72,6 +83,7 @@ class SaveManager:
 
     def updateHp(self, pokemonId, newHp):
         pokemon = self.getPokemon(pokemonId)
+        print(newHp)
 
         if pokemon:
             pokemon.hp = max(newHp, 0)
@@ -85,6 +97,18 @@ class SaveManager:
         for move in pokemon.moves:
             if move.name == moveName:
                 move.pp = pp
+
+    def addPokemon(self, pokemon: PlayerPokemon):
+        """Adds a newly caught Pokémon to the player's party (max 6)."""
+        if len(self.player.pokemon) < 6:
+            self.player.pokemon.append(pokemon)
+            # Also mark it as seen
+            self.markSeen(pokemon.name)
+
+    def markSeen(self, name: str):
+        """Records a Pokémon as seen in the Pokédex."""
+        if name not in self.player.seen:
+            self.player.seen.append(name)
 
     def updateLevel(self, pokemonId, newLevel, currentExp, evolvedName=None):
         pokemon = self.getPokemon(pokemonId)

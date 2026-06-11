@@ -63,8 +63,6 @@ class OverworldView(arcade.View):
             self.player_state.pixel_x = position.x * 2
             self.player_state.pixel_y = position.y / 2 - 110
 
-        self._subscribe()
-
     # ------------------------------------------------------------------
     # Subscription management
     # ------------------------------------------------------------------
