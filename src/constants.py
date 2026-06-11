@@ -10,4 +10,5 @@ EVOLVE_IMAGE_SIZE = 200
 BAG_UI = "assets/ui/bagUiDesign.tmx"
 BATTLE_UI = "assets/ui/battleUiDesign.tmx"
 EVOLVING_UI = "assets/ui/evolvingUiDesign.tmx"
+DIALOG_UI = "assets/ui/dialog_ui_design.tmx"
 FONT = "assets/fonts/pokemon-emerald.otf"

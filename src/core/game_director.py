@@ -113,6 +113,11 @@ class GameDirector:
             from src.states.menu_view import MenuView
 
             return MenuView(overworld, save_manager, data_loader)
+        
+        if target == "dialog":
+            from src.states.dialog_view import DialogView
+            
+            return DialogView(overworld, payload.get("after_text_callback"))
 
         if target == "bag":
             from src.states.bag_view import BagView

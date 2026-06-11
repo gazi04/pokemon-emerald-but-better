@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="3" nextobjectid="3">
+ <tileset firstgid="1" source="sprites/ui.tsx"/>
+ <objectgroup id="2" name="ui">
+  <object id="1" name="box" gid="1" x="2" y="602" width="804" height="178"/>
+  <object id="2" name="dialog_text" x="49.4091" y="457.167" width="701.182" height="106.879">
+   <text wrap="1">Hello World</text>
+  </object>
+ </objectgroup>
+</map>

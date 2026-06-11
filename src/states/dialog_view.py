@@ -8,9 +8,12 @@ class DialogView(arcade.View):
         self.overworld = overworld
         self.ui = DialogUI(after_text_callback)
         
+    def on_update(self, delta_time):
+        self.ui.update(delta_time)
+
     def on_draw(self):
         self.clear()
-        
+
         self.overworld.on_draw()
         arcade.get_window().default_camera.use()
         self.ui.draw()
