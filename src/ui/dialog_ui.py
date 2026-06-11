@@ -4,7 +4,7 @@ from src.ui.components.typewriter_message_box import TypewriterMessageBox
 from src.constants import DIALOG_UI
 
 class DialogUI:
-    def __init__(self, after_text_callback):
+    def __init__(self):
         self._manager = arcade.gui.UIManager()
         
         tilemap = arcade.load_tilemap(DIALOG_UI)
@@ -28,12 +28,14 @@ class DialogUI:
                 self._textbound["dialog"] = {"x": x, "y": y, "w":w, "h": h}
         
         self._message_box = TypewriterMessageBox(self._textbound, self._manager)
-        self._message_box.set_callback(after_text_callback)
         self._message_box.set_font_style(font_color=arcade.color.BLACK)
         self._message_box.show()
+    
+    def queue_messages(self, message: str):
+        self._message_box.queue_message(message)
         
-        self._message_box.queue_message("TEST")
-        self._message_box.queue_message("TESTTEST")
+    def is_text_finished(self) -> bool:
+        return not self._message_box.is_processing
         
     def update(self, delta_time: float):
         self._message_box.update(delta_time)

@@ -10,6 +10,9 @@ class PlayerInput:
     Controller layer: Translates hardware input into semantic intents (state change requests).
     """
 
+    def __init__(self):
+        self._interact_pressed_last_frame = False
+
     def process_input(
         self,
         player_state: PlayerState,
@@ -25,10 +28,10 @@ class PlayerInput:
         """
         if player_state.moving:
             return None
-        
-        if self._is_pressed(controls_config.interact, keys) and npcs is not None:
+
+        interact_pressed = self._is_pressed(controls_config.interact, keys)
+        if interact_pressed and not self._interact_pressed_last_frame and npcs is not None:
             dx, dy = self._facing_offset(player_state.direction)
-            # Check up to 2 tiles ahead so NPCs behind counters are reachable
             for step in (1, 2):
                 hit = arcade.get_sprites_at_point(
                     (player_state.pixel_x + dx * step,
@@ -37,7 +40,9 @@ class PlayerInput:
                 )
                 if hit:
                     global_bus.publish(NpcInteractEvent(npc_id=hit[0].npc_id))
+                    self._interact_pressed_last_frame = True
                     return None
+        self._interact_pressed_last_frame = interact_pressed
 
         new_dir = None
         dx = dy = 0

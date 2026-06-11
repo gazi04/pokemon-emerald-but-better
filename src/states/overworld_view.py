@@ -156,7 +156,8 @@ class OverworldView(arcade.View):
         )
 
     def _on_npc_interaction(self, event: NpcInteractEvent):
-        global_bus.publish(OverlayViewEvent("dialog"))
+        global_bus.publish(OverlayViewEvent("dialog", payload={"npc_id": event.npc_id}))
+        print("test")
 
     # ------------------------------------------------------------------
     # Game loop

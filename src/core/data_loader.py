@@ -8,6 +8,7 @@ from src.model.pokemon import (
     PokemonEvolution,
 )
 from src.model.item import Item, ItemEffect
+from src.model.npc import NpcDialog
 
 
 class DataLoader:
@@ -15,10 +16,12 @@ class DataLoader:
         self.pokemons: dict[str, PokemonProfile] = {}
         self.moves: dict[str, PokemonMove] = {}
         self.items: dict[str, Item] = {}
+        self.npc_dialog: dict[str, NpcDialog] = {}
 
         self._loadPokemons()
         self._loadMoves()
         self._loadItems()
+        self._load_npc_dialog()
 
     def getMove(self, name) -> PokemonMove | None:
         return self.moves.get(name)
@@ -59,3 +62,10 @@ class DataLoader:
             effects = [ItemEffect(effect) for effect in item["effects"]]
 
             self.items[name] = Item(item, effects)
+            
+    def _load_npc_dialog(self):
+        with open("data/npc_dialog.json", "r") as f:
+            data = json.load(f)
+            
+        for name, item in data.items():
+            self.npc_dialog[name] = NpcDialog(item)

@@ -117,7 +117,12 @@ class GameDirector:
         if target == "dialog":
             from src.states.dialog_view import DialogView
             
-            return DialogView(overworld, payload.get("after_text_callback"))
+            return DialogView(
+                overworld, 
+                data_loader, 
+                payload.get("after_text_callback"), 
+                payload.get("npc_id", "")
+            )
 
         if target == "bag":
             from src.states.bag_view import BagView
