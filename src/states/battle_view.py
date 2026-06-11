@@ -78,6 +78,8 @@ class BattleView(arcade.View):
             )
             trainer_data.party.pop(0)
 
+        self.save_manager.markSeen(pokemon_name)
+
         self.battleSystem = BattleSystem(
             self.yourPokemon.pokemonBattle,
             self.enemyPokemon.pokemonBattle,

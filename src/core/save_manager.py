@@ -45,7 +45,8 @@ class SaveManager:
         for pokeball in data["pokeballs"]:
             pokeballs.append(Item(pokeball["name"], pokeball["count"]))
 
-        return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs)
+        seen = data.get("seen", [])
+        return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs, seen=seen)
 
     def getPokemon(self, pokemonId: str) -> Optional[PlayerPokemon]:
         if not self.player:
@@ -72,6 +73,18 @@ class SaveManager:
         for move in pokemon.moves:
             if move.name == move:
                 move.pp = pp
+
+    def addPokemon(self, pokemon: PlayerPokemon):
+        """Adds a newly caught Pokémon to the player's party (max 6)."""
+        if len(self.player.pokemon) < 6:
+            self.player.pokemon.append(pokemon)
+            # Also mark it as seen
+            self.markSeen(pokemon.name)
+
+    def markSeen(self, name: str):
+        """Records a Pokémon as seen in the Pokédex."""
+        if name not in self.player.seen:
+            self.player.seen.append(name)
 
     def updateLevel(self, pokemonId, newLevel, currentExp, evolvedName=None):
         pokemon = self.getPokemon(pokemonId)
@@ -124,4 +137,9 @@ class SaveManager:
                 }
             )
 
-        return {"pokemon": pokemons, "items": items, "pokeballs": pokeballs}
+        return {
+            "pokemons": pokemons,
+            "items": items,
+            "pokeballs": pokeballs,
+            "seen": list(self.player.seen),
+        }

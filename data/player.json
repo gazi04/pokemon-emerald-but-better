@@ -40,5 +40,6 @@
             "name": "pokeball",
             "count": 99
         }
-    ]
+    ],
+    "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"]
 }

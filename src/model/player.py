@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 
@@ -34,6 +34,7 @@ class PlayerProfile:
     pokemon: list[PlayerPokemon]
     items: list[Item]
     pokeballs: list[Pokeball]
+    seen: list[str] = field(default_factory=list)
 
 
 @dataclass
