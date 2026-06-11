@@ -134,6 +134,15 @@ class GameDirector:
                 payload.get("after_text_callback"), 
                 payload.get("npc_id", "")
             )
+            
+        if target == "pokedex":
+            from src.states.pokedex_view import PokedexView
+            
+            return PokedexView(
+                previous_window=payload.get("previous_view", overworld),
+                save_manager=save_manager,
+                data_loader=data_loader
+            )
 
         if target == "bag":
             from src.states.bag_view import BagView

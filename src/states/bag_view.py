@@ -105,6 +105,14 @@ class BagView(arcade.View):
                 )
             )
             self.updateItem()
+        elif self.isPressed(CONFIG.controls.interact, symbol) and self.bagIndex == 1 and self.battleSystem and not self.battleSystem.is_trainer:
+            pokeball = self.bagSystem.usePokeball(self.currentIndex)
+            if pokeball:
+                result = self.battleSystem.attempt_catch(pokeball)
+                self.updateItem()
+                self.window.show_view(self.previousWindow)
+                if hasattr(self.previousWindow, "startCatchAttempt"):
+                    self.previousWindow.startCatchAttempt(result)
 
     def isPressed(self, configKey, symbol) -> bool:
         return getattr(arcade.key, configKey, None) == symbol

@@ -78,6 +78,8 @@ class BattleView(arcade.View):
             )
             trainer_data.party.pop(0)
 
+        self.save_manager.markSeen(pokemon_name)
+
         self.battleSystem = BattleSystem(
             self.yourPokemon.pokemonBattle,
             self.enemyPokemon.pokemonBattle,
@@ -111,7 +113,7 @@ class BattleView(arcade.View):
                 "Normal", self.yourPokemon.pokemonBattle.moves[0].pp, 35
             )
 
-        self.ui.set_transition(self.yourPokemon, self.enemyPokemon)
+        self.ui.set_transition(self.yourPokemon, self.enemyPokemon, is_trainer)
 
     def updateUiMoves(self):
         moves = self.yourPokemon.pokemonBattle.moves
@@ -132,12 +134,43 @@ class BattleView(arcade.View):
     def onItemUsed(self, itemIndex: int):
         self.ui.queue_messages(self.battleSystem.turnUseItem(itemIndex))
         self.ui.switch_mode("dialog")
-
+        
+    def switch_turn(self):
+        self.battleSystem.battleState = "switching"
+        
+        self.ui.switch_mode("dialog")
+        self.ui.queue_messages(self.battleSystem.switch_pokemon())
+        
+        self.ui.set_player_info(
+            self.yourPokemon.pokemonBattle.name.upper(),
+            self.yourPokemon.pokemonBattle.level,
+        )
+        self.updateUiMoves()
+        
+        texture = self.data_loader.getPokemon(self.yourPokemon.pokemonBattle.name.lower()).sprites.back
+        self.yourPokemon.setNewTexture(texture)
+        
     def whatHappendAfterText(self):
+        if self.battleSystem.battleState == "caught":
+            enemy = self.battleSystem.enemyPokemon
+            self.save_manager.addPokemon(
+                name=enemy.name.lower(),
+                hp=enemy.currentHp,
+                level=enemy.level,
+                moves=enemy.moves,
+            )
+            self.run()
+            return
+
         if self.battleSystem.battleState == "currently turn":
             self._on_continue_turn()
         elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
             self._ending_turn()
+            
+        elif self.battleSystem.battleState == "switching":
+            self.ui.queue_messages(self.battleSystem.switch_turn())
+            self.ui.switch_mode("dialog")
+        
         elif self.battleSystem.battleState == "trainer switch":
             self._trainer_give_exp()
         elif self.battleSystem.battleState == "trainer sending":
@@ -322,11 +355,18 @@ class BattleView(arcade.View):
                                 "previous_view": self,
                                 "save_manager": self.save_manager,
                                 "data_loader": self.data_loader,
+                                "battle_system": self.battleSystem
                             },
                         )
                     )
                 elif self.ui.menu_panel.selection_index == 3:
-                    self.run()
+                    if not self.is_trainer:
+                        self.run()
+                    else:
+                        self.ui.queue_messages(["You cant run away from trainers!"])
+                        self.ui.switch_mode("dialog")
+                        arcade.schedule_once(self._reset_to_main_menu, 2)
+                        
             elif self.ui.active_component == "moves":
                 self.startTurn(self.ui.menu_panel.selection_index)
 
@@ -352,5 +392,6 @@ class BattleView(arcade.View):
 
     def run(self):
         self.battleSystem.save()
+        self.save_manager.flushToDisk()
         # Tell the Director we are done — it will return to the Overworld
         global_bus.publish(CloseViewEvent())
