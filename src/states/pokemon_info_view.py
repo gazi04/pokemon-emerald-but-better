@@ -1,7 +1,7 @@
 import arcade
 from src.core.data_loader import DataLoader
 from src.model.player import PlayerPokemon
-from src.ui.pokemon_informacion import PokemonInformacion
+from src.ui.pokemon_information_ui import PokemonInformationUI
 from data.config import Config
 from typing import Optional
 
@@ -18,7 +18,7 @@ class PokemonInfoView(arcade.View):
         super().__init__(background_color=(0, 104, 96))
         self.previous_view = previous_view
 
-        self.ui = PokemonInformacion(pokemon, data_loader)
+        self.ui = PokemonInformationUI(pokemon, data_loader)
 
     def on_draw(self):
         self.clear()

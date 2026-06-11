@@ -117,7 +117,7 @@ class PokemonMenuView(arcade.View):
         elif index == 0:
             global_bus.publish(
                 OverlayViewEvent(
-                    target="pokemon_informacion",
+                    target="pokemon_information",
                     payload={
                         "previous_view": self,
                         "pokemon": self.system.team[self.system.teamIndex],

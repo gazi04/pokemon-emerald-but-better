@@ -1,6 +1,6 @@
 import arcade
 import arcade.gui
-from src.constants import POKEMON_INFORMACION_UI, FONT
+from src.constants import POKEMON_INFORMATION_UI, FONT
 from src.model.player import PlayerPokemon
 from src.model.pokemon import PokemonProfile, PokemonStat
 from src.core.data_loader import DataLoader
@@ -13,7 +13,7 @@ _TAB_BG = [
     "assets/ui/sprites/pokemon_moves.png",
 ]
 
-class PokemonInformacion:
+class PokemonInformationUI:
     def __init__(self, pokemon: PlayerPokemon, data_loader: DataLoader):
         self._manager = arcade.gui.UIManager()
         self._manager._pixelated = True
@@ -30,7 +30,7 @@ class PokemonInformacion:
             arcade.SpriteList(),
         ]
 
-        tilemap = arcade.load_tilemap(POKEMON_INFORMACION_UI)
+        tilemap = arcade.load_tilemap(POKEMON_INFORMATION_UI)
 
         for obj in tilemap.get_tilemap_layer("static").tiled_objects:
             x = obj.coordinates.x

@@ -136,7 +136,7 @@ class GameDirector:
                 battleSystem=cast(Any, payload.get("battle_system")),
             )
 
-        if target == "pokemon_informacion":
+        if target == "pokemon_information":
             from src.states.pokemon_info_view import PokemonInfoView
             
             return PokemonInfoView(
