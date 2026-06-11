@@ -79,6 +79,7 @@ class PokemonEvolution:
 @dataclass
 class PokemonProfile:
     baseExp: int
+    catch_rate: int = 45
     evolution: Optional[PokemonEvolution] = None
     sprites: Optional[PokemonSprites] = None
     abilities: Optional[list[str]] = None
@@ -93,6 +94,7 @@ class PokemonProfile:
         stats: PokemonStat,
     ):
         self.baseExp = pokemon["baseExp"]
+        self.catch_rate = pokemon.get("catchRate", 45)
         self.abilities = pokemon["abilities"]
         self.types = pokemon["types"]
         self.evolution = evolution

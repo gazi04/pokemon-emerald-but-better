@@ -7,7 +7,6 @@ from src.model.player import (
     PlayerPokemon,
 )
 
-
 class SaveManager:
     def __init__(self):
         self.loadData()
@@ -23,7 +22,7 @@ class SaveManager:
         items = []
         pokeballs = []
 
-        for pokemon in data["pokemons"]:
+        for pokemon in data["pokemon"]:
             moves = []
 
             for move in pokemon["moves"]:
@@ -48,10 +47,22 @@ class SaveManager:
         seen = data.get("seen", [])
         return PlayerProfile(pokemon=pokemons, items=items, pokeballs=pokeballs, seen=seen)
 
+    def addPokemon(self, name: str, hp: int, level: int, moves: list[PlayerPokemonMove]):
+        if len(self.player.pokemon) >= 6:
+            return False
+        
+        self.player.pokemon.append(PlayerPokemon(
+            name=name,
+            hp=hp,
+            level=level,
+            exp=0,
+            moves=moves
+        ))
+        
     def getPokemon(self, pokemonId: str) -> Optional[PlayerPokemon]:
         if not self.player:
             return None
-
+        
         for pokemon in self.player.pokemon:
             if pokemon.name == pokemonId:
                 return pokemon
@@ -60,6 +71,7 @@ class SaveManager:
 
     def updateHp(self, pokemonId, newHp):
         pokemon = self.getPokemon(pokemonId)
+        print(newHp)
 
         if pokemon:
             pokemon.hp = max(newHp, 0)
