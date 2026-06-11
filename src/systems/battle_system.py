@@ -33,7 +33,7 @@ class BattleSystem:
         self.hasEvolved = False
         
         self.is_trainer = is_trainer
-        self.trainer_party = trainer_data.party or []
+        self.trainer_party = trainer_data.party if trainer_data else []
         self.next_trainer_pokemon: PlayerPokemon = None
 
     def turn(self, moveIndex: int) -> list[str]:
