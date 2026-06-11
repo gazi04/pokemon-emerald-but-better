@@ -111,6 +111,5 @@ class MenuView(arcade.View):
                 )
             )
         elif self.selectedIndex == 3:
-            # todo: this below is a git conflict the first line from the save/load feature the next line from the main branch
             global_bus.publish(SaveGameRequestEvent())
 

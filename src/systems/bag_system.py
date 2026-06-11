@@ -61,7 +61,7 @@ class BagSystem:
         if len(self._items) <= 0:
             return False
 
-        item = self._items[itemIndex]
+        inventory_item = self._items[itemIndex]
 
         pokemon = self.save_manager.getPokemon(pokemonId)
         pokemonProfile = self.data_loader.getPokemon(pokemon.name)
@@ -70,7 +70,8 @@ class BagSystem:
             ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
         )
 
-        for effect in item.effects:
+        item_def = self.data_loader.getItem(inventory_item.name)
+        for effect in item_def.effects:
             if effect.type == "heal":
                 if pokemon.hp <= 0 or pokemon.hp == maxHp:
                     return False
