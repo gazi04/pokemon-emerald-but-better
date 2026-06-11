@@ -20,11 +20,7 @@ class PokemonBattle:
 
         self.source = playerPokemon
         if playerPokemon:
-            self.name = playerPokemon.name.capitalize()
-            self.moves = playerPokemon.moves
-            self.currentHp = playerPokemon.hp
-            self.level = playerPokemon.level
-            self.exp = playerPokemon.exp
+            self._loadFromPlayer(playerPokemon)
         else:
             self.name = name.capitalize() if name else "Unknown"
             self.moves = moves if moves else []
@@ -40,23 +36,37 @@ class PokemonBattle:
         self.evolution = data.evolution
         self.baseExp = data.baseExp
 
-        self.modifiers = {
-            "attack": 0,
-            "defence": 0,
-            "special_attack": 0,
-            "special_defence": 0,
-            "speed": 0,
-            "accuracy": 0,
-            "evasion": 0,
-            "crits": 0,
-        }
-
-        self.statusEffect = ""
-        self.sleepCounter = 0
+        self._resetBattleState()
 
     # ------------------------------------------------------------------
     # Stat management
     # ------------------------------------------------------------------
+
+    def _loadFromPlayer(self, playerPokemon: PlayerPokemon):
+        self.name = playerPokemon.name.capitalize()
+        self.moves = playerPokemon.moves
+        self.level = playerPokemon.level
+        self.exp = playerPokemon.exp
+
+    def _loadFromProfile(self, data: PokemonProfile):
+        self.baseStat = cast(PokemonStat, data.stats).copy()
+        self.types = data.types
+        self.evolution = data.evolution
+        self.baseExp = data.baseExp
+
+    def _resetBattleState(self):
+        self.modifiers = {
+            "attack": 0, 
+            "defence": 0,
+            "special attack": 0, 
+            "special defence": 0,
+            "speed": 0, 
+            "accuracy": 0,
+            "evasion": 0, 
+            "crits": 0,
+        }
+        self.statusEffect = ""
+        self.sleepCounter = 0
 
     def calculateStats(self):
         self.stats = PokemonStat(
@@ -102,6 +112,19 @@ class PokemonBattle:
 
     def takeDamage(self, damage: int):
         self.currentHp = max(0, self.currentHp - damage)
+
+
+    def switching_pokemon(self, playerPokemon: PlayerPokemon, data: PokemonProfile):
+        self.source = playerPokemon        
+
+        self._loadFromPlayer(playerPokemon)
+        self._loadFromProfile(data)          
+        self.calculateStats()
+
+        self.maxHp = self.getStat("hp")
+        self.currentHp = playerPokemon.hp
+
+        self._resetBattleState()     
 
     # ------------------------------------------------------------------
     # Move gating — status and PP checks
@@ -223,7 +246,7 @@ class PokemonBattle:
             self.currentHp = self.maxHp
             self.levelUp()
 
-        hasEvolved = self.evolution and self.evolution.levelCap == self.level
+        hasEvolved = self.evolution and self.evolution.levelCap <= self.level
 
         return {
             "isLeveledUp": self.level > old_level,

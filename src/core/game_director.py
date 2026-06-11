@@ -16,7 +16,7 @@ from typing import Any, cast
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.core.event_bus import global_bus
-from src.core.events import SwapViewEvent, CloseViewEvent, OverlayViewEvent
+from src.core.events import SwapViewEvent, CloseViewEvent, OverlayViewEvent, SaveGameRequestEvent, SaveCompletedEvent
 
 
 class GameDirector:
@@ -30,6 +30,7 @@ class GameDirector:
         global_bus.subscribe(SwapViewEvent, self._on_swap_view)
         global_bus.subscribe(CloseViewEvent, self._on_close_view)
         global_bus.subscribe(OverlayViewEvent, self._on_overlay_view)
+        global_bus.subscribe(SaveGameRequestEvent, self._on_save_request)
 
     # ------------------------------------------------------------------
     # Boot
@@ -64,6 +65,16 @@ class GameDirector:
         if view:
             self._window.show_view(view)
 
+    def _on_save_request(self, event: SaveGameRequestEvent):
+        from src.states.overworld_view import OverworldView
+
+        overworld = self._view_cache.get("overworld")
+        if overworld and isinstance(overworld, OverworldView):
+            success = self.save_manager.flush_save(overworld.player_state)
+        else:
+            success = False
+        global_bus.publish(SaveCompletedEvent(success=success))
+
     # ------------------------------------------------------------------
     # View construction
     # ------------------------------------------------------------------
@@ -87,10 +98,21 @@ class GameDirector:
             return BattleView(
                 save_manager=self.save_manager,
                 data_loader=self.data_loader,
-                pokemon_name=payload["pokemon_name"],
-                pokemon_data=payload["pokemon_data"],
-                level=payload["pokemon_level"],
-                overworld_view=overworld,  # kept for flicker transition only
+                overworld_view=overworld,
+                foe_pokemon_name=payload["pokemon_name"],
+                foe_pokemon_data=payload["pokemon_data"],
+                foe_level=payload["pokemon_level"],  # kept for flicker transition only
+            )
+            
+        if target == "battle_trainer":
+            from src.states.battle_view import BattleView
+
+            return BattleView(
+                save_manager=self.save_manager,
+                data_loader=self.data_loader,
+                overworld_view=overworld,
+                is_trainer=True,
+                trainer_data=payload["trainer_data"]
             )
 
         if target == "evolving":
@@ -113,6 +135,15 @@ class GameDirector:
             from src.states.menu_view import MenuView
 
             return MenuView(overworld, save_manager, data_loader)
+        
+        if target == "pokedex":
+            from src.states.pokedex_view import PokedexView
+            
+            return PokedexView(
+                previous_window=payload.get("previous_view", overworld),
+                save_manager=save_manager,
+                data_loader=data_loader
+            )
 
         if target == "bag":
             from src.states.bag_view import BagView

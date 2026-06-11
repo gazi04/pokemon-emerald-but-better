@@ -77,21 +77,27 @@
   <image source="pokemonProfileSelected.png" width="142" height="22"/>
  </tile>
  <tile id="25">
-  <image source="pokemon_moves.png" width="160" height="139"/>
+  <image source="pokedex_info.png" width="240" height="143"/>
  </tile>
  <tile id="26">
-  <image source="pokemon_profile.png" width="80" height="144"/>
+  <image source="pokedex.png" width="240" height="160"/>
  </tile>
  <tile id="27">
-  <image source="pokemon_stats.png" width="160" height="139"/>
+ <image source="pokemon_moves.png" width="160" height="139"/>
+ </tile>
+ <tile id="27">
+  <image source="pokemon_profile.png" width="80" height="144"/>
  </tile>
  <tile id="28">
-  <image source="pokmon_info.png" width="160" height="139"/>
+  <image source="pokemon_stats.png" width="160" height="139"/>
  </tile>
  <tile id="29">
-  <image source="top_bar.png" width="240" height="16"/>
+  <image source="pokmon_info.png" width="160" height="139"/>
  </tile>
  <tile id="30">
+  <image source="top_bar.png" width="240" height="16"/>
+ </tile>
+ <tile id="31">
   <image source="../../sprite/types/normal.png" width="32" height="14"/>
  </tile>
 </tileset>

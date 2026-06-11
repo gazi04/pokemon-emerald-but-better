@@ -31,6 +31,10 @@ class Pokemon(arcade.Sprite):
         else:
             self.center_x = 210
             self.bottom = 168
-
+            
+    def setNewTexture(self, file: str):
+        self.texture = arcade.load_texture(file)
+        self.bottom = 168
+        
     def draw(self):
         arcade.draw_sprite(self, pixelated=True)

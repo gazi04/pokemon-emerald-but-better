@@ -47,15 +47,21 @@ class OverworldView(arcade.View):
         self.canRenderScene = True
         self.flickerInterval = FLICKER_INTERVAL
 
-        self.setup()
-
-        position = (
-            self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
-        )
-        self.player_state.pixel_x = position.x * 2
-        self.player_state.pixel_y = position.y / 2 - 110
-
-        self._subscribe()
+        saved = save_manager.saved_position
+        if saved:
+            self.player_state.map_name = saved.get("map_name", self.player_state.map_name)
+            self.player_state.direction = saved.get("direction", self.player_state.direction)
+            map_path = f"assets/map/{self.player_state.map_name}.tmx"
+            self.setup(map_path)
+            self.player_state.pixel_x = saved["pixel_x"]
+            self.player_state.pixel_y = saved["pixel_y"]
+        else:
+            self.setup()
+            position = (
+                self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
+            )
+            self.player_state.pixel_x = position.x * 2
+            self.player_state.pixel_y = position.y / 2 - 110
 
     # ------------------------------------------------------------------
     # Subscription management
@@ -203,6 +209,21 @@ class OverworldView(arcade.View):
                     payload={
                         "save_manager": self.save_manager,
                         "data_loader": self.data_loader,
+                    },
+                )
+            )
+            
+        if self.isPressed("SPACE", key):
+            self.keys.clear()
+            from src.model.trainer import Trainer
+            from src.model.player import PlayerPokemon, PlayerPokemonMove
+            global_bus.publish(
+                SwapViewEvent(
+                    target="battle_trainer",
+                    payload={
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                        "trainer_data": Trainer([PlayerPokemon("zigzagoon", 10, 3, 0, [PlayerPokemonMove("tackle", 15)]), PlayerPokemon("poochyena", 10, 3, 0, [PlayerPokemonMove("tackle", 15)])])
                     },
                 )
             )
