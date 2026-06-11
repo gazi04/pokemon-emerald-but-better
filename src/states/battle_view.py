@@ -78,6 +78,8 @@ class BattleView(arcade.View):
             )
             trainer_data.party.pop(0)
 
+        self.save_manager.markSeen(pokemon_name)
+
         self.battleSystem = BattleSystem(
             self.yourPokemon.pokemonBattle,
             self.enemyPokemon.pokemonBattle,
@@ -149,6 +151,17 @@ class BattleView(arcade.View):
         self.yourPokemon.setNewTexture(texture)
         
     def whatHappendAfterText(self):
+        if self.battleSystem.battleState == "caught":
+            enemy = self.battleSystem.enemyPokemon
+            self.save_manager.addPokemon(
+                name=enemy.name.lower(),
+                hp=enemy.currentHp,
+                level=enemy.level,
+                moves=enemy.moves,
+            )
+            self.run()
+            return
+
         if self.battleSystem.battleState == "currently turn":
             self._on_continue_turn()
         elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
@@ -347,7 +360,13 @@ class BattleView(arcade.View):
                         )
                     )
                 elif self.ui.menu_panel.selection_index == 3:
-                    self.run()
+                    if not self.is_trainer:
+                        self.run()
+                    else:
+                        self.ui.queue_messages(["You cant run away from trainers!"])
+                        self.ui.switch_mode("dialog")
+                        arcade.schedule_once(self._reset_to_main_menu, 2)
+                        
             elif self.ui.active_component == "moves":
                 self.startTurn(self.ui.menu_panel.selection_index)
 
@@ -373,5 +392,6 @@ class BattleView(arcade.View):
 
     def run(self):
         self.battleSystem.save()
+        self.save_manager.flushToDisk()
         # Tell the Director we are done — it will return to the Overworld
         global_bus.publish(CloseViewEvent())
