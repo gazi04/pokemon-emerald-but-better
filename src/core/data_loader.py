@@ -1,61 +1,24 @@
 import json
-from src.model.pokemon import (
-    PokemonProfile,
-    PokemonSprites,
-    PokemonStat,
-    PokemonMove,
-    PokemonMoveEffect,
-    PokemonEvolution,
-)
-from src.model.item import Item, ItemEffect
+from src.model.pokemon import PokemonProfile, PokemonMove
+from src.model.item import Item
+from src.core.game_data_parser import GameDataParser
 
 
 class DataLoader:
     def __init__(self):
-        self.pokemons: dict[str, PokemonProfile] = {}
-        self.moves: dict[str, PokemonMove] = {}
-        self.items: dict[str, Item] = {}
+        self.pokemons: dict[str, PokemonProfile] = GameDataParser.parse_pokemons(self._read("data/pokemon.json"))
+        self.moves: dict[str, PokemonMove] = GameDataParser.parse_moves(self._read("data/moves.json"))
+        self.items: dict[str, Item] = GameDataParser.parse_items(self._read("data/items.json"))
 
-        self._loadPokemons()
-        self._loadMoves()
-        self._loadItems()
+    def _read(self, path: str) -> dict:
+        with open(path) as f:
+            return json.load(f)
 
-    def getMove(self, name) -> PokemonMove | None:
-        return self.moves.get(name)
-
-    def getPokemon(self, name) -> PokemonProfile | None:
+    def get_pokemon(self, name: str) -> PokemonProfile | None:
         return self.pokemons.get(name)
 
-    def getItem(self, name) -> Item | None:
+    def get_move(self, name: str) -> PokemonMove | None:
+        return self.moves.get(name)
+
+    def get_item(self, name: str) -> Item | None:
         return self.items.get(name)
-
-    def _loadPokemons(self):
-        with open("data/pokemon.json", "r") as f:
-            data = json.load(f)
-
-        for name, pokemon in data.items():
-            sprites = PokemonSprites(**pokemon["sprites"])
-            stats = PokemonStat(**pokemon["stats"])
-            evolution = (
-                PokemonEvolution(pokemon["evolution"]) if pokemon["evolution"] else None
-            )
-
-            self.pokemons[name] = PokemonProfile(pokemon, evolution, sprites, stats)
-
-    def _loadMoves(self):
-        with open("data/moves.json", "r") as f:
-            data = json.load(f)
-
-        for name, move in data.items():
-            effects = [PokemonMoveEffect(effect) for effect in move["effects"]]
-
-            self.moves[name] = PokemonMove(name, move, effects)
-
-    def _loadItems(self):
-        with open("data/items.json", "r") as f:
-            data = json.load(f)
-
-        for name, item in data.items():
-            effects = [ItemEffect(effect) for effect in item["effects"]]
-
-            self.items[name] = Item(item, effects)

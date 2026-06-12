@@ -214,7 +214,7 @@ class PokemonMenuUi:
         for i, slot in enumerate(self._pokemonUis):
             if i < len(pokemons):
                 pokemon = pokemons[i]
-                pokemonProfile = self.data_loader.getPokemon(pokemon.name)
+                pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
                 maxHp = (
                     ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
                     + 5
@@ -309,7 +309,7 @@ class PokemonMenuUi:
 
     def drawHpBars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
-            pokemonProfile = self.data_loader.getPokemon(pokemon.name)
+            pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
             maxHp = (
                 ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
                 + 5

@@ -62,7 +62,7 @@ class BattleSystem:
     
     def switch_pokemon(self) -> list[str]:
         pokemon = self.save_manager.player.pokemon[0]
-        pokemonProfile = self.data_loader.getPokemon(pokemon.name)
+        pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
         
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
@@ -107,7 +107,7 @@ class BattleSystem:
         move_index: int,
         defender_label: str,
     ) -> list[str]:
-        move_data = self.data_loader.getMove(attacker.moves[move_index].name)
+        move_data = self.data_loader.get_move(attacker.moves[move_index].name)
         messages = []
 
         prefix = "" if attacker == self.yourPokemon else "Foe "
@@ -221,7 +221,7 @@ class BattleSystem:
                 ball_modifier = effect.catchRate or 1
 
         enemy = self.enemyPokemon
-        pokemon_profile = self.data_loader.getPokemon(enemy.name.lower())
+        pokemon_profile = self.data_loader.get_pokemon(enemy.name.lower())
         catch_rate = pokemon_profile.catch_rate if pokemon_profile else 45
 
         hp_modifier = 1 - (enemy.currentHp / enemy.maxHp) * 0.5
@@ -259,16 +259,16 @@ class BattleSystem:
 
     def save(self):
         pokemonName = self.yourPokemon.name.lower()
-        self.save_manager.updateHp(pokemonName, self.yourPokemon.currentHp)
+        self.save_manager.player.update_hp(pokemonName, self.yourPokemon.currentHp)
         for move in self.yourPokemon.moves:
-            self.save_manager.updateMove(pokemonName, move.name, move.pp)
+            self.save_manager.player.update_move_pp(pokemonName, move.name, move.pp)
 
         if not self.hasEvolved:
-            self.save_manager.updateLevel(
+            self.save_manager.player.update_level(
                 pokemonName, self.yourPokemon.level, self.yourPokemon.exp
             )
         else:
-            self.save_manager.updateLevel(
+            self.save_manager.player.update_level(
                 pokemonName,
                 self.yourPokemon.level,
                 self.yourPokemon.exp,

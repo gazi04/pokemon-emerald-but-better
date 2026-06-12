@@ -1,7 +1,7 @@
 import arcade
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
-from src.model.player import PlayerPokemonMove
+from src.model.player import PlayerPokemon, PlayerPokemonMove
 from src.model.trainer import Trainer
 from src.entities.pokemon_sprites import Pokemon
 from src.entities.pokemon_battle import PokemonBattle
@@ -36,7 +36,7 @@ class BattleView(arcade.View):
 
         self.playerPokemon = self.save_manager.player.pokemon
 
-        player_profile = data_loader.getPokemon(self.playerPokemon[0].name)
+        player_profile = data_loader.get_pokemon(self.playerPokemon[0].name)
         if player_profile is None:
             raise ValueError(
                 f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
@@ -64,7 +64,7 @@ class BattleView(arcade.View):
             )
         else:
             first = trainer_data.party[0]
-            first_profile = data_loader.getPokemon(first.name)
+            first_profile = data_loader.get_pokemon(first.name)
             if first_profile is None:
                 raise ValueError(
                     f"Trainer pokemon '{first.name}' not found in data.")
@@ -78,7 +78,7 @@ class BattleView(arcade.View):
             )
             trainer_data.party.pop(0)
 
-        self.save_manager.markSeen(pokemon_name)
+        self.save_manager.player.mark_seen(foe_pokemon_name)
 
         self.battleSystem = BattleSystem(
             self.yourPokemon.pokemonBattle,
@@ -100,7 +100,7 @@ class BattleView(arcade.View):
         self.ui.switch_mode("main")
         self.updateUiMoves()
 
-        first_move = data_loader.getMove(
+        first_move = data_loader.get_move(
             self.yourPokemon.pokemonBattle.moves[0].name)
         if first_move is not None:
             self.ui.menu_panel.update_move_info(
@@ -147,18 +147,19 @@ class BattleView(arcade.View):
         )
         self.updateUiMoves()
         
-        texture = self.data_loader.getPokemon(self.yourPokemon.pokemonBattle.name.lower()).sprites.back
+        texture = self.data_loader.get_pokemon(self.yourPokemon.pokemonBattle.name.lower()).sprites.back
         self.yourPokemon.setNewTexture(texture)
         
     def whatHappendAfterText(self):
         if self.battleSystem.battleState == "caught":
             enemy = self.battleSystem.enemyPokemon
-            self.save_manager.addPokemon(
+            self.save_manager.player.add_pokemon(PlayerPokemon(
                 name=enemy.name.lower(),
                 hp=enemy.currentHp,
                 level=enemy.level,
+                exp=0,
                 moves=enemy.moves,
-            )
+            ))
             self.run()
             return
 
@@ -207,7 +208,7 @@ class BattleView(arcade.View):
             self.battleSystem.battleState = "end"
             return
 
-        profile = self.data_loader.getPokemon(next_data.name)
+        profile = self.data_loader.get_pokemon(next_data.name)
 
         texture = profile.sprites.front
         self.enemyPokemon.texture = arcade.load_texture(texture)
@@ -380,7 +381,7 @@ class BattleView(arcade.View):
     def moveHover(self, index):
         if index is not None and index < len(self.yourPokemon.pokemonBattle.moves):
             move_name = self.yourPokemon.pokemonBattle.moves[index].name
-            move = self.data_loader.getMove(move_name)
+            move = self.data_loader.get_move(move_name)
 
             # FIX 6 & 7: Wrapped with an if statement to verify 'move' is found before grabbing properties
             if move is not None:
@@ -392,6 +393,4 @@ class BattleView(arcade.View):
 
     def run(self):
         self.battleSystem.save()
-        self.save_manager.flushToDisk()
-        # Tell the Director we are done — it will return to the Overworld
         global_bus.publish(CloseViewEvent())

@@ -58,7 +58,7 @@ class BagView(arcade.View):
         index = self.currentIndex - self.topVisibleIndex
         self.bagUi.setYOfCursor(index)
 
-        item_data = self.data_loader.getItem(self.inventory[self.currentIndex].name)
+        item_data = self.data_loader.get_item(self.inventory[self.currentIndex].name)
         if item_data is not None:
             self.bagUi.setText(item_data.description)
         else:
