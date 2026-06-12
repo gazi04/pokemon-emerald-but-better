@@ -1,0 +1,25 @@
+{
+  "pokemons": [
+    {
+      "name": "mudkip",
+      "hp": 50,
+      "level": 10,
+      "exp": 0,
+      "moves": [
+        {"name": "tackle", "pp": 35}
+      ]
+    }
+  ],
+  "items": [
+    {"name": "potion", "count": 3}
+  ],
+  "pokeballs": [
+    {"name": "pokeball", "count": 5}
+  ],
+  "position": {
+    "map_name": "littleroot_town",
+    "direction": "down",
+    "pixel_x": 0.0,
+    "pixel_y": 0.0
+  }
+}
