@@ -259,16 +259,16 @@ class BattleSystem:
 
     def save(self):
         pokemonName = self.yourPokemon.name.lower()
-        self.save_manager.updateHp(pokemonName, self.yourPokemon.currentHp)
+        self.save_manager.player.update_hp(pokemonName, self.yourPokemon.currentHp)
         for move in self.yourPokemon.moves:
-            self.save_manager.updateMove(pokemonName, move.name, move.pp)
+            self.save_manager.player.update_move_pp(pokemonName, move.name, move.pp)
 
         if not self.hasEvolved:
-            self.save_manager.updateLevel(
+            self.save_manager.player.update_level(
                 pokemonName, self.yourPokemon.level, self.yourPokemon.exp
             )
         else:
-            self.save_manager.updateLevel(
+            self.save_manager.player.update_level(
                 pokemonName,
                 self.yourPokemon.level,
                 self.yourPokemon.exp,

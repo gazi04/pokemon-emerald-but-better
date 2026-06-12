@@ -34,7 +34,7 @@ class BagSystem:
                 self._items.pop(itemIndex)
 
     def _handleItemEffects(self, pokemonId: str, itemId: str) -> bool:
-        pokemon = self.save_manager.getPokemon(pokemonId)
+        pokemon = self.save_manager.player.get_pokemon(pokemonId)
         pokemonProfile = self.data_loader.getPokemon(pokemonId)
 
         maxHp = (
@@ -63,7 +63,7 @@ class BagSystem:
 
         inventory_item = self._items[itemIndex]
 
-        pokemon = self.save_manager.getPokemon(pokemonId)
+        pokemon = self.save_manager.player.get_pokemon(pokemonId)
         pokemonProfile = self.data_loader.getPokemon(pokemon.name)
 
         maxHp = (
