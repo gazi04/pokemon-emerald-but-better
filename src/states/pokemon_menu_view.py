@@ -7,6 +7,8 @@ from src.systems.bag_system import BagSystem
 from src.systems.pokemon_menu_system import PokemonMenuSystem
 from src.systems.battle_system import BattleSystem
 from data.config import Config
+from src.core.event_bus import global_bus
+from src.core.events import OverlayViewEvent
 
 CONFIG = Config.load()
 
@@ -28,6 +30,7 @@ class PokemonMenuView(arcade.View):
         self.battleSystem = battleSystem
         self.itemIndex = itemIndex        
 
+        self.data_loader = data_loader
         self.system = PokemonMenuSystem(save_manager)
         self.ui = PokemonMenuUi(data_loader)
 
@@ -119,7 +122,16 @@ class PokemonMenuView(arcade.View):
                 self._move_pokemon()
 
         elif index == 0:
-            pass
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="pokemon_information",
+                    payload={
+                        "previous_view": self,
+                        "pokemon": self.system.team[self.system.teamIndex],
+                        "data_loader": self.data_loader
+                    },
+                )
+            )
         
     def _move_pokemon(self):
         if not self.battleSystem:
