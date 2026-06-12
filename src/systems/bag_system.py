@@ -18,7 +18,7 @@ class BagSystem:
                 if pokeball.count <= 0:
                     self._pokeballs.pop(pokeball_index)
                     
-                return self.data_loader.getItem(pokeball.name)
+                return self.data_loader.get_item(pokeball.name)
             
         return None
 
@@ -35,7 +35,7 @@ class BagSystem:
 
     def _handleItemEffects(self, pokemonId: str, itemId: str) -> bool:
         pokemon = self.save_manager.player.get_pokemon(pokemonId)
-        pokemonProfile = self.data_loader.getPokemon(pokemonId)
+        pokemonProfile = self.data_loader.get_pokemon(pokemonId)
 
         maxHp = (
             ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
@@ -44,7 +44,7 @@ class BagSystem:
         if not pokemon:
             return False
 
-        item = self.data_loader.getItem(itemId)
+        item = self.data_loader.get_item(itemId)
 
         for effect in item.effects:
             if effect.type == "heal":
@@ -64,13 +64,13 @@ class BagSystem:
         inventory_item = self._items[itemIndex]
 
         pokemon = self.save_manager.player.get_pokemon(pokemonId)
-        pokemonProfile = self.data_loader.getPokemon(pokemon.name)
+        pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
 
         maxHp = (
             ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
         )
 
-        item_def = self.data_loader.getItem(inventory_item.name)
+        item_def = self.data_loader.get_item(inventory_item.name)
         for effect in item_def.effects:
             if effect.type == "heal":
                 if pokemon.hp <= 0 or pokemon.hp == maxHp:

@@ -62,7 +62,7 @@ class BattleSystem:
     
     def switch_pokemon(self) -> list[str]:
         pokemon = self.save_manager.player.pokemon[0]
-        pokemonProfile = self.data_loader.getPokemon(pokemon.name)
+        pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
         
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
@@ -107,7 +107,7 @@ class BattleSystem:
         move_index: int,
         defender_label: str,
     ) -> list[str]:
-        move_data = self.data_loader.getMove(attacker.moves[move_index].name)
+        move_data = self.data_loader.get_move(attacker.moves[move_index].name)
         messages = []
 
         prefix = "" if attacker == self.yourPokemon else "Foe "
@@ -221,7 +221,7 @@ class BattleSystem:
                 ball_modifier = effect.catchRate or 1
 
         enemy = self.enemyPokemon
-        pokemon_profile = self.data_loader.getPokemon(enemy.name.lower())
+        pokemon_profile = self.data_loader.get_pokemon(enemy.name.lower())
         catch_rate = pokemon_profile.catch_rate if pokemon_profile else 45
 
         hp_modifier = 1 - (enemy.currentHp / enemy.maxHp) * 0.5
