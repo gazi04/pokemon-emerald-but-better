@@ -1,4 +1,4 @@
-name: Code Linting
+name: Tests
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,9 +22,5 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Format with Ruff
-        continue-on-error: true
-        run: uv run ruff format --check
-
-      - name: Run Ruff
-        run: uv run ruff check --output-format=github .
+      - name: Run pytest
+        run: uv run pytest
