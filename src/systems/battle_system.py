@@ -241,7 +241,7 @@ class BattleSystem:
             return {
                 "success": True,
                 "messages": [
-                    f"You threw a Pokeball!",
+                    "You threw a Pokeball!",
                     f"Gotcha! {enemy.name} was caught!",
                 ],
             }
@@ -252,7 +252,7 @@ class BattleSystem:
             return {
                 "success": False,
                 "messages": [
-                    f"You threw a Pokeball!",
+                    "You threw a Pokeball!",
                     f"Oh no! {enemy.name} broke free!",
                 ],
             }

@@ -1,6 +1,5 @@
 import arcade
 import arcade.gui
-from arcade import SpriteList
 from src.core.data_loader import DataLoader
 from src.constants import POKEDEX_UI
 

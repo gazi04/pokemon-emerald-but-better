@@ -1,8 +1,8 @@
 import arcade
 import arcade.gui
-from src.constants import POKEMON_INFORMATION_UI, FONT
+from src.constants import POKEMON_INFORMATION_UI
 from src.model.player import PlayerPokemon
-from src.model.pokemon import PokemonProfile, PokemonStat
+from src.model.pokemon import PokemonStat
 from src.core.data_loader import DataLoader
 
 _FONT = "Pokemon Emerald"
