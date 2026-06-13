@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="3" nextobjectid="14">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="1" tileheight="1" infinite="0" nextlayerid="3" nextobjectid="17">
  <tileset firstgid="1" source="sprites/ui.tsx"/>
  <objectgroup id="2" name="ui">
-  <object id="8" name="amount_text" x="213.833" y="345.916" width="143" height="40.3333">
+  <object id="15" name="money_box" gid="1" x="335.333" y="68.6667" width="149.333" height="52.6667"/>
+  <object id="16" name="money_text" x="349.833" y="27.8333" width="116.333" height="30.3333">
    <text wrap="1">Hello World</text>
   </object>
   <object id="9" name="amount_box" gid="1" x="202" y="398.083" width="169.333" height="66.6667"/>
-  <object id="5" name="box_amount_text" x="22.5" y="347.833" width="143" height="40.3333">
+  <object id="8" name="amount_text" x="213.833" y="345.916" width="143" height="40.3333">
    <text wrap="1">Hello World</text>
   </object>
   <object id="4" name="box_amount_box" gid="1" x="10.6667" y="400" width="169.333" height="66.6667"/>
+  <object id="5" name="box_amount_text" x="22.5" y="347.833" width="143" height="40.3333">
+   <text wrap="1">Hello World</text>
+  </object>
+  <object id="14" name="item" x="588.167" y="30.5" width="187.333" height="24">
+   <text wrap="1">Hello World</text>
+  </object>
   <object id="1" name="items_container" gid="18" x="545" y="600.333" width="258" height="600.667"/>
   <object id="2" name="text_box" gid="1" x="-1.33333" y="602.667" width="545.333" height="176"/>
   <object id="3" name="text" x="35.8333" y="457.167" width="463" height="112.333">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="12" name="option_box" gid="18" x="23" y="135" width="86" height="114"/>
-  <object id="13" name="place_holder" x="23.8333" y="30.5" width="83" height="19">
+  <object id="12" name="option_box" gid="18" x="24" y="104.333" width="95.3333" height="83.3333"/>
+  <object id="13" name="place_holder" x="48.5" y="30.5" width="65" height="19">
    <text wrap="1">Hello World</text>
   </object>
  </objectgroup>

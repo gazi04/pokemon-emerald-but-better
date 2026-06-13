@@ -60,7 +60,12 @@ class SaveManager:
             moves=moves
         ))
 
-    def addMoney(self, amount: int):
+    def add_item(self, item_name: str, count: int):
+        for item in self.player.items:
+            if item.name == item_name:
+                item.count += count
+
+    def add_money(self, amount: int):
         """Add money to the player's wallet."""
         self.player.money += amount
 
@@ -76,7 +81,6 @@ class SaveManager:
 
     def updateHp(self, pokemonId, newHp):
         pokemon = self.getPokemon(pokemonId)
-        print(newHp)
 
         if pokemon:
             pokemon.hp = max(newHp, 0)

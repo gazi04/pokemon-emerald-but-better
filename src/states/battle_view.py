@@ -403,7 +403,7 @@ class BattleView(arcade.View):
 
         # Award prize money if trainer battle was won
         if self.is_trainer and self.prize_money > 0:
-            self.save_manager.addMoney(self.prize_money)
+            self.save_manager.add_money(self.prize_money)
 
         self.save_manager.flushToDisk()
         # Tell the Director we are done — it will return to the Overworld
