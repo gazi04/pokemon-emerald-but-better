@@ -154,8 +154,22 @@ class OverworldView(arcade.View):
         )
 
     def _on_npc_interaction(self, event: NpcInteractEvent):
-        global_bus.publish(OverlayViewEvent("dialog", payload={"npc_id": event.npc_id}))
-        print("test")
+        if event.npc_id == "poke-mart-npc":
+            # Open the shop
+            global_bus.publish(OverlayViewEvent(
+                target="shop",
+                payload={
+                    "previous_view": self,
+                    "save_manager": self.save_manager,
+                    "data_loader": self.data_loader,
+                }
+            ))
+        else:
+            # Show dialog for other NPCs
+            global_bus.publish(OverlayViewEvent(
+                target="dialog",
+                payload={"npc_id": event.npc_id}
+            ))
 
     # ------------------------------------------------------------------
     # Game loop

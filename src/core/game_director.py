@@ -166,4 +166,14 @@ class GameDirector:
                 battleSystem=cast(Any, payload.get("battle_system")),
             )
 
+        if target == "shop":
+            from src.states.shop_view import ShopView
+
+            return ShopView(
+                overworld=overworld,
+                previous_view=payload.get("previous_view", overworld),
+                save_manager=save_manager,
+                data_loader=data_loader,
+            )
+
         return None
