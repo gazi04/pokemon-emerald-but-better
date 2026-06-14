@@ -139,6 +139,11 @@ class BattleView(arcade.View):
         self.ui.queue_messages(self.battleSystem.turnUseItem(itemIndex))
         self.ui.switch_mode("dialog")
         
+    def start_catch_attempt(self, result: dict):
+        """Called by BagView after a pokeball is thrown."""
+        self.ui.queue_messages(result["messages"])
+        self.ui.switch_mode("dialog")
+        
     def switch_turn(self):
         self.battleSystem.battleState = "switching"
         

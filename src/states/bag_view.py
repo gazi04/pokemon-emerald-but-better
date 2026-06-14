@@ -109,8 +109,8 @@ class BagView(arcade.View):
                 result = self.battleSystem.attempt_catch(pokeball)
                 self.updateItem()
                 self.window.show_view(self.previousWindow)
-                if hasattr(self.previousWindow, "startCatchAttempt"):
-                    self.previousWindow.startCatchAttempt(result)
+                if hasattr(self.previousWindow, "start_catch_attempt"):
+                    self.previousWindow.start_catch_attempt(result)
 
     def isPressed(self, configKey, symbol) -> bool:
         return getattr(arcade.key, configKey, None) == symbol
