@@ -7,6 +7,7 @@ import pytest
 from src.core.data_loader import DataLoader
 from src.core.event_bus import EventBus, global_bus
 from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from src.model.player import Item, PlayerPokemon, PlayerPokemonMove, PlayerProfile, PlayerState
 
 FIXTURE_DIR = Path(__file__).parent / "data"
@@ -23,7 +24,7 @@ def data_loader(tmp_path, monkeypatch):
     """DataLoader pointed at fixture data in a tmp working directory."""
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    for name in ("pokemon.json", "moves.json", "items.json"):
+    for name in ("pokemon.json", "moves.json", "items.json", "npc_dialog.json"):
         shutil.copy(FIXTURE_DIR / name, data_dir / name)
     # util functions read types.json and encounters.json from cwd/data/
     for name in ("types.json", "encounters.json"):
@@ -40,6 +41,12 @@ def save_manager(tmp_path, monkeypatch):
     monkeypatch.setattr("src.core.save_manager.SAVE_BAK_PATH", str(tmp_path / "save.bak.json"))
     monkeypatch.setattr("src.core.save_manager.DEFAULT_PATH", str(FIXTURE_DIR / "player_fixture.json"))
     return SaveManager()
+
+
+@pytest.fixture
+def player_manager(save_manager):
+    """PlayerManager wrapping a SaveManager for tests."""
+    return PlayerManager(save_manager)
 
 
 @pytest.fixture

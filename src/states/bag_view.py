@@ -1,7 +1,6 @@
 import arcade
 from typing import Optional
 from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
 from src.core.player_manager import PlayerManager
 from data.config import Config
 from src.ui.bag_ui import BagUI

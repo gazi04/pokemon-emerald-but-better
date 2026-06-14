@@ -27,7 +27,7 @@ def real_data_loader():
     return DataLoader()
 
 
-def test_full_battle_to_ko_fires_fainted_event(real_data_loader, save_manager):
+def test_full_battle_to_ko_fires_fainted_event(real_data_loader, player_manager):
     your = _make_battle_pokemon("mudkip", real_data_loader, level=20)
     enemy = _make_battle_pokemon("poochyena", real_data_loader, level=1, is_enemy=True)
     # Level 1 poochyena has very low HP — should faint in one hit
@@ -35,7 +35,7 @@ def test_full_battle_to_ko_fires_fainted_event(real_data_loader, save_manager):
     fainted = []
     global_bus.subscribe(PokemonFaintedEvent, fainted.append)
 
-    bs = BattleSystem(your, enemy, save_manager, real_data_loader)
+    bs = BattleSystem(your, enemy, player_manager, real_data_loader)
 
     # Execute up to 20 turns; call executeNextAction once more to flush postTurn
     for _ in range(20):
@@ -50,14 +50,14 @@ def test_full_battle_to_ko_fires_fainted_event(real_data_loader, save_manager):
     assert len(fainted) > 0
 
 
-def test_hp_changed_events_fire_during_battle(real_data_loader, save_manager):
+def test_hp_changed_events_fire_during_battle(real_data_loader, player_manager):
     your = _make_battle_pokemon("mudkip", real_data_loader, level=10)
     enemy = _make_battle_pokemon("treecko", real_data_loader, level=10, is_enemy=True)
 
     hp_events = []
     global_bus.subscribe(HpChangedEvent, hp_events.append)
 
-    bs = BattleSystem(your, enemy, save_manager, real_data_loader)
+    bs = BattleSystem(your, enemy, player_manager, real_data_loader)
     bs.turn(0)
     while bs.turnQueue:
         bs.executeNextAction()
@@ -65,11 +65,11 @@ def test_hp_changed_events_fire_during_battle(real_data_loader, save_manager):
     assert len(hp_events) > 0
 
 
-def test_save_manager_hp_updated_after_battle(real_data_loader, save_manager):
+def test_save_manager_hp_updated_after_battle(real_data_loader, player_manager):
     your = _make_battle_pokemon("mudkip", real_data_loader, level=5)
     enemy = _make_battle_pokemon("poochyena", real_data_loader, level=10, is_enemy=True)
 
-    bs = BattleSystem(your, enemy, save_manager, real_data_loader)
+    bs = BattleSystem(your, enemy, player_manager, real_data_loader)
     for _ in range(5):
         if your.currentHp <= 0 or enemy.currentHp <= 0:
             break
@@ -78,5 +78,5 @@ def test_save_manager_hp_updated_after_battle(real_data_loader, save_manager):
             bs.executeNextAction()
 
     bs.save()
-    saved_hp = save_manager.player.get_pokemon("mudkip").hp
+    saved_hp = player_manager.player.get_pokemon("mudkip").hp
     assert saved_hp == your.currentHp
