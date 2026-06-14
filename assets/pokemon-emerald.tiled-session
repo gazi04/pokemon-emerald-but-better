@@ -1,12 +1,13 @@
 {
-    "activeFile": "map/tilesets/locations/petalburg_city.tmx",
+    "activeFile": "map/oldale_town/home2.tmx",
     "expandedProjectPaths": [
         ".",
         "map/tilesets",
+        "map/little_root_town",
         "ui/sprites",
+        "map/oldale_town",
         "map",
-        "ui",
-        "map/tilesets/locations"
+        "ui"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -102,11 +103,11 @@
             }
         },
         "map/oldale_town/pokemon_center.tmx": {
-            "scale": 2.6797916666666666,
+            "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 239.94402549949467,
-                "y": 159.9004897768794
+                "x": 155.5,
+                "y": 248.25
             }
         },
         "map/pokemon_center.tmx": {
@@ -310,27 +311,25 @@
     "map.tileWidth": 16,
     "map.width": 10,
     "openFiles": [
-        "ui/pokemon_center.tmx",
-        "map/littleroot_town.tmx",
-        "map/oldale_town.tmx",
-        "map/route102.tmx",
-        "map/tilesets/locations/petalburg_city.tmx"
+        "map/oldale_town/home1.tmx",
+        "map/oldale_town/home2.tmx",
+        "map/oldale_town/pokemon_center.tmx",
+        "map/tilesets/interior_areas.tsx"
     ],
     "project": "pokemon-emerald.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "map/oldale_town/pokemon_center.tmx",
+        "map/oldale_town/home1.tmx",
         "map/tilesets/interior_areas.tsx",
+        "map/oldale_town/pokemon_center.tmx",
+        "map/oldale_town/home2.tmx",
         "ui/second_home_room.tmx",
         "map/little_root_town/second_home.tmx",
         "map/little_root_town/home.tmx",
         "map/little_root_town/home_room.tmx",
         "map/little_root_town/birch_labor.tmx",
         "map/Interior Tilesets.tsx",
-        "ui/pokemon_center.tmx",
-        "map/root101.tmx",
-        "map/littleroot_town_original.tmx",
-        "map/route102.tmx"
+        "ui/pokemon_center.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
