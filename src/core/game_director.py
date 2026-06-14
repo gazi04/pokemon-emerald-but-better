@@ -135,6 +135,16 @@ class GameDirector:
                 payload.get("npc_id", "")
             )
             
+        if target == "shop":
+            from src.states.shop_view import ShopView
+            
+            return ShopView(
+                overworld,
+                payload.get("previous_view", overworld),
+                data_loader,
+                save_manager
+            )
+            
         if target == "pokedex":
             from src.states.pokedex_view import PokedexView
             

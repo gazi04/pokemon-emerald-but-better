@@ -68,4 +68,4 @@ class DataLoader:
             data = json.load(f)
             
         for name, item in data.items():
-            self.npc_dialog[name] = NpcDialog(item)
+            self.npc_dialog[name] = NpcDialog(item["dialog"], item["action_after_dialog"])

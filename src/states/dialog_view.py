@@ -3,7 +3,7 @@ from src.ui.dialog_ui import DialogUI
 from src.core.data_loader import DataLoader
 from data.config import Config
 from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent
+from src.core.events import CloseViewEvent, OverlayViewEvent
 
 CONFIG = Config.load()
 
@@ -14,8 +14,9 @@ class DialogView(arcade.View):
         self.overworld = overworld
         self.ui = DialogUI()
         
+        self.npc = data_loader.npc_dialog[npc_id]
         self.dialog_index = 0
-        self.dialog = data_loader.npc_dialog[npc_id].dialog
+        self.dialog = self.npc.dialog
         
         self.ui.queue_messages(self.dialog[self.dialog_index])
         
@@ -28,7 +29,13 @@ class DialogView(arcade.View):
                 self.dialog_index += 1
                 self.ui.queue_messages(self.dialog[self.dialog_index])
             else:
-                global_bus.publish(CloseViewEvent())
+                self._end_of_dialog()
+                
+    def _end_of_dialog(self):
+        if self.npc.action_after_dialog == "end":
+            global_bus.publish(CloseViewEvent())
+        elif self.npc.action_after_dialog == "shop":
+            global_bus.publish(OverlayViewEvent(target="shop"))
 
     def _is_pressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key

@@ -31,6 +31,7 @@ class ShopView(arcade.View):
     def on_draw(self):
         self.clear()
         self.overworld.on_draw()
+        arcade.get_window().default_camera.use()
         self.ui.draw()
 
     def on_key_press(self, key, modifiers):

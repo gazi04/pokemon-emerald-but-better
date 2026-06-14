@@ -164,7 +164,7 @@ class ShopUI:
         self._manager.add(self._amount_widget)
         
     def set_money(self, money: int):
-        self._money_text.text = f"{money}"
+        self._money_text.text = f"${money}"
 
     def set_amount(self, amount: int, price: int):
         self._amount_text.text = f"x{amount} ${price}"
@@ -190,5 +190,4 @@ class ShopUI:
 
     def draw(self):
         self._manager.draw()
-        # Draw text on top so it's visible over the background boxes
         self._cursor.draw()
