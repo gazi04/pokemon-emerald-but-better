@@ -1,22 +1,22 @@
 import arcade
 from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from data.config import Config
 from src.ui.shop_ui import ShopUI
 
 CONFIG = Config.load()
 
 class ShopView(arcade.View):
-    def __init__(self, overworld: arcade.View, previous_view: arcade.View, data_loader: DataLoader, save_manager: SaveManager):
+    def __init__(self, overworld: arcade.View, previous_view: arcade.View, data_loader: DataLoader, player_manager: PlayerManager):
         super().__init__()
 
         self.overworld  = overworld
         self.previous_view = previous_view
-        self.save_manager = save_manager
+        self.player_manager = player_manager
 
         self.items = data_loader.items
         self._item_names = list(self.items.keys())
-        self.bag = save_manager.player.items + save_manager.player.pokeballs
+        self.bag = player_manager.player.items + player_manager.player.pokeballs
 
         self.ui = ShopUI(self.items)
 
@@ -25,7 +25,7 @@ class ShopView(arcade.View):
         self._item_index = 0
         self._amount = 1
 
-        self.ui.set_money(self.save_manager.player.money)
+        self.ui.set_money(self.player_manager.player.money)
         self.ui.select_option(self._option_index)
 
     def on_draw(self):
@@ -90,7 +90,7 @@ class ShopView(arcade.View):
         item = self.items[self._get_item_name()]
 
         if self._is_pressed(CONFIG.controls.up, key):
-            max_affordable = self.save_manager.player.money // item.price
+            max_affordable = self.player_manager.player.money // item.price
             self._amount = min(self._amount + 1, max_affordable)
             self.ui.set_amount(self._amount, self._amount * item.price)
 
@@ -112,15 +112,15 @@ class ShopView(arcade.View):
     def _confirm_purchase(self, item):
         total_cost = item.price * self._amount
 
-        if self.save_manager.player.money >= total_cost:
+        if self.player_manager.player.money >= total_cost:
             name = self._item_names[self._item_index]
-            self.save_manager.player.money -= total_cost
-            self.save_manager.add_item(name, self._amount)
+            self.player_manager.remove_money(total_cost)
+            self.player_manager.add_item(name, self._amount)
 
             self._mode = "items"
             self._amount = 1
             self.ui.show_shop()
-            self.ui.set_money(self.save_manager.player.money)
+            self.ui.set_money(self.player_manager.player.money)
             self.ui.selecting_item(self._item_index)
         else:
             self._mode = "items"

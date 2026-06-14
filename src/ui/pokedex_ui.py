@@ -1,6 +1,5 @@
 import arcade
 import arcade.gui
-from arcade import SpriteList
 from src.core.data_loader import DataLoader
 from src.constants import POKEDEX_UI
 
@@ -131,7 +130,7 @@ class PodedexUi:
         is_known = name in self._owned or name in self._seen
 
         if is_known:
-            profile = self.data_loader.getPokemon(name)
+            profile = self.data_loader.get_pokemon(name)
             texture = arcade.load_texture(profile.sprites.front)
         else:
             texture = arcade.load_texture("assets/sprite/pokemon/question_mark.png")

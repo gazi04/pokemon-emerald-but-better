@@ -1,0 +1,49 @@
+{
+  "tackle": {
+    "category": "physical",
+    "type": "normal",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 35,
+    "effects": []
+  },
+  "close combat": {
+    "category": "physical",
+    "type": "fighting",
+    "power": 120,
+    "accuracy": 100,
+    "pp": 5,
+    "effects": [
+      {"target": "self", "type": "stat", "stat": "defence", "change": -1},
+      {"target": "self", "type": "stat", "stat": "special_defence", "change": -1}
+    ]
+  },
+  "growl": {
+    "category": "status",
+    "type": "normal",
+    "power": null,
+    "accuracy": 100,
+    "pp": 40,
+    "effects": [
+      {"target": "opponent", "type": "stat", "stat": "attack", "change": -1}
+    ]
+  },
+  "ember": {
+    "category": "special",
+    "type": "fire",
+    "power": 40,
+    "accuracy": 100,
+    "pp": 25,
+    "effects": []
+  },
+  "toxic": {
+    "category": "status",
+    "type": "poison",
+    "power": null,
+    "accuracy": 90,
+    "pp": 10,
+    "effects": [
+      {"target": "opponent", "type": "status condition", "condition": "poison"}
+    ]
+  }
+}

@@ -1,25 +1,43 @@
 import arcade
-from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
 from data.config import Config
 from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent, OverlayViewEvent
+from src.core.events import CloseViewEvent, OverlayViewEvent, SaveGameRequestEvent, SaveCompletedEvent
 from src.ui.menu_ui import MenuUi
+from src.constants import FONT
 
 CONFIG = Config.load()
 
 
 class MenuView(arcade.View):
     def __init__(
-        self, overworld: arcade.View, save_manager: SaveManager, data_loader: DataLoader
+        self, overworld: arcade.View
     ):
         super().__init__()
 
         self.overworld = overworld
-        self.save_manager = save_manager
-        self.data_loader = data_loader
         self.ui = MenuUi()
         self.selectedIndex = 0
+
+        self._save_feedback: str = ""
+        self._save_feedback_timer: float = 0.0
+
+        global_bus.subscribe(SaveCompletedEvent, self._on_save_completed)
+
+    def on_show_view(self):
+        global_bus.subscribe(SaveCompletedEvent, self._on_save_completed)
+
+    def on_hide_view(self):
+        global_bus.unsubscribe(SaveCompletedEvent, self._on_save_completed)
+
+    def _on_save_completed(self, event: SaveCompletedEvent):
+        self._save_feedback = "Game saved!" if event.success else "Save failed!"
+        self._save_feedback_timer = 2.0
+
+    def on_update(self, delta_time: float):
+        if self._save_feedback_timer > 0:
+            self._save_feedback_timer -= delta_time
+            if self._save_feedback_timer <= 0:
+                self._save_feedback = ""
 
     def on_draw(self):
         self.clear()
@@ -27,6 +45,16 @@ class MenuView(arcade.View):
         self.overworld.on_draw()
         arcade.get_window().default_camera.use()
         self.ui.draw()
+        if self._save_feedback:
+            arcade.draw_text(
+                self._save_feedback,
+                x=400,
+                y=20,
+                color=arcade.color.WHITE,
+                font_size=20,
+                font_name=FONT,
+                anchor_x="center",
+            )
 
     def on_key_press(self, symbol: int, modifiers: int):
         if self.isPressed(CONFIG.controls.interact, symbol):
@@ -54,8 +82,6 @@ class MenuView(arcade.View):
                     target="pokedex",
                     payload={
                         "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
                     },
                 )
             )
@@ -65,8 +91,6 @@ class MenuView(arcade.View):
                     target="pokemon_menu",
                     payload={
                         "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
                     },
                 )
             )
@@ -76,10 +100,9 @@ class MenuView(arcade.View):
                     target="bag",
                     payload={
                         "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
                     },
                 )
             )
         elif self.selectedIndex == 3:
-            pass  # reserved
+            global_bus.publish(SaveGameRequestEvent())
+

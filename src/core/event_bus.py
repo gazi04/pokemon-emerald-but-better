@@ -8,11 +8,17 @@ class EventBus:
     def subscribe(self, event_type: Type, listener: Callable[[Any], None]):
         if event_type not in self._subscribers:
             self._subscribers[event_type] = []
-        self._subscribers[event_type].append(listener)
+        # Prevent duplicate subscriptions
+        if listener not in self._subscribers[event_type]:
+            self._subscribers[event_type].append(listener)
 
     def unsubscribe(self, event_type: Type, listener: Callable[[Any], None]):
         if event_type in self._subscribers:
-            self._subscribers[event_type].remove(listener)
+            try:
+                self._subscribers[event_type].remove(listener)
+            except ValueError:
+                # Listener was not subscribed, silently ignore
+                pass
 
     def publish(self, event: Any):
         event_type = type(event)

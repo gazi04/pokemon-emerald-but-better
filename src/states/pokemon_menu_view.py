@@ -1,12 +1,14 @@
 import arcade
 from typing import Optional
 from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from src.ui.pokemon_menu_ui import PokemonMenuUi
 from src.systems.bag_system import BagSystem
 from src.systems.pokemon_menu_system import PokemonMenuSystem
 from src.systems.battle_system import BattleSystem
 from data.config import Config
+from src.core.event_bus import global_bus
+from src.core.events import OverlayViewEvent
 
 CONFIG = Config.load()
 
@@ -15,7 +17,7 @@ class PokemonMenuView(arcade.View):
     def __init__(
         self,
         previousView: arcade.View,
-        save_manager: SaveManager,
+        player_manager: PlayerManager,
         data_loader: DataLoader,
         bag: Optional[BagSystem] = None,
         itemIndex: int = 0,
@@ -26,9 +28,10 @@ class PokemonMenuView(arcade.View):
         self.previousView = previousView
         self.bag = bag
         self.battleSystem = battleSystem
-        self.itemIndex = itemIndex        
+        self.itemIndex = itemIndex
 
-        self.system = PokemonMenuSystem(save_manager)
+        self.data_loader = data_loader
+        self.system = PokemonMenuSystem(player_manager)
         self.ui = PokemonMenuUi(data_loader)
 
         if bag:
@@ -119,7 +122,15 @@ class PokemonMenuView(arcade.View):
                 self._move_pokemon()
 
         elif index == 0:
-            pass
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="pokemon_information",
+                    payload={
+                        "previous_view": self,
+                        "pokemon": self.system.team[self.system.teamIndex]
+                    },
+                )
+            )
         
     def _move_pokemon(self):
         if not self.battleSystem:
