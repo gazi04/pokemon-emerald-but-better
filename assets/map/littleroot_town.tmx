@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="left-down" width="128" height="112" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="6">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="left-down" width="128" height="112" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="8">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <layer id="1" name="walkable" width="128" height="112">
   <data encoding="csv">
@@ -130,6 +130,13 @@
     <property name="destination map" value="interiors/poke_mart"/>
     <property name="x" type="int" value="270"/>
     <property name="y" type="int" value="269"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="7" name="npc">
+  <object id="7" gid="268" x="1600.25" y="1423.75" width="16" height="16">
+   <properties>
+    <property name="npc_id" value="npc_battle"/>
    </properties>
   </object>
  </objectgroup>

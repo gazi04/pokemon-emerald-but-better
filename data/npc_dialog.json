@@ -9,7 +9,7 @@
         ],
         "action_after_dialog": "shop"
     },
-    "npc-battle": {
+    "npc_battle": {
         "dialog": [
             "Dear, oh dear, what was it?",
             "The hunt, the blood, or the horrible dream?",

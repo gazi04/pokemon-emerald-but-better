@@ -3,7 +3,7 @@ from src.ui.dialog_ui import DialogUI
 from src.core.data_loader import DataLoader
 from data.config import Config
 from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent, OverlayViewEvent
+from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
 
 CONFIG = Config.load()
 
@@ -36,6 +36,8 @@ class DialogView(arcade.View):
             global_bus.publish(CloseViewEvent())
         elif self.npc.action_after_dialog == "shop":
             global_bus.publish(OverlayViewEvent(target="shop"))
+        elif self.npc.action_after_dialog == "fight":
+            global_bus.publish(SwapViewEvent("battle_trainer", {"trainer_data": self.npc.team}))
 
     def _is_pressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
