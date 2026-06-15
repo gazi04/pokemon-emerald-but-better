@@ -7,7 +7,7 @@ from src.model.pokemon import (
     PokemonEvolution,
 )
 from src.model.item import Item, ItemEffect
-from src.model.npc import NpcDialog
+from src.model.npc import NpcProfile
 
 
 class GameDataParser:
@@ -38,8 +38,8 @@ class GameDataParser:
         return items
     
     @staticmethod
-    def parse_npc_dialog(data: dict) -> dict[str, NpcDialog]:
+    def parse_npc_dialog(data: dict) -> dict[str, NpcProfile]:
         npc_dialogs = {}
         for name, npc_dialog in data.items():
-            npc_dialogs[name] = NpcDialog(npc_dialog)
+            npc_dialogs[name] = NpcProfile(npc_dialog)
         return npc_dialogs
