@@ -1,0 +1,12 @@
+{
+    "npc": {
+        "dialog": [
+            "Dear, oh dear, what was it?",
+            "The hunt, the blood, or the horrible dream?",
+            "Oh, it doesn't matter.",
+            "It always comes down to the hunters' helper to clean up after these sorts of messes.",
+            "Tonight... Gehrman joins the hunt."
+        ],
+        "action_after_dialog": "shop"
+    }
+}

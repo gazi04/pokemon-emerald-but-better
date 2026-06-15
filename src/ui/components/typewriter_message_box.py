@@ -1,6 +1,7 @@
 import arcade
 import arcade.gui
 from src.constants import TEXT_DELAY
+from arcade.types import Color
 
 
 class TypewriterMessageBox:
@@ -47,7 +48,14 @@ class TypewriterMessageBox:
 
     def set_callback(self, callback):
         self.after_text_callback = callback
-
+        
+    def set_font_style(
+        self,
+        font_size: int | None = None,
+        font_color: Color | None = None,
+    ) -> None:
+        self.dialog_text.update_font(font_color=font_color, font_size=font_size)
+        
     def _next_message(self):
         if self.message_queue:
             self.target_text = self.message_queue.pop(0)

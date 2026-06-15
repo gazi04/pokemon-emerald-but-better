@@ -15,6 +15,7 @@ from typing import Any, cast
 
 from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from src.core.event_bus import global_bus
 from src.core.events import SwapViewEvent, CloseViewEvent, OverlayViewEvent, SaveGameRequestEvent, SaveCompletedEvent
 
@@ -26,6 +27,7 @@ class GameDirector:
 
         self.save_manager = SaveManager()
         self.data_loader = DataLoader()
+        self.player_manager = PlayerManager(self.save_manager)
 
         global_bus.subscribe(SwapViewEvent, self._on_swap_view)
         global_bus.subscribe(CloseViewEvent, self._on_close_view)
@@ -96,7 +98,7 @@ class GameDirector:
             from src.states.battle_view import BattleView
 
             return BattleView(
-                save_manager=self.save_manager,
+                player_manager=self.player_manager,
                 data_loader=self.data_loader,
                 overworld_view=overworld,
                 foe_pokemon_name=payload["pokemon_name"],
@@ -108,7 +110,7 @@ class GameDirector:
             from src.states.battle_view import BattleView
 
             return BattleView(
-                save_manager=self.save_manager,
+                player_manager=self.player_manager,
                 data_loader=self.data_loader,
                 overworld_view=overworld,
                 is_trainer=True,
@@ -128,21 +130,39 @@ class GameDirector:
 
     def _build_overlay_view(self, target: str, payload: dict):
         overworld = self._get_or_create_overworld()
-        save_manager = payload.get("save_manager", self.save_manager)
-        data_loader = payload.get("data_loader", self.data_loader)
 
         if target == "menu":
             from src.states.menu_view import MenuView
 
-            return MenuView(overworld, save_manager, data_loader)
+            return MenuView(overworld)
         
+        if target == "dialog":
+            from src.states.dialog_view import DialogView
+            
+            return DialogView(
+                overworld, 
+                self.data_loader, 
+                payload.get("after_text_callback"), 
+                payload.get("npc_id", "")
+            )
+            
+        if target == "shop":
+            from src.states.shop_view import ShopView
+            
+            return ShopView(
+                overworld,
+                payload.get("previous_view", overworld),
+                self.data_loader,
+                self.player_manager
+            )
+            
         if target == "pokedex":
             from src.states.pokedex_view import PokedexView
-            
+
             return PokedexView(
                 previous_window=payload.get("previous_view", overworld),
-                save_manager=save_manager,
-                data_loader=data_loader
+                player_manager=self.player_manager,
+                data_loader=self.data_loader
             )
 
         if target == "bag":
@@ -150,8 +170,8 @@ class GameDirector:
 
             return BagView(
                 previousWindow=payload.get("previous_view", overworld),
-                save_manager=save_manager,
-                data_loader=data_loader,
+                player_manager=self.player_manager,
+                data_loader=self.data_loader,
                 battleSystem=cast(Any, payload.get("battle_system")),
             )
 
@@ -160,20 +180,20 @@ class GameDirector:
 
             return PokemonMenuView(
                 previousView=payload.get("previous_view", overworld),
-                save_manager=save_manager,
-                data_loader=data_loader,
+                player_manager=self.player_manager,
+                data_loader=self.data_loader,
                 bag=cast(Any, payload.get("bag")),
                 itemIndex=payload.get("item_index", 0),
                 battleSystem=cast(Any, payload.get("battle_system")),
             )
-
+            
         if target == "pokemon_information":
             from src.states.pokemon_info_view import PokemonInfoView
             
             return PokemonInfoView(
                 previous_view=payload.get("previous_view", overworld),
                 pokemon=payload.get("pokemon"),
-                data_loader=data_loader
+                data_loader=self.data_loader
             )
 
         return None

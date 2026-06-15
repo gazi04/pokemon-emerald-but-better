@@ -35,6 +35,7 @@ class PlayerProfile:
     items: list[Item]
     pokeballs: list[Pokeball]
     seen: list[str] = field(default_factory=list)
+    money: int = 0
 
     def get_pokemon(self, name: str) -> Optional[PlayerPokemon]:
         target = name.lower()

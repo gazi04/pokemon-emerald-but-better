@@ -18,7 +18,7 @@ class PokemonInformationUI:
         self._manager = arcade.gui.UIManager()
         self._manager._pixelated = True
         
-        _profile = data_loader.getPokemon(pokemon.name)
+        _profile = data_loader.get_pokemon(pokemon.name)
         if _profile is None:
             raise ValueError(f"No profile found for '{pokemon.name}'")
 
@@ -200,7 +200,7 @@ class PokemonInformationUI:
                 self._tab[2].append(self.description)
             elif "move" in obj.name and move_index < len(pokemon.moves):
                 move_data    = pokemon.moves[move_index]
-                move_profile = data_loader.getMove(move_data.name)
+                move_profile = data_loader.get_move(move_data.name)
 
                 type_y = y - h / 2
 

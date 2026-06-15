@@ -1,7 +1,7 @@
 import arcade
 from typing import Optional
 from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from data.config import Config
 from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
@@ -17,17 +17,17 @@ class BagView(arcade.View):
     def __init__(
         self,
         previousWindow: arcade.View,
-        save_manager: SaveManager,
+        player_manager: PlayerManager,
         data_loader: DataLoader,
         battleSystem: Optional[BattleSystem] = None,
     ):
         super().__init__()
 
-        self.save_manager = save_manager
+        self.player_manager = player_manager
         self.data_loader = data_loader
 
         self.bagUi = BagUI()
-        self.bagSystem = BagSystem(save_manager, data_loader)
+        self.bagSystem = BagSystem(player_manager, data_loader)
         self.battleSystem = battleSystem
         self.previousWindow = previousWindow
 
@@ -98,9 +98,7 @@ class BagView(arcade.View):
                         "previous_view": self,
                         "bag": self.bagSystem,
                         "item_index": self.currentIndex,
-                        "battle_system": self.battleSystem,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
+                        "battle_system": self.battleSystem
                     },
                 )
             )
@@ -111,8 +109,8 @@ class BagView(arcade.View):
                 result = self.battleSystem.attempt_catch(pokeball)
                 self.updateItem()
                 self.window.show_view(self.previousWindow)
-                if hasattr(self.previousWindow, "startCatchAttempt"):
-                    self.previousWindow.startCatchAttempt(result)
+                if hasattr(self.previousWindow, "start_catch_attempt"):
+                    self.previousWindow.start_catch_attempt(result)
 
     def isPressed(self, configKey, symbol) -> bool:
         return getattr(arcade.key, configKey, None) == symbol

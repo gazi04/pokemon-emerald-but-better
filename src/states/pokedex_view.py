@@ -1,6 +1,6 @@
 import arcade
 from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from data.config import Config
 from src.ui.pokedex_ui import PodedexUi
 
@@ -13,17 +13,17 @@ class PokedexView(arcade.View):
     def __init__(
         self,
         previous_window: arcade.View,
-        save_manager: SaveManager,
+        player_manager: PlayerManager,
         data_loader: DataLoader,
     ):
         super().__init__(background_color=(0, 0, 0))
         self.previous_window = previous_window
-        self.save_manager    = save_manager
+        self.player_manager  = player_manager
         self.data_loader     = data_loader
 
         all_pokemon = list(data_loader.pokemons.keys())
-        owned       = {p.name for p in save_manager.player.pokemon}
-        seen        = set(save_manager.player.seen)
+        owned       = {p.name for p in player_manager.get_pokemon_team()}
+        seen        = set(player_manager.get_seen_pokemon())
 
         self.ui = PodedexUi(data_loader, all_pokemon, owned, seen)
 

@@ -1,7 +1,7 @@
 import arcade
 from typing import Optional
 from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from src.ui.pokemon_menu_ui import PokemonMenuUi
 from src.systems.bag_system import BagSystem
 from src.systems.pokemon_menu_system import PokemonMenuSystem
@@ -17,7 +17,7 @@ class PokemonMenuView(arcade.View):
     def __init__(
         self,
         previousView: arcade.View,
-        save_manager: SaveManager,
+        player_manager: PlayerManager,
         data_loader: DataLoader,
         bag: Optional[BagSystem] = None,
         itemIndex: int = 0,
@@ -28,10 +28,10 @@ class PokemonMenuView(arcade.View):
         self.previousView = previousView
         self.bag = bag
         self.battleSystem = battleSystem
-        self.itemIndex = itemIndex        
+        self.itemIndex = itemIndex
 
         self.data_loader = data_loader
-        self.system = PokemonMenuSystem(save_manager)
+        self.system = PokemonMenuSystem(player_manager)
         self.ui = PokemonMenuUi(data_loader)
 
         if bag:
@@ -127,8 +127,7 @@ class PokemonMenuView(arcade.View):
                     target="pokemon_information",
                     payload={
                         "previous_view": self,
-                        "pokemon": self.system.team[self.system.teamIndex],
-                        "data_loader": self.data_loader
+                        "pokemon": self.system.team[self.system.teamIndex]
                     },
                 )
             )

@@ -1,6 +1,4 @@
 import arcade
-from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
 from data.config import Config
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent, SaveGameRequestEvent, SaveCompletedEvent
@@ -12,19 +10,20 @@ CONFIG = Config.load()
 
 class MenuView(arcade.View):
     def __init__(
-        self, overworld: arcade.View, save_manager: SaveManager, data_loader: DataLoader
+        self, overworld: arcade.View
     ):
         super().__init__()
 
         self.overworld = overworld
-        self.save_manager = save_manager
-        self.data_loader = data_loader
         self.ui = MenuUi()
         self.selectedIndex = 0
 
         self._save_feedback: str = ""
         self._save_feedback_timer: float = 0.0
 
+        global_bus.subscribe(SaveCompletedEvent, self._on_save_completed)
+
+    def on_show_view(self):
         global_bus.subscribe(SaveCompletedEvent, self._on_save_completed)
 
     def on_hide_view(self):
@@ -83,8 +82,6 @@ class MenuView(arcade.View):
                     target="pokedex",
                     payload={
                         "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
                     },
                 )
             )
@@ -94,8 +91,6 @@ class MenuView(arcade.View):
                     target="pokemon_menu",
                     payload={
                         "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
                     },
                 )
             )
@@ -105,8 +100,6 @@ class MenuView(arcade.View):
                     target="bag",
                     payload={
                         "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
                     },
                 )
             )

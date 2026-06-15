@@ -1,7 +1,7 @@
 import random
 
 from src.entities.pokemon_battle import PokemonBattle
-from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
 from src.core.event_bus import global_bus
@@ -17,14 +17,14 @@ class BattleSystem:
         self,
         yourPokemon: PokemonBattle,
         enemyPokemon: PokemonBattle,
-        save_manager: SaveManager,
+        player_manager: PlayerManager,
         data_loader: DataLoader,
         is_trainer=False,
         trainer_data: Optional[Trainer] = None
     ):
         self.yourPokemon = yourPokemon
         self.enemyPokemon = enemyPokemon
-        self.save_manager = save_manager
+        self.player_manager = player_manager
         self.data_loader = data_loader
 
         self.turnQueue = []
@@ -61,7 +61,7 @@ class BattleSystem:
         return self.executeNextAction()
     
     def switch_pokemon(self) -> list[str]:
-        pokemon = self.save_manager.player.pokemon[0]
+        pokemon = self.player_manager.player.pokemon[0]
         pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
         
         if pokemon.hp <= 0:
@@ -150,7 +150,7 @@ class BattleSystem:
         return messages
 
     def _applyItemToPokemon(self, itemIndex: int) -> list[str]:
-        item = self.save_manager.player.items[itemIndex]
+        item = self.player_manager.player.items[itemIndex]
         self.yourPokemon.syncFromSource()
 
         global_bus.publish(
@@ -259,16 +259,16 @@ class BattleSystem:
 
     def save(self):
         pokemonName = self.yourPokemon.name.lower()
-        self.save_manager.player.update_hp(pokemonName, self.yourPokemon.currentHp)
+        self.player_manager.update_pokemon_hp(pokemonName, self.yourPokemon.currentHp)
         for move in self.yourPokemon.moves:
-            self.save_manager.player.update_move_pp(pokemonName, move.name, move.pp)
+            self.player_manager.update_move_pp(pokemonName, move.name, move.pp)
 
         if not self.hasEvolved:
-            self.save_manager.player.update_level(
+            self.player_manager.update_level(
                 pokemonName, self.yourPokemon.level, self.yourPokemon.exp
             )
         else:
-            self.save_manager.player.update_level(
+            self.player_manager.update_level(
                 pokemonName,
                 self.yourPokemon.level,
                 self.yourPokemon.exp,

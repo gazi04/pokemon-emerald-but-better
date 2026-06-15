@@ -1,14 +1,14 @@
 from src.core.data_loader import DataLoader
-from src.core.save_manager import SaveManager
+from src.core.player_manager import PlayerManager
 
 
 class BagSystem:
-    def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
-        self.save_manager = save_manager
+    def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
+        self.player_manager = player_manager
         self.data_loader = data_loader
 
-        self._items = save_manager.player.items
-        self._pokeballs = save_manager.player.pokeballs
+        self._items = player_manager.player.items
+        self._pokeballs = player_manager.player.pokeballs
         
     def usePokeball(self, pokeball_index: int):
         if 0 <= pokeball_index < len(self._pokeballs):
@@ -34,7 +34,7 @@ class BagSystem:
                 self._items.pop(itemIndex)
 
     def _handleItemEffects(self, pokemonId: str, itemId: str) -> bool:
-        pokemon = self.save_manager.player.get_pokemon(pokemonId)
+        pokemon = self.player_manager.player.get_pokemon(pokemonId)
         pokemonProfile = self.data_loader.get_pokemon(pokemonId)
 
         maxHp = (
@@ -63,7 +63,7 @@ class BagSystem:
 
         inventory_item = self._items[itemIndex]
 
-        pokemon = self.save_manager.player.get_pokemon(pokemonId)
+        pokemon = self.player_manager.player.get_pokemon(pokemonId)
         pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
 
         maxHp = (

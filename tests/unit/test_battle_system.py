@@ -167,7 +167,7 @@ def test_turn_use_item_publishes_hp_changed_event():
     bs, your, _ = make_battle_system()
     item = MagicMock()
     item.name = "potion"
-    bs.save_manager.player.items = [item]
+    bs.player_manager.player.items = [item]
     received = []
     global_bus.subscribe(HpChangedEvent, received.append)
     bs.turnUseItem(0)

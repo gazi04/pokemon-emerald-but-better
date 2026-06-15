@@ -54,6 +54,7 @@
         }
     ],
     "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"],
+    "money": 1000,
     "position": {
         "map_name": "littleroot_town",
         "direction": "left",
