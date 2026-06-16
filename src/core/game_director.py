@@ -188,6 +188,7 @@ class GameDirector:
                 bag=cast(Any, payload.get("bag")),
                 itemIndex=payload.get("item_index", 0),
                 battleSystem=cast(Any, payload.get("battle_system")),
+                forced_switch=payload.get("forced_switch", False),
             )
             
         if target == "pokemon_information":

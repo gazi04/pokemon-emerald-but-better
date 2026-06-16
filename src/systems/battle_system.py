@@ -189,20 +189,25 @@ class BattleSystem:
 
     def pokemonDeath(self, diedPokemon: PokemonBattle) -> list[str]:
         messages = []
-        self.battleState = "end"
 
         if diedPokemon.isEnemy:
+            self.battleState = "end"
             self.exp = diedPokemon.getExp()
             messages.extend([
                     f"{self.enemyPokemon.name} fainted!",
                     f"{self.yourPokemon.name} gained {self.exp} EXP. Points!"
                 ]
             )
-            
+
             if self.is_trainer and self.trainer_party:
                 self.next_trainer_pokemon = self.trainer_party.pop(0)
                 self.battleState = "trainer switch"
         else:
+            # Write the fainted HP back to the team member so the bench/active
+            # HP is accurate when we decide between switching and losing.
+            if self.yourPokemon.source is not None:
+                self.yourPokemon.source.hp = self.yourPokemon.currentHp
+            self.battleState = "player fainted"
             messages.append(f"{self.yourPokemon.name} fainted!")
 
         global_bus.publish(
@@ -213,6 +218,21 @@ class BattleSystem:
         )
 
         return messages
+
+    def has_usable_pokemon(self) -> bool:
+        """True if the player still has at least one Pokémon that can fight."""
+        return any(p.hp > 0 for p in self.player_manager.player.pokemon)
+
+    def complete_forced_switch(self) -> list[str]:
+        """
+        Bring in the replacement chosen after a faint. The team list has
+        already been reordered so the new active is at index 0. No enemy turn
+        follows a forced switch.
+        """
+        pokemon = self.player_manager.player.pokemon[0]
+        profile = self.data_loader.get_pokemon(pokemon.name)
+        self.yourPokemon.switching_pokemon(pokemon, profile)
+        return [f"Go {pokemon.name}!"]
 
     def attempt_catch(self, item_data: Item) -> dict:
         ball_modifier = 1
