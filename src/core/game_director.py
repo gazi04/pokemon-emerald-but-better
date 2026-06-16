@@ -87,7 +87,7 @@ class GameDirector:
             from src.states.overworld_view import OverworldView
 
             self._view_cache["overworld"] = OverworldView(
-                self.save_manager, self.data_loader
+                self.player_manager, self.data_loader
             )
         return self._view_cache["overworld"]
 
@@ -114,7 +114,8 @@ class GameDirector:
                 data_loader=self.data_loader,
                 overworld_view=overworld,
                 is_trainer=True,
-                trainer_data=payload["trainer_data"]
+                trainer_data=payload["trainer_data"],
+                npc_id=payload.get("npc_id"),
             )
 
         if target == "evolving":
@@ -138,12 +139,14 @@ class GameDirector:
         
         if target == "dialog":
             from src.states.dialog_view import DialogView
-            
+
             return DialogView(
-                overworld, 
-                self.data_loader, 
-                payload.get("after_text_callback"), 
-                payload.get("npc_id", "")
+                overworld,
+                self.data_loader,
+                payload.get("after_text_callback"),
+                payload.get("npc_id", ""),
+                state=payload.get("state", "default"),
+                action=payload.get("action"),
             )
             
         if target == "shop":

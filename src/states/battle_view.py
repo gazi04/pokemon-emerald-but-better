@@ -24,13 +24,15 @@ class BattleView(arcade.View):
         foe_pokemon_data=None,
         foe_level=None,
         is_trainer=False,
-        trainer_data: Trainer = None
+        trainer_data: Trainer = None,
+        npc_id: str = None
     ):
         super().__init__()
 
         self.overworld_view = overworld_view
         self.player_manager = player_manager
         self.data_loader = data_loader
+        self.npc_id = npc_id
 
         self.ui = BattleUiManager(self.whatHappendAfterText)
 
@@ -412,9 +414,21 @@ class BattleView(arcade.View):
     def run(self):
         self.battleSystem.save()
 
-        # Award prize money if trainer battle was won
-        if self.is_trainer and self.prize_money > 0:
-            self.player_manager.add_money(self.prize_money)
+        if self.is_trainer:
+            # Trainer battles can't be fled, so reaching here means victory.
+            if self.prize_money > 0:
+                self.player_manager.add_money(self.prize_money)
+
+            if self.npc_id:
+                self.player_manager.npc_manager.mark_defeated(self.npc_id)
+                npc = self.data_loader.npc_dialog.get(self.npc_id)
+                if npc and npc.has_state("after_victory"):
+                    # Show the post-battle dialog instead of going straight back.
+                    global_bus.publish(OverlayViewEvent(
+                        target="dialog",
+                        payload={"npc_id": self.npc_id, "state": "after_victory", "action": "end"},
+                    ))
+                    return
 
         # Tell the Director we are done — it will return to the Overworld
         global_bus.publish(CloseViewEvent())

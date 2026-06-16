@@ -11,7 +11,6 @@ class DataLoader:
         self.moves: dict[str, PokemonMove] = GameDataParser.parse_moves(self._read("data/moves.json"))
         self.items: dict[str, Item] = GameDataParser.parse_items(self._read("data/items.json"))
         self.npc_dialog: dict[str, NpcProfile] = GameDataParser.parse_npc_dialog(self._read("data/npc_dialog.json"))
-        print(self.npc_dialog)
 
     def _read(self, path: str) -> dict:
         with open(path) as f:

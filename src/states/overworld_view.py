@@ -4,6 +4,7 @@ from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
 
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
+from src.core.player_manager import PlayerManager
 from src.model.player import PlayerState
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
@@ -22,10 +23,11 @@ CONFIG = Config.load()
 
 
 class OverworldView(arcade.View):
-    def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
+    def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
         super().__init__()
 
-        self.save_manager = save_manager
+        self.player_manager = player_manager
+        self.save_manager = player_manager.save_manager
         self.data_loader = data_loader
 
         arcade.get_window().ctx.default_texture_filter = (
@@ -49,7 +51,7 @@ class OverworldView(arcade.View):
         self.canRenderScene = True
         self.flickerInterval = FLICKER_INTERVAL
 
-        saved = save_manager.saved_position
+        saved = self.save_manager.saved_position
         if saved:
             self.player_state.map_name = saved.get("map_name", self.player_state.map_name)
             self.player_state.direction = saved.get("direction", self.player_state.direction)
@@ -162,8 +164,9 @@ class OverworldView(arcade.View):
         )
 
     def _on_npc_interaction(self, event: NpcInteractEvent):
-        if event.npc_id == "poke-mart-npc":
-            # Open the shop
+        npc_id = event.npc_id
+
+        if npc_id == "poke-mart-npc":
             global_bus.publish(OverlayViewEvent(
                 target="shop",
                 payload={
@@ -172,12 +175,34 @@ class OverworldView(arcade.View):
                     "data_loader": self.data_loader,
                 }
             ))
-        else:
-            # Show dialog for other NPCs
-            global_bus.publish(OverlayViewEvent(
-                target="dialog",
-                payload={"npc_id": event.npc_id}
-            ))
+            return
+
+        npc = self.data_loader.npc_dialog.get(npc_id)
+        if npc is None:
+            return
+
+        state, action = self._resolve_dialog(npc_id, npc)
+        self.player_manager.npc_manager.mark_talked(npc_id)
+
+        global_bus.publish(OverlayViewEvent(
+            target="dialog",
+            payload={"npc_id": npc_id, "state": state, "action": action},
+        ))
+
+    def _resolve_dialog(self, npc_id: str, npc) -> tuple[str, str]:
+        """
+        Pick which dialog state to show and what happens after it,
+        based on the NPC's battle progress.
+        Returns (state, action_after_dialog).
+        """
+        is_battle_npc = npc.action_after_dialog == "fight"
+        already_beaten = not self.player_manager.npc_manager.can_fight(npc_id)
+
+        if is_battle_npc and not already_beaten:
+            return "first_encounter", "fight"
+        if is_battle_npc and already_beaten:
+            return "after_victory", "end"
+        return "default", npc.action_after_dialog
 
     # ------------------------------------------------------------------
     # Game loop
