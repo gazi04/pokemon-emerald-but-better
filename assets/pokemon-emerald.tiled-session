@@ -1,0 +1,339 @@
+{
+    "activeFile": "map/oldale_town/home2.tmx",
+    "expandedProjectPaths": [
+        ".",
+        "map/tilesets",
+        "map/little_root_town",
+        "ui/sprites",
+        "map/oldale_town",
+        "map",
+        "ui"
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "map/Interior Tilesets.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/Tiles.tsx": {
+            "scaleInDock": 3
+        },
+        "map/little_root_town/birch_labor.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 50.66666666666666,
+                "y": -56.16666666666666
+            }
+        },
+        "map/little_root_town/home.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 0,
+                "y": -0.5
+            }
+        },
+        "map/little_root_town/home_room.tmx": {
+            "scale": 4,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 7.25,
+                "y": 36.625
+            }
+        },
+        "map/little_root_town/second_home.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 0,
+                "y": -0.5
+            }
+        },
+        "map/littleroot_town.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1694.6666666666665,
+                "y": 1165.6666666666665
+            }
+        },
+        "map/littleroot_town_original.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 9.333333333333314,
+                "y": 131.83333333333331
+            }
+        },
+        "map/oldale_town.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 5.666666666666657,
+                "y": 11.166666666666657
+            }
+        },
+        "map/oldale_town/Interior Tilesets.tsx": {
+            "scaleInDock": 1
+        },
+        "map/oldale_town/home1.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 0,
+                "y": -0.5
+            }
+        },
+        "map/oldale_town/home2.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 0,
+                "y": -0.5
+            }
+        },
+        "map/oldale_town/pokemon_center.tmx": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 155.5,
+                "y": 248.25
+            }
+        },
+        "map/pokemon_center.tmx": {
+            "scale": 2.885625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 222.13558587827592,
+                "y": 159.93069092484296
+            }
+        },
+        "map/root101.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 275,
+                "y": 292.25
+            }
+        },
+        "map/rote101.tmx": {
+            "scale": 2.9667708333333334,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 240.16010673782523,
+                "y": 159.93820441697974
+            }
+        },
+        "map/route102.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 32.66666666666663,
+                "y": 17
+            }
+        },
+        "map/tilesets/Game Boy Advance - Pokemon Emerald - Miscellaneous - Pokemon Menu.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/abandoned_ship.tsx": {
+            "scaleInDock": 1
+        },
+        "map/tilesets/artisan_cave.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/battle_frontie_interiors.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/battle_frontier.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/battle_frontier_buildings.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/desert_underpass.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/faraway_island.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/interior.tsx": {
+            "scaleInDock": 1
+        },
+        "map/tilesets/interior_areas.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/interior_ares.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/littleroot_town.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/locations/Game Boy Advance - Pokemon Emerald - Miscellaneous - Pokemon Menu.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/locations/abandoned_ship.tsx": {
+            "scaleInDock": 0.75
+        },
+        "map/tilesets/locations/bla.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/locations/full_map.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        },
+        "map/tilesets/locations/littleroot_town.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        },
+        "map/tilesets/locations/petalburg_city.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -30,
+                "y": -98.75
+            }
+        },
+        "map/tilesets/locations/petalburg_woods.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/locations/route101.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/locations/rydels_bike_shop.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/mt_chimney.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/petalburg_woods.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/pokemon_center_and_mart.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/rydels_bike_shop.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/safari_zone.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/sand_tower.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/scorched_slab.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/secret_bases.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/terra_cave.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map/tilesets/trainer_hill.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ui/pokemon_center.tmx": {
+            "scale": 2.9667708333333334,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 239.99157332958816,
+                "y": 159.93820441697974
+            }
+        },
+        "ui/second_home_room.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 0,
+                "y": -0.5
+            }
+        },
+        "ui/sprites/Interiors.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ui/sprites/ui.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "/home/gazi/Documents/projects/pokemon-emerald/assets/map/tilesets",
+    "map.fixedSize": false,
+    "map.height": 20,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 10,
+    "openFiles": [
+        "map/oldale_town/home1.tmx",
+        "map/oldale_town/home2.tmx",
+        "map/oldale_town/pokemon_center.tmx",
+        "map/tilesets/interior_areas.tsx"
+    ],
+    "project": "pokemon-emerald.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "map/oldale_town/home1.tmx",
+        "map/tilesets/interior_areas.tsx",
+        "map/oldale_town/pokemon_center.tmx",
+        "map/oldale_town/home2.tmx",
+        "ui/second_home_room.tmx",
+        "map/little_root_town/second_home.tmx",
+        "map/little_root_town/home.tmx",
+        "map/little_root_town/home_room.tmx",
+        "map/little_root_town/birch_labor.tmx",
+        "map/Interior Tilesets.tsx",
+        "ui/pokemon_center.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
