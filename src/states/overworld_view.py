@@ -9,6 +9,8 @@ from src.model.player import PlayerState
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem
+from src.systems.npc_controller import NpcController
+from src.systems.npc_behaviors import make_behavior
 from src.entities.player_sprite import PlayerSprite
 from src.entities.npc import Npc
 from src.core.event_bus import global_bus
@@ -104,12 +106,14 @@ class OverworldView(arcade.View):
         )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
         
-        self.npcs = arcade.SpriteList(use_spatial_hash=True)
+        self.npcs = arcade.SpriteList(use_spatial_hash=False)
         npc_layer = self.tile_map.get_tilemap_layer("npc")
         if npc_layer:
             self.scene.remove_sprite_list_by_name("npc")
             for obj in npc_layer.tiled_objects:
                 tex_path = "assets/sprite/npc/poke_mark/npc.png"
+                props = obj.properties or {}
+                print(props)
                 npc = Npc(
                     texture=tex_path,
                     x=obj.coordinates.x * 2 + obj.size.width,
@@ -117,9 +121,13 @@ class OverworldView(arcade.View):
                         self.tile_map.height * self.tile_map.tile_height
                         - obj.coordinates.y
                     ) * 2 + obj.size.height / 2,
-                    npc_id=obj.properties.get("npc_id", ""),
+                    npc_id=props.get("npc_id", ""),
+                    behavior=make_behavior(props),
+                    facing=props.get("facing", "down"),
                 )
                 self.npcs.append(npc)
+
+        self._setup_npc_controller()
 
         if playerPos:
             self.player_state.pixel_x = playerPos[0]
@@ -136,6 +144,25 @@ class OverworldView(arcade.View):
             bush_tiles=bush_tiles,
             player_state=self.player_state,
             data_loader=self.data_loader,
+        )
+
+    def _setup_npc_controller(self) -> None:
+        """Build the NPC controller for the freshly loaded map."""
+        try:
+            collision_tiles = self.scene["collision"]
+        except KeyError:
+            collision_tiles = arcade.SpriteList()
+
+        map_width = self.tile_map.width * self.tile_map.tile_width * 2
+        map_height = self.tile_map.height * self.tile_map.tile_height * 2
+
+        self.npc_controller = NpcController(
+            npcs=self.npcs,
+            movement_system=self.movement_system,
+            collision_tiles=collision_tiles,
+            player_state=self.player_state,
+            map_width=map_width,
+            map_height=map_height,
         )
 
     def _extract_bush_tiles(self) -> set[tuple[int, int]]:
@@ -256,6 +283,10 @@ class OverworldView(arcade.View):
 
         self.movement_system.update(delta_time, self.player_state, intent)
         self.player_sprite.sync_with_state(self.player_state)
+
+        # NPCs only think while the overworld is the active view, so they
+        # naturally freeze during dialog, battle and menus.
+        self.npc_controller.update(delta_time)
 
     def on_draw(self):
         self.clear()
