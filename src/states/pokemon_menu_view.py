@@ -22,6 +22,7 @@ class PokemonMenuView(arcade.View):
         bag: Optional[BagSystem] = None,
         itemIndex: int = 0,
         battleSystem: Optional[BattleSystem] = None,
+        forced_switch: bool = False,
     ):
         super().__init__()
 
@@ -29,6 +30,7 @@ class PokemonMenuView(arcade.View):
         self.bag = bag
         self.battleSystem = battleSystem
         self.itemIndex = itemIndex
+        self.forced_switch = forced_switch
 
         self.data_loader = data_loader
         self.system = PokemonMenuSystem(player_manager)
@@ -57,6 +59,8 @@ class PokemonMenuView(arcade.View):
 
     def _handleMenuInput(self, key):
         if self._is_pressed(CONFIG.controls.cancel, key):
+            if self.forced_switch:
+                return  # Can't back out — a replacement must be chosen.
             if self.system.isMovingPokemon:
                 self.system.cancelMoving()
             else:
@@ -64,7 +68,9 @@ class PokemonMenuView(arcade.View):
             return
 
         if self._is_pressed(CONFIG.controls.interact, key):
-            if self.system.isMovingPokemon:
+            if self.forced_switch:
+                self._do_forced_switch()
+            elif self.system.isMovingPokemon:
                 if not self.battleSystem:
                     self.system.movePokemon(self.system.teamIndex)
                     self.ui.setValues(self.system.team)
@@ -76,6 +82,17 @@ class PokemonMenuView(arcade.View):
             self.system.moveTeamIndex(-1)
 
         self.ui.selectPokemon(self.system.teamIndex)
+
+    def _do_forced_switch(self):
+        selected = self.system.team[self.system.teamIndex]
+        # Can't send out a fainted Pokémon or the one already out.
+        if selected.hp <= 0 or self.system.teamIndex == 0:
+            return
+
+        self.system.confirmSwitch(self.system.teamIndex)
+        self.ui.setValues(self.system.team)
+        self.previousView.force_switch()
+        self.window.show_view(self.previousView)
 
     def _handleTooltipInput(self, key):
         if self._is_pressed(CONFIG.controls.cancel, key):

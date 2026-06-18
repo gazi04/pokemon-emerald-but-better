@@ -73,6 +73,10 @@ class PlayerInput:
                     "y": hit_transitions[0].properties["y"],
                 }
 
+            # Block if an NPC stands on the target tile
+            if npcs is not None and arcade.get_sprites_at_point((target_x, target_y), npcs):
+                return {"type": "turn", "direction": new_dir}
+
             # Check collisions
             hit_list = arcade.get_sprites_at_point(
                 (target_x, target_y), collision_tiles

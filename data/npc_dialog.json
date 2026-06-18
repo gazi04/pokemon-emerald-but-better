@@ -1,12 +1,39 @@
 {
-    "npc": {
-        "dialog": [
-            "Dear, oh dear, what was it?",
-            "The hunt, the blood, or the horrible dream?",
-            "Oh, it doesn't matter.",
-            "It always comes down to the hunters' helper to clean up after these sorts of messes.",
-            "Tonight... Gehrman joins the hunt."
-        ],
-        "action_after_dialog": "shop"
+  "poke-mart-npc": {
+    "name": "Shop Clerk",
+    "dialog": {
+      "first_encounter": [
+      "Welcome to the Poké Mart!",
+      "We have everything you need for your journey."
+    ],
+    "default": ["Welcome back!", "Can I help you find anything?"]
     }
+  },
+  "npc_battle": {
+    "dialog": {
+      "first_encounter": [
+        "Dear, oh dear, what was it?",
+        "The hunt, the blood, or the horrible dream?",
+        "Oh, it doesn't matter.",
+        "It always comes down to the hunters' helper to clean up after these sorts of messes.",
+        "Tonight... Gehrman joins the hunt."
+      ],
+      "after_victory": ["The night, and the dream, were long..."],
+      "after_defeat": ["You must accept your death.", "Be freed from the night..."]
+    },
+    "action_after_dialog": "fight",
+    "team": [
+      {
+        "name": "zigzagoon",
+        "hp": 10,
+        "level": 4,
+        "moves": [
+          {
+            "name": "tackle",
+            "pp": 25
+          }
+        ]
+      }
+    ]
+  }
 }
