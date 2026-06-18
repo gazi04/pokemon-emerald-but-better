@@ -144,13 +144,16 @@ class OverworldView(arcade.View):
         are in pixel space. Dividing by TILE_SIZE gives grid coords that
         match MovementSystem's grid_x = round(pixel_x / TILE_SIZE).
         """
-        tiles: set[tuple[int, int]] = set()
-        bush_layer = self.scene["bush"]
-        for sprite in bush_layer:
-            gx = round(sprite.center_x / TILE_SIZE)
-            gy = round(sprite.center_y / TILE_SIZE)
-            tiles.add((gx, gy))
-        return tiles
+        try:
+            tiles: set[tuple[int, int]] = set()
+            bush_layer = self.scene["bush"]
+            for sprite in bush_layer:
+                gx = round(sprite.center_x / TILE_SIZE)
+                gy = round(sprite.center_y / TILE_SIZE)
+                tiles.add((gx, gy))
+            return tiles
+        except Exception:
+            return set()
 
     # ------------------------------------------------------------------
     # Event handlers

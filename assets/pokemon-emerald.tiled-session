@@ -54,11 +54,14 @@
             }
         },
         "map/littleroot_town.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
             "scale": 1.5,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1694.6666666666665,
-                "y": 1165.6666666666665
+                "x": 1560,
+                "y": 967.9999999999999
             }
         },
         "map/littleroot_town_original.tmx": {
@@ -91,7 +94,7 @@
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 0,
-                "y": -0.5
+                "y": -1
             }
         },
         "map/oldale_town/home2.tmx": {
@@ -99,15 +102,26 @@
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 0,
-                "y": -0.5
+                "y": -1
+            }
+        },
+        "map/oldale_town/poke_mart.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 1.7456249999999998,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 120.30075187969928,
+                "y": 215.96849266022198
             }
         },
         "map/oldale_town/pokemon_center.tmx": {
-            "scale": 2,
-            "selectedLayer": 0,
+            "scale": 8,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 155.5,
-                "y": 248.25
+                "x": 240.125,
+                "y": 215.5
             }
         },
         "map/pokemon_center.tmx": {
@@ -319,10 +333,10 @@
     "project": "pokemon-emerald.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "map/oldale_town/home1.tmx",
         "map/tilesets/interior_areas.tsx",
-        "map/oldale_town/pokemon_center.tmx",
         "map/oldale_town/home2.tmx",
+        "map/oldale_town/home1.tmx",
+        "map/oldale_town/pokemon_center.tmx",
         "ui/second_home_room.tmx",
         "map/little_root_town/second_home.tmx",
         "map/little_root_town/home.tmx",
