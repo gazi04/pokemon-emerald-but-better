@@ -111,11 +111,8 @@ class OverworldView(arcade.View):
         if npc_layer:
             self.scene.remove_sprite_list_by_name("npc")
             for obj in npc_layer.tiled_objects:
-                tex_path = "assets/sprite/npc/poke_mark/npc.png"
                 props = obj.properties or {}
-                print(props)
                 npc = Npc(
-                    texture=tex_path,
                     x=obj.coordinates.x * 2 + obj.size.width,
                     y = (
                         self.tile_map.height * self.tile_map.tile_height

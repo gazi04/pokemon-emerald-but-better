@@ -35,12 +35,14 @@ class NpcController:
 
             self.movement_system.advance(delta_time, npc.motion)
             npc.sync_sprite()
+            npc.update_animation()
 
     def _apply_intent(self, npc, intent) -> None:
         if not intent:
             return
         if intent["type"] == "turn":
             npc.motion.direction = intent["direction"]
+            npc.set_idle(intent["direction"])
         elif intent["type"] == "move":
             npc.motion.direction = intent.get("direction", npc.motion.direction)
             self.movement_system.begin(npc.motion, intent)

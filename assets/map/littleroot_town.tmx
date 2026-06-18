@@ -136,7 +136,7 @@
  <objectgroup id="7" name="npc">
   <object id="7" gid="268" x="1600.25" y="1423.75" width="16" height="16">
    <properties>
-    <property name="behavior" value="look_around"/>
+    <property name="behavior" value="wander"/>
     <property name="npc_id" value="npc_battle"/>
    </properties>
   </object>
