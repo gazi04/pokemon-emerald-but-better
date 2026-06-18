@@ -24,13 +24,15 @@ class BattleView(arcade.View):
         foe_pokemon_data=None,
         foe_level=None,
         is_trainer=False,
-        trainer_data: Trainer = None
+        trainer_data: Trainer = None,
+        npc_id: str = None
     ):
         super().__init__()
 
         self.overworld_view = overworld_view
         self.player_manager = player_manager
         self.data_loader = data_loader
+        self.npc_id = npc_id
 
         self.ui = BattleUiManager(self.whatHappendAfterText)
 
@@ -191,8 +193,74 @@ class BattleView(arcade.View):
             self._trainer_give_exp()
         elif self.battleSystem.battleState == "trainer sending":
             self._trainer_send_next_pokemon()
+        elif self.battleSystem.battleState == "player fainted":
+            self._handle_player_fainted()
+        elif self.battleSystem.battleState == "lost":
+            self._end_loss()
         elif self.battleSystem.battleState == "end":
             self._handle_battle_finishing()
+
+    def _handle_player_fainted(self):
+        if self.battleSystem.has_usable_pokemon():
+            # Force the player to choose a replacement.
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="pokemon_menu",
+                    payload={
+                        "previous_view": self,
+                        "data_loader": self.data_loader,
+                        "battle_system": self.battleSystem,
+                        "forced_switch": True,
+                    },
+                )
+            )
+        else:
+            self._handle_player_loss()
+
+    def force_switch(self):
+        """Called by the Pokémon menu after a replacement is chosen post-faint."""
+        self.ui.queue_messages(self.battleSystem.complete_forced_switch())
+        self.ui.switch_mode("dialog")
+        # No enemy turn after a forced switch — go back to the main menu.
+        self.battleSystem.battleState = "waiting"
+
+        self.ui.set_player_info(
+            self.yourPokemon.pokemonBattle.name.upper(),
+            self.yourPokemon.pokemonBattle.level,
+        )
+        self.updateUiMoves()
+        first_move = self.data_loader.get_move(self.yourPokemon.pokemonBattle.moves[0].name)
+        self.ui.menu_panel.update_move_info(
+            first_move.type,
+            self.yourPokemon.pokemonBattle.moves[0].pp,
+            first_move.pp,
+        )
+
+        texture = self.data_loader.get_pokemon(
+            self.yourPokemon.pokemonBattle.name.lower()
+        ).sprites.back
+        self.yourPokemon.setNewTexture(texture)
+
+    def _handle_player_loss(self):
+        self.battleSystem.battleState = "lost"
+        self.ui.queue_messages([
+            "You have no more Pokémon that can fight!",
+            "You whited out!",
+        ])
+        self.ui.switch_mode("dialog")
+
+    def _end_loss(self):
+        self.battleSystem.save()
+        # A beaten trainer gloats — show their after_defeat dialog if it exists.
+        if self.is_trainer and self.npc_id:
+            npc = self.data_loader.npc_dialog.get(self.npc_id)
+            if npc and npc.has_state("after_defeat"):
+                global_bus.publish(OverlayViewEvent(
+                    target="dialog",
+                    payload={"npc_id": self.npc_id, "state": "after_defeat", "action": "end"},
+                ))
+                return
+        global_bus.publish(CloseViewEvent())
 
     def _on_continue_turn(self):
         messages = self.battleSystem.executeNextAction()
@@ -412,9 +480,21 @@ class BattleView(arcade.View):
     def run(self):
         self.battleSystem.save()
 
-        # Award prize money if trainer battle was won
-        if self.is_trainer and self.prize_money > 0:
-            self.player_manager.add_money(self.prize_money)
+        if self.is_trainer:
+            # Trainer battles can't be fled, so reaching here means victory.
+            if self.prize_money > 0:
+                self.player_manager.add_money(self.prize_money)
+
+            if self.npc_id:
+                self.player_manager.npc_manager.mark_defeated(self.npc_id)
+                npc = self.data_loader.npc_dialog.get(self.npc_id)
+                if npc and npc.has_state("after_victory"):
+                    # Show the post-battle dialog instead of going straight back.
+                    global_bus.publish(OverlayViewEvent(
+                        target="dialog",
+                        payload={"npc_id": self.npc_id, "state": "after_victory", "action": "end"},
+                    ))
+                    return
 
         # Tell the Director we are done — it will return to the Overworld
         global_bus.publish(CloseViewEvent())

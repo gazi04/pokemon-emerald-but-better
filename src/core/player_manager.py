@@ -1,11 +1,16 @@
 from src.core.save_manager import SaveManager
 from src.model.player import PlayerProfile, PlayerPokemon, Item
+from src.systems.npc_manager import NPCManager
 from typing import Optional
 
 class PlayerManager:
     def __init__(self, save_manager: SaveManager):
         self.save_manager = save_manager
         self.player: Optional[PlayerProfile] = save_manager.player
+        self.npc_manager = NPCManager()
+        # Load NPC states from save data if available
+        if hasattr(save_manager.player, 'npc_states') and save_manager.player.npc_states:
+            self.npc_manager.load_from_dict(save_manager.player.npc_states)
 
     def add_money(self, amount: int) -> int:
         self.player.money += amount
@@ -54,3 +59,9 @@ class PlayerManager:
 
     def get_inventory(self) -> list[Item]:
         return self.player.items
+
+    def flush_to_disk(self, player_state) -> bool:
+        """Delegate save operation to SaveManager."""
+        # Sync NPC states to player profile before saving
+        self.player.npc_states = self.npc_manager.save_to_dict()
+        return self.save_manager.flush_save(player_state)

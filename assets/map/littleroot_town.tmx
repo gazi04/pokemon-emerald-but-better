@@ -140,6 +140,14 @@
    </properties>
   </object>
  </objectgroup>
+ <objectgroup id="7" name="npc">
+  <object id="7" gid="268" x="1600.25" y="1423.75" width="16" height="16">
+   <properties>
+    <property name="behavior" value="wander"/>
+    <property name="npc_id" value="npc_battle"/>
+   </properties>
+  </object>
+ </objectgroup>
  <layer id="3" name="bush" width="128" height="112">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
