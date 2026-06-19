@@ -25,15 +25,14 @@
         "It always comes down to the hunters' helper to clean up after these sorts of messes.",
         "Tonight... Gehrman joins the hunt."
       ],
-      "after_victory": ["The night, and the dream, were long..."],
-      "after_defeat": ["You must accept your death.", "Be freed from the night..."]
+      "after_victory": ["The night, and the dream, were long..."]
     },
     "action_after_dialog": "fight",
     "team": [
       {
         "name": "zigzagoon",
         "hp": 10,
-        "level": 4,
+        "level": 20,
         "moves": [
           {
             "name": "tackle",

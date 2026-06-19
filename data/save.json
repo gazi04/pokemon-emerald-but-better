@@ -2,7 +2,7 @@
     "pokemons": [
         {
             "name": "combusken",
-            "hp": 13,
+            "hp": 2,
             "level": 16,
             "exp": 46,
             "moves": [
@@ -18,7 +18,7 @@
         },
         {
             "name": "mudkip",
-            "hp": 10,
+            "hp": 0,
             "level": 9,
             "exp": 46,
             "moves": [
@@ -43,7 +43,7 @@
     ],
     "position": {
         "map_name": "littleroot_town",
-        "direction": "left",
+        "direction": "down",
         "pixel_x": 3087.0,
         "pixel_y": 624.0
     }
