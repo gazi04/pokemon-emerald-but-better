@@ -1,11 +1,13 @@
 from src.core.save_manager import SaveManager
+from src.core.data_loader import DataLoader
 from src.model.player import PlayerProfile, PlayerPokemon, Item
 from src.systems.npc_manager import NPCManager
 from typing import Optional
 
 class PlayerManager:
-    def __init__(self, save_manager: SaveManager):
+    def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
         self.save_manager = save_manager
+        self.data_loader = data_loader
         self.player: Optional[PlayerProfile] = save_manager.player
         self.npc_manager = NPCManager()
         # Load NPC states from save data if available
@@ -21,6 +23,19 @@ class PlayerManager:
             self.player.money -= amount
             return True
         return False
+    
+    def heal_team(self):
+        for pokemon in self.player.pokemon:
+            profile = self.data_loader.get_pokemon(pokemon.name)
+            max_hp = ((2 * profile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
+            
+            self.update_pokemon_hp(pokemon.name, max_hp)
+            
+            for move in pokemon.moves:
+                move_profile = self.data_loader.get_move(move.name.lower())
+                max_pp = move_profile.pp
+                
+                self.update_move_pp(pokemon.name, move.name, max_pp)
     
     def update_pokemon_hp(self, pokemon_name: str, hp: int):
         self.player.update_hp(pokemon_name, hp)
@@ -59,9 +74,3 @@ class PlayerManager:
 
     def get_inventory(self) -> list[Item]:
         return self.player.items
-
-    def flush_to_disk(self, player_state) -> bool:
-        """Delegate save operation to SaveManager."""
-        # Sync NPC states to player profile before saving
-        self.player.npc_states = self.npc_manager.save_to_dict()
-        return self.save_manager.flush_save(player_state)

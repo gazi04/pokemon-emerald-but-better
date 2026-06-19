@@ -135,8 +135,8 @@
   <object id="6" name="door_pokecenter" gid="706" x="1552.12" y="960.242" width="16" height="16">
    <properties>
     <property name="destination map" value="oldale_town/pokemon_center"/>
-    <property name="x" type="int" value="446"/>
-    <property name="y" type="int" value="205"/>
+    <property name="x" type="int" value="496"/>
+    <property name="y" type="int" value="210"/>
    </properties>
   </object>
  </objectgroup>
