@@ -23,6 +23,11 @@ from src.core.events import (
 
 CONFIG = Config.load()
 
+# Where the player respawns after whiting out. Matches the Poké Center door
+# entrance (see the "door_pokecenter" transition in littleroot_town.tmx).
+POKECENTER_MAP = "oldale_town/pokemon_center"
+POKECENTER_SPAWN = (496, 210)
+
 
 class OverworldView(arcade.View):
     def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
@@ -180,6 +185,15 @@ class OverworldView(arcade.View):
             return tiles
         except Exception:
             return set()
+
+    def respawn_at_pokecenter(self) -> None:
+        """Relocate the player to the Poké Center entrance (used after whiting out)."""
+        self.player_state.map_name = POKECENTER_MAP
+        self.player_state.direction = "up"
+        self.setup(
+            f"assets/map/{POKECENTER_MAP}.tmx",
+            [POKECENTER_SPAWN[0], POKECENTER_SPAWN[1]],
+        )
 
     # ------------------------------------------------------------------
     # Event handlers

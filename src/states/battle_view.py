@@ -251,6 +251,11 @@ class BattleView(arcade.View):
 
     def _end_loss(self):
         self.battleSystem.save()
+
+        # Whiting out: fully heal the team and send the player to the Poké Center.
+        self.player_manager.heal_team()
+        self.overworld_view.respawn_at_pokecenter()
+
         # A beaten trainer gloats — show their after_defeat dialog if it exists.
         if self.is_trainer and self.npc_id:
             npc = self.data_loader.npc_dialog.get(self.npc_id)

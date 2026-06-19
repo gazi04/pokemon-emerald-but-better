@@ -1,13 +1,13 @@
 {
     "activeFile": "map/oldale_town/pokemon_center.tmx",
     "expandedProjectPaths": [
-        "map",
-        "map/tilesets",
-        "ui/sprites",
+        "map/little_root_town",
         "map/oldale_town",
         "ui",
-        "map/little_root_town",
-        "."
+        "ui/sprites",
+        ".",
+        "map",
+        "map/tilesets"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -57,11 +57,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 0.25,
+            "scale": 0.75,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1024,
-                "y": 896
+                "x": 1560,
+                "y": 968
             }
         },
         "map/littleroot_town_original.tmx": {
@@ -113,8 +113,8 @@
             "scale": 1.7456249999999998,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 159.82814178302903,
-                "y": 159.82814178302903
+                "x": 87.64769065520947,
+                "y": 136.34085213032583
             }
         },
         "map/oldale_town/pokemon_center.tmx": {
@@ -123,10 +123,10 @@
                 6
             ],
             "scale": 3,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 201,
-                "y": 163.33333333333331
+                "x": 248.33333333333331,
+                "y": 133.66666666666669
             }
         },
         "map/pokemon_center.tmx": {

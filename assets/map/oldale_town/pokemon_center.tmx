@@ -29,7 +29,7 @@
 </data>
  </layer>
  <objectgroup id="6" name="npc">
-  <object id="3" gid="55516" x="240.333" y="125.667" width="16" height="16">
+  <object id="3" gid="55516" x="240.333" y="122.667" width="16" height="16">
    <properties>
     <property name="facing" value="down"/>
     <property name="npc_id" value="poke_center_npc"/>
