@@ -27,7 +27,7 @@ class GameDirector:
 
         self.save_manager = SaveManager()
         self.data_loader = DataLoader()
-        self.player_manager = PlayerManager(self.save_manager)
+        self.player_manager = PlayerManager(self.save_manager, self.data_loader)
 
         global_bus.subscribe(SwapViewEvent, self._on_swap_view)
         global_bus.subscribe(CloseViewEvent, self._on_close_view)
@@ -143,10 +143,10 @@ class GameDirector:
             return DialogView(
                 overworld,
                 self.data_loader,
+                self.player_manager,
                 payload.get("after_text_callback"),
                 payload.get("npc_id", ""),
                 state=payload.get("state", "default"),
-                action=payload.get("action"),
             )
             
         if target == "shop":

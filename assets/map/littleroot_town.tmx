@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="left-down" width="128" height="112" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="8">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="left-down" width="128" height="112" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="7">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <layer id="1" name="walkable" width="128" height="112">
   <data encoding="csv">
@@ -125,11 +125,18 @@
     <property name="y" type="int" value="205"/>
    </properties>
   </object>
-  <object id="5" gid="706" x="1680" y="848.182" width="16" height="16">
+  <object id="5" name="door_pokemart" gid="706" x="1680" y="848.182" width="16" height="16">
    <properties>
-    <property name="destination map" value="interiors/poke_mart"/>
+    <property name="destination map" value="oldale_town/poke_mart"/>
     <property name="x" type="int" value="270"/>
     <property name="y" type="int" value="269"/>
+   </properties>
+  </object>
+  <object id="6" name="door_pokecenter" gid="706" x="1552.12" y="960.242" width="16" height="16">
+   <properties>
+    <property name="destination map" value="oldale_town/pokemon_center"/>
+    <property name="x" type="int" value="496"/>
+    <property name="y" type="int" value="210"/>
    </properties>
   </object>
  </objectgroup>

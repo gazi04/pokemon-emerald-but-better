@@ -1,6 +1,7 @@
 import arcade
 from src.ui.dialog_ui import DialogUI
 from src.core.data_loader import DataLoader
+from src.core.player_manager import PlayerManager
 from data.config import Config
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
@@ -8,17 +9,18 @@ from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
 CONFIG = Config.load()
 
 class DialogView(arcade.View):
-    def __init__(self, overworld: arcade.View, data_loader: DataLoader, after_text_callback, npc_id: str, state: str = "default", action: str = None):
+    def __init__(self, overworld: arcade.View, data_loader: DataLoader, player_manager: PlayerManager, after_text_callback, npc_id: str, state: str = "default"):
         super().__init__()
 
         self.overworld = overworld
+        self.player_manager = player_manager
         self.ui = DialogUI()
 
         self.npc = data_loader.npc_dialog[npc_id]
         self.npc_id = npc_id
         # The caller may override what happens after the dialog (e.g. a beaten
         # trainer should just close instead of fighting again).
-        self.action = action if action is not None else self.npc.action_after_dialog
+        self.action = self.npc.action_after_dialog
         self.dialog_index = 0
         self.dialog = self.npc.get_dialog(state)
 
@@ -43,6 +45,9 @@ class DialogView(arcade.View):
                 "battle_trainer",
                 {"trainer_data": self.npc.team, "npc_id": self.npc_id},
             ))
+        elif self.action == "heal":
+            self.player_manager.heal_team()
+            global_bus.publish(CloseViewEvent())
         else:
             global_bus.publish(CloseViewEvent())
 

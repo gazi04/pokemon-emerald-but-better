@@ -23,6 +23,11 @@ from src.core.events import (
 
 CONFIG = Config.load()
 
+# Where the player respawns after whiting out. Matches the Poké Center door
+# entrance (see the "door_pokecenter" transition in littleroot_town.tmx).
+POKECENTER_MAP = "oldale_town/pokemon_center"
+POKECENTER_SPAWN = (496, 210)
+
 
 class OverworldView(arcade.View):
     def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
@@ -170,13 +175,25 @@ class OverworldView(arcade.View):
         are in pixel space. Dividing by TILE_SIZE gives grid coords that
         match MovementSystem's grid_x = round(pixel_x / TILE_SIZE).
         """
-        tiles: set[tuple[int, int]] = set()
-        bush_layer = self.scene["bush"]
-        for sprite in bush_layer:
-            gx = round(sprite.center_x / TILE_SIZE)
-            gy = round(sprite.center_y / TILE_SIZE)
-            tiles.add((gx, gy))
-        return tiles
+        try:
+            tiles: set[tuple[int, int]] = set()
+            bush_layer = self.scene["bush"]
+            for sprite in bush_layer:
+                gx = round(sprite.center_x / TILE_SIZE)
+                gy = round(sprite.center_y / TILE_SIZE)
+                tiles.add((gx, gy))
+            return tiles
+        except Exception:
+            return set()
+
+    def respawn_at_pokecenter(self) -> None:
+        """Relocate the player to the Poké Center entrance (used after whiting out)."""
+        self.player_state.map_name = POKECENTER_MAP
+        self.player_state.direction = "up"
+        self.setup(
+            f"assets/map/{POKECENTER_MAP}.tmx",
+            [POKECENTER_SPAWN[0], POKECENTER_SPAWN[1]],
+        )
 
     # ------------------------------------------------------------------
     # Event handlers

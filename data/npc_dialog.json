@@ -3,11 +3,18 @@
     "name": "Shop Clerk",
     "dialog": {
       "first_encounter": [
-      "Welcome to the Poké Mart!",
-      "We have everything you need for your journey."
-    ],
-    "default": ["Welcome back!", "Can I help you find anything?"]
-    }
+        "Welcome to the Poké Mart!",
+        "We have everything you need for your journey."
+      ],
+      "default": ["Welcome back!", "Can I help you find anything?"]
+    },
+    "action_after_dialog": "shop"
+  },
+  "poke_center_npc":{
+    "dialog":{
+      "default": ["Hello, good hunter!"]
+    },
+    "action_after_dialog": "heal"
   },
   "npc_battle": {
     "dialog": {
@@ -18,15 +25,14 @@
         "It always comes down to the hunters' helper to clean up after these sorts of messes.",
         "Tonight... Gehrman joins the hunt."
       ],
-      "after_victory": ["The night, and the dream, were long..."],
-      "after_defeat": ["You must accept your death.", "Be freed from the night..."]
+      "after_victory": ["The night, and the dream, were long..."]
     },
     "action_after_dialog": "fight",
     "team": [
       {
         "name": "zigzagoon",
         "hp": 10,
-        "level": 4,
+        "level": 20,
         "moves": [
           {
             "name": "tackle",
