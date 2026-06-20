@@ -119,7 +119,6 @@ class PokemonMenuView(arcade.View):
                     self.itemIndex,
                     self.system.team[self.system.teamIndex].name,
                 )
-                self.battleSystem.turnUseItem(self.itemIndex)
 
                 # Navigate back to BattleView (still held by previousView chain)
                 battleView = self.previousView.previousWindow
