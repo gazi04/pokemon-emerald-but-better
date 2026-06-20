@@ -20,6 +20,9 @@ class PokemonMenuSystem:
         if toIndex == 0:
             return False
 
+        if self.team[toIndex].is_fainted:
+            return False
+
         team = self.team
         team[0], team[toIndex] = team[toIndex], team[0]
         

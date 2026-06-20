@@ -16,6 +16,10 @@ class PlayerPokemon:
     exp: int
     moves: list[PlayerPokemonMove]
 
+    @property
+    def is_fainted(self) -> bool:
+        return self.hp <= 0
+
 
 @dataclass
 class Item:
