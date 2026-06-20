@@ -98,12 +98,17 @@ class BagView(arcade.View):
                         "previous_view": self,
                         "bag": self.bagSystem,
                         "item_index": self.currentIndex,
-                        "battle_system": self.battleSystem
+                        "battle_system": self.battleSystem,
                     },
                 )
             )
             self.updateItem()
-        elif self.isPressed(CONFIG.controls.interact, symbol) and self.bagIndex == 1 and self.battleSystem and not self.battleSystem.is_trainer:
+        elif (
+            self.isPressed(CONFIG.controls.interact, symbol)
+            and self.bagIndex == 1
+            and self.battleSystem
+            and not self.battleSystem.is_trainer
+        ):
             pokeball = self.bagSystem.usePokeball(self.currentIndex)
             if pokeball:
                 result = self.battleSystem.attempt_catch(pokeball)

@@ -60,8 +60,12 @@ class OverworldView(arcade.View):
 
         saved = self.save_manager.saved_position
         if saved:
-            self.player_state.map_name = saved.get("map_name", self.player_state.map_name)
-            self.player_state.direction = saved.get("direction", self.player_state.direction)
+            self.player_state.map_name = saved.get(
+                "map_name", self.player_state.map_name
+            )
+            self.player_state.direction = saved.get(
+                "direction", self.player_state.direction
+            )
             map_path = f"assets/map/{self.player_state.map_name}.tmx"
             self.setup(map_path)
             self.player_state.pixel_x = saved["pixel_x"]
@@ -110,7 +114,7 @@ class OverworldView(arcade.View):
             map or CONFIG.game.starting_map, scaling=2.0, layer_options=layer_options
         )
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
-        
+
         self.npcs = arcade.SpriteList(use_spatial_hash=False)
         npc_layer = self.tile_map.get_tilemap_layer("npc")
         if npc_layer:
@@ -119,10 +123,12 @@ class OverworldView(arcade.View):
                 props = obj.properties or {}
                 npc = Npc(
                     x=obj.coordinates.x * 2 + obj.size.width,
-                    y = (
+                    y=(
                         self.tile_map.height * self.tile_map.tile_height
                         - obj.coordinates.y
-                    ) * 2 + obj.size.height / 2,
+                    )
+                    * 2
+                    + obj.size.height / 2,
                     npc_id=props.get("npc_id", ""),
                     behavior=make_behavior(props),
                     facing=props.get("facing", "down"),
@@ -208,14 +214,16 @@ class OverworldView(arcade.View):
         npc_id = event.npc_id
 
         if npc_id == "poke-mart-npc":
-            global_bus.publish(OverlayViewEvent(
-                target="shop",
-                payload={
-                    "previous_view": self,
-                    "save_manager": self.save_manager,
-                    "data_loader": self.data_loader,
-                }
-            ))
+            global_bus.publish(
+                OverlayViewEvent(
+                    target="shop",
+                    payload={
+                        "previous_view": self,
+                        "save_manager": self.save_manager,
+                        "data_loader": self.data_loader,
+                    },
+                )
+            )
             return
 
         npc = self.data_loader.npc_dialog.get(npc_id)
@@ -225,10 +233,12 @@ class OverworldView(arcade.View):
         state, action = self._resolve_dialog(npc_id, npc)
         self.player_manager.npc_manager.mark_talked(npc_id)
 
-        global_bus.publish(OverlayViewEvent(
-            target="dialog",
-            payload={"npc_id": npc_id, "state": state, "action": action},
-        ))
+        global_bus.publish(
+            OverlayViewEvent(
+                target="dialog",
+                payload={"npc_id": npc_id, "state": state, "action": action},
+            )
+        )
 
     def _resolve_dialog(self, npc_id: str, npc) -> tuple[str, str]:
         """
@@ -286,7 +296,7 @@ class OverworldView(arcade.View):
             CONFIG.controls,
             self.scene["collision"],
             self.scene["transitions"],
-            self.npcs
+            self.npcs,
         )
 
         if intent and intent["type"] == "transition":

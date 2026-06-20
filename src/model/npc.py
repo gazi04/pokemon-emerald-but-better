@@ -10,7 +10,9 @@ _RESERVED_KEYS = {"name", "action_after_dialog", "team"}
 @dataclass
 class NpcProfile:
     name: str
-    dialogs: dict[str, list[str]]  # state -> lines, e.g. "first_encounter", "after_battle"
+    dialogs: dict[
+        str, list[str]
+    ]  # state -> lines, e.g. "first_encounter", "after_battle"
     action_after_dialog: str
     team: Trainer
 
@@ -52,11 +54,12 @@ class NpcProfile:
 
     def has_state(self, state: str) -> bool:
         return state in self.dialogs
-    
-    
+
+
 @dataclass
 class NPCState:
     """Tracks the interaction history of a single NPC."""
+
     npc_id: str
     has_talked: bool = False
     has_fought: bool = False

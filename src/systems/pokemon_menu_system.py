@@ -11,10 +11,11 @@ class PokemonMenuSystem:
 
         self.teamIndex = 0
         self.tooltipIndex = 0
-        
+
+    # ♻️ todo: this method below isn't used in the project
     def startSwitching(self, fromIndex: int):
         self.isMovingPokemon = True
-        self.movingPokemonIndex = fromIndex  
+        self.movingPokemonIndex = fromIndex
 
     def confirmSwitch(self, toIndex: int) -> bool:
         if toIndex == 0:
@@ -25,17 +26,20 @@ class PokemonMenuSystem:
 
         team = self.team
         team[0], team[toIndex] = team[toIndex], team[0]
-        
+
         return True
-        
+
     def movePokemon(self, to: int):
         if to == self.movingPokemonIndex:
             self.cancelMoving()
             return
-        
-        self.team[to], self.team[self.movingPokemonIndex] = self.team[self.movingPokemonIndex], self.team[to]
+
+        self.team[to], self.team[self.movingPokemonIndex] = (
+            self.team[self.movingPokemonIndex],
+            self.team[to],
+        )
         self.cancelMoving()
-        
+
     def moveTeamIndex(self, direction: int):
         self.teamIndex = (self.teamIndex + direction) % len(self.team)
 

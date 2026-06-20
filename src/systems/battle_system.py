@@ -20,7 +20,7 @@ class BattleSystem:
         player_manager: PlayerManager,
         data_loader: DataLoader,
         is_trainer=False,
-        trainer_data: Optional[Trainer] = None
+        trainer_data: Optional[Trainer] = None,
     ):
         self.yourPokemon = yourPokemon
         self.enemyPokemon = enemyPokemon
@@ -31,7 +31,7 @@ class BattleSystem:
         self.battleState = "intro"
         self.exp = 0
         self.hasEvolved = False
-        
+
         self.is_trainer = is_trainer
         self.trainer_party = trainer_data.party if trainer_data else []
         self.next_trainer_pokemon: PlayerPokemon = None
@@ -52,23 +52,23 @@ class BattleSystem:
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
         self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
         return self.executeNextAction()
-    
+
     def switch_turn(self) -> list[str]:
         self.battleState = "currently turn"
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
-        
+
         self.turnQueue = [("enemy", enemyMoveIndex, -1)]
         return self.executeNextAction()
-    
+
     def switch_pokemon(self) -> list[str]:
         pokemon = self.player_manager.player.pokemon[0]
         pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
-        
+
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
-        
+
         self.yourPokemon.switching_pokemon(pokemon, pokemonProfile)
-        
+
         return [f"Go {pokemon.name}!"]
 
     def executeNextAction(self) -> list[str]:
@@ -193,9 +193,10 @@ class BattleSystem:
         if diedPokemon.isEnemy:
             self.battleState = "end"
             self.exp = diedPokemon.getExp()
-            messages.extend([
+            messages.extend(
+                [
                     f"{self.enemyPokemon.name} fainted!",
-                    f"{self.yourPokemon.name} gained {self.exp} EXP. Points!"
+                    f"{self.yourPokemon.name} gained {self.exp} EXP. Points!",
                 ]
             )
 

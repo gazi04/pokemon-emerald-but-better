@@ -62,7 +62,13 @@ class PlayerProfile:
             if move.name == move_name:
                 move.pp = pp
 
-    def update_level(self, pokemon_name: str, new_level: int, exp: int, evolved_name: Optional[str] = None):
+    def update_level(
+        self,
+        pokemon_name: str,
+        new_level: int,
+        exp: int,
+        evolved_name: Optional[str] = None,
+    ):
         pokemon = self.get_pokemon(pokemon_name)
         if not pokemon:
             return

@@ -31,10 +31,15 @@ class PokemonInfoView(arcade.View):
             self.ui.next_tab()
         elif self._is_pressed(CONFIG.controls.left, key):
             self.ui.prev_tab()
-            
-        if self._is_pressed(CONFIG.controls.down, key) and self.ui.get_current_tab() == 2:
+
+        if (
+            self._is_pressed(CONFIG.controls.down, key)
+            and self.ui.get_current_tab() == 2
+        ):
             self.ui.next_move()
-        elif self._is_pressed(CONFIG.controls.up, key) and self.ui.get_current_tab() == 2:
+        elif (
+            self._is_pressed(CONFIG.controls.up, key) and self.ui.get_current_tab() == 2
+        ):
             self.ui.prev_move()
 
     def _is_pressed(self, config_key: str, key: int) -> bool:

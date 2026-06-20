@@ -56,13 +56,13 @@ class PokemonBattle:
 
     def _resetBattleState(self):
         self.modifiers = {
-            "attack": 0, 
+            "attack": 0,
             "defence": 0,
-            "special_attack": 0, 
+            "special_attack": 0,
             "special_defence": 0,
-            "speed": 0, 
+            "speed": 0,
             "accuracy": 0,
-            "evasion": 0, 
+            "evasion": 0,
             "crits": 0,
         }
         self.statusEffect = ""
@@ -113,18 +113,17 @@ class PokemonBattle:
     def takeDamage(self, damage: int):
         self.currentHp = max(0, self.currentHp - damage)
 
-
     def switching_pokemon(self, playerPokemon: PlayerPokemon, data: PokemonProfile):
-        self.source = playerPokemon        
+        self.source = playerPokemon
 
         self._loadFromPlayer(playerPokemon)
-        self._loadFromProfile(data)          
+        self._loadFromProfile(data)
         self.calculateStats()
 
         self.maxHp = self.getStat("hp")
         self.currentHp = playerPokemon.hp
 
-        self._resetBattleState()     
+        self._resetBattleState()
 
     # ------------------------------------------------------------------
     # Move gating — status and PP checks

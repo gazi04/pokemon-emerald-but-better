@@ -121,7 +121,7 @@ class BattleMenuPanel:
                     text_color=arcade.color.BLACK,
                     font_name="Pokemon Emerald",
                     font_size=25,
-                    align="center"
+                    align="center",
                 )
                 self.move_widgets.append(btn)
                 self.move_buttons.append(btn)

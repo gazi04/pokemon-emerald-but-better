@@ -5,6 +5,7 @@ a movement intent (the same shape PlayerInput produces) or None.
 Movement is executed elsewhere (NpcController + MovementSystem); behaviors only
 make decisions. One behavior = one responsibility.
 """
+
 import random
 from src.constants import TILE_SIZE
 

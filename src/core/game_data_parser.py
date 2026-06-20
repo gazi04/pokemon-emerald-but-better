@@ -17,7 +17,9 @@ class GameDataParser:
         for name, pokemon in data.items():
             sprites = PokemonSprites(**pokemon["sprites"])
             stats = PokemonStat(**pokemon["stats"])
-            evolution = PokemonEvolution(pokemon["evolution"]) if pokemon["evolution"] else None
+            evolution = (
+                PokemonEvolution(pokemon["evolution"]) if pokemon["evolution"] else None
+            )
             pokemons[name] = PokemonProfile(pokemon, evolution, sprites, stats)
         return pokemons
 
@@ -36,7 +38,7 @@ class GameDataParser:
             effects = [ItemEffect(effect) for effect in item["effects"]]
             items[name] = Item(item, effects)
         return items
-    
+
     @staticmethod
     def parse_npc_dialog(data: dict) -> dict[str, NpcProfile]:
         npc_dialogs = {}

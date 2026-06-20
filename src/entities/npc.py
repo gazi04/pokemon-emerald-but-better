@@ -56,7 +56,7 @@ class Npc(arcade.Sprite):
         self.walkTextures["right"] = [
             tex.flip_left_right() for tex in self.walkTextures["left"]
         ]
-        
+
         self.home_x = x
         self.home_y = y
 
@@ -75,7 +75,7 @@ class Npc(arcade.Sprite):
         """Push the motion's pixel position onto the arcade sprite."""
         self.center_x = self.motion.pixel_x
         self.center_y = self.motion.pixel_y
-        
+
     def set_idle(self, direction):
         if direction in self.idleTextures:
             self.texture = self.idleTextures[direction]

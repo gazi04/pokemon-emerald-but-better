@@ -17,7 +17,13 @@ from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.core.player_manager import PlayerManager
 from src.core.event_bus import global_bus
-from src.core.events import SwapViewEvent, CloseViewEvent, OverlayViewEvent, SaveGameRequestEvent, SaveCompletedEvent
+from src.core.events import (
+    SwapViewEvent,
+    CloseViewEvent,
+    OverlayViewEvent,
+    SaveGameRequestEvent,
+    SaveCompletedEvent,
+)
 
 
 class GameDirector:
@@ -105,7 +111,7 @@ class GameDirector:
                 foe_pokemon_data=payload["pokemon_data"],
                 foe_level=payload["pokemon_level"],  # kept for flicker transition only
             )
-            
+
         if target == "battle_trainer":
             from src.states.battle_view import BattleView
 
@@ -136,7 +142,7 @@ class GameDirector:
             from src.states.menu_view import MenuView
 
             return MenuView(overworld)
-        
+
         if target == "dialog":
             from src.states.dialog_view import DialogView
 
@@ -148,24 +154,24 @@ class GameDirector:
                 payload.get("npc_id", ""),
                 state=payload.get("state", "default"),
             )
-            
+
         if target == "shop":
             from src.states.shop_view import ShopView
-            
+
             return ShopView(
                 overworld,
                 payload.get("previous_view", overworld),
                 self.data_loader,
-                self.player_manager
+                self.player_manager,
             )
-            
+
         if target == "pokedex":
             from src.states.pokedex_view import PokedexView
 
             return PokedexView(
                 previous_window=payload.get("previous_view", overworld),
                 player_manager=self.player_manager,
-                data_loader=self.data_loader
+                data_loader=self.data_loader,
             )
 
         if target == "bag":
@@ -190,14 +196,14 @@ class GameDirector:
                 battleSystem=cast(Any, payload.get("battle_system")),
                 forced_switch=payload.get("forced_switch", False),
             )
-            
+
         if target == "pokemon_information":
             from src.states.pokemon_info_view import PokemonInfoView
-            
+
             return PokemonInfoView(
                 previous_view=payload.get("previous_view", overworld),
                 pokemon=payload.get("pokemon"),
-                data_loader=self.data_loader
+                data_loader=self.data_loader,
             )
 
         return None

@@ -20,7 +20,7 @@ class PlayerInput:
         controls_config,
         collision_tiles,
         transitions,
-        npcs=None
+        npcs=None,
     ):
         """
         Reads keyboard/gamepad and requests a state change.
@@ -30,12 +30,18 @@ class PlayerInput:
             return None
 
         interact_pressed = self._is_pressed(controls_config.interact, keys)
-        if interact_pressed and not self._interact_pressed_last_frame and npcs is not None:
+        if (
+            interact_pressed
+            and not self._interact_pressed_last_frame
+            and npcs is not None
+        ):
             dx, dy = self._facing_offset(player_state.direction)
             for step in (1, 2):
                 hit = arcade.get_sprites_at_point(
-                    (player_state.pixel_x + dx * step,
-                     player_state.pixel_y + dy * step),
+                    (
+                        player_state.pixel_x + dx * step,
+                        player_state.pixel_y + dy * step,
+                    ),
                     npcs,
                 )
                 if hit:
@@ -74,7 +80,9 @@ class PlayerInput:
                 }
 
             # Block if an NPC stands on the target tile
-            if npcs is not None and arcade.get_sprites_at_point((target_x, target_y), npcs):
+            if npcs is not None and arcade.get_sprites_at_point(
+                (target_x, target_y), npcs
+            ):
                 return {"type": "turn", "direction": new_dir}
 
             # Check collisions
@@ -87,13 +95,13 @@ class PlayerInput:
                 return {"type": "turn", "direction": new_dir}
 
         return None
-    
+
     def _facing_offset(self, direction: str) -> tuple[int, int]:
         return {
-            "up":    (0,  TILE_SIZE),
-            "down":  (0, -TILE_SIZE),
-            "left":  (-TILE_SIZE, 0),
-            "right": (TILE_SIZE,  0),
+            "up": (0, TILE_SIZE),
+            "down": (0, -TILE_SIZE),
+            "left": (-TILE_SIZE, 0),
+            "right": (TILE_SIZE, 0),
         }.get(direction, (0, 0))
 
     def _is_pressed(self, config_key, keys: set) -> bool:

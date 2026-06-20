@@ -9,6 +9,7 @@ class GridMotion:
     Mirrors the movement fields on PlayerState so MovementSystem can drive
     both the player and NPCs with the same tween logic.
     """
+
     pixel_x: float = 0.0
     pixel_y: float = 0.0
     target_x: float = 0.0

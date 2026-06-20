@@ -3,16 +3,17 @@ import arcade.gui
 from src.model.item import Item
 from src.constants import SHOP_UI
 
-FONT         = "Pokemon Emerald"
-FONT_SIZE    = 26
-TEXT_COLOR   = arcade.color.BLACK
+FONT = "Pokemon Emerald"
+FONT_SIZE = 26
+TEXT_COLOR = arcade.color.BLACK
+
 
 class ShopUI:
     def __init__(self, items: dict[str, Item]):
         self._manager = arcade.gui.UIManager()
         self._manager._pixelated = True
 
-        tilemap  = arcade.load_tilemap(SHOP_UI)
+        tilemap = arcade.load_tilemap(SHOP_UI)
         ui_layer = tilemap.get_tilemap_layer("ui")
 
         self._amount_widget = arcade.gui.UIWidget()
@@ -22,7 +23,7 @@ class ShopUI:
 
         self.items = items
         self._item_names = list(items.keys())
-        self._item_labels = []  
+        self._item_labels = []
         self._cursor_index = 0
 
         for obj in ui_layer.tiled_objects:
@@ -31,32 +32,34 @@ class ShopUI:
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
 
-            if obj.name == "text_box": 
-                self._shop_widget.add(self._make_image("assets/ui/sprites/box.png", x, y, w, h))
+            if obj.name == "text_box":
+                self._shop_widget.add(
+                    self._make_image("assets/ui/sprites/box.png", x, y, w, h)
+                )
             elif obj.name == "items_container":
-                self._shop_widget.add(self._make_image("assets/ui/sprites/box2.png", x, y, w, h))
+                self._shop_widget.add(
+                    self._make_image("assets/ui/sprites/box2.png", x, y, w, h)
+                )
             elif obj.name == "option_box":
-                self._options_widget.add(self._make_image("assets/ui/sprites/box.png", x, y, w, h))
+                self._options_widget.add(
+                    self._make_image("assets/ui/sprites/box.png", x, y, w, h)
+                )
             elif obj.name == "box_amount_box":
-                self._box_amount_widget.add(self._make_image("assets/ui/sprites/box.png", x, y, w, h))
+                self._box_amount_widget.add(
+                    self._make_image("assets/ui/sprites/box.png", x, y, w, h)
+                )
             elif obj.name == "amount_box":
-                self._amount_widget.add(self._make_image("assets/ui/sprites/box.png", x, y, w, h))
+                self._amount_widget.add(
+                    self._make_image("assets/ui/sprites/box.png", x, y, w, h)
+                )
             elif obj.name == "money_box":
-                self._manager.add(self._make_image("assets/ui/sprites/box.png", x, y, w, h))
+                self._manager.add(
+                    self._make_image("assets/ui/sprites/box.png", x, y, w, h)
+                )
             elif obj.name == "place_holder":
-                self._option_size = {
-                    "x": x,
-                    "y": y - h, 
-                    "w": w,
-                    "h": h
-                }
+                self._option_size = {"x": x, "y": y - h, "w": w, "h": h}
             elif obj.name == "item":
-                self._item_size = {
-                    "x": x,
-                    "y": y,
-                    "w": w,
-                    "h": h
-                }
+                self._item_size = {"x": x, "y": y, "w": w, "h": h}
 
         for obj in ui_layer.tiled_objects:
             w = obj.size.width
@@ -79,15 +82,20 @@ class ShopUI:
                     text_color=TEXT_COLOR,
                     font_name=FONT,
                     font_size=FONT_SIZE,
-                    x=x, y=y - h,
-                    width=w, height=h, multiline=True
+                    x=x,
+                    y=y - h,
+                    width=w,
+                    height=h,
+                    multiline=True,
                 )
                 self._shop_widget.add(self._text)
 
         self._build_item_labels()
 
         self._cursor = arcade.Text(
-            "▶", x=0, y=0,
+            "▶",
+            x=0,
+            y=0,
             color=TEXT_COLOR,
             font_size=FONT_SIZE,
             font_name=FONT,
@@ -127,7 +135,10 @@ class ShopUI:
     def _make_image(self, path: str, x, y, w, h) -> arcade.gui.UIImage:
         return arcade.gui.UIImage(
             texture=arcade.load_texture(path),
-            x=x, y=y, width=w, height=h,
+            x=x,
+            y=y,
+            width=w,
+            height=h,
         )
 
     def _make_label(self, text: str, x, y, h, w) -> arcade.gui.UILabel:
@@ -136,13 +147,14 @@ class ShopUI:
             text_color=TEXT_COLOR,
             font_name=FONT,
             font_size=FONT_SIZE,
-            x=x, y=y - h,
-            width=w
+            x=x,
+            y=y - h,
+            width=w,
         )
 
     def show_options(self):
         self._manager.add(self._options_widget)
-        
+
         self._manager.remove(self._shop_widget)
         self._manager.remove(self._amount_widget)
         self._manager.remove(self._box_amount_widget)
@@ -150,7 +162,7 @@ class ShopUI:
     def show_shop(self):
         """Show the main shop item list."""
         self._manager.add(self._shop_widget)
-        
+
         self._manager.remove(self._options_widget)
         self._manager.remove(self._amount_widget)
         self._manager.remove(self._box_amount_widget)
@@ -159,10 +171,10 @@ class ShopUI:
         """Show the quantity selector (after picking an item to buy)."""
         self._box_amount_text.text = f"In Bag: {amount_in_bag}"
         self._amount_text.text = f"x{amount} ${price}"
-        
+
         self._manager.add(self._box_amount_widget)
         self._manager.add(self._amount_widget)
-        
+
     def set_money(self, money: int):
         self._money_text.text = f"${money}"
 

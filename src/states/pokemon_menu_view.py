@@ -42,7 +42,7 @@ class PokemonMenuView(arcade.View):
             tooltipOptions = ["Switch", "Info"]
         else:
             tooltipOptions = ["Move", "Info"]
-            
+
         self.ui.setupTooltip(tooltipOptions)
         self.ui.setValues(self.system.team)
 
@@ -143,16 +143,16 @@ class PokemonMenuView(arcade.View):
                     target="pokemon_information",
                     payload={
                         "previous_view": self,
-                        "pokemon": self.system.team[self.system.teamIndex]
+                        "pokemon": self.system.team[self.system.teamIndex],
                     },
                 )
             )
-        
+
     def _move_pokemon(self):
         if not self.battleSystem:
             self.system.startMoving()
             return
-        
+
         success = self.system.confirmSwitch(self.system.teamIndex)
         if success:
             self.ui.setValues(self.system.team)

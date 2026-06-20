@@ -3,6 +3,7 @@ Drives every NPC each frame: asks its behavior for an intent, executes the
 movement via MovementSystem, and answers walkability queries (walls, map
 bounds, other NPCs, the player).
 """
+
 import arcade
 from src.constants import TILE_SIZE
 

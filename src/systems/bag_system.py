@@ -9,7 +9,7 @@ class BagSystem:
 
         self._items = player_manager.player.items
         self._pokeballs = player_manager.player.pokeballs
-        
+
     def usePokeball(self, pokeball_index: int):
         if 0 <= pokeball_index < len(self._pokeballs):
             pokeball = self._pokeballs[pokeball_index]
@@ -17,9 +17,9 @@ class BagSystem:
                 pokeball.count -= 1
                 if pokeball.count <= 0:
                     self._pokeballs.pop(pokeball_index)
-                    
+
                 return self.data_loader.get_item(pokeball.name)
-            
+
         return None
 
     def useItem(self, itemIndex: int, pokemonId: str):

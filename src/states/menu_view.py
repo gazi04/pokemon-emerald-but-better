@@ -1,7 +1,12 @@
 import arcade
 from data.config import Config
 from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent, OverlayViewEvent, SaveGameRequestEvent, SaveCompletedEvent
+from src.core.events import (
+    CloseViewEvent,
+    OverlayViewEvent,
+    SaveGameRequestEvent,
+    SaveCompletedEvent,
+)
 from src.ui.menu_ui import MenuUi
 from src.constants import FONT
 
@@ -9,9 +14,7 @@ CONFIG = Config.load()
 
 
 class MenuView(arcade.View):
-    def __init__(
-        self, overworld: arcade.View
-    ):
+    def __init__(self, overworld: arcade.View):
         super().__init__()
 
         self.overworld = overworld
@@ -105,4 +108,3 @@ class MenuView(arcade.View):
             )
         elif self.selectedIndex == 3:
             global_bus.publish(SaveGameRequestEvent())
-

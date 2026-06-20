@@ -18,15 +18,14 @@ class PokedexView(arcade.View):
     ):
         super().__init__(background_color=(0, 0, 0))
         self.previous_window = previous_window
-        self.player_manager  = player_manager
-        self.data_loader     = data_loader
+        self.player_manager = player_manager
+        self.data_loader = data_loader
 
         all_pokemon = list(data_loader.pokemons.keys())
-        owned       = {p.name for p in player_manager.get_pokemon_team()}
-        seen        = set(player_manager.get_seen_pokemon())
+        owned = {p.name for p in player_manager.get_pokemon_team()}
+        seen = set(player_manager.get_seen_pokemon())
 
         self.ui = PodedexUi(data_loader, all_pokemon, owned, seen)
-
 
     def on_show_view(self):
         self.ui._manager.enable()

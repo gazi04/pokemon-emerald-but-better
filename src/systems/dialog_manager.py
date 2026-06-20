@@ -2,6 +2,7 @@
 Manages NPC dialogs and selects appropriate dialog based on NPC state.
 Single responsibility: dialog retrieval and selection logic.
 """
+
 import json
 from pathlib import Path
 from typing import Optional, List
@@ -21,7 +22,9 @@ class DialogManager:
     }
     """
 
-    def __init__(self, npc_manager: NPCManager, dialog_path: str = "data/npc_dialog.json"):
+    def __init__(
+        self, npc_manager: NPCManager, dialog_path: str = "data/npc_dialog.json"
+    ):
         self.npc_manager = npc_manager
         self.dialogs: dict = {}
         self._load_dialogs(dialog_path)

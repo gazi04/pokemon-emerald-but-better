@@ -6,11 +6,18 @@ from src.ui.shop_ui import ShopUI
 
 CONFIG = Config.load()
 
+
 class ShopView(arcade.View):
-    def __init__(self, overworld: arcade.View, previous_view: arcade.View, data_loader: DataLoader, player_manager: PlayerManager):
+    def __init__(
+        self,
+        overworld: arcade.View,
+        previous_view: arcade.View,
+        data_loader: DataLoader,
+        player_manager: PlayerManager,
+    ):
         super().__init__()
 
-        self.overworld  = overworld
+        self.overworld = overworld
         self.previous_view = previous_view
         self.player_manager = player_manager
 
@@ -20,7 +27,7 @@ class ShopView(arcade.View):
 
         self.ui = ShopUI(self.items)
 
-        self._mode = "options"  
+        self._mode = "options"
         self._option_index = 0
         self._item_index = 0
         self._amount = 1
@@ -43,17 +50,19 @@ class ShopView(arcade.View):
             self._handle_amount(key)
 
     def _handle_options(self, key):
-        if self._is_pressed(CONFIG.controls.up, key) or self._is_pressed(CONFIG.controls.down, key):
+        if self._is_pressed(CONFIG.controls.up, key) or self._is_pressed(
+            CONFIG.controls.down, key
+        ):
             self._option_index = 1 - self._option_index  # toggle between 0 and 1
             self.ui.select_option(self._option_index)
 
         elif self._is_pressed(CONFIG.controls.interact, key):
-            if self._option_index == 0: 
+            if self._option_index == 0:
                 self._mode = "items"
                 self._item_index = 0
                 self.ui.show_shop()
                 self.ui.selecting_item(self._item_index)
-            elif self._option_index == 1: 
+            elif self._option_index == 1:
                 self.window.show_view(self.previous_view)
 
         elif self._is_pressed(CONFIG.controls.cancel, key):
@@ -72,13 +81,13 @@ class ShopView(arcade.View):
             self._amount = 1
             self._mode = "amount"
             item = self.items[self._get_item_name()]
-            
+
             bag_item = None
             for it in self.bag:
                 if it.name == self._get_item_name():
                     bag_item = it
                     break
-            
+
             self.ui.show_amount(bag_item.count, 1, item.price)
 
         elif self._is_pressed(CONFIG.controls.cancel, key):
@@ -105,7 +114,7 @@ class ShopView(arcade.View):
             self._mode = "items"
             self.ui.show_shop()
             self.ui.selecting_item(self._item_index)
-            
+
     def _get_item_name(self):
         return self._item_names[self._item_index]
 

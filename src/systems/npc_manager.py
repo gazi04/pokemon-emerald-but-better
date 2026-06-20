@@ -2,7 +2,9 @@
 Manages NPC interaction state (has_fought, has_talked, etc.).
 Each NPC can have multiple states and dialogs for each state.
 """
+
 from src.model.npc import NPCState
+
 
 class NPCManager:
     """

@@ -24,14 +24,18 @@ class BattleEncounterTriggeredEvent:
     pokemon_data: PokemonProfile
     pokemon_level: int
 
+
 # ---------------------------------------------------------------------------
 # Npc
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class NpcInteractEvent:
     """Fired when the player presses interact facing an NPC."""
+
     npc_id: str
+
 
 # ---------------------------------------------------------------------------
 # Battle Phase

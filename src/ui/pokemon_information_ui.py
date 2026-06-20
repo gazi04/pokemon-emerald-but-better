@@ -13,11 +13,12 @@ _TAB_BG = [
     "assets/ui/sprites/pokemon_moves.png",
 ]
 
+
 class PokemonInformationUI:
     def __init__(self, pokemon: PlayerPokemon, data_loader: DataLoader):
         self._manager = arcade.gui.UIManager()
         self._manager._pixelated = True
-        
+
         _profile = data_loader.get_pokemon(pokemon.name)
         if _profile is None:
             raise ValueError(f"No profile found for '{pokemon.name}'")
@@ -34,18 +35,26 @@ class PokemonInformationUI:
 
         for obj in tilemap.get_tilemap_layer("static").tiled_objects:
             x = obj.coordinates.x
-            y = 600 - obj.coordinates.y   
+            y = 600 - obj.coordinates.y
             w, h = obj.size.width, obj.size.height
 
             if obj.name == "bar":
-                self._manager.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/top_bar.png"),
-                    x=x, y=y, width=w, height=h,
-                ))
+                self._manager.add(
+                    arcade.gui.UIImage(
+                        texture=arcade.load_texture("assets/ui/sprites/top_bar.png"),
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
+                    )
+                )
             elif obj.name == "bg":
                 self._bg_image = arcade.gui.UIImage(
                     texture=arcade.load_texture(_TAB_BG[0]),
-                    x=x, y=y, width=w, height=h,
+                    x=x,
+                    y=y,
+                    width=w,
+                    height=h,
                 )
                 self._manager.add(self._bg_image)
             elif obj.name == "tab":
@@ -53,7 +62,10 @@ class PokemonInformationUI:
                     text="",
                     font_name=_FONT,
                     font_size=40,
-                    x=x, y=y-h, width=w, height=h
+                    x=x,
+                    y=y - h,
+                    width=w,
+                    height=h,
                 )
                 self._manager.add(self._tab_label)
 
@@ -63,31 +75,53 @@ class PokemonInformationUI:
             w, h = obj.size.width, obj.size.height
 
             if obj.name == "profile":
-                self._manager.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture("assets/ui/sprites/pokemon_profile.png"),
-                    x=x, y=y, width=w, height=h,
-                ))
+                self._manager.add(
+                    arcade.gui.UIImage(
+                        texture=arcade.load_texture(
+                            "assets/ui/sprites/pokemon_profile.png"
+                        ),
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
+                    )
+                )
             elif obj.name == "pokemon":
-                self._manager.add(arcade.gui.UIImage(
-                    texture=arcade.load_texture(_profile.sprites.front),
-                    x=x, y=y, width=w, height=h,
-                ))
+                self._manager.add(
+                    arcade.gui.UIImage(
+                        texture=arcade.load_texture(_profile.sprites.front),
+                        x=x,
+                        y=y,
+                        width=w,
+                        height=h,
+                    )
+                )
             elif obj.name == "pokemon_name":
-                self._manager.add(arcade.gui.UILabel(
-                    text=pokemon.name.upper(),
-                    text_color=arcade.color.BLACK,
-                    font_name=_FONT,
-                    font_size=32,
-                    x=x, y=y - h, width=w, height=h,
-                ))
+                self._manager.add(
+                    arcade.gui.UILabel(
+                        text=pokemon.name.upper(),
+                        text_color=arcade.color.BLACK,
+                        font_name=_FONT,
+                        font_size=32,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
+                    )
+                )
             elif obj.name == "pokemon_level":
-                self._manager.add(arcade.gui.UILabel(
-                    text=f"Lv{pokemon.level}",
-                    text_color=arcade.color.BLACK,
-                    font_name=_FONT,
-                    font_size=28,
-                    x=x, y=y - h, width=w, height=h,
-                ))
+                self._manager.add(
+                    arcade.gui.UILabel(
+                        text=f"Lv{pokemon.level}",
+                        text_color=arcade.color.BLACK,
+                        font_name=_FONT,
+                        font_size=28,
+                        x=x,
+                        y=y - h,
+                        width=w,
+                        height=h,
+                    )
+                )
 
         abilities = _profile.abilities or []
         ability = abilities[0].upper() if abilities else "—"
@@ -106,7 +140,7 @@ class PokemonInformationUI:
 
             if obj.name == "type":
                 cursor_x = x
-                for type_name in (_profile.types or []):
+                for type_name in _profile.types or []:
                     sprite = self._make_type_sprite(type_name, cursor_x, y - h / 2, h)
                     self._tab_sprites[0].append(sprite)
                     cursor_x += sprite.width + 8
@@ -114,17 +148,19 @@ class PokemonInformationUI:
             else:
                 val = _label_map_info.get(obj.name)
                 if val is not None:
-                    self._tab[0].append(arcade.Text(
-                        val,
-                        x=x,
-                        y=y,
-                        color=arcade.color.BLACK,
-                        font_size=30,
-                        font_name=_FONT,
-                        anchor_y="top",
-                        width=w,
-                        multiline=True,
-                    ))
+                    self._tab[0].append(
+                        arcade.Text(
+                            val,
+                            x=x,
+                            y=y,
+                            color=arcade.color.BLACK,
+                            font_size=30,
+                            font_name=_FONT,
+                            anchor_y="top",
+                            width=w,
+                            multiline=True,
+                        )
+                    )
 
         lvl = pokemon.level
 
@@ -148,34 +184,38 @@ class PokemonInformationUI:
             h = obj.size.height
 
             if obj.name in stats:
-                self._tab[1].append(arcade.Text(
-                    f"{obj.name:<14} {stats[obj.name]}",
-                    x=x,
-                    y=y,
-                    color=arcade.color.BLACK,
-                    font_size=30,
-                    font_name=_FONT,
-                    align="center",
-                    anchor_y="top",
-                    width=w,
-                ))
-            else:
-                val = _label_map_stats.get(obj.name)
-                if val is not None:
-                    self._tab[1].append(arcade.Text(
-                        val,
+                self._tab[1].append(
+                    arcade.Text(
+                        f"{obj.name:<14} {stats[obj.name]}",
                         x=x,
                         y=y,
                         color=arcade.color.BLACK,
-                        font_size=23,
+                        font_size=30,
                         font_name=_FONT,
+                        align="center",
                         anchor_y="top",
                         width=w,
-                        multiline=False,
-                    ))
-        
+                    )
+                )
+            else:
+                val = _label_map_stats.get(obj.name)
+                if val is not None:
+                    self._tab[1].append(
+                        arcade.Text(
+                            val,
+                            x=x,
+                            y=y,
+                            color=arcade.color.BLACK,
+                            font_size=23,
+                            font_name=_FONT,
+                            anchor_y="top",
+                            width=w,
+                            multiline=False,
+                        )
+                    )
+
         self._moves: list[arcade.Text] = []
-        self._move_profiles = []   # parallel list of PokemonMove | None
+        self._move_profiles = []  # parallel list of PokemonMove | None
         self._current_move = 0
         move_index = 0
 
@@ -184,7 +224,7 @@ class PokemonInformationUI:
             y = 600 - obj.coordinates.y
             w = obj.size.width
             h = obj.size.height
-            
+
             if obj.name == "description":
                 self.description = arcade.Text(
                     "Description",
@@ -199,7 +239,7 @@ class PokemonInformationUI:
                 )
                 self._tab[2].append(self.description)
             elif "move" in obj.name and move_index < len(pokemon.moves):
-                move_data    = pokemon.moves[move_index]
+                move_data = pokemon.moves[move_index]
                 move_profile = data_loader.get_move(move_data.name)
 
                 type_y = y - h / 2
@@ -207,7 +247,7 @@ class PokemonInformationUI:
                 if move_profile is not None:
                     type = self._make_type_sprite(move_profile.type, x - 115, type_y, h)
                     self._tab_sprites[2].append(type)
-                    
+
                 move_text = arcade.Text(
                     f"{move_data.name.capitalize():<28}{move_data.pp}/{move_profile.pp}",
                     x=x,
@@ -223,37 +263,40 @@ class PokemonInformationUI:
                 self._move_profiles.append(move_profile)
                 self._tab[2].append(move_text)
                 move_index += 1
-        
+
         self._cursor_label = arcade.Text(
             text="▶",
-            x=0, y=0,
-            color=arcade.color.BLACK, 
-            font_size=33,       
+            x=0,
+            y=0,
+            color=arcade.color.BLACK,
+            font_size=33,
             font_name=_FONT,
             anchor_y="top",
         )
         self._tab[2].append(self._cursor_label)
         self._set_cursor(self._current_move)
         self._set_description()
-        
+
         self._set_tab(0)
 
     def _generate_stats(self, stats: PokemonStat, lvl: int) -> dict[str, PokemonStat]:
         pokemon_stats = {}
-        
+
         pokemon_stats["HP"] = self._stat(stats.hp, lvl) + lvl
         pokemon_stats["ATK"] = self._stat(stats.attack, lvl)
         pokemon_stats["DEF"] = self._stat(stats.defence, lvl)
         pokemon_stats["SP.ATK"] = self._stat(stats.special_attack, lvl)
         pokemon_stats["SP.DEF"] = self._stat(stats.special_defence, lvl)
         pokemon_stats["SPD"] = self._stat(stats.speed, lvl)
-        
-        return pokemon_stats 
-        
+
+        return pokemon_stats
+
     def _stat(self, base: int, lvl: int) -> int:
         return ((2 * base * lvl) // 100) + 5
 
-    def _make_type_sprite(self, type_name: str, x: float, cy: float, badge_h: float) -> arcade.Sprite:
+    def _make_type_sprite(
+        self, type_name: str, x: float, cy: float, badge_h: float
+    ) -> arcade.Sprite:
         path = f"assets/sprite/types/{type_name.lower()}.png"
         tex = arcade.load_texture(path)
         scale = badge_h / tex.height
@@ -261,7 +304,7 @@ class PokemonInformationUI:
         sprite.left = x
         sprite.center_y = cy
         return sprite
-        
+
     def next_move(self):
         self._set_cursor(self._current_move + 1)
         self._set_description()
@@ -269,14 +312,14 @@ class PokemonInformationUI:
     def prev_move(self):
         self._set_cursor(self._current_move - 1)
         self._set_description()
-        
+
     def _set_cursor(self, index: int):
         self._current_move = index % len(self._moves)
         move_text = self._moves[self._current_move]
-        
+
         self._cursor_label.x = move_text.left - 30
         self._cursor_label.y = move_text.y + 5
-        
+
     def _set_description(self):
         if not hasattr(self, "description") or not self._move_profiles:
             return
@@ -287,7 +330,7 @@ class PokemonInformationUI:
             return
 
         cat = move.category.capitalize()
-        power = str(move.power)   if move.power    else "—"
+        power = str(move.power) if move.power else "—"
         acc = f"{move.accuracy}%" if move.accuracy else "—"
         header = f"{cat}   PWR {power}   ACC {acc}"
 
@@ -305,16 +348,18 @@ class PokemonInformationUI:
 
             elif eff.type == "status condition" and eff.condition:
                 condition_text = {
-                    "poison":   "poisons",
+                    "poison": "poisons",
                     "paralyzed": "paralyzes",
-                    "sleep":    "puts to sleep",
-                    "burned":   "burns",
-                    "freeze":   "freezes",
+                    "sleep": "puts to sleep",
+                    "burned": "burns",
+                    "freeze": "freezes",
                 }.get(eff.condition, f"inflicts {eff.condition} on")
 
                 chance = eff.chance
                 if chance and chance < 100:
-                    effect_lines.append(f"May {condition_text} the {target}. ({chance}%)")
+                    effect_lines.append(
+                        f"May {condition_text} the {target}. ({chance}%)"
+                    )
                 else:
                     effect_lines.append(f"{condition_text.capitalize()} the {target}.")
 
@@ -329,11 +374,11 @@ class PokemonInformationUI:
 
     def prev_tab(self):
         self._set_tab(self._current_tab - 1)
-        
+
     def _set_tab(self, index: int):
         self._current_tab = index % 3
         self._bg_image.texture = arcade.load_texture(_TAB_BG[self._current_tab])
-        
+
         if index == 0:
             self._tab_label.text = "Pokemon Info"
         elif index == 1:

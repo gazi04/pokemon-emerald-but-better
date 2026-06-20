@@ -8,8 +8,17 @@ from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
 
 CONFIG = Config.load()
 
+
 class DialogView(arcade.View):
-    def __init__(self, overworld: arcade.View, data_loader: DataLoader, player_manager: PlayerManager, after_text_callback, npc_id: str, state: str = "default"):
+    def __init__(
+        self,
+        overworld: arcade.View,
+        data_loader: DataLoader,
+        player_manager: PlayerManager,
+        after_text_callback,
+        npc_id: str,
+        state: str = "default",
+    ):
         super().__init__()
 
         self.overworld = overworld
@@ -25,10 +34,10 @@ class DialogView(arcade.View):
         self.dialog = self.npc.get_dialog(state)
 
         self.ui.queue_messages(self.dialog[self.dialog_index])
-        
+
     def on_update(self, delta_time):
         self.ui.update(delta_time)
-        
+
     def on_key_press(self, key: int, modifiers: int):
         if self._is_pressed(CONFIG.controls.cancel, key) and self.ui.is_text_finished():
             if self.dialog_index < len(self.dialog) - 1:
@@ -36,15 +45,17 @@ class DialogView(arcade.View):
                 self.ui.queue_messages(self.dialog[self.dialog_index])
             else:
                 self._end_of_dialog()
-                
+
     def _end_of_dialog(self):
         if self.action == "shop":
             global_bus.publish(OverlayViewEvent(target="shop"))
         elif self.action == "fight":
-            global_bus.publish(SwapViewEvent(
-                "battle_trainer",
-                {"trainer_data": self.npc.team, "npc_id": self.npc_id},
-            ))
+            global_bus.publish(
+                SwapViewEvent(
+                    "battle_trainer",
+                    {"trainer_data": self.npc.team, "npc_id": self.npc_id},
+                )
+            )
         elif self.action == "heal":
             self.player_manager.heal_team()
             global_bus.publish(CloseViewEvent())
