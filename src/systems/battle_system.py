@@ -140,6 +140,9 @@ class BattleSystem:
         if result.damage > 0:
             defender.takeDamage(result.damage)
 
+        if result.is_miss:
+            return messages
+
         # Apply move effects (stat changes, status conditions) — state mutation
         effect_messages = attacker.executeEffects(move_data, defender)
         messages.extend(effect_messages)
