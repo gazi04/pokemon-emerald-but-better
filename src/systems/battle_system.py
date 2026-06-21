@@ -243,7 +243,7 @@ class BattleSystem:
         ball_modifier = 1
         for effect in item_data.effects:
             if effect.type == "catch":
-                ball_modifier = effect.catchRate or 1
+                ball_modifier = effect.catch_rate or 1
 
         enemy = self.enemyPokemon
         pokemon_profile = self.data_loader.get_pokemon(enemy.name.lower())
