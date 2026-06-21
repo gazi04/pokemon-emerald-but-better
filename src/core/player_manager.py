@@ -18,6 +18,9 @@ class PlayerManager:
         ):
             self.npc_manager.load_from_dict(save_manager.player.npc_states)
 
+    def capture_npc_states(self):
+        self.player.npc_states = self.npc_manager.save_to_dict()
+
     def add_money(self, amount: int) -> int:
         self.player.money += amount
         return self.player.money

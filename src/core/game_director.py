@@ -78,6 +78,7 @@ class GameDirector:
 
         overworld = self._view_cache.get("overworld")
         if overworld and isinstance(overworld, OverworldView):
+            self.player_manager.capture_npc_states()
             success = self.save_manager.flush_save(overworld.player_state)
         else:
             success = False

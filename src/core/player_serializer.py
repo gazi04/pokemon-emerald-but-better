@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.model.player import PlayerProfile, PlayerPokemon, PlayerPokemonMove, InventoryStack, Pokeball
 
 
@@ -24,11 +26,16 @@ class PlayerSerializer:
         seen = data.get("seen", [])
 
         return PlayerProfile(
-            pokemon=pokemons, items=items, pokeballs=pokeballs, seen=seen
+            pokemon=pokemons,
+            items=items,
+            pokeballs=pokeballs,
+            seen=seen,
+            money=data.get("money", 0),
+            npc_states=data.get("npc_states", []),
         )
 
     @staticmethod
-    def serialize(player: PlayerProfile) -> dict:
+    def serialize(player: PlayerProfile, position: Optional[dict] = None) -> dict:
         pokemons = []
         for pokemon in player.pokemon:
             moves = [{"name": m.name, "pp": m.pp} for m in pokemon.moves]
@@ -42,11 +49,16 @@ class PlayerSerializer:
                 }
             )
 
-        return {
+        data = {
             "pokemons": pokemons,
             "items": [{"name": i.name, "count": i.count} for i in player.items],
             "pokeballs": [
                 {"name": pb.name, "count": pb.count} for pb in player.pokeballs
             ],
             "seen": list(player.seen),
+            "money": player.money,
+            "npc_states": player.npc_states,
         }
+        if position is not None:
+            data["position"] = position
+        return data

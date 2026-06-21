@@ -29,13 +29,13 @@ class SaveManager:
 
     def flush_save(self, player_state) -> bool:
         try:
-            data = PlayerSerializer.serialize(self.player)
-            data["position"] = {
+            position = {
                 "map_name": player_state.map_name,
                 "direction": player_state.direction,
                 "pixel_x": player_state.pixel_x,
                 "pixel_y": player_state.pixel_y,
             }
+            data = PlayerSerializer.serialize(self.player, position)
 
             with open(SAVE_TMP_PATH, "w") as f:
                 json.dump(data, f, indent=4)
