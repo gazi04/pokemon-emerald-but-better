@@ -6,6 +6,7 @@ from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
 from src.core.event_bus import global_bus
 from src.core.events import HpChangedEvent, PokemonFaintedEvent
+from src.model.battle_state import BattleState
 from src.model.item import ItemProfile
 from src.model.trainer import Trainer
 from src.model.player import PlayerPokemon
@@ -28,7 +29,7 @@ class BattleSystem:
         self.data_loader = data_loader
 
         self.turnQueue = []
-        self.battleState = "intro"
+        self.battleState = BattleState.INTRO
         self.exp = 0
         self.hasEvolved = False
 
@@ -37,7 +38,7 @@ class BattleSystem:
         self.next_trainer_pokemon: PlayerPokemon = None
 
     def turn(self, moveIndex: int) -> list[str]:
-        self.battleState = "currently turn"
+        self.battleState = BattleState.CURRENTLY_TURN
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
 
         if self.yourPokemon.getStat("speed") >= self.enemyPokemon.getStat("speed"):
@@ -48,13 +49,13 @@ class BattleSystem:
         return self.executeNextAction()
 
     def turnUseItem(self, itemIndex: int) -> list[str]:
-        self.battleState = "currently turn"
+        self.battleState = BattleState.CURRENTLY_TURN
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
         self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
         return self.executeNextAction()
 
     def switch_turn(self) -> list[str]:
-        self.battleState = "currently turn"
+        self.battleState = BattleState.CURRENTLY_TURN
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
 
         self.turnQueue = [("enemy", enemyMoveIndex, -1)]
@@ -187,14 +188,14 @@ class BattleSystem:
             messages.extend(self.pokemonDeath(self.enemyPokemon))
             return messages
 
-        self.battleState = "post turn" if len(messages) > 0 else "waiting"
+        self.battleState = BattleState.POST_TURN if len(messages) > 0 else BattleState.WAITING
         return messages
 
     def pokemonDeath(self, diedPokemon: PokemonBattle) -> list[str]:
         messages = []
 
         if diedPokemon.isEnemy:
-            self.battleState = "end"
+            self.battleState = BattleState.END
             self.exp = diedPokemon.getExp()
             messages.extend(
                 [
@@ -205,13 +206,13 @@ class BattleSystem:
 
             if self.is_trainer and self.trainer_party:
                 self.next_trainer_pokemon = self.trainer_party.pop(0)
-                self.battleState = "trainer switch"
+                self.battleState = BattleState.TRAINER_SWITCH
         else:
             # Write the fainted HP back to the team member so the bench/active
             # HP is accurate when we decide between switching and losing.
             if self.yourPokemon.source is not None:
                 self.yourPokemon.source.hp = self.yourPokemon.currentHp
-            self.battleState = "player fainted"
+            self.battleState = BattleState.PLAYER_FAINTED
             messages.append(f"{self.yourPokemon.name} fainted!")
 
         global_bus.publish(
@@ -261,7 +262,7 @@ class BattleSystem:
         )
 
         if random.random() < catch_probability:
-            self.battleState = "caught"
+            self.battleState = BattleState.CAUGHT
             return {
                 "success": True,
                 "messages": [
@@ -272,7 +273,7 @@ class BattleSystem:
         else:
             enemy_move_index = random.randint(0, len(self.enemyPokemon.moves) - 1)
             self.turnQueue = [("enemy", enemy_move_index, -1)]
-            self.battleState = "currently turn"
+            self.battleState = BattleState.CURRENTLY_TURN
             return {
                 "success": False,
                 "messages": [

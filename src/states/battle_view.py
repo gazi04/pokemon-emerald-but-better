@@ -10,6 +10,7 @@ from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
+from src.model.battle_state import BattleState
 
 CONFIG = Config.load()
 
@@ -148,7 +149,7 @@ class BattleView(arcade.View):
         self.ui.switch_mode("dialog")
 
     def switch_turn(self):
-        self.battleSystem.battleState = "switching"
+        self.battleSystem.battleState = BattleState.SWITCHING
 
         self.ui.switch_mode("dialog")
         self.ui.queue_messages(self.battleSystem.switch_pokemon())
@@ -173,7 +174,7 @@ class BattleView(arcade.View):
         self.yourPokemon.setNewTexture(texture)
 
     def whatHappendAfterText(self):
-        if self.battleSystem.battleState == "caught":
+        if self.battleSystem.battleState == BattleState.CAUGHT:
             enemy = self.battleSystem.enemyPokemon
             self.player_manager.add_pokemon(
                 PlayerPokemon(
@@ -187,24 +188,24 @@ class BattleView(arcade.View):
             self.run()
             return
 
-        if self.battleSystem.battleState == "currently turn":
+        if self.battleSystem.battleState == BattleState.CURRENTLY_TURN:
             self._on_continue_turn()
-        elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
+        elif self.battleSystem.battleState in (BattleState.INTRO, BattleState.POST_TURN, BattleState.WAITING):
             self._ending_turn()
 
-        elif self.battleSystem.battleState == "switching":
+        elif self.battleSystem.battleState == BattleState.SWITCHING:
             self.ui.queue_messages(self.battleSystem.switch_turn())
             self.ui.switch_mode("dialog")
 
-        elif self.battleSystem.battleState == "trainer switch":
+        elif self.battleSystem.battleState == BattleState.TRAINER_SWITCH:
             self._trainer_give_exp()
-        elif self.battleSystem.battleState == "trainer sending":
+        elif self.battleSystem.battleState == BattleState.TRAINER_SENDING:
             self._trainer_send_next_pokemon()
-        elif self.battleSystem.battleState == "player fainted":
+        elif self.battleSystem.battleState == BattleState.PLAYER_FAINTED:
             self._handle_player_fainted()
-        elif self.battleSystem.battleState == "lost":
+        elif self.battleSystem.battleState == BattleState.LOST:
             self._end_loss()
-        elif self.battleSystem.battleState == "end":
+        elif self.battleSystem.battleState == BattleState.END:
             self._handle_battle_finishing()
 
     def _handle_player_fainted(self):
@@ -229,7 +230,7 @@ class BattleView(arcade.View):
         self.ui.queue_messages(self.battleSystem.complete_forced_switch())
         self.ui.switch_mode("dialog")
         # No enemy turn after a forced switch — go back to the main menu.
-        self.battleSystem.battleState = "waiting"
+        self.battleSystem.battleState = BattleState.WAITING
 
         self.ui.set_player_info(
             self.yourPokemon.pokemonBattle.name.upper(),
@@ -251,7 +252,7 @@ class BattleView(arcade.View):
         self.yourPokemon.setNewTexture(texture)
 
     def _handle_player_loss(self):
-        self.battleSystem.battleState = "lost"
+        self.battleSystem.battleState = BattleState.LOST
         self.ui.queue_messages(
             [
                 "You have no more Pokémon that can fight!",
@@ -277,13 +278,13 @@ class BattleView(arcade.View):
             self._ending_turn()
 
     def _ending_turn(self):
-        self.battleSystem.battleState = "waiting"
+        self.battleSystem.battleState = BattleState.WAITING
         arcade.schedule_once(self._reset_to_main_menu, 0.5)
 
     def _trainer_give_exp(self):
         result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
         self.battleSystem.exp = 0
-        self.battleSystem.battleState = "trainer sending"
+        self.battleSystem.battleState = BattleState.TRAINER_SENDING
 
         if result["isLeveledUp"]:
             self._on_level_up(self.yourPokemon.pokemonBattle)
@@ -298,7 +299,7 @@ class BattleView(arcade.View):
             if self.prize_money > 0:
                 messages.append(f"You got ${self.prize_money}!")
             self.ui.queue_messages(messages)
-            self.battleSystem.battleState = "end"
+            self.battleSystem.battleState = BattleState.END
             return
 
         profile = self.data_loader.get_pokemon(next_data.name)
@@ -316,7 +317,7 @@ class BattleView(arcade.View):
 
         self.ui.set_enemy_info(next_data.name.upper(), next_data.level)
         self.ui.queue_messages([f"Trainer sent out {next_data.name}!"])
-        self.battleSystem.battleState = "waiting"
+        self.battleSystem.battleState = BattleState.WAITING
 
     def _handle_battle_finishing(self):
         if self.battleSystem.exp <= 0:
