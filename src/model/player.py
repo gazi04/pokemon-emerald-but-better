@@ -22,7 +22,7 @@ class PlayerPokemon:
 
 
 @dataclass
-class Item:
+class InventoryStack:
     name: str
     count: int
 
@@ -36,7 +36,7 @@ class Pokeball:
 @dataclass
 class PlayerProfile:
     pokemon: list[PlayerPokemon]
-    items: list[Item]
+    items: list[InventoryStack]
     pokeballs: list[Pokeball]
     seen: list[str] = field(default_factory=list)
     money: int = 0

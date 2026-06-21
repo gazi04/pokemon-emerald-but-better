@@ -1,4 +1,4 @@
-from src.model.player import PlayerProfile, PlayerPokemon, PlayerPokemonMove, Item
+from src.model.player import PlayerProfile, PlayerPokemon, PlayerPokemonMove, InventoryStack, Pokeball
 
 
 class PlayerSerializer:
@@ -19,8 +19,8 @@ class PlayerSerializer:
                 )
             )
 
-        items = [Item(item["name"], item["count"]) for item in data["items"]]
-        pokeballs = [Item(pb["name"], pb["count"]) for pb in data["pokeballs"]]
+        items = [InventoryStack(item["name"], item["count"]) for item in data["items"]]
+        pokeballs = [Pokeball(pb["name"], pb["count"]) for pb in data["pokeballs"]]
         seen = data.get("seen", [])
 
         return PlayerProfile(

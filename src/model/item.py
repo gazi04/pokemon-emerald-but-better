@@ -15,7 +15,7 @@ class ItemEffect:
 
 
 @dataclass
-class Item:
+class ItemProfile:
     description: str
     price: int
     effects: list[ItemEffect]

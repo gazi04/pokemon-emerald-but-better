@@ -1,6 +1,6 @@
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
-from src.model.player import PlayerProfile, PlayerPokemon, Item
+from src.model.player import PlayerProfile, PlayerPokemon, InventoryStack
 from src.systems.npc_manager import NPCManager
 from typing import Optional
 
@@ -63,7 +63,7 @@ class PlayerManager:
             if item.name == name:
                 item.count += count
                 return True
-        self.player.items.append(Item(name, count))
+        self.player.items.append(InventoryStack(name, count))
         return True
 
     def get_money(self) -> int:
@@ -78,5 +78,5 @@ class PlayerManager:
     def get_seen_pokemon(self) -> list[str]:
         return self.player.seen
 
-    def get_inventory(self) -> list[Item]:
+    def get_inventory(self) -> list[InventoryStack]:
         return self.player.items

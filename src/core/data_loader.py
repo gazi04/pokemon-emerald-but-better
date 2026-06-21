@@ -1,6 +1,6 @@
 import json
 from src.model.pokemon import PokemonProfile, PokemonMove
-from src.model.item import Item
+from src.model.item import ItemProfile
 from src.model.npc import NpcProfile
 from src.core.game_data_parser import GameDataParser
 
@@ -13,7 +13,7 @@ class DataLoader:
         self.moves: dict[str, PokemonMove] = GameDataParser.parse_moves(
             self._read("data/moves.json")
         )
-        self.items: dict[str, Item] = GameDataParser.parse_items(
+        self.items: dict[str, ItemProfile] = GameDataParser.parse_items(
             self._read("data/items.json")
         )
         self.npc_dialog: dict[str, NpcProfile] = GameDataParser.parse_npc_dialog(
@@ -30,5 +30,5 @@ class DataLoader:
     def get_move(self, name: str) -> PokemonMove | None:
         return self.moves.get(name)
 
-    def get_item(self, name: str) -> Item | None:
+    def get_item(self, name: str) -> ItemProfile | None:
         return self.items.get(name)

@@ -6,7 +6,7 @@ from src.model.pokemon import (
     PokemonMoveEffect,
     PokemonEvolution,
 )
-from src.model.item import Item, ItemEffect
+from src.model.item import ItemProfile, ItemEffect
 from src.model.npc import NpcProfile
 
 
@@ -32,11 +32,11 @@ class GameDataParser:
         return moves
 
     @staticmethod
-    def parse_items(data: dict) -> dict[str, Item]:
+    def parse_items(data: dict) -> dict[str, ItemProfile]:
         items = {}
         for name, item in data.items():
             effects = [ItemEffect(effect) for effect in item["effects"]]
-            items[name] = Item(item, effects)
+            items[name] = ItemProfile(item, effects)
         return items
 
     @staticmethod

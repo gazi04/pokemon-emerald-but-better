@@ -6,7 +6,7 @@ from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
 from src.core.event_bus import global_bus
 from src.core.events import HpChangedEvent, PokemonFaintedEvent
-from src.model.item import Item
+from src.model.item import ItemProfile
 from src.model.trainer import Trainer
 from src.model.player import PlayerPokemon
 from typing import Optional
@@ -238,7 +238,7 @@ class BattleSystem:
         self.yourPokemon.switching_pokemon(pokemon, profile)
         return [f"Go {pokemon.name}!"]
 
-    def attempt_catch(self, item_data: Item) -> dict:
+    def attempt_catch(self, item_data: ItemProfile) -> dict:
         ball_modifier = 1
         for effect in item_data.effects:
             if effect.type == "catch":
