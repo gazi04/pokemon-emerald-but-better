@@ -109,6 +109,15 @@ class BagView(arcade.View):
             and self.battleSystem
             and not self.battleSystem.is_trainer
         ):
+            pokemon_team = self.battleSystem.player_manager.player.pokemon
+            if len(pokemon_team) >= 6:
+                self.window.show_view(self.previousWindow)
+                if hasattr(self.previousWindow, "start_catch_attempt"):
+                    self.previousWindow.start_catch_attempt(
+                        {"messages": ["Your party is full!", "You can't catch any more Pokémon."]}
+                    )
+                return
+
             pokeball = self.bagSystem.usePokeball(self.currentIndex)
             if pokeball:
                 result = self.battleSystem.attempt_catch(pokeball)
