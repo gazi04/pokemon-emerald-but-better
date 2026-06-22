@@ -9,11 +9,11 @@ class DialogUI:
         self._manager = arcade.gui.UIManager()
 
         tilemap = arcade.load_tilemap(DIALOG_UI)
-        uiLayer = tilemap.get_tilemap_layer("ui")
+        ui_layer = tilemap.get_tilemap_layer("ui")
 
         self._textbound = {}
 
-        for obj in uiLayer.tiled_objects:
+        for obj in ui_layer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
 

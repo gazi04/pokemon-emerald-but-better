@@ -7,7 +7,7 @@ from typing import Optional
 
 
 class PlayerManager:
-    def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
+    def __init__(self, save_manager: SaveManager, data_loader: Optional[DataLoader] = None):
         self.save_manager = save_manager
         self.data_loader = data_loader
         self.player: Optional[PlayerSave] = save_manager.player
@@ -33,6 +33,8 @@ class PlayerManager:
         return False
 
     def heal_team(self):
+        if self.data_loader is None:
+            raise RuntimeError("PlayerManager.heal_team requires data_loader")
         for pokemon in self.player.pokemon:
             profile = self.data_loader.get_pokemon(pokemon.name)
             max_hp = PokemonStat.max_hp(profile.stats.hp, pokemon.level)

@@ -182,7 +182,7 @@ class GameDirector:
                 previousWindow=payload.get("previous_view", overworld),
                 player_manager=self.player_manager,
                 data_loader=self.data_loader,
-                battleSystem=cast(Any, payload.get("battle_system")),
+                battle_system=cast(Any, payload.get("battle_system")),
             )
 
         if target == "pokemon_menu":
@@ -193,8 +193,8 @@ class GameDirector:
                 player_manager=self.player_manager,
                 data_loader=self.data_loader,
                 bag=cast(Any, payload.get("bag")),
-                itemIndex=payload.get("item_index", 0),
-                battleSystem=cast(Any, payload.get("battle_system")),
+                item_index=payload.get("item_index", 0),
+                battle_system=cast(Any, payload.get("battle_system")),
                 forced_switch=payload.get("forced_switch", False),
             )
 

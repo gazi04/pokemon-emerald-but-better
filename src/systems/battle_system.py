@@ -18,88 +18,88 @@ from typing import Optional
 class BattleSystem:
     def __init__(
         self,
-        yourPokemon: BattlePokemon,
-        enemyPokemon: BattlePokemon,
+        your_pokemon: BattlePokemon,
+        enemy_pokemon: BattlePokemon,
         player_manager: PlayerManager,
         data_loader: DataLoader,
         is_trainer=False,
         trainer_data: Optional[Trainer] = None,
     ):
-        self.yourPokemon = yourPokemon
-        self.enemyPokemon = enemyPokemon
+        self.your_pokemon = your_pokemon
+        self.enemy_pokemon = enemy_pokemon
         self.player_manager = player_manager
         self.data_loader = data_loader
 
-        self.turnQueue = []
-        self.battleState = BattleState.INTRO
+        self.turn_queue = []
+        self.battle_state = BattleState.INTRO
         self.exp = 0
-        self.hasEvolved = False
+        self.has_evolved = False
 
         self.is_trainer = is_trainer
         self.trainer_party = trainer_data.party if trainer_data else []
         self.next_trainer_pokemon: Optional[TrainerPokemon] = None
 
-    def turn(self, moveIndex: int) -> list[str]:
-        self.battleState = BattleState.CURRENTLY_TURN
-        enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
+    def turn(self, move_index: int) -> list[str]:
+        self.battle_state = BattleState.CURRENTLY_TURN
+        enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
 
-        if self.yourPokemon.get_stat(Stat.SPEED) >= self.enemyPokemon.get_stat(Stat.SPEED):
-            self.turnQueue = [("player", moveIndex, -1), ("enemy", enemyMoveIndex, -1)]
+        if self.your_pokemon.get_stat(Stat.SPEED) >= self.enemy_pokemon.get_stat(Stat.SPEED):
+            self.turn_queue = [("player", move_index, -1), ("enemy", enemy_move_index, -1)]
         else:
-            self.turnQueue = [("enemy", enemyMoveIndex, -1), ("player", moveIndex, -1)]
+            self.turn_queue = [("enemy", enemy_move_index, -1), ("player", move_index, -1)]
 
         return self.execute_next_action()
 
-    def turn_use_item(self, itemIndex: int) -> list[str]:
-        self.battleState = BattleState.CURRENTLY_TURN
-        enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
-        self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
+    def turn_use_item(self, item_index: int) -> list[str]:
+        self.battle_state = BattleState.CURRENTLY_TURN
+        enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+        self.turn_queue = [("player", -1, item_index), ("enemy", enemy_move_index, -1)]
         return self.execute_next_action()
 
     def switch_turn(self) -> list[str]:
-        self.battleState = BattleState.CURRENTLY_TURN
-        enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
+        self.battle_state = BattleState.CURRENTLY_TURN
+        enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
 
-        self.turnQueue = [("enemy", enemyMoveIndex, -1)]
+        self.turn_queue = [("enemy", enemy_move_index, -1)]
         return self.execute_next_action()
 
     def switch_pokemon(self) -> list[str]:
         pokemon = self.player_manager.player.pokemon[0]
-        pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
+        pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
 
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
 
-        self.yourPokemon.switching_pokemon(pokemon, pokemonProfile)
+        self.your_pokemon.switching_pokemon(pokemon, pokemon_profile)
 
         return [f"Go {pokemon.name}!"]
 
     def execute_next_action(self) -> list[str]:
-        if not self.turnQueue:
+        if not self.turn_queue:
             return self.post_turn()
 
         messages = []
-        attackerKey, moveIndex, itemIndex = self.turnQueue.pop(0)
+        attacker_key, move_index, item_index = self.turn_queue.pop(0)
 
-        if attackerKey == "player" and self.yourPokemon.currentHp > 0:
-            if itemIndex == -1:
+        if attacker_key == "player" and self.your_pokemon.current_hp > 0:
+            if item_index == -1:
                 messages.extend(
                     self._execute_move(
-                        self.yourPokemon, self.enemyPokemon, moveIndex, "enemy"
+                        self.your_pokemon, self.enemy_pokemon, move_index, "enemy"
                     )
                 )
             else:
-                messages.extend(self._applyItemToPokemon(itemIndex))
+                messages.extend(self._apply_item_to_pokemon(item_index))
 
-        elif attackerKey == "enemy" and self.enemyPokemon.currentHp > 0:
+        elif attacker_key == "enemy" and self.enemy_pokemon.current_hp > 0:
             messages.extend(
                 self._execute_move(
-                    self.enemyPokemon, self.yourPokemon, moveIndex, "player"
+                    self.enemy_pokemon, self.your_pokemon, move_index, "player"
                 )
             )
 
-        if self.yourPokemon.currentHp <= 0 or self.enemyPokemon.currentHp <= 0:
-            self.turnQueue.clear()
+        if self.your_pokemon.current_hp <= 0 or self.enemy_pokemon.current_hp <= 0:
+            self.turn_queue.clear()
 
         return messages
 
@@ -113,7 +113,7 @@ class BattleSystem:
         move_data = self.data_loader.get_move(attacker.moves[move_index].name)
         messages = []
 
-        prefix = "" if attacker == self.yourPokemon else "Foe "
+        prefix = "" if attacker == self.your_pokemon else "Foe "
         messages.append(f"{prefix}{attacker.name} used {move_data.name}!")
 
         # Status / PP checks — BattlePokemon handles its own state
@@ -128,7 +128,7 @@ class BattleSystem:
             attacker_stats=attacker.stats,
             attacker_types=attacker.types,
             attacker_modifiers=attacker.modifiers,
-            attacker_status=attacker.statusEffect,
+            attacker_status=attacker.status_effect,
             move_data=move_data,
             defender_stats=defender.stats,
             defender_types=defender.types,
@@ -139,7 +139,7 @@ class BattleSystem:
         messages.extend(result.messages)
 
         # Apply damage
-        hp_before = defender.currentHp
+        hp_before = defender.current_hp
         if result.damage > 0:
             defender.take_damage(result.damage)
 
@@ -155,76 +155,76 @@ class BattleSystem:
 
         return messages
 
-    def _applyItemToPokemon(self, itemIndex: int) -> list[str]:
-        item = self.player_manager.player.items[itemIndex]
-        self.yourPokemon.sync_from_source()
+    def _apply_item_to_pokemon(self, item_index: int) -> list[str]:
+        item = self.player_manager.player.items[item_index]
+        self.your_pokemon.sync_from_source()
 
         global_bus.publish(
             HpChangedEvent(
                 target="player",
-                old_hp=self.yourPokemon.currentHp,
-                new_hp=self.yourPokemon.currentHp,
-                max_hp=self.yourPokemon.maxHp,
+                old_hp=self.your_pokemon.current_hp,
+                new_hp=self.your_pokemon.current_hp,
+                max_hp=self.your_pokemon.max_hp,
             )
         )
 
-        return [f"{self.yourPokemon.name} used {item.name}!"]
+        return [f"{self.your_pokemon.name} used {item.name}!"]
 
     def post_turn(self) -> list[str]:
         messages = []
-        hp_before_yours = self.yourPokemon.currentHp
-        hp_before_enemy = self.enemyPokemon.currentHp
+        hp_before_yours = self.your_pokemon.current_hp
+        hp_before_enemy = self.enemy_pokemon.current_hp
 
-        messages.extend(self.yourPokemon.after_a_turn())
-        messages.extend(self.enemyPokemon.after_a_turn())
+        messages.extend(self.your_pokemon.after_a_turn())
+        messages.extend(self.enemy_pokemon.after_a_turn())
 
-        if self.yourPokemon.currentHp != hp_before_yours:
-            self._publish_hp_change("player", hp_before_yours, self.yourPokemon)
-        if self.enemyPokemon.currentHp != hp_before_enemy:
-            self._publish_hp_change("enemy", hp_before_enemy, self.enemyPokemon)
+        if self.your_pokemon.current_hp != hp_before_yours:
+            self._publish_hp_change("player", hp_before_yours, self.your_pokemon)
+        if self.enemy_pokemon.current_hp != hp_before_enemy:
+            self._publish_hp_change("enemy", hp_before_enemy, self.enemy_pokemon)
 
-        if self.yourPokemon.currentHp <= 0:
-            messages.extend(self.pokemon_death(self.yourPokemon))
+        if self.your_pokemon.current_hp <= 0:
+            messages.extend(self.pokemon_death(self.your_pokemon))
             return messages
-        if self.enemyPokemon.currentHp <= 0:
-            messages.extend(self.pokemon_death(self.enemyPokemon))
+        if self.enemy_pokemon.current_hp <= 0:
+            messages.extend(self.pokemon_death(self.enemy_pokemon))
             return messages
 
-        self.battleState = BattleState.POST_TURN if len(messages) > 0 else BattleState.WAITING
+        self.battle_state = BattleState.POST_TURN if len(messages) > 0 else BattleState.WAITING
         return messages
 
-    def pokemon_death(self, diedPokemon: BattlePokemon) -> list[str]:
+    def pokemon_death(self, died_pokemon: BattlePokemon) -> list[str]:
         messages = []
 
-        if diedPokemon.isEnemy:
-            self.battleState = BattleState.END
-            self.exp = diedPokemon.exp_yield()
+        if died_pokemon.is_enemy:
+            self.battle_state = BattleState.END
+            self.exp = died_pokemon.exp_yield()
             messages.extend(
                 [
-                    f"{self.enemyPokemon.name} fainted!",
-                    f"{self.yourPokemon.name} gained {self.exp} EXP. Points!",
+                    f"{self.enemy_pokemon.name} fainted!",
+                    f"{self.your_pokemon.name} gained {self.exp} EXP. Points!",
                 ]
             )
 
             if self.is_trainer and self.trainer_party:
                 self.next_trainer_pokemon = self.trainer_party.pop(0)
-                self.battleState = BattleState.TRAINER_SWITCH
+                self.battle_state = BattleState.TRAINER_SWITCH
         else:
             # Persist the faint to the team member (through the single mutation
             # door, not a raw save-layer write) so the bench/active HP is accurate
             # when we decide between switching and losing. save() only persists the
             # active pokemon, so a fainted-then-switched-out mon must be saved here.
-            if self.yourPokemon.source is not None:
+            if self.your_pokemon.source is not None:
                 self.player_manager.update_pokemon_hp(
-                    self.yourPokemon.name.lower(), self.yourPokemon.currentHp
+                    self.your_pokemon.name.lower(), self.your_pokemon.current_hp
                 )
-            self.battleState = BattleState.PLAYER_FAINTED
-            messages.append(f"{self.yourPokemon.name} fainted!")
+            self.battle_state = BattleState.PLAYER_FAINTED
+            messages.append(f"{self.your_pokemon.name} fainted!")
 
         global_bus.publish(
             PokemonFaintedEvent(
-                target="enemy" if diedPokemon.isEnemy else "player",
-                pokemon_name=diedPokemon.name,
+                target="enemy" if died_pokemon.is_enemy else "player",
+                pokemon_name=died_pokemon.name,
             )
         )
 
@@ -242,7 +242,7 @@ class BattleSystem:
         """
         pokemon = self.player_manager.player.pokemon[0]
         profile = self.data_loader.get_pokemon(pokemon.name)
-        self.yourPokemon.switching_pokemon(pokemon, profile)
+        self.your_pokemon.switching_pokemon(pokemon, profile)
         return [f"Go {pokemon.name}!"]
 
     def attempt_catch(self, item_data: ItemSpecies) -> dict:
@@ -251,16 +251,16 @@ class BattleSystem:
             if effect.type == EffectType.CATCH:
                 ball_modifier = effect.catch_rate or 1
 
-        enemy = self.enemyPokemon
+        enemy = self.enemy_pokemon
         pokemon_profile = self.data_loader.get_pokemon(enemy.name.lower())
         catch_rate = pokemon_profile.catch_rate if pokemon_profile else 45
 
-        hp_modifier = 1 - (enemy.currentHp / enemy.maxHp) * 0.5
+        hp_modifier = 1 - (enemy.current_hp / enemy.max_hp) * 0.5
 
         status_modifier = 1.0
-        if enemy.statusEffect in (StatusEffect.SLEEP, StatusEffect.FREEZE):
+        if enemy.status_effect in (StatusEffect.SLEEP, StatusEffect.FREEZE):
             status_modifier = 2.0
-        elif enemy.statusEffect in (
+        elif enemy.status_effect in (
             StatusEffect.PARALYSIS,
             StatusEffect.BURN,
             StatusEffect.POISON,
@@ -272,7 +272,7 @@ class BattleSystem:
         )
 
         if random.random() < catch_probability:
-            self.battleState = BattleState.CAUGHT
+            self.battle_state = BattleState.CAUGHT
             return {
                 "success": True,
                 "messages": [
@@ -281,9 +281,9 @@ class BattleSystem:
                 ],
             }
         else:
-            enemy_move_index = random.randint(0, len(self.enemyPokemon.moves) - 1)
-            self.turnQueue = [("enemy", enemy_move_index, -1)]
-            self.battleState = BattleState.CURRENTLY_TURN
+            enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+            self.turn_queue = [("enemy", enemy_move_index, -1)]
+            self.battle_state = BattleState.CURRENTLY_TURN
             return {
                 "success": False,
                 "messages": [
@@ -293,21 +293,21 @@ class BattleSystem:
             }
 
     def save(self):
-        pokemonName = self.yourPokemon.name.lower()
-        self.player_manager.update_pokemon_hp(pokemonName, self.yourPokemon.currentHp)
-        for move in self.yourPokemon.moves:
-            self.player_manager.update_move_pp(pokemonName, move.name, move.pp)
+        pokemon_name = self.your_pokemon.name.lower()
+        self.player_manager.update_pokemon_hp(pokemon_name, self.your_pokemon.current_hp)
+        for move in self.your_pokemon.moves:
+            self.player_manager.update_move_pp(pokemon_name, move.name, move.pp)
 
-        if not self.hasEvolved:
+        if not self.has_evolved:
             self.player_manager.update_level(
-                pokemonName, self.yourPokemon.level, self.yourPokemon.exp
+                pokemon_name, self.your_pokemon.level, self.your_pokemon.exp
             )
         else:
             self.player_manager.update_level(
-                pokemonName,
-                self.yourPokemon.level,
-                self.yourPokemon.exp,
-                self.yourPokemon.evolution.to,
+                pokemon_name,
+                self.your_pokemon.level,
+                self.your_pokemon.exp,
+                self.your_pokemon.evolution.to,
             )
 
     def _publish_hp_change(self, target: str, hp_before: int, pokemon: BattlePokemon):
@@ -315,7 +315,7 @@ class BattleSystem:
             HpChangedEvent(
                 target=target,
                 old_hp=hp_before,
-                new_hp=pokemon.currentHp,
-                max_hp=pokemon.maxHp,
+                new_hp=pokemon.current_hp,
+                max_hp=pokemon.max_hp,
             )
         )

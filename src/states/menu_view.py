@@ -75,8 +75,8 @@ class MenuView(arcade.View):
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
             global_bus.publish(CloseViewEvent())
 
-    def is_pressed(self, configKey, key) -> bool:
-        return getattr(arcade.key, configKey, None) == key
+    def is_pressed(self, config_key, key) -> bool:
+        return getattr(arcade.key, config_key, None) == key
 
     def action(self):
         if self.selectedIndex == 0:

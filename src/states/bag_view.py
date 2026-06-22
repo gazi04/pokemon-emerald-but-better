@@ -19,7 +19,7 @@ class BagView(arcade.View):
         previousWindow: arcade.View,
         player_manager: PlayerManager,
         data_loader: DataLoader,
-        battleSystem: Optional[BattleSystem] = None,
+        battle_system: Optional[BattleSystem] = None,
     ):
         super().__init__()
 
@@ -28,7 +28,7 @@ class BagView(arcade.View):
 
         self.bagUi = BagUI()
         self.bagSystem = BagSystem(player_manager, data_loader)
-        self.battleSystem = battleSystem
+        self.battle_system = battle_system
         self.previousWindow = previousWindow
 
         self.inventory = self.bagSystem.get_items()
@@ -98,7 +98,7 @@ class BagView(arcade.View):
                         "previous_view": self,
                         "bag": self.bagSystem,
                         "item_index": self.currentIndex,
-                        "battle_system": self.battleSystem,
+                        "battle_system": self.battle_system,
                     },
                 )
             )
@@ -106,10 +106,10 @@ class BagView(arcade.View):
         elif (
             self.is_pressed(CONFIG.controls.interact, symbol)
             and self.bagIndex == 1
-            and self.battleSystem
-            and not self.battleSystem.is_trainer
+            and self.battle_system
+            and not self.battle_system.is_trainer
         ):
-            pokemon_team = self.battleSystem.player_manager.player.pokemon
+            pokemon_team = self.battle_system.player_manager.player.pokemon
             if len(pokemon_team) >= 6:
                 self.window.show_view(self.previousWindow)
                 if hasattr(self.previousWindow, "start_catch_attempt"):
@@ -120,14 +120,14 @@ class BagView(arcade.View):
 
             pokeball = self.bagSystem.use_pokeball(self.currentIndex)
             if pokeball:
-                result = self.battleSystem.attempt_catch(pokeball)
+                result = self.battle_system.attempt_catch(pokeball)
                 self.update_item()
                 self.window.show_view(self.previousWindow)
                 if hasattr(self.previousWindow, "start_catch_attempt"):
                     self.previousWindow.start_catch_attempt(result)
 
-    def is_pressed(self, configKey, symbol) -> bool:
-        return getattr(arcade.key, configKey, None) == symbol
+    def is_pressed(self, config_key, symbol) -> bool:
+        return getattr(arcade.key, config_key, None) == symbol
 
     def change_bag(self):
         self.currentIndex = 0

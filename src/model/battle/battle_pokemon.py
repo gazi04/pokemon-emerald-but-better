@@ -12,15 +12,15 @@ class BattlePokemon:
     def __init__(
         self,
         data: PokemonSpecies,
-        isEnemy: bool,
+        is_enemy: bool,
         playerPokemon: Optional[PlayerPokemon] = None,
         name: Optional[str] = None,
         moves: Optional[list] = None,
-        currentHp: Optional[int] = None,
+        current_hp: Optional[int] = None,
         level: Optional[int] = None,
     ):
-        self.isEnemy = isEnemy
-        self._loadFromProfile(data)
+        self.is_enemy = is_enemy
+        self._load_species(data)
 
         self.source = playerPokemon
         if playerPokemon:
@@ -35,14 +35,14 @@ class BattlePokemon:
             start_exp = 0
 
         self.progression = Progression(
-            start_level, start_exp, self.baseExp, self.evolution
+            start_level, start_exp, self.base_exp, self.evolution
         )
         self.calculate_stats()
 
-        self.maxHp = self.get_stat(Stat.HP)
-        self.currentHp = self.maxHp if not playerPokemon else playerPokemon.hp
+        self.max_hp = self.get_stat(Stat.HP)
+        self.current_hp = self.max_hp if not playerPokemon else playerPokemon.hp
 
-        self._resetBattleState()
+        self._reset_battle_state()
 
     # ------------------------------------------------------------------
     # Progression is delegated to self.progression; level and exp stay
@@ -69,13 +69,13 @@ class BattlePokemon:
     # Stat management
     # ------------------------------------------------------------------
 
-    def _loadFromProfile(self, data: PokemonSpecies):
-        self.baseStat = cast(PokemonStat, data.stats).copy()
+    def _load_species(self, data: PokemonSpecies):
+        self.base_stat = cast(PokemonStat, data.stats).copy()
         self.types = data.types
         self.evolution = data.evolution
-        self.baseExp = data.baseExp
+        self.base_exp = data.baseExp
 
-    def _resetBattleState(self):
+    def _reset_battle_state(self):
         self.modifiers: dict[Stat, int] = {
             Stat.ATTACK: 0,
             Stat.DEFENCE: 0,
@@ -86,11 +86,11 @@ class BattlePokemon:
             Stat.EVASION: 0,
             Stat.CRITS: 0,
         }
-        self.statusEffect = StatusEffect.NONE
-        self.sleepCounter = 0
+        self.status_effect = StatusEffect.NONE
+        self.sleep_counter = 0
 
     def calculate_stats(self):
-        self.stats = self.baseStat.at_level(self.level)
+        self.stats = self.base_stat.at_level(self.level)
 
     def get_stat(self, stat: Stat) -> int:
         base = getattr(self.stats, stat, 0)
@@ -105,7 +105,7 @@ class BattlePokemon:
         else:
             fraction = 1.0
 
-        if stat == Stat.SPEED and self.statusEffect == StatusEffect.PARALYSIS:
+        if stat == Stat.SPEED and self.status_effect == StatusEffect.PARALYSIS:
             fraction *= 0.5
 
         return round(base * fraction)
@@ -116,23 +116,23 @@ class BattlePokemon:
     # ------------------------------------------------------------------
 
     def take_damage(self, damage: int):
-        self.currentHp = max(0, self.currentHp - damage)
+        self.current_hp = max(0, self.current_hp - damage)
 
     def switching_pokemon(self, playerPokemon: PlayerPokemon, data: PokemonSpecies):
         self.source = playerPokemon
 
         self.name = playerPokemon.name.capitalize()
         self.moves = playerPokemon.moves
-        self._loadFromProfile(data)
+        self._load_species(data)
         self.progression = Progression(
-            playerPokemon.level, playerPokemon.exp, self.baseExp, self.evolution
+            playerPokemon.level, playerPokemon.exp, self.base_exp, self.evolution
         )
         self.calculate_stats()
 
-        self.maxHp = self.get_stat(Stat.HP)
-        self.currentHp = playerPokemon.hp
+        self.max_hp = self.get_stat(Stat.HP)
+        self.current_hp = playerPokemon.hp
 
-        self._resetBattleState()
+        self._reset_battle_state()
 
     # ------------------------------------------------------------------
     # Move gating — status and PP checks
@@ -145,15 +145,15 @@ class BattlePokemon:
         Returns (messages, can_move).
         BattleSystem calls this; it never mutates the defender.
         """
-        if self.statusEffect == StatusEffect.PARALYSIS and random.random() < 0.25:
+        if self.status_effect == StatusEffect.PARALYSIS and random.random() < 0.25:
             return (["The Pokémon is fully paralyzed!"], False)
 
-        if self.sleepCounter != 0 and self.statusEffect == StatusEffect.SLEEP:
-            self.sleepCounter -= 1
+        if self.sleep_counter != 0 and self.status_effect == StatusEffect.SLEEP:
+            self.sleep_counter -= 1
             return ([f"{self.name} was fast asleep."], False)
 
-        if self.sleepCounter == 0 and self.statusEffect == StatusEffect.SLEEP:
-            self.statusEffect = StatusEffect.NONE
+        if self.sleep_counter == 0 and self.status_effect == StatusEffect.SLEEP:
+            self.status_effect = StatusEffect.NONE
             # Woke up — still can't move this turn
             return ([f"{self.name} woke up!"], False)
 
@@ -212,9 +212,9 @@ class BattlePokemon:
             else:
                 chance = cast(int, effect.chance if effect.chance else 100)
                 if chance >= random.randint(1, 100):
-                    destination.statusEffect = StatusEffect(cast(str, effect.condition))
-                    if destination.statusEffect == StatusEffect.SLEEP:
-                        destination.sleepCounter = random.randint(2, 5)
+                    destination.status_effect = StatusEffect(cast(str, effect.condition))
+                    if destination.status_effect == StatusEffect.SLEEP:
+                        destination.sleep_counter = random.randint(2, 5)
 
         return messages
 
@@ -224,8 +224,8 @@ class BattlePokemon:
 
     def after_a_turn(self) -> list[str]:
         messages = []
-        if self.statusEffect == StatusEffect.POISON:
-            damage = max(1, int(self.maxHp / 12.5))
+        if self.status_effect == StatusEffect.POISON:
+            damage = max(1, int(self.max_hp / 12.5))
             self.take_damage(damage)
             messages.append(f"{self.name} is hurt by poison!")
         return messages
@@ -238,12 +238,12 @@ class BattlePokemon:
     def sync_from_source(self):
         if self.source is None:
             return
-        self.currentHp = self.source.hp
+        self.current_hp = self.source.hp
         self.level = self.source.level
         self.exp = self.source.exp
 
     def get_hp_ratio(self) -> float:
-        return self.currentHp / self.maxHp
+        return self.current_hp / self.max_hp
 
     def gain_exp(self, exp: int):
         old_stats = self.stats.copy()
@@ -251,14 +251,14 @@ class BattlePokemon:
 
         if levels_gained:
             self.calculate_stats()
-            self.maxHp = self.get_stat(Stat.HP)
-            self.currentHp = self.maxHp
+            self.max_hp = self.get_stat(Stat.HP)
+            self.current_hp = self.max_hp
 
         return {
-            "isLeveledUp": levels_gained > 0,
-            "statsHistory": [old_stats, self.stats.copy()],
+            "is_leveled_up": levels_gained > 0,
+            "stats_history": [old_stats, self.stats.copy()],
             "evolve": {
-                "hasEvolved": self.progression.can_evolve(),
+                "has_evolved": self.progression.can_evolve(),
                 "to": self.progression.evolves_to,
             },
         }

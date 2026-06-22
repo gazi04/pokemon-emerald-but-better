@@ -99,7 +99,7 @@ class OverlayViewEvent:
     """
     Request to stack a menu on top of the current view without swapping it.
     target: string key ("menu", "bag", "pokemon_menu")
-    payload: extra data needed (e.g. battleSystem reference)
+    payload: extra data needed (e.g. battle_system reference)
     """
 
     target: str

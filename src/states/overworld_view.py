@@ -334,8 +334,8 @@ class OverworldView(arcade.View):
                 )
             )
 
-    def is_pressed(self, configKey, key) -> bool:
-        return getattr(arcade.key, configKey, None) == key
+    def is_pressed(self, config_key, key) -> bool:
+        return getattr(arcade.key, config_key, None) == key
 
     def on_key_release(self, key, _):
         self.keys.discard(key)

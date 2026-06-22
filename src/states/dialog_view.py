@@ -62,8 +62,8 @@ class DialogView(arcade.View):
         else:
             global_bus.publish(CloseViewEvent())
 
-    def _is_pressed(self, configKey, key) -> bool:
-        return getattr(arcade.key, configKey, None) == key
+    def _is_pressed(self, config_key, key) -> bool:
+        return getattr(arcade.key, config_key, None) == key
 
     def on_draw(self):
         self.clear()

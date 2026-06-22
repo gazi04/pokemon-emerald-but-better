@@ -9,9 +9,9 @@ class BagUI:
         self.manager._pixelated = True
 
         tilemap = arcade.load_tilemap(BAG_UI)
-        uiLayer = tilemap.get_tilemap_layer("ui")
+        ui_layer = tilemap.get_tilemap_layer("ui")
 
-        for obj in uiLayer.tiled_objects:
+        for obj in ui_layer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
 

@@ -20,16 +20,16 @@ class PokemonMenuView(arcade.View):
         player_manager: PlayerManager,
         data_loader: DataLoader,
         bag: Optional[BagSystem] = None,
-        itemIndex: int = 0,
-        battleSystem: Optional[BattleSystem] = None,
+        item_index: int = 0,
+        battle_system: Optional[BattleSystem] = None,
         forced_switch: bool = False,
     ):
         super().__init__()
 
         self.previousView = previousView
         self.bag = bag
-        self.battleSystem = battleSystem
-        self.itemIndex = itemIndex
+        self.battle_system = battle_system
+        self.item_index = item_index
         self.forced_switch = forced_switch
 
         self.data_loader = data_loader
@@ -38,7 +38,7 @@ class PokemonMenuView(arcade.View):
 
         if bag:
             tooltipOptions = ["Use", "Info"]
-        elif battleSystem:
+        elif battle_system:
             tooltipOptions = ["Switch", "Info"]
         else:
             tooltipOptions = ["Move", "Info"]
@@ -71,7 +71,7 @@ class PokemonMenuView(arcade.View):
             if self.forced_switch:
                 self._do_forced_switch()
             elif self.system.isMovingPokemon:
-                if not self.battleSystem:
+                if not self.battle_system:
                     self.system.move_pokemon(self.system.teamIndex)
                     self.ui.set_values(self.system.team)
             else:
@@ -113,22 +113,22 @@ class PokemonMenuView(arcade.View):
         self.system.reset_tooltip()
 
         if index == 1:
-            if self.bag and self.battleSystem:
+            if self.bag and self.battle_system:
                 # Use item in battle
                 self.bag.use_item(
-                    self.itemIndex,
+                    self.item_index,
                     self.system.team[self.system.teamIndex].name,
                 )
 
                 # Navigate back to BattleView (still held by previousView chain)
                 battleView = self.previousView.previousWindow
-                battleView.on_item_used(self.itemIndex)
+                battleView.on_item_used(self.item_index)
                 self.window.show_view(battleView)
 
             elif self.bag:
                 # Use item outside battle
                 self.bag.use_item(
-                    self.itemIndex,
+                    self.item_index,
                     self.system.team[self.system.teamIndex].name,
                 )
                 self.previousView.update_item()
@@ -149,7 +149,7 @@ class PokemonMenuView(arcade.View):
             )
 
     def _move_pokemon(self):
-        if not self.battleSystem:
+        if not self.battle_system:
             self.system.start_moving()
             return
 
@@ -159,5 +159,5 @@ class PokemonMenuView(arcade.View):
             self.previousView.switch_turn()
             self.window.show_view(self.previousView)
 
-    def _is_pressed(self, configKey, key) -> bool:
-        return getattr(arcade.key, configKey, None) == key
+    def _is_pressed(self, config_key, key) -> bool:
+        return getattr(arcade.key, config_key, None) == key
