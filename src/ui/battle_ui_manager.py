@@ -193,7 +193,9 @@ class BattleUiManager:
         for m in messages:
             self.message_box.queue_message(m)
 
-    def set_transition(self, your_pokemon, enemy_pokemon, is_trainer):
+    def set_transition(
+        self, your_pokemon, enemy_pokemon, is_trainer, your_name, enemy_name
+    ):
         self.is_sliding = True
         self.your_pokemon = your_pokemon
         self.enemy_pokemon = enemy_pokemon
@@ -201,16 +203,16 @@ class BattleUiManager:
         if not is_trainer:
             self.queue_messages(
                 [
-                    f"A foe {enemy_pokemon.pokemonBattle.name} appeared!",
-                    f"Go! {your_pokemon.pokemonBattle.name}!",
+                    f"A foe {enemy_name} appeared!",
+                    f"Go! {your_name}!",
                 ]
             )
         else:
             self.queue_messages(
                 [
                     "A trainer is challenges you!!",
-                    f"A foe {enemy_pokemon.pokemonBattle.name} appeared!",
-                    f"Go! {your_pokemon.pokemonBattle.name}!",
+                    f"A foe {enemy_name} appeared!",
+                    f"Go! {your_name}!",
                 ]
             )
 

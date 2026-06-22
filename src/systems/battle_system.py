@@ -43,25 +43,25 @@ class BattleSystem:
         self.battleState = BattleState.CURRENTLY_TURN
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
 
-        if self.yourPokemon.getStat("speed") >= self.enemyPokemon.getStat("speed"):
+        if self.yourPokemon.get_stat(Stat.SPEED) >= self.enemyPokemon.get_stat(Stat.SPEED):
             self.turnQueue = [("player", moveIndex, -1), ("enemy", enemyMoveIndex, -1)]
         else:
             self.turnQueue = [("enemy", enemyMoveIndex, -1), ("player", moveIndex, -1)]
 
-        return self.executeNextAction()
+        return self.execute_next_action()
 
-    def turnUseItem(self, itemIndex: int) -> list[str]:
+    def turn_use_item(self, itemIndex: int) -> list[str]:
         self.battleState = BattleState.CURRENTLY_TURN
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
         self.turnQueue = [("player", -1, itemIndex), ("enemy", enemyMoveIndex, -1)]
-        return self.executeNextAction()
+        return self.execute_next_action()
 
     def switch_turn(self) -> list[str]:
         self.battleState = BattleState.CURRENTLY_TURN
         enemyMoveIndex = random.randint(0, len(self.enemyPokemon.moves) - 1)
 
         self.turnQueue = [("enemy", enemyMoveIndex, -1)]
-        return self.executeNextAction()
+        return self.execute_next_action()
 
     def switch_pokemon(self) -> list[str]:
         pokemon = self.player_manager.player.pokemon[0]
@@ -74,9 +74,9 @@ class BattleSystem:
 
         return [f"Go {pokemon.name}!"]
 
-    def executeNextAction(self) -> list[str]:
+    def execute_next_action(self) -> list[str]:
         if not self.turnQueue:
-            return self.postTurn()
+            return self.post_turn()
 
         messages = []
         attackerKey, moveIndex, itemIndex = self.turnQueue.pop(0)
@@ -157,7 +157,7 @@ class BattleSystem:
 
     def _applyItemToPokemon(self, itemIndex: int) -> list[str]:
         item = self.player_manager.player.items[itemIndex]
-        self.yourPokemon.syncFromSource()
+        self.yourPokemon.sync_from_source()
 
         global_bus.publish(
             HpChangedEvent(
@@ -170,7 +170,7 @@ class BattleSystem:
 
         return [f"{self.yourPokemon.name} used {item.name}!"]
 
-    def postTurn(self) -> list[str]:
+    def post_turn(self) -> list[str]:
         messages = []
         hp_before_yours = self.yourPokemon.currentHp
         hp_before_enemy = self.enemyPokemon.currentHp
@@ -184,16 +184,16 @@ class BattleSystem:
             self._publish_hp_change("enemy", hp_before_enemy, self.enemyPokemon)
 
         if self.yourPokemon.currentHp <= 0:
-            messages.extend(self.pokemonDeath(self.yourPokemon))
+            messages.extend(self.pokemon_death(self.yourPokemon))
             return messages
         if self.enemyPokemon.currentHp <= 0:
-            messages.extend(self.pokemonDeath(self.enemyPokemon))
+            messages.extend(self.pokemon_death(self.enemyPokemon))
             return messages
 
         self.battleState = BattleState.POST_TURN if len(messages) > 0 else BattleState.WAITING
         return messages
 
-    def pokemonDeath(self, diedPokemon: PokemonBattle) -> list[str]:
+    def pokemon_death(self, diedPokemon: BattlePokemon) -> list[str]:
         messages = []
 
         if diedPokemon.isEnemy:
@@ -306,7 +306,7 @@ class BattleSystem:
                 self.yourPokemon.evolution.to,
             )
 
-    def _publish_hp_change(self, target: str, hp_before: int, pokemon: PokemonBattle):
+    def _publish_hp_change(self, target: str, hp_before: int, pokemon: BattlePokemon):
         global_bus.publish(
             HpChangedEvent(
                 target=target,

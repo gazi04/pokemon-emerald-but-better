@@ -1,17 +1,17 @@
 import json
 
 
-def getConfigs():
+def get_configs():
     with open("data/config.json", "r") as f:
         return json.load(f)
 
 
-def getEnc():
+def get_enc():
     with open("data/encounters.json", "r") as f:
         return json.load(f)
 
 
-def calculateMultiplier(atk_type, def_types):
+def calculate_multiplier(atk_type, def_types):
     with open("data/types.json", "r") as f:
         type_data = json.load(f)
     multiplier = 1.0

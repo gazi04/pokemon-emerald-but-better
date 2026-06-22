@@ -53,13 +53,13 @@ class MenuUi:
             font_name="Pokemon Emerald",
             font_size=35,
         )
-        self.setYOfCursor(0)
+        self.set_y_of_cursor(0)
 
     def draw(self):
         self._manager.draw()
 
         self._cursorLabel.draw()
 
-    def setYOfCursor(self, index: int):
+    def set_y_of_cursor(self, index: int):
         self._cursorLabel.x = self.buttons[index].rect.left - 30
         self._cursorLabel.y = self.buttons[index].rect.center_y - 13

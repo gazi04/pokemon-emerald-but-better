@@ -189,7 +189,7 @@ class PokemonMenuUi:
             font_name="Pokemon Emerald",
         )
 
-    def setupTooltip(self, options: list[str]):
+    def setup_tooltip(self, options: list[str]):
         for button in self._tooltipButtons:
             self._tooltip.remove(button)
 
@@ -209,7 +209,7 @@ class PokemonMenuUi:
             self._tooltip.add(button)
             self._tooltipButtons.append(button)
 
-    def setValues(self, pokemons: list[PlayerPokemon]):
+    def set_values(self, pokemons: list[PlayerPokemon]):
         SKIP_KEYS = {"hpBar", "profile"}
 
         for i, slot in enumerate(self._pokemonUis):
@@ -240,9 +240,9 @@ class PokemonMenuUi:
 
                 slot["profile"].texture = self._emptyTexture
 
-        self.selectPokemon(0)
+        self.select_pokemon(0)
 
-    def selectPokemon(self, index: int):
+    def select_pokemon(self, index: int):
         for i, ui in enumerate(self._pokemonUis):
             if ui["profile"].texture == self._emptyTexture:
                 continue
@@ -263,10 +263,10 @@ class PokemonMenuUi:
                     self._manager.remove(element)
                     self._manager.add(element)
 
-    def isTooltipShowing(self) -> bool:
+    def is_tooltip_showing(self) -> bool:
         return self._tooltip.visible
 
-    def selectTooltipOption(self, index: int):
+    def select_tooltip_option(self, index: int):
         self._cursorText.x = (
             self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.left - 10
         )
@@ -274,7 +274,7 @@ class PokemonMenuUi:
             len(self._tooltipButtons) - 1 - index
         ].rect.center_y
 
-    def showTooltip(self, index: int):
+    def show_tooltip(self, index: int):
         self._tooltip.visible = True
         self._cursorText.visible = True
 
@@ -298,13 +298,13 @@ class PokemonMenuUi:
                 + 5
             )
 
-        self.selectTooltipOption(0)
+        self.select_tooltip_option(0)
 
-    def hideTooltip(self):
+    def hide_tooltip(self):
         self._tooltip.visible = False
         self._cursorText.visible = False
 
-    def drawHpBars(self, pokemons: list[PlayerPokemon]):
+    def draw_hp_bars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
             pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
             maxHp = PokemonStat.max_hp(pokemonProfile.stats.hp, pokemon.level)

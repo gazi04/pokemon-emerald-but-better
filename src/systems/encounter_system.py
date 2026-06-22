@@ -1,6 +1,6 @@
 import random
 
-from src.util import getEnc
+from src.util import get_enc
 from src.constants import ENCOUNTER_RATE
 from src.core.data_loader import DataLoader
 from src.model.state.player_motion import PlayerMotion
@@ -39,7 +39,7 @@ class EncounterSystem:
         if random.random() >= ENCOUNTER_RATE:
             return
 
-        pokemon_list = getEnc()[self._player_state.map_name]["grass"]
+        pokemon_list = get_enc()[self._player_state.map_name]["grass"]
         pokemon = random.choices(
             pokemon_list, weights=[p["weight"] for p in pokemon_list]
         )[0]

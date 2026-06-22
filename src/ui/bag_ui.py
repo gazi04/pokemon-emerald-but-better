@@ -98,7 +98,7 @@ class BagUI:
             font_size=20,
         )
 
-    def setupInvetory(self):
+    def setup_invetory(self):
         for item in self.itemLabels:
             self.manager.remove(item)
 
@@ -119,17 +119,17 @@ class BagUI:
             self.itemLabels.append(label)
             self.manager.add(label)
 
-    def changeBag(self, bag: str):
+    def change_bag(self, bag: str):
         self.sectionText.text = bag.upper()
         if bag == "items":
             self.bag.texture = self.bagItemTexture
         elif bag == "pokeball":
             self.bag.texture = self.bagPokeballTexture
 
-    def setYOfCursor(self, index: int):
+    def set_y_of_cursor(self, index: int):
         self.cursorLabel.y = self.startY - (index * self.spacing) + (self.spacing / 3)
 
-    def setText(self, text: str):
+    def set_text(self, text: str):
         self.dialog.text = text
 
     def draw(self):
