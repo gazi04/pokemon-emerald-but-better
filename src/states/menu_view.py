@@ -60,22 +60,22 @@ class MenuView(arcade.View):
             )
 
     def on_key_press(self, symbol: int, modifiers: int):
-        if self.isPressed(CONFIG.controls.interact, symbol):
+        if self.is_pressed(CONFIG.controls.interact, symbol):
             self.action()
-        elif self.isPressed(CONFIG.controls.up, symbol):
+        elif self.is_pressed(CONFIG.controls.up, symbol):
             self.selectedIndex -= 1
             if self.selectedIndex == -1:
                 self.selectedIndex = len(self.ui.buttons) - 1
-            self.ui.setYOfCursor(self.selectedIndex)
-        elif self.isPressed(CONFIG.controls.down, symbol):
+            self.ui.set_y_of_cursor(self.selectedIndex)
+        elif self.is_pressed(CONFIG.controls.down, symbol):
             self.selectedIndex += 1
             if self.selectedIndex == len(self.ui.buttons):
                 self.selectedIndex = 0
-            self.ui.setYOfCursor(self.selectedIndex)
-        elif self.isPressed(CONFIG.controls.cancel, symbol):
+            self.ui.set_y_of_cursor(self.selectedIndex)
+        elif self.is_pressed(CONFIG.controls.cancel, symbol):
             global_bus.publish(CloseViewEvent())
 
-    def isPressed(self, configKey, key) -> bool:
+    def is_pressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def action(self):

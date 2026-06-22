@@ -1,11 +1,11 @@
 from typing import Optional
 
-from src.model.player import PlayerProfile, PlayerPokemon, PlayerPokemonMove, InventoryStack, Pokeball
+from src.model.save.player import PlayerSave, PlayerPokemon, PlayerPokemonMove, ItemStack
 
 
 class PlayerSerializer:
     @staticmethod
-    def deserialize(data: dict) -> PlayerProfile:
+    def deserialize(data: dict) -> PlayerSave:
         pokemons = []
         for pokemon in data["pokemons"]:
             moves = [
@@ -21,11 +21,11 @@ class PlayerSerializer:
                 )
             )
 
-        items = [InventoryStack(item["name"], item["count"]) for item in data["items"]]
-        pokeballs = [Pokeball(pb["name"], pb["count"]) for pb in data["pokeballs"]]
+        items = [ItemStack(item["name"], item["count"]) for item in data["items"]]
+        pokeballs = [ItemStack(pb["name"], pb["count"]) for pb in data["pokeballs"]]
         seen = data.get("seen", [])
 
-        return PlayerProfile(
+        return PlayerSave(
             pokemon=pokemons,
             items=items,
             pokeballs=pokeballs,
@@ -35,7 +35,7 @@ class PlayerSerializer:
         )
 
     @staticmethod
-    def serialize(player: PlayerProfile, position: Optional[dict] = None) -> dict:
+    def serialize(player: PlayerSave, position: Optional[dict] = None) -> dict:
         pokemons = []
         for pokemon in player.pokemon:
             moves = [{"name": m.name, "pp": m.pp} for m in pokemon.moves]

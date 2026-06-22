@@ -1,6 +1,7 @@
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
-from src.model.player import PlayerProfile, PlayerPokemon, InventoryStack
+from src.model.save.player import PlayerSave, PlayerPokemon, ItemStack
+from src.model.static.pokemon import PokemonStat
 from src.systems.npc_manager import NPCManager
 from typing import Optional
 
@@ -9,7 +10,7 @@ class PlayerManager:
     def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
         self.save_manager = save_manager
         self.data_loader = data_loader
-        self.player: Optional[PlayerProfile] = save_manager.player
+        self.player: Optional[PlayerSave] = save_manager.player
         self.npc_manager = NPCManager()
         # Load NPC states from save data if available
         if (
@@ -34,7 +35,7 @@ class PlayerManager:
     def heal_team(self):
         for pokemon in self.player.pokemon:
             profile = self.data_loader.get_pokemon(pokemon.name)
-            max_hp = ((2 * profile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
+            max_hp = PokemonStat.max_hp(profile.stats.hp, pokemon.level)
 
             self.update_pokemon_hp(pokemon.name, max_hp)
 
@@ -66,7 +67,7 @@ class PlayerManager:
             if item.name == name:
                 item.count += count
                 return True
-        self.player.items.append(InventoryStack(name, count))
+        self.player.items.append(ItemStack(name, count))
         return True
 
     def get_money(self) -> int:
@@ -81,5 +82,5 @@ class PlayerManager:
     def get_seen_pokemon(self) -> list[str]:
         return self.player.seen
 
-    def get_inventory(self) -> list[InventoryStack]:
+    def get_inventory(self) -> list[ItemStack]:
         return self.player.items

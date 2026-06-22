@@ -1,4 +1,4 @@
-from src.model.player import PlayerState
+from src.model.state.player_motion import PlayerMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent
@@ -7,12 +7,12 @@ from src.core.events import PlayerFinishedMoveEvent
 class MovementSystem:
     """
     Logic layer: Executes movement intent, updating pixel coordinates for the Sprite.
-    Works on any object exposing the GridMotion/PlayerState movement fields,
+    Works on any object exposing the GridMotion/PlayerMotion movement fields,
     so it drives both the player and NPCs.
     """
 
     def update(
-        self, delta_time: float, player_state: PlayerState, intent: dict
+        self, delta_time: float, player_state: PlayerMotion, intent: dict
     ) -> list[dict]:
         events = []
 

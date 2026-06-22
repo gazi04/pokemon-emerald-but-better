@@ -6,7 +6,7 @@ from src.constants import MOVE_DURATION
 class GridMotion:
     """
     Tile-based motion state shared by any moving overworld entity (NPCs).
-    Mirrors the movement fields on PlayerState so MovementSystem can drive
+    Mirrors the movement fields on PlayerMotion so MovementSystem can drive
     both the player and NPCs with the same tween logic.
     """
 

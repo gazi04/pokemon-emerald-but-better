@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from src.model.pokemon import PokemonProfile
+from src.model.static.pokemon import PokemonSpecies
 
 
 # ---------------------------------------------------------------------------
@@ -21,7 +21,7 @@ class BattleEncounterTriggeredEvent:
     """Fired by EncounterSystem when a wild battle should start."""
 
     pokemon_name: str
-    pokemon_data: PokemonProfile
+    pokemon_data: PokemonSpecies
     pokemon_level: int
 
 

@@ -1,5 +1,7 @@
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
+from src.model.battle.effect_type import EffectType
+from src.model.static.pokemon import PokemonStat
 
 
 class BagSystem:
@@ -37,9 +39,7 @@ class BagSystem:
         pokemon = self.player_manager.player.get_pokemon(pokemonId)
         pokemonProfile = self.data_loader.get_pokemon(pokemonId)
 
-        maxHp = (
-            ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
-        )
+        maxHp = PokemonStat.max_hp(pokemonProfile.stats.hp, pokemon.level)
 
         if not pokemon:
             return False
@@ -47,7 +47,7 @@ class BagSystem:
         item = self.data_loader.get_item(itemId)
 
         for effect in item.effects:
-            if effect.type == "heal":
+            if effect.type == EffectType.HEAL:
                 if pokemon.hp <= 0 or pokemon.hp == maxHp:
                     return False
 
@@ -66,13 +66,11 @@ class BagSystem:
         pokemon = self.player_manager.player.get_pokemon(pokemonId)
         pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
 
-        maxHp = (
-            ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
-        )
+        maxHp = PokemonStat.max_hp(pokemonProfile.stats.hp, pokemon.level)
 
         item_def = self.data_loader.get_item(inventory_item.name)
         for effect in item_def.effects:
-            if effect.type == "heal":
+            if effect.type == EffectType.HEAL:
                 if pokemon.hp <= 0 or pokemon.hp == maxHp:
                     return False
 

@@ -1,6 +1,6 @@
 import arcade
 from src.core.data_loader import DataLoader
-from src.model.player import PlayerPokemon
+from src.model.save.player import PlayerPokemon
 from src.ui.pokemon_information_ui import PokemonInformationUI
 from data.config import Config
 from typing import Optional

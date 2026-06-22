@@ -5,7 +5,7 @@ from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
-from src.model.player import PlayerState
+from src.model.state.player_motion import PlayerMotion
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem
@@ -43,7 +43,7 @@ class OverworldView(arcade.View):
         )
         arcade.load_font(FONT)
 
-        self.player_state = PlayerState()
+        self.player_state = PlayerMotion()
         self.player_input = PlayerInput()
         self.movement_system = MovementSystem()
         self.player_sprite = PlayerSprite()
@@ -322,7 +322,7 @@ class OverworldView(arcade.View):
 
     def on_key_press(self, key, _):
         self.keys.add(key)
-        if self.isPressed(CONFIG.controls.bag, key):
+        if self.is_pressed(CONFIG.controls.bag, key):
             self.keys.clear()
             global_bus.publish(
                 OverlayViewEvent(
@@ -334,7 +334,7 @@ class OverworldView(arcade.View):
                 )
             )
 
-    def isPressed(self, configKey, key) -> bool:
+    def is_pressed(self, configKey, key) -> bool:
         return getattr(arcade.key, configKey, None) == key
 
     def on_key_release(self, key, _):

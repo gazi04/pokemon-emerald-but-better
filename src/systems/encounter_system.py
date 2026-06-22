@@ -3,7 +3,7 @@ import random
 from src.util import getEnc
 from src.constants import ENCOUNTER_RATE
 from src.core.data_loader import DataLoader
-from src.model.player import PlayerState
+from src.model.state.player_motion import PlayerMotion
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent, BattleEncounterTriggeredEvent
 
@@ -12,7 +12,7 @@ class EncounterSystem:
     def __init__(
         self,
         bush_tiles: set[tuple[int, int]],
-        player_state: PlayerState,
+        player_state: PlayerMotion,
         data_loader: DataLoader,
     ):
         self._bush_tiles = bush_tiles  # set of (grid_x, grid_y) integer pairs

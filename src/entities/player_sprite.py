@@ -1,5 +1,5 @@
 import arcade
-from src.model.player import PlayerState
+from src.model.state.player_motion import PlayerMotion
 
 
 class PlayerSprite(arcade.Sprite):
@@ -53,23 +53,23 @@ class PlayerSprite(arcade.Sprite):
             tex.flip_left_right() for tex in self.walkTextures["left"]
         ]
 
-    def sync_with_state(self, state: PlayerState):
+    def sync_with_state(self, state: PlayerMotion):
         self.center_x = state.pixel_x
         self.center_y = state.pixel_y
 
         if state.moving:
             progress = int(state.move_progress * 4) % 4
-            self.setWalkFrame(state.direction, progress)
+            self.set_walk_frame(state.direction, progress)
         else:
-            self.setIdle(state.direction)
+            self.set_idle(state.direction)
 
     def draw(self):
         arcade.draw_sprite(self)
 
-    def setIdle(self, direction):
+    def set_idle(self, direction):
         if direction in self.idleTextures:
             self.texture = self.idleTextures[direction]
 
-    def setWalkFrame(self, direction, progress):
+    def set_walk_frame(self, direction, progress):
         if direction in self.walkTextures:
             self.texture = self.walkTextures[direction][progress % 4]

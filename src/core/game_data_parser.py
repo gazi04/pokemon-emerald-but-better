@@ -1,28 +1,29 @@
-from src.model.pokemon import (
-    PokemonProfile,
-    PokemonSprites,
+from src.model.static.pokemon import (
+    PokemonSpecies,
+    SpritePaths,
     PokemonStat,
     PokemonMove,
     PokemonMoveEffect,
     PokemonEvolution,
 )
-from src.model.item import ItemProfile, ItemEffect
-from src.model.npc import NpcProfile
+from src.model.static.item import ItemSpecies, ItemEffect
+from src.model.static.npc import NpcSpecies
+from src.model.static.trainer import Trainer
 
 
 class GameDataParser:
     @staticmethod
-    def parse_pokemons(data: dict) -> dict[str, PokemonProfile]:
+    def parse_pokemons(data: dict) -> dict[str, PokemonSpecies]:
         pokemons = {}
         for name, raw in data.items():
-            sprites = PokemonSprites(**raw["sprites"])
+            sprites = SpritePaths(**raw["sprites"])
             stats = PokemonStat(**raw["stats"])
             evolution = (
                 PokemonEvolution(to=raw["evolution"]["to"], levelCap=raw["evolution"]["level"])
                 if raw["evolution"]
                 else None
             )
-            pokemons[name] = PokemonProfile(
+            pokemons[name] = PokemonSpecies(
                 baseExp=raw.get("baseExp", 0),
                 catch_rate=raw.get("catchRate", 45),
                 abilities=raw.get("abilities", []),
@@ -60,7 +61,7 @@ class GameDataParser:
         return moves
 
     @staticmethod
-    def parse_items(data: dict) -> dict[str, ItemProfile]:
+    def parse_items(data: dict) -> dict[str, ItemSpecies]:
         items = {}
         for name, raw in data.items():
             effects = [
@@ -71,7 +72,7 @@ class GameDataParser:
                 )
                 for e in raw["effects"]
             ]
-            items[name] = ItemProfile(
+            items[name] = ItemSpecies(
                 description=raw["description"],
                 price=raw["price"],
                 effects=effects,
@@ -79,8 +80,17 @@ class GameDataParser:
         return items
 
     @staticmethod
-    def parse_npc_dialog(data: dict) -> dict[str, NpcProfile]:
-        npc_dialogs = {}
-        for name, npc_dialog in data.items():
-            npc_dialogs[name] = NpcProfile(npc_dialog)
-        return npc_dialogs
+    def parse_npc_dialog(data: dict) -> dict[str, NpcSpecies]:
+        npcs = {}
+        for name, raw in data.items():
+            block = raw.get("dialog", {})
+            # "dialog" is normally a {state: [lines]} dict; tolerate the legacy
+            # flat list form by mapping it to the default state.
+            dialogs = {"default": block} if isinstance(block, list) else dict(block)
+            npcs[name] = NpcSpecies(
+                name=raw.get("name", ""),
+                dialogs=dialogs,
+                action_after_dialog=raw.get("action_after_dialog", "end"),
+                team=Trainer(raw.get("team", [])),
+            )
+        return npcs

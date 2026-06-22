@@ -1,41 +1,15 @@
 from dataclasses import dataclass, field
-from src.model.trainer import Trainer
+from src.model.static.trainer import Trainer
 
 DEFAULT_STATE = "default"
 
-# Keys that are NOT dialog states — everything else is treated as a state.
-_RESERVED_KEYS = {"name", "action_after_dialog", "team"}
-
 
 @dataclass
-class NpcProfile:
+class NpcSpecies:
     name: str
-    dialogs: dict[
-        str, list[str]
-    ]  # state -> lines, e.g. "first_encounter", "after_battle"
+    dialogs: dict[str, list[str]]  # state -> lines, e.g. "first_encounter", "after_battle"
     action_after_dialog: str
     team: Trainer
-
-    def __init__(self, data: dict):
-        self.name = data.get("name", "")
-        self.dialogs = self._parse_dialogs(data["dialog"])
-        self.action_after_dialog = data.get("action_after_dialog", "end")
-        self.team = Trainer(data.get("team", []))
-
-    def _parse_dialogs(self, data: dict) -> dict[str, list[str]]:
-        """
-        Every list-valued key (except reserved ones) is a dialog state.
-        The legacy single "dialog" key is mapped to the default state.
-        """
-        dialogs: dict[str, list[str]] = {}
-
-        for key, value in data.items():
-            if key in _RESERVED_KEYS or not isinstance(value, list):
-                continue
-            state = DEFAULT_STATE if key == "dialog" else key
-            dialogs[state] = value
-
-        return dialogs
 
     def get_dialog(self, state: str = DEFAULT_STATE) -> list[str]:
         """

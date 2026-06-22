@@ -1,7 +1,8 @@
 import arcade
 import arcade.gui
 from src.core.data_loader import DataLoader
-from src.model.player import PlayerPokemon
+from src.model.save.player import PlayerPokemon
+from src.model.static.pokemon import PokemonStat
 
 
 class PokemonMenuUi:
@@ -215,11 +216,7 @@ class PokemonMenuUi:
             if i < len(pokemons):
                 pokemon = pokemons[i]
                 pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
-                maxHp = (
-                    ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
-                    + 5
-                    + pokemon.level
-                )
+                maxHp = PokemonStat.max_hp(pokemonProfile.stats.hp, pokemon.level)
 
                 slot["nameText"].text = pokemon.name.upper()
                 slot["levelText"].text = f"Lv{pokemon.level}"
@@ -310,11 +307,7 @@ class PokemonMenuUi:
     def drawHpBars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
             pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
-            maxHp = (
-                ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
-                + 5
-                + pokemon.level
-            )
+            maxHp = PokemonStat.max_hp(pokemonProfile.stats.hp, pokemon.level)
 
             self._drawHpBar(pokemon.hp / maxHp, i)
 

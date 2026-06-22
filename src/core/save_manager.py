@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 from typing import Optional
-from src.model.player import PlayerProfile
+from src.model.save.player import PlayerSave
 from src.core.player_serializer import PlayerSerializer
 
 SAVE_PATH = "data/save.json"
@@ -14,7 +14,7 @@ DEFAULT_PATH = "data/player.json"
 class SaveManager:
     def __init__(self):
         self.saved_position: Optional[dict] = None
-        self.player: Optional[PlayerProfile] = None
+        self.player: Optional[PlayerSave] = None
         self.load()
 
     def load(self):
