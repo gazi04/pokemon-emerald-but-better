@@ -210,10 +210,14 @@ class BattleSystem:
                 self.next_trainer_pokemon = self.trainer_party.pop(0)
                 self.battleState = BattleState.TRAINER_SWITCH
         else:
-            # Write the fainted HP back to the team member so the bench/active
-            # HP is accurate when we decide between switching and losing.
+            # Persist the faint to the team member (through the single mutation
+            # door, not a raw save-layer write) so the bench/active HP is accurate
+            # when we decide between switching and losing. save() only persists the
+            # active pokemon, so a fainted-then-switched-out mon must be saved here.
             if self.yourPokemon.source is not None:
-                self.yourPokemon.source.hp = self.yourPokemon.currentHp
+                self.player_manager.update_pokemon_hp(
+                    self.yourPokemon.name.lower(), self.yourPokemon.currentHp
+                )
             self.battleState = BattleState.PLAYER_FAINTED
             messages.append(f"{self.yourPokemon.name} fainted!")
 

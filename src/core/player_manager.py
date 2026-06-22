@@ -70,6 +70,12 @@ class PlayerManager:
         self.player.items.append(ItemStack(name, count))
         return True
 
+    def consume_item(self, name: str) -> bool:
+        return self.player.consume_item(name)
+
+    def consume_pokeball(self, name: str) -> bool:
+        return self.player.consume_pokeball(name)
+
     def get_money(self) -> int:
         return self.player.money
 

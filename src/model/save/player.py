@@ -81,3 +81,19 @@ class PlayerSave:
     def mark_seen(self, name: str):
         if name not in self.seen:
             self.seen.append(name)
+
+    def consume_item(self, name: str) -> bool:
+        return self._consume(self.items, name)
+
+    def consume_pokeball(self, name: str) -> bool:
+        return self._consume(self.pokeballs, name)
+
+    @staticmethod
+    def _consume(stacks: "list[ItemStack]", name: str) -> bool:
+        for i, stack in enumerate(stacks):
+            if stack.name == name:
+                stack.count -= 1
+                if stack.count <= 0:
+                    stacks.pop(i)
+                return True
+        return False

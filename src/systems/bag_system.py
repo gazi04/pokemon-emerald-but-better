@@ -16,11 +16,9 @@ class BagSystem:
         if 0 <= pokeball_index < len(self._pokeballs):
             pokeball = self._pokeballs[pokeball_index]
             if pokeball.count > 0:
-                pokeball.count -= 1
-                if pokeball.count <= 0:
-                    self._pokeballs.pop(pokeball_index)
-
-                return self.data_loader.get_item(pokeball.name)
+                name = pokeball.name
+                self.player_manager.consume_pokeball(name)
+                return self.data_loader.get_item(name)
 
         return None
 
@@ -31,18 +29,15 @@ class BagSystem:
         item = self._items[itemIndex]
 
         if self._handleItemEffects(pokemonId.lower(), item.name):
-            item.count -= 1
-            if item.count <= 0:
-                self._items.pop(itemIndex)
+            self.player_manager.consume_item(item.name)
 
     def _handleItemEffects(self, pokemonId: str, itemId: str) -> bool:
         pokemon = self.player_manager.player.get_pokemon(pokemonId)
-        pokemonProfile = self.data_loader.get_pokemon(pokemonId)
-
-        maxHp = PokemonStat.max_hp(pokemonProfile.stats.hp, pokemon.level)
-
         if not pokemon:
             return False
+
+        pokemonProfile = self.data_loader.get_pokemon(pokemonId)
+        maxHp = PokemonStat.max_hp(pokemonProfile.stats.hp, pokemon.level)
 
         item = self.data_loader.get_item(itemId)
 
@@ -51,9 +46,8 @@ class BagSystem:
                 if pokemon.hp <= 0 or pokemon.hp == maxHp:
                     return False
 
-                pokemon.hp += effect.amount
-                if pokemon.hp > maxHp:
-                    pokemon.hp = maxHp
+                new_hp = min(pokemon.hp + effect.amount, maxHp)
+                self.player_manager.update_pokemon_hp(pokemonId, new_hp)
 
         return True
 
