@@ -5,7 +5,7 @@ from src.model.save.player import PlayerPokemon
 from src.model.battle.stat import Stat
 from src.model.battle.status_effect import StatusEffect
 from src.model.battle.effect_type import EffectType
-from src.entities.progression import Progression
+from src.model.battle.progression import Progression
 
 
 class BattlePokemon:

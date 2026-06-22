@@ -4,7 +4,7 @@ from src.core.player_manager import PlayerManager
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.model.static.trainer import Trainer
 from src.entities.pokemon_sprites import PokemonSprite
-from src.entities.battle_pokemon import BattlePokemon
+from src.model.battle.battle_pokemon import BattlePokemon
 from data.config import Config
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem

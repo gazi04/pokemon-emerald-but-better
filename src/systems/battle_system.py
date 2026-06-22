@@ -1,6 +1,6 @@
 import random
 
-from src.entities.battle_pokemon import BattlePokemon
+from src.model.battle.battle_pokemon import BattlePokemon
 from src.core.player_manager import PlayerManager
 from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
