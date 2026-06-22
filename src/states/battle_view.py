@@ -45,7 +45,7 @@ class BattleView(arcade.View):
                 f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
             )
 
-        self.your_battle = BattlePokemon(player_profile, False, self.playerPokemon[0])
+        self.your_battle = BattlePokemon.from_player(player_profile, self.playerPokemon[0])
         self.your_sprite = PokemonSprite(player_profile, False)
 
         self.is_trainer = is_trainer
@@ -58,12 +58,11 @@ class BattleView(arcade.View):
                     f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None."
                 )
 
-            self.enemy_battle = BattlePokemon(
+            self.enemy_battle = BattlePokemon.from_wild(
                 foe_pokemon_data,
-                True,
-                name=foe_pokemon_name,
-                moves=[PlayerPokemonMove("tackle", 35)],
-                level=foe_level,
+                foe_pokemon_name,
+                foe_level,
+                [PlayerPokemonMove("tackle", 35)],
             )
             self.enemy_sprite = PokemonSprite(foe_pokemon_data, True)
         else:
@@ -72,12 +71,11 @@ class BattleView(arcade.View):
             if first_profile is None:
                 raise ValueError(f"Trainer pokemon '{first.name}' not found in data.")
 
-            self.enemy_battle = BattlePokemon(
+            self.enemy_battle = BattlePokemon.from_wild(
                 first_profile,
-                True,
-                name=first.name,
-                moves=first.moves,
-                level=first.level,
+                first.name,
+                first.level,
+                first.moves,
             )
             self.enemy_sprite = PokemonSprite(first_profile, True)
 
@@ -283,7 +281,7 @@ class BattleView(arcade.View):
         self.battle_system.exp = 0
         self.battle_system.battle_state = BattleState.TRAINER_SENDING
 
-        if result["is_leveled_up"]:
+        if result.leveled_up:
             self._on_level_up(self.your_battle)
         else:
             self._trainer_send_next_pokemon()
@@ -311,13 +309,7 @@ class BattleView(arcade.View):
         profile = self.data_loader.get_pokemon(name)
 
         self.enemy_sprite.set_new_texture(profile.sprites.front)
-        self.enemy_battle = BattlePokemon(
-            profile,
-            True,
-            name=name,
-            moves=moves,
-            level=level,
-        )
+        self.enemy_battle = BattlePokemon.from_wild(profile, name, level, moves)
         self.battle_system.enemy_pokemon = self.enemy_battle
 
     def _handle_battle_finishing(self):
@@ -328,9 +320,9 @@ class BattleView(arcade.View):
         result = self.your_battle.gain_exp(self.battle_system.exp)
         self.battle_system.exp = 0
 
-        if result["evolve"]["has_evolved"]:
-            self._evolution(self.your_battle.name.lower(), result["evolve"]["to"])
-        elif result["is_leveled_up"]:
+        if result.evolved:
+            self._evolution(self.your_battle.name.lower(), result.evolves_to)
+        elif result.leveled_up:
             self._on_level_up(self.your_battle)
         else:
             self.run()

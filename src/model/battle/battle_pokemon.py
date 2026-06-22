@@ -6,6 +6,7 @@ from src.model.battle.stat import Stat
 from src.model.battle.status_effect import StatusEffect
 from src.model.battle.effect_type import EffectType
 from src.model.battle.progression import Progression
+from src.model.battle.exp_gain_result import ExpGainResult
 
 
 class BattlePokemon:
@@ -13,34 +14,66 @@ class BattlePokemon:
         self,
         data: PokemonSpecies,
         is_enemy: bool,
-        playerPokemon: Optional[PlayerPokemon] = None,
-        name: Optional[str] = None,
-        moves: Optional[list] = None,
-        current_hp: Optional[int] = None,
-        level: Optional[int] = None,
+        name: str,
+        moves: list,
+        level: int,
+        exp: int,
+        current_hp: Optional[int],
+        source: Optional[PlayerPokemon],
     ):
         self.is_enemy = is_enemy
-        self._load_species(data)
+        self._apply(data, name, moves, level, exp, current_hp, source)
 
-        self.source = playerPokemon
-        if playerPokemon:
-            self.name = playerPokemon.name.capitalize()
-            self.moves = playerPokemon.moves
-            start_level = playerPokemon.level
-            start_exp = playerPokemon.exp
-        else:
-            self.name = name.capitalize() if name else "Unknown"
-            self.moves = moves if moves else []
-            start_level = level if level else 1
-            start_exp = 0
-
-        self.progression = Progression(
-            start_level, start_exp, self.base_exp, self.evolution
+    @classmethod
+    def from_player(
+        cls,
+        species: PokemonSpecies,
+        player_pokemon: PlayerPokemon,
+        is_enemy: bool = False,
+    ) -> "BattlePokemon":
+        return cls(
+            species,
+            is_enemy,
+            player_pokemon.name,
+            player_pokemon.moves,
+            player_pokemon.level,
+            player_pokemon.exp,
+            player_pokemon.hp,
+            player_pokemon,
         )
+
+    @classmethod
+    def from_wild(
+        cls,
+        species: PokemonSpecies,
+        name: str,
+        level: int,
+        moves: list,
+        is_enemy: bool = True,
+    ) -> "BattlePokemon":
+        return cls(species, is_enemy, name, moves, level, 0, None, None)
+
+    def _apply(
+        self,
+        data: PokemonSpecies,
+        name: str,
+        moves: list,
+        level: int,
+        exp: int,
+        current_hp: Optional[int],
+        source: Optional[PlayerPokemon],
+    ):
+        """Build/rebuild this pokemon's state from resolved values. Shared by
+        the constructor and switching_pokemon so both stay in sync."""
+        self.source = source
+        self.name = name.capitalize()
+        self.moves = moves
+        self._load_species(data)
+        self.progression = Progression(level, exp, self.base_exp, self.evolution)
         self.calculate_stats()
 
         self.max_hp = self.get_stat(Stat.HP)
-        self.current_hp = self.max_hp if not playerPokemon else playerPokemon.hp
+        self.current_hp = current_hp if current_hp is not None else self.max_hp
 
         self._reset_battle_state()
 
@@ -118,21 +151,16 @@ class BattlePokemon:
     def take_damage(self, damage: int):
         self.current_hp = max(0, self.current_hp - damage)
 
-    def switching_pokemon(self, playerPokemon: PlayerPokemon, data: PokemonSpecies):
-        self.source = playerPokemon
-
-        self.name = playerPokemon.name.capitalize()
-        self.moves = playerPokemon.moves
-        self._load_species(data)
-        self.progression = Progression(
-            playerPokemon.level, playerPokemon.exp, self.base_exp, self.evolution
+    def switching_pokemon(self, player_pokemon: PlayerPokemon, data: PokemonSpecies):
+        self._apply(
+            data,
+            player_pokemon.name,
+            player_pokemon.moves,
+            player_pokemon.level,
+            player_pokemon.exp,
+            player_pokemon.hp,
+            player_pokemon,
         )
-        self.calculate_stats()
-
-        self.max_hp = self.get_stat(Stat.HP)
-        self.current_hp = playerPokemon.hp
-
-        self._reset_battle_state()
 
     # ------------------------------------------------------------------
     # Move gating — status and PP checks
@@ -245,7 +273,7 @@ class BattlePokemon:
     def get_hp_ratio(self) -> float:
         return self.current_hp / self.max_hp
 
-    def gain_exp(self, exp: int):
+    def gain_exp(self, exp: int) -> ExpGainResult:
         old_stats = self.stats.copy()
         levels_gained = self.progression.add_exp(exp)
 
@@ -254,14 +282,13 @@ class BattlePokemon:
             self.max_hp = self.get_stat(Stat.HP)
             self.current_hp = self.max_hp
 
-        return {
-            "is_leveled_up": levels_gained > 0,
-            "stats_history": [old_stats, self.stats.copy()],
-            "evolve": {
-                "has_evolved": self.progression.can_evolve(),
-                "to": self.progression.evolves_to,
-            },
-        }
+        return ExpGainResult(
+            leveled_up=levels_gained > 0,
+            stats_before=old_stats,
+            stats_after=self.stats.copy(),
+            evolved=self.progression.can_evolve(),
+            evolves_to=self.progression.evolves_to,
+        )
 
     def exp_yield(self):
         return self.progression.exp_yield()
