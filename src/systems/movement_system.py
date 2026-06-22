@@ -1,4 +1,4 @@
-from src.model.state.player_motion import PlayerMotion
+from src.model.motion.player_motion import PlayerMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent

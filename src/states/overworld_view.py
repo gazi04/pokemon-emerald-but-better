@@ -5,7 +5,7 @@ from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
-from src.model.state.player_motion import PlayerMotion
+from src.model.motion.player_motion import PlayerMotion
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem

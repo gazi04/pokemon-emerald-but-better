@@ -3,7 +3,7 @@ import random
 from src.util import get_enc
 from src.constants import ENCOUNTER_RATE
 from src.core.data_loader import DataLoader
-from src.model.state.player_motion import PlayerMotion
+from src.model.motion.player_motion import PlayerMotion
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent, BattleEncounterTriggeredEvent
 

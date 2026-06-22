@@ -1,5 +1,5 @@
 import arcade
-from src.model.state.player_motion import PlayerMotion
+from src.model.motion.player_motion import PlayerMotion
 
 
 class PlayerSprite(arcade.Sprite):
