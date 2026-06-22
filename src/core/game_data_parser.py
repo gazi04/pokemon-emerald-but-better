@@ -9,6 +9,9 @@ from src.model.static.pokemon import (
 from src.model.static.item import ItemSpecies, ItemEffect
 from src.model.static.npc import NpcSpecies
 from src.model.static.trainer import Trainer
+from src.enums.stat import Stat
+from src.enums.status_effect import StatusEffect
+from src.enums.effect_type import EffectType
 
 
 class GameDataParser:
@@ -41,10 +44,10 @@ class GameDataParser:
             effects = [
                 PokemonMoveEffect(
                     target=e["target"],
-                    type=e["type"],
-                    stat=e.get("stat"),
+                    type=EffectType(e["type"]),
+                    stat=Stat(e["stat"]) if e.get("stat") else None,
                     change=e.get("change"),
-                    condition=e.get("condition"),
+                    condition=StatusEffect(e["condition"]) if e.get("condition") else None,
                     chance=e.get("chance"),
                 )
                 for e in raw["effects"]

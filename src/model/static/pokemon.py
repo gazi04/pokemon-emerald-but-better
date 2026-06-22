@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from src.enums.stat import Stat
+from src.enums.status_effect import StatusEffect
+from src.enums.effect_type import EffectType
+
 
 @dataclass
 class PokemonStat:
@@ -46,10 +50,10 @@ class PokemonStat:
 @dataclass
 class PokemonMoveEffect:
     target: str
-    type: str
-    stat: Optional[str] = None
+    type: EffectType
+    stat: Optional[Stat] = None
     change: Optional[int] = None
-    condition: Optional[str] = None
+    condition: Optional[StatusEffect] = None
     chance: Optional[int] = None
 
 

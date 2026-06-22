@@ -1,6 +1,6 @@
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
-from src.model.battle.effect_type import EffectType
+from src.enums.effect_type import EffectType
 from src.model.static.pokemon import PokemonStat
 
 

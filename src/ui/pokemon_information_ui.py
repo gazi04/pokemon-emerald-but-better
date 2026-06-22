@@ -3,8 +3,8 @@ import arcade.gui
 from src.constants import POKEMON_INFORMATION_UI
 from src.model.save.player import PlayerPokemon
 from src.model.static.pokemon import PokemonStat
-from src.model.battle.status_effect import StatusEffect
-from src.model.battle.effect_type import EffectType
+from src.enums.status_effect import StatusEffect
+from src.enums.effect_type import EffectType
 from src.core.data_loader import DataLoader
 
 _FONT = "Pokemon Emerald"

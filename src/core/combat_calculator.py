@@ -2,8 +2,8 @@ import random
 
 from src.util import calculate_multiplier
 from src.model.battle.combat_result import CombatResult
-from src.model.battle.stat import Stat
-from src.model.battle.status_effect import StatusEffect
+from src.enums.stat import Stat
+from src.enums.status_effect import StatusEffect
 from src.model.static.pokemon import PokemonMove, PokemonStat
 
 

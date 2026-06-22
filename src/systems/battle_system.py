@@ -6,10 +6,10 @@ from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
 from src.core.event_bus import global_bus
 from src.core.events import HpChangedEvent, PokemonFaintedEvent
-from src.model.battle.battle_state import BattleState
-from src.model.battle.stat import Stat
-from src.model.battle.status_effect import StatusEffect
-from src.model.battle.effect_type import EffectType
+from src.enums.battle_state import BattleState
+from src.enums.stat import Stat
+from src.enums.status_effect import StatusEffect
+from src.enums.effect_type import EffectType
 from src.model.static.item import ItemSpecies
 from src.model.static.trainer import Trainer, TrainerPokemon
 from typing import Optional

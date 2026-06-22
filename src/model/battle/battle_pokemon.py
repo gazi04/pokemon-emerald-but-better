@@ -2,9 +2,9 @@ import random
 from typing import Optional, cast
 from src.model.static.pokemon import PokemonMove, PokemonSpecies, PokemonStat
 from src.model.save.player import PlayerPokemon
-from src.model.battle.stat import Stat
-from src.model.battle.status_effect import StatusEffect
-from src.model.battle.effect_type import EffectType
+from src.enums.stat import Stat
+from src.enums.status_effect import StatusEffect
+from src.enums.effect_type import EffectType
 from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
 

@@ -10,7 +10,7 @@ from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
-from src.model.battle.battle_state import BattleState
+from src.enums.battle_state import BattleState
 
 CONFIG = Config.load()
 
