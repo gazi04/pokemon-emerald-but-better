@@ -1,28 +1,25 @@
 import arcade
 from data.config import Config
-from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
+from src.constants import FONT, CAMERA_LERP_SPEED
 
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
-from src.core.logger import get_logger
 from src.model.motion.player_motion import PlayerMotion
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem
-from src.systems.npc_controller import NpcController
-from src.systems.npc_behaviors import make_behavior
 from src.entities.player_sprite import PlayerSprite
-from src.entities.npc import Npc
 from src.core.event_bus import global_bus
 from src.core.events import (
     BattleEncounterTriggeredEvent,
     NpcInteractEvent,
 )
 from src.states.base_view import GameView
+from src.states.map_loader import MapLoader
+from src.states.battle_transition import BattleTransition
 
 CONFIG = Config.load()
-log = get_logger(__name__)
 
 # Where the player respawns after whiting out. Matches the Poké Center door
 # entrance (see the "door_pokecenter" transition in littleroot_town.tmx).
@@ -59,11 +56,8 @@ class OverworldView(GameView):
         self.keys = set()
         self.camera = None
 
-        self.transitionActive = False
-        self.transitionTimer = 0.0
-        self.maxTransitionTime = 0.8
-        self.canRenderScene = True
-        self.flickerInterval = FLICKER_INTERVAL
+        self.map_loader = MapLoader(self.movement_system, self.player_state)
+        self.transition = BattleTransition()
 
         saved = self.save_manager.saved_position
         if saved:
@@ -115,37 +109,11 @@ class OverworldView(GameView):
     # ------------------------------------------------------------------
 
     def setup(self, map=None, playerPos=None):
-        layer_options = {
-            "collision": {"use_spatial_hash": True},
-            "bush": {"use_spatial_hash": True},
-            "transitions": {"use_spatial_hash": True},
-        }
-        self.tile_map = arcade.tilemap.load_tilemap(
-            map or CONFIG.game.starting_map, scaling=2.0, layer_options=layer_options
-        )
-        self.scene = arcade.Scene.from_tilemap(self.tile_map)
-
-        self.npcs = arcade.SpriteList(use_spatial_hash=False)
-        npc_layer = self.tile_map.get_tilemap_layer("npc")
-        if npc_layer:
-            self.scene.remove_sprite_list_by_name("npc")
-            for obj in npc_layer.tiled_objects:
-                props = obj.properties or {}
-                npc = Npc(
-                    x=obj.coordinates.x * 2 + obj.size.width,
-                    y=(
-                        self.tile_map.height * self.tile_map.tile_height
-                        - obj.coordinates.y
-                    )
-                    * 2
-                    + obj.size.height / 2,
-                    npc_id=props.get("npc_id", ""),
-                    behavior=make_behavior(props),
-                    facing=props.get("facing", "down"),
-                )
-                self.npcs.append(npc)
-
-        self._setup_npc_controller()
+        loaded = self.map_loader.load(map or CONFIG.game.starting_map)
+        self.tile_map = loaded.tile_map
+        self.scene = loaded.scene
+        self.npcs = loaded.npcs
+        self.npc_controller = loaded.npc_controller
 
         if playerPos:
             self.player_state.pixel_x = playerPos[0]
@@ -156,53 +124,11 @@ class OverworldView(GameView):
         if self.encounter_system:
             self.encounter_system.cleanup()
 
-        bush_tiles = self._extract_bush_tiles()
-
         self.encounter_system = EncounterSystem(
-            bush_tiles=bush_tiles,
+            bush_tiles=loaded.bush_tiles,
             player_state=self.player_state,
             data_loader=self.data_loader,
         )
-
-    def _setup_npc_controller(self) -> None:
-        """Build the NPC controller for the freshly loaded map."""
-        try:
-            collision_tiles = self.scene["collision"]
-        except KeyError:
-            log.debug("No 'collision' layer on map; using empty collision set")
-            collision_tiles = arcade.SpriteList()
-
-        map_width = self.tile_map.width * self.tile_map.tile_width * 2
-        map_height = self.tile_map.height * self.tile_map.tile_height * 2
-
-        self.npc_controller = NpcController(
-            npcs=self.npcs,
-            movement_system=self.movement_system,
-            collision_tiles=collision_tiles,
-            player_state=self.player_state,
-            map_width=map_width,
-            map_height=map_height,
-        )
-
-    def _extract_bush_tiles(self) -> set[tuple[int, int]]:
-        """
-        Build a set of integer (grid_x, grid_y) tuples from the bush
-        SpriteList. Done once at map load — O(1) lookup at runtime.
-        The bush layer sprites are scaled 2x, but their center_x/center_y
-        are in pixel space. Dividing by TILE_SIZE gives grid coords that
-        match MovementSystem's grid_x = round(pixel_x / TILE_SIZE).
-        """
-        try:
-            tiles: set[tuple[int, int]] = set()
-            bush_layer = self.scene["bush"]
-            for sprite in bush_layer:
-                gx = round(sprite.center_x / TILE_SIZE)
-                gy = round(sprite.center_y / TILE_SIZE)
-                tiles.add((gx, gy))
-            return tiles
-        except Exception:
-            log.exception("Failed to extract bush tiles; treating map as bushless")
-            return set()
 
     def respawn_at_pokecenter(self) -> None:
         """Relocate the player to the Poké Center entrance (used after whiting out)."""
@@ -258,14 +184,10 @@ class OverworldView(GameView):
     # ------------------------------------------------------------------
 
     def on_update(self, delta_time):
-        if self.transitionActive:
-            self.transitionTimer += delta_time
-            self.canRenderScene = (
-                int(self.transitionTimer / self.flickerInterval) % 2 == 0
-            )
-
-            if self.transitionTimer >= self.maxTransitionTime:
-                name, level, data = self.pending_battle_data
+        if self.transition.active:
+            result = self.transition.update(delta_time)
+            if result:
+                name, level, data = result
                 self.swap(
                     "battle",
                     pokemon_name=name,
@@ -273,9 +195,6 @@ class OverworldView(GameView):
                     pokemon_level=level,
                 )
                 self.keys.clear()
-                self.transitionActive = False
-                self.canRenderScene = True
-                self.transitionTimer = 0.0
             return
 
         self.camera.position = arcade.math.lerp_2d(
@@ -309,7 +228,7 @@ class OverworldView(GameView):
     def on_draw(self):
         self.clear()
         self.camera.use()
-        if self.scene and self.canRenderScene:
+        if self.scene and self.transition.can_render_scene:
             self.scene.draw(pixelated=True)
         self.npcs.draw(pixelated=True)
         self.player_sprite.draw()
@@ -324,6 +243,4 @@ class OverworldView(GameView):
         self.keys.discard(key)
 
     def _start_battle_transition(self, name, level, data):
-        self.transitionActive = True
-        self.transitionTimer = 0.0
-        self.pending_battle_data = (name, level, data)
+        self.transition.start(name, level, data)
