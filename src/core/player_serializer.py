@@ -1,9 +1,20 @@
 from typing import Optional
 
 from src.model.save.player import PlayerSave, PlayerPokemon, PlayerPokemonMove, ItemStack
+from src.model.motion.player_motion import PlayerMotion
 
 
 class PlayerSerializer:
+    @staticmethod
+    def position(motion: PlayerMotion) -> dict:
+        """The single definition of the saved position schema."""
+        return {
+            "map_name": motion.map_name,
+            "direction": motion.direction,
+            "pixel_x": motion.pixel_x,
+            "pixel_y": motion.pixel_y,
+        }
+
     @staticmethod
     def deserialize(data: dict) -> PlayerSave:
         pokemons = []
@@ -35,7 +46,7 @@ class PlayerSerializer:
         )
 
     @staticmethod
-    def serialize(player: PlayerSave, position: Optional[dict] = None) -> dict:
+    def serialize(player: PlayerSave, motion: Optional[PlayerMotion] = None) -> dict:
         pokemons = []
         for pokemon in player.pokemon:
             moves = [{"name": m.name, "pp": m.pp} for m in pokemon.moves]
@@ -59,6 +70,6 @@ class PlayerSerializer:
             "money": player.money,
             "npc_states": player.npc_states,
         }
-        if position is not None:
-            data["position"] = position
+        if motion is not None:
+            data["position"] = PlayerSerializer.position(motion)
         return data

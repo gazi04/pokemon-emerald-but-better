@@ -46,13 +46,7 @@ class SaveManager:
 
     def flush_save(self, player_state) -> bool:
         try:
-            position = {
-                "map_name": player_state.map_name,
-                "direction": player_state.direction,
-                "pixel_x": player_state.pixel_x,
-                "pixel_y": player_state.pixel_y,
-            }
-            data = PlayerSerializer.serialize(self.player, position)
+            data = PlayerSerializer.serialize(self.player, player_state)
 
             with open(SAVE_TMP_PATH, "w") as f:
                 json.dump(data, f, indent=4)
@@ -63,7 +57,7 @@ class SaveManager:
                 shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)
 
             os.replace(SAVE_TMP_PATH, SAVE_PATH)
-            self.saved_position = position
+            self.saved_position = data.get("position")
             return True
         except Exception:
             log.exception("Save failed")
