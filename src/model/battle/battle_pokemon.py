@@ -72,7 +72,7 @@ class BattlePokemon:
         self.progression = Progression(level, exp, self.base_exp, self.evolution)
         self.calculate_stats()
 
-        self.max_hp = self.get_stat(Stat.HP)
+        self.max_hp = self.stats.hp
         self.current_hp = current_hp if current_hp is not None else self.max_hp
 
         self._reset_battle_state()
@@ -126,10 +126,8 @@ class BattlePokemon:
         self.stats = self.base_stat.at_level(self.level)
 
     def get_stat(self, stat: Stat) -> int:
+        """Return the stage-modified value of a stat (for HP, read self.stats.hp directly)."""
         base = getattr(self.stats, stat, 0)
-        if stat == Stat.HP:
-            return base
-
         stage = self.modifiers.get(stat, 0)
         if stage > 0:
             fraction = (2 + stage) / 2
@@ -210,8 +208,8 @@ class BattlePokemon:
             destination = self if effect.target == "self" else target
 
             if effect.type == EffectType.STAT:
-                stat = Stat(cast(str, effect.stat))
-                change = cast(int, effect.change)
+                stat = effect.stat
+                change = effect.change
                 current_stage = destination.modifiers[stat]
 
                 if change > 0 and current_stage == 6:
@@ -238,9 +236,9 @@ class BattlePokemon:
                     )
                     messages.append(f"{destination.name}'s {stat} {adj}fell!")
             else:
-                chance = cast(int, effect.chance if effect.chance else 100)
+                chance = effect.chance if effect.chance else 100
                 if chance >= random.randint(1, 100):
-                    destination.status_effect = StatusEffect(cast(str, effect.condition))
+                    destination.status_effect = effect.condition
                     if destination.status_effect == StatusEffect.SLEEP:
                         destination.sleep_counter = random.randint(2, 5)
 
@@ -279,7 +277,7 @@ class BattlePokemon:
 
         if levels_gained:
             self.calculate_stats()
-            self.max_hp = self.get_stat(Stat.HP)
+            self.max_hp = self.stats.hp
             self.current_hp = self.max_hp
 
         return ExpGainResult(
