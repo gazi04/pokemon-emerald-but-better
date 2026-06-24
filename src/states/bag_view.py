@@ -8,13 +8,12 @@ from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
 from src.systems.battle_system import BattleSystem
 from src.constants import MAX_VISIBLE_ITEMS
-from src.core.event_bus import global_bus
-from src.core.events import OverlayViewEvent
+from src.states.base_view import GameView
 
 CONFIG = Config.load()
 
 
-class BagView(arcade.View):
+class BagView(GameView):
     def __init__(
         self,
         previousWindow: arcade.View,
@@ -29,7 +28,7 @@ class BagView(arcade.View):
         self.data_loader = data_loader
         self.message_service = message_service
 
-        self.bagUi = BagUI()
+        self.ui = BagUI()
         self.bagSystem = BagSystem(player_manager, data_loader)
         self.battle_system = battle_system
         self.previousWindow = previousWindow
@@ -39,7 +38,7 @@ class BagView(arcade.View):
         self.currentIndex = 0
         self.topVisibleIndex = 0
 
-        self.bagUi.setup_invetory()
+        self.ui.setup_invetory()
         self.update_item()
 
     def update_item(self):
@@ -49,23 +48,23 @@ class BagView(arcade.View):
                 item = self.inventory[inventory_index]
                 name = item.name.upper()
                 display = f"{name:<14} x{item.count}" if item.count > 0 else name
-                self.bagUi.itemLabels[i].text = display
+                self.ui.itemLabels[i].text = display
             else:
-                self.bagUi.itemLabels[i].text = ""
+                self.ui.itemLabels[i].text = ""
 
         if len(self.inventory) <= 0:
             self.currentIndex = 0
-            self.bagUi.set_text("There isn't any items.")
+            self.ui.set_text("There isn't any items.")
             return
 
         index = self.currentIndex - self.topVisibleIndex
-        self.bagUi.set_y_of_cursor(index)
+        self.ui.set_y_of_cursor(index)
 
         item_data = self.data_loader.get_item(self.inventory[self.currentIndex].name)
         if item_data is not None:
-            self.bagUi.set_text(item_data.description)
+            self.ui.set_text(item_data.description)
         else:
-            self.bagUi.set_text("Unknown item description.")
+            self.ui.set_text("Unknown item description.")
 
     def on_key_press(self, symbol: int, modifiers: int):
         if self.is_pressed(CONFIG.controls.up, symbol):
@@ -94,16 +93,12 @@ class BagView(arcade.View):
             self.window.show_view(self.previousWindow)
 
         elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex == 0:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokemon_menu",
-                    payload={
-                        "previous_view": self,
-                        "bag": self.bagSystem,
-                        "item_index": self.currentIndex,
-                        "battle_system": self.battle_system,
-                    },
-                )
+            self.overlay(
+                "pokemon_menu",
+                previous_view=self,
+                bag=self.bagSystem,
+                item_index=self.currentIndex,
+                battle_system=self.battle_system,
             )
             self.update_item()
         elif (
@@ -131,21 +126,18 @@ class BagView(arcade.View):
                 if hasattr(self.previousWindow, "start_catch_attempt"):
                     self.previousWindow.start_catch_attempt(result)
 
-    def is_pressed(self, config_key, symbol) -> bool:
-        return getattr(arcade.key, config_key, None) == symbol
-
     def change_bag(self):
         self.currentIndex = 0
         if self.bagIndex == 0:
             self.inventory = self.bagSystem.get_items()
-            self.bagUi.change_bag("items")
+            self.ui.change_bag("items")
         else:
             self.inventory = self.bagSystem.get_pokeballs()
-            self.bagUi.change_bag("pokeball")
-        self.bagUi.setup_invetory()
+            self.ui.change_bag("pokeball")
+        self.ui.setup_invetory()
         self.update_item()
 
     def on_draw(self):
         self.clear()
         self.window.default_camera.use()
-        self.bagUi.draw()
+        self.ui.draw()

@@ -2,7 +2,6 @@ import arcade
 from data.config import Config
 from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
 
-from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
@@ -19,9 +18,8 @@ from src.core.event_bus import global_bus
 from src.core.events import (
     BattleEncounterTriggeredEvent,
     NpcInteractEvent,
-    SwapViewEvent,
-    OverlayViewEvent,
 )
+from src.states.base_view import GameView
 
 CONFIG = Config.load()
 log = get_logger(__name__)
@@ -32,7 +30,7 @@ POKECENTER_MAP = "oldale_town/pokemon_center"
 POKECENTER_SPAWN = (496, 210)
 
 
-class OverworldView(arcade.View):
+class OverworldView(GameView):
     def __init__(
         self,
         player_manager: PlayerManager,
@@ -228,16 +226,7 @@ class OverworldView(arcade.View):
         npc_id = event.npc_id
 
         if npc_id == "poke-mart-npc":
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="shop",
-                    payload={
-                        "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
-                    },
-                )
-            )
+            self.overlay("shop", previous_view=self)
             return
 
         npc = self.data_loader.npc_dialog.get(npc_id)
@@ -247,12 +236,7 @@ class OverworldView(arcade.View):
         state, action = self._resolve_dialog(npc_id, npc)
         self.player_manager.npc_manager.mark_talked(npc_id)
 
-        global_bus.publish(
-            OverlayViewEvent(
-                target="dialog",
-                payload={"npc_id": npc_id, "state": state, "action": action},
-            )
-        )
+        self.overlay("dialog", npc_id=npc_id, state=state, action=action)
 
     def _resolve_dialog(self, npc_id: str, npc) -> tuple[str, str]:
         """
@@ -282,15 +266,11 @@ class OverworldView(arcade.View):
 
             if self.transitionTimer >= self.maxTransitionTime:
                 name, level, data = self.pending_battle_data
-                global_bus.publish(
-                    SwapViewEvent(
-                        target="battle",
-                        payload={
-                            "pokemon_name": name,
-                            "pokemon_data": data,
-                            "pokemon_level": level,
-                        },
-                    )
+                self.swap(
+                    "battle",
+                    pokemon_name=name,
+                    pokemon_data=data,
+                    pokemon_level=level,
                 )
                 self.keys.clear()
                 self.transitionActive = False
@@ -338,18 +318,7 @@ class OverworldView(arcade.View):
         self.keys.add(key)
         if self.is_pressed(CONFIG.controls.bag, key):
             self.keys.clear()
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="menu",
-                    payload={
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
-                    },
-                )
-            )
-
-    def is_pressed(self, config_key, key) -> bool:
-        return getattr(arcade.key, config_key, None) == key
+            self.overlay("menu")
 
     def on_key_release(self, key, _):
         self.keys.discard(key)

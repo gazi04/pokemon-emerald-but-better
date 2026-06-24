@@ -9,14 +9,13 @@ from src.model.battle.battle_pokemon import BattlePokemon
 from data.config import Config
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
-from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
+from src.states.base_view import GameView
 from src.enums.battle_state import BattleState
 
 CONFIG = Config.load()
 
 
-class BattleView(arcade.View):
+class BattleView(GameView):
     def __init__(
         self,
         overworld_view,
@@ -217,16 +216,11 @@ class BattleView(arcade.View):
     def _handle_player_fainted(self):
         if self.battle_system.has_usable_pokemon():
             # Force the player to choose a replacement.
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokemon_menu",
-                    payload={
-                        "previous_view": self,
-                        "data_loader": self.data_loader,
-                        "battle_system": self.battle_system,
-                        "forced_switch": True,
-                    },
-                )
+            self.overlay(
+                "pokemon_menu",
+                previous_view=self,
+                battle_system=self.battle_system,
+                forced_switch=True,
             )
         else:
             self._handle_player_loss()
@@ -257,7 +251,7 @@ class BattleView(arcade.View):
         self.player_manager.heal_team()
         self.overworld_view.respawn_at_pokecenter()
 
-        global_bus.publish(CloseViewEvent())
+        self.close()
 
     def _on_continue_turn(self):
         messages = self.battle_system.execute_next_action()
@@ -336,15 +330,7 @@ class BattleView(arcade.View):
         self.battle_system.has_evolved = True
         self.battle_system.save()
         # Ask the Director to swap to the Evolution view
-        global_bus.publish(
-            SwapViewEvent(
-                target="evolving",
-                payload={
-                    "pokemon": base_pokemon,
-                    "evolved_pokemon": to,
-                },
-            )
-        )
+        self.swap("evolving", pokemon=base_pokemon, evolved_pokemon=to)
 
     def _reset_to_main_menu(self, dt):
         self.ui.switch_mode("main")
@@ -409,29 +395,15 @@ class BattleView(arcade.View):
                     self.ui.switch_mode("moves")
                 elif self.ui.menu_panel.selection_index == 1:
                     # Ask the Director to overlay the Bag
-                    global_bus.publish(
-                        OverlayViewEvent(
-                            target="bag",
-                            payload={
-                                "previous_view": self,
-                                "battle_system": self.battle_system,
-                                "save_manager": self.player_manager,
-                                "data_loader": self.data_loader,
-                            },
-                        )
+                    self.overlay(
+                        "bag", previous_view=self, battle_system=self.battle_system
                     )
                 elif self.ui.menu_panel.selection_index == 2:
                     # Ask the Director to overlay the Pokémon menu
-                    global_bus.publish(
-                        OverlayViewEvent(
-                            target="pokemon_menu",
-                            payload={
-                                "previous_view": self,
-                                "save_manager": self.player_manager,
-                                "data_loader": self.data_loader,
-                                "battle_system": self.battle_system,
-                            },
-                        )
+                    self.overlay(
+                        "pokemon_menu",
+                        previous_view=self,
+                        battle_system=self.battle_system,
                     )
                 elif self.ui.menu_panel.selection_index == 3:
                     if not self.is_trainer:
@@ -447,9 +419,6 @@ class BattleView(arcade.View):
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
             if self.ui.active_component == "moves":
                 self.ui.switch_mode("main")
-
-    def is_pressed(self, config_key, symbol) -> bool:
-        return getattr(arcade.key, config_key, None) == symbol
 
     def move_hover(self, index):
         if index is not None and index < len(self.your_battle.moves):
@@ -476,17 +445,13 @@ class BattleView(arcade.View):
                 npc = self.data_loader.npc_dialog.get(self.npc_id)
                 if npc and npc.has_state("after_victory"):
                     # Show the post-battle dialog instead of going straight back.
-                    global_bus.publish(
-                        OverlayViewEvent(
-                            target="dialog",
-                            payload={
-                                "npc_id": self.npc_id,
-                                "state": "after_victory",
-                                "action": "end",
-                            },
-                        )
+                    self.overlay(
+                        "dialog",
+                        npc_id=self.npc_id,
+                        state="after_victory",
+                        action="end",
                     )
                     return
 
         # Tell the Director we are done — it will return to the Overworld
-        global_bus.publish(CloseViewEvent())
+        self.close()

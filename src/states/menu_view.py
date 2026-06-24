@@ -2,18 +2,17 @@ import arcade
 from data.config import Config
 from src.core.event_bus import global_bus
 from src.core.events import (
-    CloseViewEvent,
-    OverlayViewEvent,
     SaveGameRequestEvent,
     SaveCompletedEvent,
 )
+from src.states.base_view import GameView
 from src.ui.menu_ui import MenuUi
 from src.constants import FONT
 
 CONFIG = Config.load()
 
 
-class MenuView(arcade.View):
+class MenuView(GameView):
     def __init__(self, overworld: arcade.View):
         super().__init__()
 
@@ -73,38 +72,14 @@ class MenuView(arcade.View):
                 self.selectedIndex = 0
             self.ui.set_y_of_cursor(self.selectedIndex)
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
-            global_bus.publish(CloseViewEvent())
-
-    def is_pressed(self, config_key, key) -> bool:
-        return getattr(arcade.key, config_key, None) == key
+            self.close()
 
     def action(self):
         if self.selectedIndex == 0:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokedex",
-                    payload={
-                        "previous_view": self,
-                    },
-                )
-            )
+            self.overlay("pokedex", previous_view=self)
         elif self.selectedIndex == 1:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokemon_menu",
-                    payload={
-                        "previous_view": self,
-                    },
-                )
-            )
+            self.overlay("pokemon_menu", previous_view=self)
         elif self.selectedIndex == 2:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="bag",
-                    payload={
-                        "previous_view": self,
-                    },
-                )
-            )
+            self.overlay("bag", previous_view=self)
         elif self.selectedIndex == 3:
             global_bus.publish(SaveGameRequestEvent())

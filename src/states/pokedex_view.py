@@ -2,12 +2,13 @@ import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from data.config import Config
+from src.states.base_view import GameView
 from src.ui.pokedex_ui import PokedexUi
 
 CONFIG = Config.load()
 
 
-class PokedexView(arcade.View):
+class PokedexView(GameView):
     """Full-screen Pokédex view — shows all known Pokémon with seen/owned status."""
 
     def __init__(
@@ -25,7 +26,7 @@ class PokedexView(arcade.View):
         owned = {p.name for p in player_manager.get_pokemon_team()}
         seen = set(player_manager.get_seen_pokemon())
 
-        self.ui = PodedexUi(data_loader, all_pokemon, owned, seen)
+        self.ui = PokedexUi(data_loader, all_pokemon, owned, seen)
 
     def on_show_view(self):
         self.ui._manager.enable()
@@ -33,19 +34,12 @@ class PokedexView(arcade.View):
     def on_hide_view(self):
         self.ui._manager.disable()
 
-    def on_draw(self):
-        self.clear()
-        self.ui.draw()
-
     def on_key_press(self, key: int, modifiers: int):
-        if self._is_pressed(CONFIG.controls.cancel, key):
+        if self.is_pressed(CONFIG.controls.cancel, key):
             self.window.show_view(self.previous_window)
 
-        elif self._is_pressed(CONFIG.controls.up, key):
+        elif self.is_pressed(CONFIG.controls.up, key):
             self.ui.move_up()
 
-        elif self._is_pressed(CONFIG.controls.down, key):
+        elif self.is_pressed(CONFIG.controls.down, key):
             self.ui.move_down()
-
-    def _is_pressed(self, config_key: str, key: int) -> bool:
-        return getattr(arcade.key, config_key, None) == key

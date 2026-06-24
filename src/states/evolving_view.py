@@ -4,11 +4,10 @@ import math
 
 import pytiled_parser
 from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE, TEXT_DELAY
-from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent
+from src.states.base_view import GameView
 
 
-class EvolvingView(arcade.View):
+class EvolvingView(GameView):
     def __init__(self, overworldView, pokemon, evolvedPokemon):
         super().__init__()
 
@@ -176,4 +175,4 @@ class EvolvingView(arcade.View):
 
     def end(self, dt):
         # Tell the Director we are done — it returns to the Overworld
-        global_bus.publish(CloseViewEvent())
+        self.close()
