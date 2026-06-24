@@ -1,27 +1,15 @@
 from dataclasses import dataclass
+from src.constants import PLAYER_MOVE_DURATION
+from src.model.motion.grid_motion import GridMotion
 
 
 @dataclass
-class PlayerMotion:
-    """Overworld position + tile-motion state for the player.
+class PlayerMotion(GridMotion):
+    """Player overworld motion = tile motion (GridMotion) + the current map.
 
-    Lives in the state layer (not save) — it is transient overworld motion
-    that MovementSystem drives, mirroring GridMotion for NPCs.
+    Transient overworld state (not save data); MovementSystem drives it through
+    the inherited flat fields, exactly as it drives an NPC's GridMotion.
     """
 
     map_name: str = "littleroot_town"
-    direction: str = "down"
-
-    grid_x: int = 0
-    grid_y: int = 0
-
-    pixel_x: float = 0.0
-    pixel_y: float = 0.0
-    target_x: float = 0.0
-    target_y: float = 0.0
-    start_x: float = 0.0
-    start_y: float = 0.0
-
-    moving: bool = False
-    move_progress: float = 0.0
-    move_duration: float = 0.25
+    move_duration: float = PLAYER_MOVE_DURATION  # override; GridMotion default is 0.2
