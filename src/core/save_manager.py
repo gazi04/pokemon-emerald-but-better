@@ -4,11 +4,14 @@ import shutil
 from typing import Optional
 from src.model.save.player import PlayerSave
 from src.core.player_serializer import PlayerSerializer
+from src.core.logger import get_logger
 
 SAVE_PATH = "data/save.json"
 SAVE_TMP_PATH = "data/save.tmp.json"
 SAVE_BAK_PATH = "data/save.bak.json"
 DEFAULT_PATH = "data/player.json"
+
+log = get_logger(__name__)
 
 
 class SaveManager:
@@ -18,14 +21,28 @@ class SaveManager:
         self.load()
 
     def load(self):
-        path = SAVE_PATH if os.path.exists(SAVE_PATH) else DEFAULT_PATH
-        with open(path, "r") as f:
-            data = json.load(f)
+        # Try the live save first, then the backup, then the shipped default.
+        # A corrupt/partial save (crash mid-write, bad edit, schema drift) must
+        # never brick startup — fall back instead of letting json/KeyError escape.
+        candidates = [p for p in (SAVE_PATH, SAVE_BAK_PATH) if os.path.exists(p)]
+        candidates.append(DEFAULT_PATH)
 
-        self.player = PlayerSerializer.deserialize(data)
+        last_error: Optional[Exception] = None
+        for path in candidates:
+            try:
+                with open(path, "r") as f:
+                    data = json.load(f)
+                self.player = PlayerSerializer.deserialize(data)
+                self.saved_position = data.get("position")
+                if path != SAVE_PATH:
+                    log.warning("Loaded save from fallback '%s'", path)
+                return
+            except (OSError, json.JSONDecodeError, KeyError, TypeError) as e:
+                last_error = e
+                log.warning("Failed to load save '%s': %s", path, e)
 
-        if "position" in data:
-            self.saved_position = data["position"]
+        # Even the shipped default failed — unrecoverable install.
+        raise RuntimeError(f"Could not load any save (tried {candidates})") from last_error
 
     def flush_save(self, player_state) -> bool:
         try:
@@ -39,12 +56,15 @@ class SaveManager:
 
             with open(SAVE_TMP_PATH, "w") as f:
                 json.dump(data, f, indent=4)
+                f.flush()
+                os.fsync(f.fileno())  # force tmp contents to disk before the rename
 
             if os.path.exists(SAVE_PATH):
                 shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)
 
             os.replace(SAVE_TMP_PATH, SAVE_PATH)
-            self.saved_position = data["position"]
+            self.saved_position = position
             return True
         except Exception:
+            log.exception("Save failed")
             return False
