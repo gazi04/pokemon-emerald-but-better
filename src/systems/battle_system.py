@@ -10,6 +10,8 @@ from src.enums.battle_state import BattleState
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
+from src.model.battle.exp_gain_result import ExpGainResult
+from src.model.save.player import PlayerPokemon
 from src.model.static.item import ItemSpecies
 from src.model.static.trainer import Trainer, TrainerPokemon
 from typing import Optional
@@ -244,6 +246,27 @@ class BattleSystem:
         profile = self.data_loader.get_pokemon(pokemon.name)
         self.your_pokemon.switching_pokemon(pokemon, profile)
         return [f"Go {pokemon.name}!"]
+
+    def apply_exp_award(self) -> ExpGainResult:
+        """Award pending exp to the active Pokémon and clear it. Returns the
+        ExpGainResult so the view can react (level-up / evolve / nothing)
+        without mutating the model itself."""
+        result = self.your_pokemon.gain_exp(self.exp)
+        self.exp = 0
+        return result
+
+    def add_caught_pokemon(self) -> None:
+        """Add the just-caught enemy to the party (CAUGHT flow)."""
+        enemy = self.enemy_pokemon
+        self.player_manager.add_pokemon(
+            PlayerPokemon(
+                name=enemy.name.lower(),
+                hp=enemy.current_hp,
+                level=enemy.level,
+                exp=0,
+                moves=enemy.moves,
+            )
+        )
 
     def attempt_catch(self, item_data: ItemSpecies) -> dict:
         ball_modifier = 1

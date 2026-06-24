@@ -2,7 +2,7 @@ import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
-from src.model.save.player import PlayerPokemon, PlayerPokemonMove
+from src.model.save.player import PlayerPokemonMove
 from src.model.static.trainer import Trainer
 from src.entities.pokemon_sprites import PokemonSprite
 from src.model.battle.battle_pokemon import BattlePokemon
@@ -100,28 +100,13 @@ class BattleView(arcade.View):
             trainer_data,
         )
 
-        self.ui.set_player_info(
-            self.your_battle.name.upper(),
-            self.your_battle.level,
-        )
         self.ui.set_enemy_info(
             self.enemy_battle.name.upper(),
             self.enemy_battle.level,
         )
         self.ui.switch_mode("main")
-        self.update_ui_moves()
-
-        first_move = data_loader.get_move(self.your_battle.moves[0].name)
-        if first_move is not None:
-            self.ui.menu_panel.update_move_info(
-                first_move.type,
-                self.your_battle.moves[0].pp,
-                first_move.pp,
-            )
-        else:
-            self.ui.menu_panel.update_move_info(
-                "Normal", self.your_battle.moves[0].pp, 35
-            )
+        # Sprite is freshly built above — back-texture already correct.
+        self._refresh_active_pokemon_ui(update_texture=False)
 
         self.ui.set_transition(
             self.your_sprite,
@@ -142,6 +127,32 @@ class BattleView(arcade.View):
                 button.text = ""
                 button.visible = False
                 button.enabled = False
+
+    def _refresh_active_pokemon_ui(self, update_texture: bool = True):
+        """Refresh name/level + move panel for the active player Pokémon.
+        Shared by __init__, switch_turn, and force_switch so they stay in sync;
+        the None guard covers a missing move (latent crash if accessed raw)."""
+        self.ui.set_player_info(
+            self.your_battle.name.upper(),
+            self.your_battle.level,
+        )
+        self.update_ui_moves()
+        first_move = self.data_loader.get_move(self.your_battle.moves[0].name)
+        if first_move is not None:
+            self.ui.menu_panel.update_move_info(
+                first_move.type,
+                self.your_battle.moves[0].pp,
+                first_move.pp,
+            )
+        else:
+            self.ui.menu_panel.update_move_info(
+                "Normal", self.your_battle.moves[0].pp, 35
+            )
+        if update_texture:
+            texture = self.data_loader.get_pokemon(
+                self.your_battle.name.lower()
+            ).sprites.back
+            self.your_sprite.set_new_texture(texture)
 
     def start_turn(self, index):
         self.ui.queue_messages(self.battle_system.turn(index))
@@ -171,35 +182,11 @@ class BattleView(arcade.View):
         self.ui.switch_mode("dialog")
         self.ui.queue_messages(self.battle_system.switch_pokemon())
 
-        self.ui.set_player_info(
-            self.your_battle.name.upper(),
-            self.your_battle.level,
-        )
-        self.update_ui_moves()
-        first_move = self.data_loader.get_move(self.your_battle.moves[0].name)
-        self.ui.menu_panel.update_move_info(
-            first_move.type,
-            self.your_battle.moves[0].pp,
-            first_move.pp,
-        )
-
-        texture = self.data_loader.get_pokemon(
-            self.your_battle.name.lower()
-        ).sprites.back
-        self.your_sprite.set_new_texture(texture)
+        self._refresh_active_pokemon_ui()
 
     def what_happend_after_text(self):
         if self.battle_system.battle_state == BattleState.CAUGHT:
-            enemy = self.battle_system.enemy_pokemon
-            self.player_manager.add_pokemon(
-                PlayerPokemon(
-                    name=enemy.name.lower(),
-                    hp=enemy.current_hp,
-                    level=enemy.level,
-                    exp=0,
-                    moves=enemy.moves,
-                )
-            )
+            self.battle_system.add_caught_pokemon()
             self.run()
             return
 
@@ -251,22 +238,7 @@ class BattleView(arcade.View):
         # No enemy turn after a forced switch — go back to the main menu.
         self.battle_system.battle_state = BattleState.WAITING
 
-        self.ui.set_player_info(
-            self.your_battle.name.upper(),
-            self.your_battle.level,
-        )
-        self.update_ui_moves()
-        first_move = self.data_loader.get_move(self.your_battle.moves[0].name)
-        self.ui.menu_panel.update_move_info(
-            first_move.type,
-            self.your_battle.moves[0].pp,
-            first_move.pp,
-        )
-
-        texture = self.data_loader.get_pokemon(
-            self.your_battle.name.lower()
-        ).sprites.back
-        self.your_sprite.set_new_texture(texture)
+        self._refresh_active_pokemon_ui()
 
     def _handle_player_loss(self):
         self.battle_system.battle_state = BattleState.LOST
@@ -299,8 +271,7 @@ class BattleView(arcade.View):
         arcade.schedule_once(self._reset_to_main_menu, 0.5)
 
     def _trainer_give_exp(self):
-        result = self.your_battle.gain_exp(self.battle_system.exp)
-        self.battle_system.exp = 0
+        result = self.battle_system.apply_exp_award()
         self.battle_system.battle_state = BattleState.TRAINER_SENDING
 
         if result.leveled_up:
@@ -339,8 +310,7 @@ class BattleView(arcade.View):
             self.run()
             return
 
-        result = self.your_battle.gain_exp(self.battle_system.exp)
-        self.battle_system.exp = 0
+        result = self.battle_system.apply_exp_award()
 
         if result.evolved:
             self._evolution(self.your_battle.name.lower(), result.evolves_to)
