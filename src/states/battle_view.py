@@ -1,6 +1,7 @@
 import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
+from src.core.message_service import MessageService
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.model.static.trainer import Trainer
 from src.entities.pokemon_sprites import PokemonSprite
@@ -21,6 +22,7 @@ class BattleView(arcade.View):
         overworld_view,
         player_manager: PlayerManager,
         data_loader: DataLoader,
+        message_service: MessageService,
         foe_pokemon_name=None,
         foe_pokemon_data=None,
         foe_level=None,
@@ -33,6 +35,7 @@ class BattleView(arcade.View):
         self.overworld_view = overworld_view
         self.player_manager = player_manager
         self.data_loader = data_loader
+        self.message_service = message_service
         self.npc_id = npc_id
 
         self.ui = BattleUiManager(self.what_happend_after_text)
@@ -45,7 +48,9 @@ class BattleView(arcade.View):
                 f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
             )
 
-        self.your_battle = BattlePokemon.from_player(player_profile, self.playerPokemon[0])
+        self.your_battle = BattlePokemon.from_player(
+            player_profile, self.playerPokemon[0]
+        )
         self.your_sprite = PokemonSprite(player_profile, False)
 
         self.is_trainer = is_trainer
@@ -146,6 +151,15 @@ class BattleView(arcade.View):
         self.ui.queue_messages(self.battle_system.turn_use_item(item_index))
         self.ui.switch_mode("dialog")
 
+    def on_show_view(self):
+        self.message_service.set_box(self.ui.message_box)
+
+    def show_messages(self, messages: list[str]):
+        """Show battle text from another view (e.g. bag) — switches to dialog
+        mode so the box is visible, then queues via the service."""
+        self.ui.switch_mode("dialog")
+        self.message_service.show(messages)
+
     def start_catch_attempt(self, result: dict):
         """Called by BagView after a pokeball is thrown."""
         self.ui.queue_messages(result["messages"])
@@ -169,7 +183,9 @@ class BattleView(arcade.View):
             first_move.pp,
         )
 
-        texture = self.data_loader.get_pokemon(self.your_battle.name.lower()).sprites.back
+        texture = self.data_loader.get_pokemon(
+            self.your_battle.name.lower()
+        ).sprites.back
         self.your_sprite.set_new_texture(texture)
 
     def what_happend_after_text(self):
@@ -189,7 +205,11 @@ class BattleView(arcade.View):
 
         if self.battle_system.battle_state == BattleState.CURRENTLY_TURN:
             self._on_continue_turn()
-        elif self.battle_system.battle_state in (BattleState.INTRO, BattleState.POST_TURN, BattleState.WAITING):
+        elif self.battle_system.battle_state in (
+            BattleState.INTRO,
+            BattleState.POST_TURN,
+            BattleState.WAITING,
+        ):
             self._ending_turn()
 
         elif self.battle_system.battle_state == BattleState.SWITCHING:
@@ -243,7 +263,9 @@ class BattleView(arcade.View):
             first_move.pp,
         )
 
-        texture = self.data_loader.get_pokemon(self.your_battle.name.lower()).sprites.back
+        texture = self.data_loader.get_pokemon(
+            self.your_battle.name.lower()
+        ).sprites.back
         self.your_sprite.set_new_texture(texture)
 
     def _handle_player_loss(self):
@@ -356,9 +378,7 @@ class BattleView(arcade.View):
 
     def _reset_to_main_menu(self, dt):
         self.ui.switch_mode("main")
-        self.ui.message_box.target_text = f"What will {self.your_battle.name} do?"
-        self.ui.message_box.current_text = ""
-        self.ui.message_box.dialog_text.text = ""
+        self.ui.message_box.reset_prompt(f"What will {self.your_battle.name} do?")
 
     def on_draw(self):
         self.clear()

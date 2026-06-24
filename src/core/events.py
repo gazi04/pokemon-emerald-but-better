@@ -43,8 +43,8 @@ class NpcInteractEvent:
 
 
 @dataclass
-class BattleTextMessageEvent:
-    """Fired by BattleSystem to push a line into the typewriter box."""
+class TextMessageEvent:
+    """Push a line into the active text box, from any source (system or view)."""
 
     message: str
 

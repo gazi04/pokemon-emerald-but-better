@@ -5,6 +5,7 @@ from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
+from src.core.message_service import MessageService
 from src.model.motion.player_motion import PlayerMotion
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
@@ -30,12 +31,18 @@ POKECENTER_SPAWN = (496, 210)
 
 
 class OverworldView(arcade.View):
-    def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
+    def __init__(
+        self,
+        player_manager: PlayerManager,
+        data_loader: DataLoader,
+        message_service: MessageService,
+    ):
         super().__init__()
 
         self.player_manager = player_manager
         self.save_manager = player_manager.save_manager
         self.data_loader = data_loader
+        self.message_service = message_service
 
         arcade.get_window().ctx.default_texture_filter = (
             arcade.gl.NEAREST,
@@ -93,6 +100,9 @@ class OverworldView(arcade.View):
             self.encounter_system.cleanup()
 
     def on_show_view(self):
+        # Boxless full view: drop any box a transient view (battle/dialog) left
+        # registered, so a stray bark can't queue into a dead box.
+        self.message_service.set_box(None)
         self._subscribe()
         if self.encounter_system:
             self.encounter_system.resubscribe()

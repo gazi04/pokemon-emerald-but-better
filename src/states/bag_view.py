@@ -2,6 +2,7 @@ import arcade
 from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
+from src.core.message_service import MessageService
 from data.config import Config
 from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
@@ -19,12 +20,14 @@ class BagView(arcade.View):
         previousWindow: arcade.View,
         player_manager: PlayerManager,
         data_loader: DataLoader,
+        message_service: MessageService,
         battle_system: Optional[BattleSystem] = None,
     ):
         super().__init__()
 
         self.player_manager = player_manager
         self.data_loader = data_loader
+        self.message_service = message_service
 
         self.bagUi = BagUI()
         self.bagSystem = BagSystem(player_manager, data_loader)
@@ -111,10 +114,12 @@ class BagView(arcade.View):
         ):
             pokemon_team = self.battle_system.player_manager.player.pokemon
             if len(pokemon_team) >= 6:
-                self.window.show_view(self.previousWindow)
-                if hasattr(self.previousWindow, "start_catch_attempt"):
-                    self.previousWindow.start_catch_attempt(
-                        {"messages": ["Your party is full!", "You can't catch any more Pokémon."]}
+                self.window.show_view(
+                    self.previousWindow
+                )  # battle re-registers its box
+                if hasattr(self.previousWindow, "show_messages"):
+                    self.previousWindow.show_messages(
+                        ["Your party is full!", "You can't catch any more Pokémon."]
                     )
                 return
 

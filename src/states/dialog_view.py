@@ -2,6 +2,7 @@ import arcade
 from src.ui.dialog_ui import DialogUI
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
+from src.core.message_service import MessageService
 from data.config import Config
 from src.core.event_bus import global_bus
 from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
@@ -15,6 +16,7 @@ class DialogView(arcade.View):
         overworld: arcade.View,
         data_loader: DataLoader,
         player_manager: PlayerManager,
+        message_service: MessageService,
         after_text_callback,
         npc_id: str,
         state: str = "default",
@@ -23,6 +25,7 @@ class DialogView(arcade.View):
 
         self.overworld = overworld
         self.player_manager = player_manager
+        self.message_service = message_service
         self.ui = DialogUI()
 
         self.npc = data_loader.npc_dialog[npc_id]
@@ -34,6 +37,9 @@ class DialogView(arcade.View):
         self.dialog = self.npc.get_dialog(state)
 
         self.ui.queue_messages(self.dialog[self.dialog_index])
+
+    def on_show_view(self):
+        self.message_service.set_box(self.ui.message_box)
 
     def on_update(self, delta_time):
         self.ui.update(delta_time)
