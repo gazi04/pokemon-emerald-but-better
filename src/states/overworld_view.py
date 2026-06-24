@@ -6,6 +6,7 @@ from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
+from src.core.logger import get_logger
 from src.model.motion.player_motion import PlayerMotion
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
@@ -23,6 +24,7 @@ from src.core.events import (
 )
 
 CONFIG = Config.load()
+log = get_logger(__name__)
 
 # Where the player respawns after whiting out. Matches the Poké Center door
 # entrance (see the "door_pokecenter" transition in littleroot_town.tmx).
@@ -169,6 +171,7 @@ class OverworldView(arcade.View):
         try:
             collision_tiles = self.scene["collision"]
         except KeyError:
+            log.debug("No 'collision' layer on map; using empty collision set")
             collision_tiles = arcade.SpriteList()
 
         map_width = self.tile_map.width * self.tile_map.tile_width * 2
@@ -200,6 +203,7 @@ class OverworldView(arcade.View):
                 tiles.add((gx, gy))
             return tiles
         except Exception:
+            log.exception("Failed to extract bush tiles; treating map as bushless")
             return set()
 
     def respawn_at_pokecenter(self) -> None:

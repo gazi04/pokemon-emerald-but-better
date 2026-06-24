@@ -7,6 +7,9 @@ import json
 from pathlib import Path
 from typing import Optional, List
 from src.systems.npc_manager import NPCManager
+from src.core.logger import get_logger
+
+log = get_logger(__name__)
 
 
 class DialogManager:
@@ -35,7 +38,7 @@ class DialogManager:
             with open(path, "r") as f:
                 self.dialogs = json.load(f)
         except FileNotFoundError:
-            print(f"Warning: Dialog file not found at {path}")
+            log.warning("Dialog file not found at %s", path)
             self.dialogs = {}
 
     def get_dialog_lines(self, npc_id: str) -> List[str]:

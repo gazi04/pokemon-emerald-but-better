@@ -2,7 +2,9 @@ from __future__ import annotations
 from typing import Callable, Optional, Protocol
 
 from src.core.events import TextMessageEvent
+from src.core.logger import get_logger
 
+log = get_logger(__name__)
 
 
 class MessageBox(Protocol):
@@ -30,6 +32,7 @@ class MessageService:
         self, messages: str | list[str], callback: Optional[Callable] = None
     ) -> None:
         if self._box is None:
+            log.warning("show() with no active box; dropped: %s", messages)
             return
         if isinstance(messages, str):
             messages = [messages]
