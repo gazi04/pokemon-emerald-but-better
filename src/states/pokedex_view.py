@@ -2,7 +2,7 @@ import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from data.config import Config
-from src.ui.pokedex_ui import PodedexUi
+from src.ui.pokedex_ui import PokedexUi
 
 CONFIG = Config.load()
 

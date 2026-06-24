@@ -4,7 +4,7 @@ from src.core.data_loader import DataLoader
 from src.constants import POKEDEX_UI
 
 
-class PodedexUi:
+class PokedexUi:
     """Full Pokédex UI — background, stats, sprite panel and scrollable list."""
 
     def __init__(
