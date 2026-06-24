@@ -12,6 +12,10 @@ class BagSystem:
         self._items = player_manager.player.items
         self._pokeballs = player_manager.player.pokeballs
 
+        # Dispatch over effect.type — add an effect kind by adding an applier,
+        # not by editing the loop (mirrors npc_behaviors.make_behavior).
+        self._effect_appliers = {EffectType.HEAL: self._apply_heal}
+
     def use_pokeball(self, pokeball_index: int):
         if 0 <= pokeball_index < len(self._pokeballs):
             pokeball = self._pokeballs[pokeball_index]
@@ -31,6 +35,19 @@ class BagSystem:
         if self._handle_item_effects(pokemon_id.lower(), item.name):
             self.player_manager.consume_item(item.name)
 
+    @staticmethod
+    def _heal_eligible(pokemon, max_hp: int) -> bool:
+        """Healable only when alive and not already at full HP."""
+        return 0 < pokemon.hp < max_hp
+
+    def _apply_heal(self, pokemon_id: str, pokemon, max_hp: int, effect) -> bool:
+        """Apply a HEAL effect. Returns False (and mutates nothing) if ineligible."""
+        if not self._heal_eligible(pokemon, max_hp):
+            return False
+        new_hp = min(pokemon.hp + effect.amount, max_hp)
+        self.player_manager.update_pokemon_hp(pokemon_id, new_hp)
+        return True
+
     def _handle_item_effects(self, pokemon_id: str, item_id: str) -> bool:
         pokemon = self.player_manager.player.get_pokemon(pokemon_id)
         if not pokemon:
@@ -42,12 +59,9 @@ class BagSystem:
         item = self.data_loader.get_item(item_id)
 
         for effect in item.effects:
-            if effect.type == EffectType.HEAL:
-                if pokemon.hp <= 0 or pokemon.hp == max_hp:
-                    return False
-
-                new_hp = min(pokemon.hp + effect.amount, max_hp)
-                self.player_manager.update_pokemon_hp(pokemon_id, new_hp)
+            applier = self._effect_appliers.get(effect.type)
+            if applier and not applier(pokemon_id, pokemon, max_hp, effect):
+                return False
 
         return True
 
@@ -64,9 +78,10 @@ class BagSystem:
 
         item_def = self.data_loader.get_item(inventory_item.name)
         for effect in item_def.effects:
-            if effect.type == EffectType.HEAL:
-                if pokemon.hp <= 0 or pokemon.hp == max_hp:
-                    return False
+            if effect.type == EffectType.HEAL and not self._heal_eligible(
+                pokemon, max_hp
+            ):
+                return False
 
         return True
 

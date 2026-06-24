@@ -4,11 +4,11 @@ from src.model.battle.battle_pokemon import BattlePokemon
 from src.core.player_manager import PlayerManager
 from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
+from src.core.catch_calculator import calc_catch_probability
 from src.core.event_bus import global_bus
 from src.core.events import HpChangedEvent, PokemonFaintedEvent
 from src.enums.battle_state import BattleState
 from src.enums.stat import Stat
-from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.save.player import PlayerPokemon
@@ -278,20 +278,12 @@ class BattleSystem:
         pokemon_profile = self.data_loader.get_pokemon(enemy.name.lower())
         catch_rate = pokemon_profile.catch_rate if pokemon_profile else 45
 
-        hp_modifier = 1 - (enemy.current_hp / enemy.max_hp) * 0.5
-
-        status_modifier = 1.0
-        if enemy.status_effect in (StatusEffect.SLEEP, StatusEffect.FREEZE):
-            status_modifier = 2.0
-        elif enemy.status_effect in (
-            StatusEffect.PARALYSIS,
-            StatusEffect.BURN,
-            StatusEffect.POISON,
-        ):
-            status_modifier = 1.5
-
-        catch_probability = min(
-            (catch_rate * ball_modifier * hp_modifier * status_modifier) / 255, 1.0
+        catch_probability = calc_catch_probability(
+            catch_rate,
+            ball_modifier,
+            enemy.current_hp,
+            enemy.max_hp,
+            enemy.status_effect,
         )
 
         if random.random() < catch_probability:
@@ -316,22 +308,8 @@ class BattleSystem:
             }
 
     def save(self):
-        pokemon_name = self.your_pokemon.name.lower()
-        self.player_manager.update_pokemon_hp(pokemon_name, self.your_pokemon.current_hp)
-        for move in self.your_pokemon.moves:
-            self.player_manager.update_move_pp(pokemon_name, move.name, move.pp)
-
-        if not self.has_evolved:
-            self.player_manager.update_level(
-                pokemon_name, self.your_pokemon.level, self.your_pokemon.exp
-            )
-        else:
-            self.player_manager.update_level(
-                pokemon_name,
-                self.your_pokemon.level,
-                self.your_pokemon.exp,
-                self.your_pokemon.evolution.to,
-            )
+        # Persistence is owned by the PlayerManager Facade, not combat code.
+        self.player_manager.persist_active_pokemon(self.your_pokemon, self.has_evolved)
 
     def _publish_hp_change(self, target: str, hp_before: int, pokemon: BattlePokemon):
         global_bus.publish(
