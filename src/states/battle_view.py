@@ -1,25 +1,27 @@
 import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
-from src.model.player import PlayerPokemon, PlayerPokemonMove
-from src.model.trainer import Trainer
-from src.entities.pokemon_sprites import Pokemon
-from src.entities.pokemon_battle import PokemonBattle
+from src.core.message_service import MessageService
+from src.model.save.player import PlayerPokemonMove
+from src.model.static.trainer import Trainer
+from src.entities.pokemon_sprites import PokemonSprite
+from src.model.battle.battle_pokemon import BattlePokemon
 from data.config import Config
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
-from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent, OverlayViewEvent, SwapViewEvent
+from src.states.base_view import GameView
+from src.enums.battle_state import BattleState
 
 CONFIG = Config.load()
 
 
-class BattleView(arcade.View):
+class BattleView(GameView):
     def __init__(
         self,
         overworld_view,
         player_manager: PlayerManager,
         data_loader: DataLoader,
+        message_service: MessageService,
         foe_pokemon_name=None,
         foe_pokemon_data=None,
         foe_level=None,
@@ -32,9 +34,10 @@ class BattleView(arcade.View):
         self.overworld_view = overworld_view
         self.player_manager = player_manager
         self.data_loader = data_loader
+        self.message_service = message_service
         self.npc_id = npc_id
 
-        self.ui = BattleUiManager(self.whatHappendAfterText)
+        self.ui = BattleUiManager(self.what_happend_after_text)
 
         self.playerPokemon = self.player_manager.player.pokemon
 
@@ -44,11 +47,10 @@ class BattleView(arcade.View):
                 f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
             )
 
-        self.yourPokemon = Pokemon(
-            player_profile,
-            False,
-            self.playerPokemon[0],
+        self.your_battle = BattlePokemon.from_player(
+            player_profile, self.playerPokemon[0]
         )
+        self.your_sprite = PokemonSprite(player_profile, False)
 
         self.is_trainer = is_trainer
         self.trainer_data = trainer_data
@@ -60,70 +62,61 @@ class BattleView(arcade.View):
                     f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None."
                 )
 
-            self.enemyPokemon = Pokemon(
+            self.enemy_battle = BattlePokemon.from_wild(
                 foe_pokemon_data,
-                True,
-                name=foe_pokemon_name,
-                moves=[PlayerPokemonMove("tackle", 35)],
-                level=foe_level,
+                foe_pokemon_name,
+                foe_level,
+                [PlayerPokemonMove("tackle", 35)],
             )
+            self.enemy_sprite = PokemonSprite(foe_pokemon_data, True)
         else:
             first = trainer_data.party[0]
             first_profile = data_loader.get_pokemon(first.name)
             if first_profile is None:
                 raise ValueError(f"Trainer pokemon '{first.name}' not found in data.")
 
-            self.enemyPokemon = Pokemon(
+            self.enemy_battle = BattlePokemon.from_wild(
                 first_profile,
-                True,
-                name=first.name,
-                moves=first.moves,
-                level=first.level,
+                first.name,
+                first.level,
+                first.moves,
             )
+            self.enemy_sprite = PokemonSprite(first_profile, True)
 
             self.prize_money = (
                 first.level + sum(p.level for p in trainer_data.party)
             ) * 10
             trainer_data.party.pop(0)
 
-        self.player_manager.player.mark_seen(foe_pokemon_name)
+        self.player_manager.mark_seen(foe_pokemon_name)
 
-        self.battleSystem = BattleSystem(
-            self.yourPokemon.pokemonBattle,
-            self.enemyPokemon.pokemonBattle,
+        self.battle_system = BattleSystem(
+            self.your_battle,
+            self.enemy_battle,
             self.player_manager,
             self.data_loader,
             is_trainer,
             trainer_data,
         )
 
-        self.ui.set_player_info(
-            self.yourPokemon.pokemonBattle.name.upper(),
-            self.yourPokemon.pokemonBattle.level,
-        )
         self.ui.set_enemy_info(
-            self.enemyPokemon.pokemonBattle.name.upper(),
-            self.enemyPokemon.pokemonBattle.level,
+            self.enemy_battle.name.upper(),
+            self.enemy_battle.level,
         )
         self.ui.switch_mode("main")
-        self.updateUiMoves()
+        # Sprite is freshly built above — back-texture already correct.
+        self._refresh_active_pokemon_ui(update_texture=False)
 
-        first_move = data_loader.get_move(self.yourPokemon.pokemonBattle.moves[0].name)
-        if first_move is not None:
-            self.ui.menu_panel.update_move_info(
-                first_move.type,
-                self.yourPokemon.pokemonBattle.moves[0].pp,
-                first_move.pp,
-            )
-        else:
-            self.ui.menu_panel.update_move_info(
-                "Normal", self.yourPokemon.pokemonBattle.moves[0].pp, 35
-            )
+        self.ui.set_transition(
+            self.your_sprite,
+            self.enemy_sprite,
+            is_trainer,
+            self.your_battle.name,
+            self.enemy_battle.name,
+        )
 
-        self.ui.set_transition(self.yourPokemon, self.enemyPokemon, is_trainer)
-
-    def updateUiMoves(self):
-        moves = self.yourPokemon.pokemonBattle.moves
+    def update_ui_moves(self):
+        moves = self.your_battle.moves
         for i, button in enumerate(self.ui.menu_panel.move_buttons):
             if i < len(moves):
                 button.text = moves[i].name.upper()
@@ -134,13 +127,48 @@ class BattleView(arcade.View):
                 button.visible = False
                 button.enabled = False
 
-    def startTurn(self, index):
-        self.ui.queue_messages(self.battleSystem.turn(index))
+    def _refresh_active_pokemon_ui(self, update_texture: bool = True):
+        """Refresh name/level + move panel for the active player Pokémon.
+        Shared by __init__, switch_turn, and force_switch so they stay in sync;
+        the None guard covers a missing move (latent crash if accessed raw)."""
+        self.ui.set_player_info(
+            self.your_battle.name.upper(),
+            self.your_battle.level,
+        )
+        self.update_ui_moves()
+        first_move = self.data_loader.get_move(self.your_battle.moves[0].name)
+        if first_move is not None:
+            self.ui.menu_panel.update_move_info(
+                first_move.type,
+                self.your_battle.moves[0].pp,
+                first_move.pp,
+            )
+        else:
+            self.ui.menu_panel.update_move_info(
+                "Normal", self.your_battle.moves[0].pp, 35
+            )
+        if update_texture:
+            texture = self.data_loader.get_pokemon(
+                self.your_battle.name.lower()
+            ).sprites.back
+            self.your_sprite.set_new_texture(texture)
+
+    def start_turn(self, index):
+        self.ui.queue_messages(self.battle_system.turn(index))
         self.ui.switch_mode("dialog")
 
-    def onItemUsed(self, itemIndex: int):
-        self.ui.queue_messages(self.battleSystem.turnUseItem(itemIndex))
+    def on_item_used(self, item_index: int):
+        self.ui.queue_messages(self.battle_system.turn_use_item(item_index))
         self.ui.switch_mode("dialog")
+
+    def on_show_view(self):
+        self.message_service.set_box(self.ui.message_box)
+
+    def show_messages(self, messages: list[str]):
+        """Show battle text from another view (e.g. bag) — switches to dialog
+        mode so the box is visible, then queues via the service."""
+        self.ui.switch_mode("dialog")
+        self.message_service.show(messages)
 
     def start_catch_attempt(self, result: dict):
         """Called by BagView after a pokeball is thrown."""
@@ -148,110 +176,66 @@ class BattleView(arcade.View):
         self.ui.switch_mode("dialog")
 
     def switch_turn(self):
-        self.battleSystem.battleState = "switching"
+        self.battle_system.battle_state = BattleState.SWITCHING
 
         self.ui.switch_mode("dialog")
-        self.ui.queue_messages(self.battleSystem.switch_pokemon())
+        self.ui.queue_messages(self.battle_system.switch_pokemon())
 
-        self.ui.set_player_info(
-            self.yourPokemon.pokemonBattle.name.upper(),
-            self.yourPokemon.pokemonBattle.level,
-        )
-        self.updateUiMoves()
-        first_move = self.data_loader.get_move(
-            self.yourPokemon.pokemonBattle.moves[0].name
-        )
-        self.ui.menu_panel.update_move_info(
-            first_move.type,
-            self.yourPokemon.pokemonBattle.moves[0].pp,
-            first_move.pp,
-        )
+        self._refresh_active_pokemon_ui()
 
-        texture = self.data_loader.get_pokemon(
-            self.yourPokemon.pokemonBattle.name.lower()
-        ).sprites.back
-        self.yourPokemon.setNewTexture(texture)
-
-    def whatHappendAfterText(self):
-        if self.battleSystem.battleState == "caught":
-            enemy = self.battleSystem.enemyPokemon
-            self.player_manager.add_pokemon(
-                PlayerPokemon(
-                    name=enemy.name.lower(),
-                    hp=enemy.currentHp,
-                    level=enemy.level,
-                    exp=0,
-                    moves=enemy.moves,
-                )
-            )
+    def what_happend_after_text(self):
+        if self.battle_system.battle_state == BattleState.CAUGHT:
+            self.battle_system.add_caught_pokemon()
             self.run()
             return
 
-        if self.battleSystem.battleState == "currently turn":
+        if self.battle_system.battle_state == BattleState.CURRENTLY_TURN:
             self._on_continue_turn()
-        elif self.battleSystem.battleState in ["intro", "post turn", "waiting"]:
+        elif self.battle_system.battle_state in (
+            BattleState.INTRO,
+            BattleState.POST_TURN,
+            BattleState.WAITING,
+        ):
             self._ending_turn()
 
-        elif self.battleSystem.battleState == "switching":
-            self.ui.queue_messages(self.battleSystem.switch_turn())
+        elif self.battle_system.battle_state == BattleState.SWITCHING:
+            self.ui.queue_messages(self.battle_system.switch_turn())
             self.ui.switch_mode("dialog")
 
-        elif self.battleSystem.battleState == "trainer switch":
+        elif self.battle_system.battle_state == BattleState.TRAINER_SWITCH:
             self._trainer_give_exp()
-        elif self.battleSystem.battleState == "trainer sending":
+        elif self.battle_system.battle_state == BattleState.TRAINER_SENDING:
             self._trainer_send_next_pokemon()
-        elif self.battleSystem.battleState == "player fainted":
+        elif self.battle_system.battle_state == BattleState.PLAYER_FAINTED:
             self._handle_player_fainted()
-        elif self.battleSystem.battleState == "lost":
+        elif self.battle_system.battle_state == BattleState.LOST:
             self._end_loss()
-        elif self.battleSystem.battleState == "end":
+        elif self.battle_system.battle_state == BattleState.END:
             self._handle_battle_finishing()
 
     def _handle_player_fainted(self):
-        if self.battleSystem.has_usable_pokemon():
+        if self.battle_system.has_usable_pokemon():
             # Force the player to choose a replacement.
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokemon_menu",
-                    payload={
-                        "previous_view": self,
-                        "data_loader": self.data_loader,
-                        "battle_system": self.battleSystem,
-                        "forced_switch": True,
-                    },
-                )
+            self.overlay(
+                "pokemon_menu",
+                previous_view=self,
+                battle_system=self.battle_system,
+                forced_switch=True,
             )
         else:
             self._handle_player_loss()
 
     def force_switch(self):
         """Called by the Pokémon menu after a replacement is chosen post-faint."""
-        self.ui.queue_messages(self.battleSystem.complete_forced_switch())
+        self.ui.queue_messages(self.battle_system.complete_forced_switch())
         self.ui.switch_mode("dialog")
         # No enemy turn after a forced switch — go back to the main menu.
-        self.battleSystem.battleState = "waiting"
+        self.battle_system.battle_state = BattleState.WAITING
 
-        self.ui.set_player_info(
-            self.yourPokemon.pokemonBattle.name.upper(),
-            self.yourPokemon.pokemonBattle.level,
-        )
-        self.updateUiMoves()
-        first_move = self.data_loader.get_move(
-            self.yourPokemon.pokemonBattle.moves[0].name
-        )
-        self.ui.menu_panel.update_move_info(
-            first_move.type,
-            self.yourPokemon.pokemonBattle.moves[0].pp,
-            first_move.pp,
-        )
-
-        texture = self.data_loader.get_pokemon(
-            self.yourPokemon.pokemonBattle.name.lower()
-        ).sprites.back
-        self.yourPokemon.setNewTexture(texture)
+        self._refresh_active_pokemon_ui()
 
     def _handle_player_loss(self):
-        self.battleSystem.battleState = "lost"
+        self.battle_system.battle_state = BattleState.LOST
         self.ui.queue_messages(
             [
                 "You have no more Pokémon that can fight!",
@@ -261,81 +245,75 @@ class BattleView(arcade.View):
         self.ui.switch_mode("dialog")
 
     def _end_loss(self):
-        self.battleSystem.save()
+        self.battle_system.save()
 
         # Whiting out: fully heal the team and send the player to the Poké Center.
         self.player_manager.heal_team()
         self.overworld_view.respawn_at_pokecenter()
 
-        global_bus.publish(CloseViewEvent())
+        self.close()
 
     def _on_continue_turn(self):
-        messages = self.battleSystem.executeNextAction()
+        messages = self.battle_system.execute_next_action()
         if messages:
             self.ui.queue_messages(messages)
         else:
             self._ending_turn()
 
     def _ending_turn(self):
-        self.battleSystem.battleState = "waiting"
+        self.battle_system.battle_state = BattleState.WAITING
         arcade.schedule_once(self._reset_to_main_menu, 0.5)
 
     def _trainer_give_exp(self):
-        result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
-        self.battleSystem.exp = 0
-        self.battleSystem.battleState = "trainer sending"
+        result = self.battle_system.apply_exp_award()
+        self.battle_system.battle_state = BattleState.TRAINER_SENDING
 
-        if result["isLeveledUp"]:
-            self._on_level_up(self.yourPokemon.pokemonBattle)
+        if result.leveled_up:
+            self._on_level_up(self.your_battle)
         else:
             self._trainer_send_next_pokemon()
 
     def _trainer_send_next_pokemon(self):
-        next_data = self.battleSystem.next_trainer_pokemon
+        next_data = self.battle_system.next_trainer_pokemon
 
         if not next_data:
             messages = ["Trainer was defeated!!!"]
             if self.prize_money > 0:
                 messages.append(f"You got ${self.prize_money}!")
             self.ui.queue_messages(messages)
-            self.battleSystem.battleState = "end"
+            self.battle_system.battle_state = BattleState.END
             return
 
-        profile = self.data_loader.get_pokemon(next_data.name)
-
-        texture = profile.sprites.front
-        self.enemyPokemon.texture = arcade.load_texture(texture)
-        self.enemyPokemon.pokemonBattle = PokemonBattle(
-            profile,
-            True,
-            name=next_data.name,
-            moves=next_data.moves,
-            level=next_data.level,
-        )
-        self.battleSystem.enemyPokemon = self.enemyPokemon.pokemonBattle
+        self.set_enemy(next_data.name, next_data.level, next_data.moves)
 
         self.ui.set_enemy_info(next_data.name.upper(), next_data.level)
         self.ui.queue_messages([f"Trainer sent out {next_data.name}!"])
-        self.battleSystem.battleState = "waiting"
+        self.battle_system.battle_state = BattleState.WAITING
+
+    def set_enemy(self, name: str, level: int, moves: list):
+        """Swap the active enemy pokemon, keeping sprite, battle model, and
+        battle system in sync. Single entry point so callers can't desync them."""
+        profile = self.data_loader.get_pokemon(name)
+
+        self.enemy_sprite.set_new_texture(profile.sprites.front)
+        self.enemy_battle = BattlePokemon.from_wild(profile, name, level, moves)
+        self.battle_system.enemy_pokemon = self.enemy_battle
 
     def _handle_battle_finishing(self):
-        if self.battleSystem.exp <= 0:
+        if self.battle_system.exp <= 0:
             self.run()
             return
 
-        result = self.yourPokemon.pokemonBattle.gainExp(self.battleSystem.exp)
-        self.battleSystem.exp = 0
+        result = self.battle_system.apply_exp_award()
 
-        if result["evolve"]["hasEvolved"]:
-            self._evolution(
-                self.yourPokemon.pokemonBattle.name.lower(), result["evolve"]["to"]
-            )
-        elif result["isLeveledUp"]:
-            self._on_level_up(self.yourPokemon.pokemonBattle)
+        if result.evolved:
+            self._evolution(self.your_battle.name.lower(), result.evolves_to)
+        elif result.leveled_up:
+            self._on_level_up(self.your_battle)
         else:
             self.run()
 
-    def _on_level_up(self, pokemon: PokemonBattle):
+    def _on_level_up(self, pokemon: BattlePokemon):
         self.ui.set_player_info(
             pokemon.name.upper(),
             pokemon.level,
@@ -349,36 +327,24 @@ class BattleView(arcade.View):
         )
 
     def _evolution(self, base_pokemon: str, to: str):
-        self.battleSystem.hasEvolved = True
-        self.battleSystem.save()
+        self.battle_system.has_evolved = True
+        self.battle_system.save()
         # Ask the Director to swap to the Evolution view
-        global_bus.publish(
-            SwapViewEvent(
-                target="evolving",
-                payload={
-                    "pokemon": base_pokemon,
-                    "evolved_pokemon": to,
-                },
-            )
-        )
+        self.swap("evolving", pokemon=base_pokemon, evolved_pokemon=to)
 
     def _reset_to_main_menu(self, dt):
         self.ui.switch_mode("main")
-        self.ui.message_box.target_text = (
-            f"What will {self.yourPokemon.pokemonBattle.name} do?"
-        )
-        self.ui.message_box.current_text = ""
-        self.ui.message_box.dialog_text.text = ""
+        self.ui.message_box.reset_prompt(f"What will {self.your_battle.name} do?")
 
     def on_draw(self):
         self.clear()
         self.window.default_camera.use()
         self.ui.draw()
-        self.enemyPokemon.draw()
-        self.yourPokemon.draw()
-        self.ui.draw_hp_bar(self.yourPokemon.pokemonBattle.getHpRatio(), "player")
-        self.ui.draw_exp_bar(self.yourPokemon.pokemonBattle.getExpRatio())
-        self.ui.draw_hp_bar(self.enemyPokemon.pokemonBattle.getHpRatio(), "enemy")
+        self.enemy_sprite.draw()
+        self.your_sprite.draw()
+        self.ui.draw_hp_bar(self.your_battle.get_hp_ratio(), "player")
+        self.ui.draw_exp_bar(self.your_battle.get_exp_ratio())
+        self.ui.draw_hp_bar(self.enemy_battle.get_hp_ratio(), "enemy")
 
     def on_update(self, delta_time):
         self.ui.update(delta_time)
@@ -389,69 +355,55 @@ class BattleView(arcade.View):
             num_buttons = len(current_list)
         elif self.ui.active_component == "moves":
             current_list = self.ui.menu_panel.move_buttons
-            num_buttons = len(self.yourPokemon.pokemonBattle.moves)
+            num_buttons = len(self.your_battle.moves)
         else:
             return
 
-        if self.isPressed(CONFIG.controls.up, symbol):
+        if self.is_pressed(CONFIG.controls.up, symbol):
             if num_buttons > 2:
                 self.ui.menu_panel.selection_index = (
                     self.ui.menu_panel.selection_index - 2
                 ) % num_buttons
             if self.ui.active_component == "moves":
-                self.moveHover(self.ui.menu_panel.selection_index)
+                self.move_hover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.down, symbol):
+        elif self.is_pressed(CONFIG.controls.down, symbol):
             if num_buttons > 2:
                 self.ui.menu_panel.selection_index = (
                     self.ui.menu_panel.selection_index + 2
                 ) % num_buttons
             if self.ui.active_component == "moves":
-                self.moveHover(self.ui.menu_panel.selection_index)
+                self.move_hover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.left, symbol):
+        elif self.is_pressed(CONFIG.controls.left, symbol):
             self.ui.menu_panel.selection_index = (
                 self.ui.menu_panel.selection_index - 1
             ) % num_buttons
             if self.ui.active_component == "moves":
-                self.moveHover(self.ui.menu_panel.selection_index)
+                self.move_hover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.right, symbol):
+        elif self.is_pressed(CONFIG.controls.right, symbol):
             self.ui.menu_panel.selection_index = (
                 self.ui.menu_panel.selection_index + 1
             ) % num_buttons
             if self.ui.active_component == "moves":
-                self.moveHover(self.ui.menu_panel.selection_index)
+                self.move_hover(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.interact, symbol):
+        elif self.is_pressed(CONFIG.controls.interact, symbol):
             if self.ui.active_component == "main":
                 if self.ui.menu_panel.selection_index == 0:
                     self.ui.switch_mode("moves")
                 elif self.ui.menu_panel.selection_index == 1:
                     # Ask the Director to overlay the Bag
-                    global_bus.publish(
-                        OverlayViewEvent(
-                            target="bag",
-                            payload={
-                                "previous_view": self,
-                                "battle_system": self.battleSystem,
-                                "save_manager": self.player_manager,
-                                "data_loader": self.data_loader,
-                            },
-                        )
+                    self.overlay(
+                        "bag", previous_view=self, battle_system=self.battle_system
                     )
                 elif self.ui.menu_panel.selection_index == 2:
                     # Ask the Director to overlay the Pokémon menu
-                    global_bus.publish(
-                        OverlayViewEvent(
-                            target="pokemon_menu",
-                            payload={
-                                "previous_view": self,
-                                "save_manager": self.player_manager,
-                                "data_loader": self.data_loader,
-                                "battle_system": self.battleSystem,
-                            },
-                        )
+                    self.overlay(
+                        "pokemon_menu",
+                        previous_view=self,
+                        battle_system=self.battle_system,
                     )
                 elif self.ui.menu_panel.selection_index == 3:
                     if not self.is_trainer:
@@ -462,30 +414,26 @@ class BattleView(arcade.View):
                         arcade.schedule_once(self._reset_to_main_menu, 2)
 
             elif self.ui.active_component == "moves":
-                self.startTurn(self.ui.menu_panel.selection_index)
+                self.start_turn(self.ui.menu_panel.selection_index)
 
-        elif self.isPressed(CONFIG.controls.cancel, symbol):
+        elif self.is_pressed(CONFIG.controls.cancel, symbol):
             if self.ui.active_component == "moves":
                 self.ui.switch_mode("main")
 
-    def isPressed(self, configKey, symbol) -> bool:
-        return getattr(arcade.key, configKey, None) == symbol
-
-    def moveHover(self, index):
-        if index is not None and index < len(self.yourPokemon.pokemonBattle.moves):
-            move_name = self.yourPokemon.pokemonBattle.moves[index].name
+    def move_hover(self, index):
+        if index is not None and index < len(self.your_battle.moves):
+            move_name = self.your_battle.moves[index].name
             move = self.data_loader.get_move(move_name)
 
-            # FIX 6 & 7: Wrapped with an if statement to verify 'move' is found before grabbing properties
             if move is not None:
                 self.ui.menu_panel.update_move_info(
                     move.type,
-                    self.yourPokemon.pokemonBattle.moves[index].pp,
+                    self.your_battle.moves[index].pp,
                     move.pp,
                 )
 
     def run(self):
-        self.battleSystem.save()
+        self.battle_system.save()
 
         if self.is_trainer:
             # Trainer battles can't be fled, so reaching here means victory.
@@ -497,17 +445,13 @@ class BattleView(arcade.View):
                 npc = self.data_loader.npc_dialog.get(self.npc_id)
                 if npc and npc.has_state("after_victory"):
                     # Show the post-battle dialog instead of going straight back.
-                    global_bus.publish(
-                        OverlayViewEvent(
-                            target="dialog",
-                            payload={
-                                "npc_id": self.npc_id,
-                                "state": "after_victory",
-                                "action": "end",
-                            },
-                        )
+                    self.overlay(
+                        "dialog",
+                        npc_id=self.npc_id,
+                        state="after_victory",
+                        action="end",
                     )
                     return
 
         # Tell the Director we are done — it will return to the Overworld
-        global_bus.publish(CloseViewEvent())
+        self.close()

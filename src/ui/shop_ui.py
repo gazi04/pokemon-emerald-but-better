@@ -1,6 +1,6 @@
 import arcade
 import arcade.gui
-from src.model.item import Item
+from src.model.static.item import ItemSpecies
 from src.constants import SHOP_UI
 
 FONT = "Pokemon Emerald"
@@ -9,7 +9,7 @@ TEXT_COLOR = arcade.color.BLACK
 
 
 class ShopUI:
-    def __init__(self, items: dict[str, Item]):
+    def __init__(self, items: dict[str, ItemSpecies]):
         self._manager = arcade.gui.UIManager()
         self._manager._pixelated = True
 

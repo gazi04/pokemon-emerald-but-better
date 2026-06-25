@@ -1,5 +1,7 @@
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
+from src.enums.effect_type import EffectType
+from src.model.static.pokemon import PokemonStat
 
 
 class BagSystem:
@@ -10,76 +12,81 @@ class BagSystem:
         self._items = player_manager.player.items
         self._pokeballs = player_manager.player.pokeballs
 
-    def usePokeball(self, pokeball_index: int):
+        # Dispatch over effect.type — add an effect kind by adding an applier,
+        # not by editing the loop (mirrors npc_behaviors.make_behavior).
+        self._effect_appliers = {EffectType.HEAL: self._apply_heal}
+
+    def use_pokeball(self, pokeball_index: int):
         if 0 <= pokeball_index < len(self._pokeballs):
             pokeball = self._pokeballs[pokeball_index]
             if pokeball.count > 0:
-                pokeball.count -= 1
-                if pokeball.count <= 0:
-                    self._pokeballs.pop(pokeball_index)
-
-                return self.data_loader.get_item(pokeball.name)
+                name = pokeball.name
+                self.player_manager.consume_pokeball(name)
+                return self.data_loader.get_item(name)
 
         return None
 
-    def useItem(self, itemIndex: int, pokemonId: str):
+    def use_item(self, item_index: int, pokemon_id: str):
         if len(self._items) <= 0:
             return
 
-        item = self._items[itemIndex]
+        item = self._items[item_index]
 
-        if self._handleItemEffects(pokemonId.lower(), item.name):
-            item.count -= 1
-            if item.count <= 0:
-                self._items.pop(itemIndex)
+        if self._handle_item_effects(pokemon_id.lower(), item.name):
+            self.player_manager.consume_item(item.name)
 
-    def _handleItemEffects(self, pokemonId: str, itemId: str) -> bool:
-        pokemon = self.player_manager.player.get_pokemon(pokemonId)
-        pokemonProfile = self.data_loader.get_pokemon(pokemonId)
+    @staticmethod
+    def _heal_eligible(pokemon, max_hp: int) -> bool:
+        """Healable only when alive and not already at full HP."""
+        return 0 < pokemon.hp < max_hp
 
-        maxHp = (
-            ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
-        )
+    def _apply_heal(self, pokemon_id: str, pokemon, max_hp: int, effect) -> bool:
+        """Apply a HEAL effect. Returns False (and mutates nothing) if ineligible."""
+        if not self._heal_eligible(pokemon, max_hp):
+            return False
+        new_hp = min(pokemon.hp + effect.amount, max_hp)
+        self.player_manager.update_pokemon_hp(pokemon_id, new_hp)
+        return True
 
+    def _handle_item_effects(self, pokemon_id: str, item_id: str) -> bool:
+        pokemon = self.player_manager.player.get_pokemon(pokemon_id)
         if not pokemon:
             return False
 
-        item = self.data_loader.get_item(itemId)
+        pokemon_profile = self.data_loader.get_pokemon(pokemon_id)
+        max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
+
+        item = self.data_loader.get_item(item_id)
 
         for effect in item.effects:
-            if effect.type == "heal":
-                if pokemon.hp <= 0 or pokemon.hp == maxHp:
-                    return False
-
-                pokemon.hp += effect.amount
-                if pokemon.hp > maxHp:
-                    pokemon.hp = maxHp
+            applier = self._effect_appliers.get(effect.type)
+            if applier and not applier(pokemon_id, pokemon, max_hp, effect):
+                return False
 
         return True
 
-    def canUseItem(self, itemIndex: int, pokemonId: str) -> bool:
+    def can_use_item(self, item_index: int, pokemon_id: str) -> bool:
         if len(self._items) <= 0:
             return False
 
-        inventory_item = self._items[itemIndex]
+        inventory_item = self._items[item_index]
 
-        pokemon = self.player_manager.player.get_pokemon(pokemonId)
-        pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
+        pokemon = self.player_manager.player.get_pokemon(pokemon_id)
+        pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
 
-        maxHp = (
-            ((2 * pokemonProfile.stats.hp * pokemon.level) // 100) + 5 + pokemon.level
-        )
+        max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
 
         item_def = self.data_loader.get_item(inventory_item.name)
         for effect in item_def.effects:
-            if effect.type == "heal":
-                if pokemon.hp <= 0 or pokemon.hp == maxHp:
-                    return False
+            if effect.type == EffectType.HEAL and not self._heal_eligible(
+                pokemon, max_hp
+            ):
+                return False
 
         return True
 
-    def getItems(self):
+    def get_items(self):
         return self._items
 
-    def getPokeballs(self):
+    def get_pokeballs(self):
         return self._pokeballs

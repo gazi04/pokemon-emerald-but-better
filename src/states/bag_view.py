@@ -2,136 +2,142 @@ import arcade
 from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
+from src.core.message_service import MessageService
 from data.config import Config
 from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
 from src.systems.battle_system import BattleSystem
 from src.constants import MAX_VISIBLE_ITEMS
-from src.core.event_bus import global_bus
-from src.core.events import OverlayViewEvent
+from src.states.base_view import GameView
 
 CONFIG = Config.load()
 
 
-class BagView(arcade.View):
+class BagView(GameView):
     def __init__(
         self,
         previousWindow: arcade.View,
         player_manager: PlayerManager,
         data_loader: DataLoader,
-        battleSystem: Optional[BattleSystem] = None,
+        message_service: MessageService,
+        battle_system: Optional[BattleSystem] = None,
     ):
         super().__init__()
 
         self.player_manager = player_manager
         self.data_loader = data_loader
+        self.message_service = message_service
 
-        self.bagUi = BagUI()
+        self.ui = BagUI()
         self.bagSystem = BagSystem(player_manager, data_loader)
-        self.battleSystem = battleSystem
+        self.battle_system = battle_system
         self.previousWindow = previousWindow
 
-        self.inventory = self.bagSystem.getItems()
+        self.inventory = self.bagSystem.get_items()
         self.bagIndex = 0
         self.currentIndex = 0
         self.topVisibleIndex = 0
 
-        self.bagUi.setupInvetory()
-        self.updateItem()
+        self.ui.setup_invetory()
+        self.update_item()
 
-    def updateItem(self):
+    def update_item(self):
         for i in range(MAX_VISIBLE_ITEMS):
             inventory_index = self.topVisibleIndex + i
             if inventory_index < len(self.inventory):
                 item = self.inventory[inventory_index]
                 name = item.name.upper()
                 display = f"{name:<14} x{item.count}" if item.count > 0 else name
-                self.bagUi.itemLabels[i].text = display
+                self.ui.itemLabels[i].text = display
             else:
-                self.bagUi.itemLabels[i].text = ""
+                self.ui.itemLabels[i].text = ""
 
         if len(self.inventory) <= 0:
             self.currentIndex = 0
-            self.bagUi.setText("There isn't any items.")
+            self.ui.set_text("There isn't any items.")
             return
 
         index = self.currentIndex - self.topVisibleIndex
-        self.bagUi.setYOfCursor(index)
+        self.ui.set_y_of_cursor(index)
 
         item_data = self.data_loader.get_item(self.inventory[self.currentIndex].name)
         if item_data is not None:
-            self.bagUi.setText(item_data.description)
+            self.ui.set_text(item_data.description)
         else:
-            self.bagUi.setText("Unknown item description.")
+            self.ui.set_text("Unknown item description.")
 
     def on_key_press(self, symbol: int, modifiers: int):
-        if self.isPressed(CONFIG.controls.up, symbol):
+        if self.is_pressed(CONFIG.controls.up, symbol):
             if self.currentIndex > 0:
                 self.currentIndex -= 1
                 if self.currentIndex < self.topVisibleIndex:
                     self.topVisibleIndex -= 1
-                self.updateItem()
+                self.update_item()
 
-        elif self.isPressed(CONFIG.controls.down, symbol):
+        elif self.is_pressed(CONFIG.controls.down, symbol):
             if self.currentIndex < len(self.inventory) - 1:
                 self.currentIndex += 1
                 if self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS:
                     self.topVisibleIndex += 1
-                self.updateItem()
+                self.update_item()
 
-        elif self.isPressed(CONFIG.controls.right, symbol):
+        elif self.is_pressed(CONFIG.controls.right, symbol):
             self.bagIndex = 1 if self.bagIndex == 0 else 0
-            self.changeBag()
+            self.change_bag()
 
-        elif self.isPressed(CONFIG.controls.left, symbol):
+        elif self.is_pressed(CONFIG.controls.left, symbol):
             self.bagIndex = 0 if self.bagIndex == 1 else 1
-            self.changeBag()
+            self.change_bag()
 
-        elif self.isPressed(CONFIG.controls.cancel, symbol):
+        elif self.is_pressed(CONFIG.controls.cancel, symbol):
             self.window.show_view(self.previousWindow)
 
-        elif self.isPressed(CONFIG.controls.interact, symbol) and self.bagIndex == 0:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokemon_menu",
-                    payload={
-                        "previous_view": self,
-                        "bag": self.bagSystem,
-                        "item_index": self.currentIndex,
-                        "battle_system": self.battleSystem,
-                    },
-                )
+        elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex == 0:
+            self.overlay(
+                "pokemon_menu",
+                previous_view=self,
+                bag=self.bagSystem,
+                item_index=self.currentIndex,
+                battle_system=self.battle_system,
             )
-            self.updateItem()
+            self.update_item()
         elif (
-            self.isPressed(CONFIG.controls.interact, symbol)
+            self.is_pressed(CONFIG.controls.interact, symbol)
             and self.bagIndex == 1
-            and self.battleSystem
-            and not self.battleSystem.is_trainer
+            and self.battle_system
+            and not self.battle_system.is_trainer
         ):
-            pokeball = self.bagSystem.usePokeball(self.currentIndex)
+            pokemon_team = self.battle_system.player_manager.player.pokemon
+            if len(pokemon_team) >= 6:
+                self.window.show_view(
+                    self.previousWindow
+                )  # battle re-registers its box
+                if hasattr(self.previousWindow, "show_messages"):
+                    self.previousWindow.show_messages(
+                        ["Your party is full!", "You can't catch any more Pokémon."]
+                    )
+                return
+
+            pokeball = self.bagSystem.use_pokeball(self.currentIndex)
             if pokeball:
-                result = self.battleSystem.attempt_catch(pokeball)
-                self.updateItem()
+                result = self.battle_system.attempt_catch(pokeball)
+                self.update_item()
                 self.window.show_view(self.previousWindow)
                 if hasattr(self.previousWindow, "start_catch_attempt"):
                     self.previousWindow.start_catch_attempt(result)
 
-    def isPressed(self, configKey, symbol) -> bool:
-        return getattr(arcade.key, configKey, None) == symbol
-
-    def changeBag(self):
+    def change_bag(self):
         self.currentIndex = 0
         if self.bagIndex == 0:
-            self.inventory = self.bagSystem.getItems()
-            self.bagUi.changeBag("items")
+            self.inventory = self.bagSystem.get_items()
+            self.ui.change_bag("items")
         else:
-            self.inventory = self.bagSystem.getPokeballs()
-            self.bagUi.changeBag("pokeball")
-        self.bagUi.setupInvetory()
-        self.updateItem()
+            self.inventory = self.bagSystem.get_pokeballs()
+            self.ui.change_bag("pokeball")
+        self.ui.setup_invetory()
+        self.update_item()
 
     def on_draw(self):
         self.clear()
         self.window.default_camera.use()
-        self.bagUi.draw()
+        self.ui.draw()

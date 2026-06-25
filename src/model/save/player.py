@@ -22,22 +22,16 @@ class PlayerPokemon:
 
 
 @dataclass
-class Item:
+class ItemStack:
     name: str
     count: int
 
 
 @dataclass
-class Pokeball:
-    name: str
-    count: int
-
-
-@dataclass
-class PlayerProfile:
+class PlayerSave:
     pokemon: list[PlayerPokemon]
-    items: list[Item]
-    pokeballs: list[Pokeball]
+    items: list[ItemStack]
+    pokeballs: list[ItemStack]
     seen: list[str] = field(default_factory=list)
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)
@@ -88,23 +82,18 @@ class PlayerProfile:
         if name not in self.seen:
             self.seen.append(name)
 
+    def consume_item(self, name: str) -> bool:
+        return self._consume(self.items, name)
 
-@dataclass
-class PlayerState:
-    profile: Optional[PlayerProfile] = None
-    map_name: str = "littleroot_town"
-    direction: str = "down"
+    def consume_pokeball(self, name: str) -> bool:
+        return self._consume(self.pokeballs, name)
 
-    grid_x: int = 0
-    grid_y: int = 0
-
-    pixel_x: float = 0.0
-    pixel_y: float = 0.0
-    target_x: float = 0.0
-    target_y: float = 0.0
-    start_x: float = 0.0
-    start_y: float = 0.0
-
-    moving: bool = False
-    move_progress: float = 0.0
-    move_duration: float = 0.25
+    @staticmethod
+    def _consume(stacks: "list[ItemStack]", name: str) -> bool:
+        for i, stack in enumerate(stacks):
+            if stack.name == name:
+                stack.count -= 1
+                if stack.count <= 0:
+                    stacks.pop(i)
+                return True
+        return False

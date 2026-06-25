@@ -2,12 +2,13 @@ import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from data.config import Config
+from src.states.base_view import GameView
 from src.ui.shop_ui import ShopUI
 
 CONFIG = Config.load()
 
 
-class ShopView(arcade.View):
+class ShopView(GameView):
     def __init__(
         self,
         overworld: arcade.View,
@@ -50,13 +51,13 @@ class ShopView(arcade.View):
             self._handle_amount(key)
 
     def _handle_options(self, key):
-        if self._is_pressed(CONFIG.controls.up, key) or self._is_pressed(
+        if self.is_pressed(CONFIG.controls.up, key) or self.is_pressed(
             CONFIG.controls.down, key
         ):
             self._option_index = 1 - self._option_index  # toggle between 0 and 1
             self.ui.select_option(self._option_index)
 
-        elif self._is_pressed(CONFIG.controls.interact, key):
+        elif self.is_pressed(CONFIG.controls.interact, key):
             if self._option_index == 0:
                 self._mode = "items"
                 self._item_index = 0
@@ -65,19 +66,19 @@ class ShopView(arcade.View):
             elif self._option_index == 1:
                 self.window.show_view(self.previous_view)
 
-        elif self._is_pressed(CONFIG.controls.cancel, key):
+        elif self.is_pressed(CONFIG.controls.cancel, key):
             self.window.show_view(self.previous_view)
 
     def _handle_items(self, key):
-        if self._is_pressed(CONFIG.controls.up, key):
+        if self.is_pressed(CONFIG.controls.up, key):
             self._item_index = (self._item_index - 1) % len(self._item_names)
             self.ui.selecting_item(self._item_index)
 
-        elif self._is_pressed(CONFIG.controls.down, key):
+        elif self.is_pressed(CONFIG.controls.down, key):
             self._item_index = (self._item_index + 1) % len(self._item_names)
             self.ui.selecting_item(self._item_index)
 
-        elif self._is_pressed(CONFIG.controls.interact, key):
+        elif self.is_pressed(CONFIG.controls.interact, key):
             self._amount = 1
             self._mode = "amount"
             item = self.items[self._get_item_name()]
@@ -90,7 +91,7 @@ class ShopView(arcade.View):
 
             self.ui.show_amount(bag_item.count, 1, item.price)
 
-        elif self._is_pressed(CONFIG.controls.cancel, key):
+        elif self.is_pressed(CONFIG.controls.cancel, key):
             self._mode = "options"
             self.ui.show_options()
             self.ui.select_option(self._option_index)
@@ -98,19 +99,19 @@ class ShopView(arcade.View):
     def _handle_amount(self, key):
         item = self.items[self._get_item_name()]
 
-        if self._is_pressed(CONFIG.controls.up, key):
+        if self.is_pressed(CONFIG.controls.up, key):
             max_affordable = self.player_manager.player.money // item.price
             self._amount = min(self._amount + 1, max_affordable)
             self.ui.set_amount(self._amount, self._amount * item.price)
 
-        elif self._is_pressed(CONFIG.controls.down, key):
+        elif self.is_pressed(CONFIG.controls.down, key):
             self._amount = max(1, self._amount - 1)
             self.ui.set_amount(self._amount, self._amount * item.price)
 
-        elif self._is_pressed(CONFIG.controls.interact, key):
+        elif self.is_pressed(CONFIG.controls.interact, key):
             self._confirm_purchase(item)
 
-        elif self._is_pressed(CONFIG.controls.cancel, key):
+        elif self.is_pressed(CONFIG.controls.cancel, key):
             self._mode = "items"
             self.ui.show_shop()
             self.ui.selecting_item(self._item_index)
@@ -135,6 +136,3 @@ class ShopView(arcade.View):
             self._mode = "items"
             self.ui.show_shop()
             self.ui.selecting_item(self._item_index)
-
-    def _is_pressed(self, config_key: str, key: int) -> bool:
-        return getattr(arcade.key, config_key, None) == key

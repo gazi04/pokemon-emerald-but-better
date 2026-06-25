@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from src.model.pokemon import PokemonProfile
+from src.model.static.pokemon import PokemonSpecies
 
 
 # ---------------------------------------------------------------------------
@@ -21,7 +21,7 @@ class BattleEncounterTriggeredEvent:
     """Fired by EncounterSystem when a wild battle should start."""
 
     pokemon_name: str
-    pokemon_data: PokemonProfile
+    pokemon_data: PokemonSpecies
     pokemon_level: int
 
 
@@ -43,8 +43,8 @@ class NpcInteractEvent:
 
 
 @dataclass
-class BattleTextMessageEvent:
-    """Fired by BattleSystem to push a line into the typewriter box."""
+class TextMessageEvent:
+    """Push a line into the active text box, from any source (system or view)."""
 
     message: str
 
@@ -99,7 +99,7 @@ class OverlayViewEvent:
     """
     Request to stack a menu on top of the current view without swapping it.
     target: string key ("menu", "bag", "pokemon_menu")
-    payload: extra data needed (e.g. battleSystem reference)
+    payload: extra data needed (e.g. battle_system reference)
     """
 
     target: str

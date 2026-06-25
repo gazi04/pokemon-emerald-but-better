@@ -1,8 +1,10 @@
 import arcade
 import arcade.gui
 from src.constants import POKEMON_INFORMATION_UI
-from src.model.player import PlayerPokemon
-from src.model.pokemon import PokemonStat
+from src.model.save.player import PlayerPokemon
+from src.model.static.pokemon import PokemonStat
+from src.enums.status_effect import StatusEffect
+from src.enums.effect_type import EffectType
 from src.core.data_loader import DataLoader
 
 _FONT = "Pokemon Emerald"
@@ -292,7 +294,7 @@ class PokemonInformationUI:
         return pokemon_stats
 
     def _stat(self, base: int, lvl: int) -> int:
-        return ((2 * base * lvl) // 100) + 5
+        return PokemonStat.scaled(base, lvl)
 
     def _make_type_sprite(
         self, type_name: str, x: float, cy: float, badge_h: float
@@ -338,7 +340,7 @@ class PokemonInformationUI:
         for eff in move.effects:
             target = "user" if eff.target in ("self",) else "foe"
 
-            if eff.type == "stat" and eff.stat and eff.change is not None:
+            if eff.type == EffectType.STAT and eff.stat and eff.change is not None:
                 stat_name = eff.stat.replace("_", " ").title()
                 if eff.change > 0:
                     verb = "sharply raises" if eff.change >= 2 else "raises"
@@ -346,13 +348,13 @@ class PokemonInformationUI:
                     verb = "harshly lowers" if eff.change <= -2 else "lowers"
                 effect_lines.append(f"{verb.capitalize()} the {target}'s {stat_name}.")
 
-            elif eff.type == "status condition" and eff.condition:
+            elif eff.type == EffectType.STATUS_CONDITION and eff.condition:
                 condition_text = {
-                    "poison": "poisons",
-                    "paralyzed": "paralyzes",
-                    "sleep": "puts to sleep",
-                    "burned": "burns",
-                    "freeze": "freezes",
+                    StatusEffect.POISON: "poisons",
+                    StatusEffect.PARALYSIS: "paralyzes",
+                    StatusEffect.SLEEP: "puts to sleep",
+                    StatusEffect.BURN: "burns",
+                    StatusEffect.FREEZE: "freezes",
                 }.get(eff.condition, f"inflicts {eff.condition} on")
 
                 chance = eff.chance

@@ -4,23 +4,22 @@ import math
 
 import pytiled_parser
 from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE, TEXT_DELAY
-from src.core.event_bus import global_bus
-from src.core.events import CloseViewEvent
+from src.states.base_view import GameView
 
 
-class EvolvingView(arcade.View):
+class EvolvingView(GameView):
     def __init__(self, overworldView, pokemon, evolvedPokemon):
         super().__init__()
 
         self.overworld = overworldView
 
         tilemap = arcade.load_tilemap(EVOLVING_UI)
-        uiLayer = tilemap.get_tilemap_layer("ui")
+        ui_layer = tilemap.get_tilemap_layer("ui")
 
-        if not isinstance(uiLayer, pytiled_parser.ObjectLayer):
+        if not isinstance(ui_layer, pytiled_parser.ObjectLayer):
             raise ValueError(
                 f"Expected an ObjectLayer named 'ui' from map '{EVOLVING_UI}', "
-                f"but got {type(uiLayer)}"
+                f"but got {type(ui_layer)}"
             )
 
         self.manager = arcade.gui.UIManager()
@@ -31,7 +30,7 @@ class EvolvingView(arcade.View):
         self.currentText = ""
         self.textDelayTimer = 0
 
-        for obj in uiLayer.tiled_objects:
+        for obj in ui_layer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
             x = obj.coordinates.x
@@ -104,8 +103,8 @@ class EvolvingView(arcade.View):
 
         self.transition(pokemon.capitalize())
 
-    def transition(self, pokemonName):
-        self.targetText = f"What? {pokemonName} is evolving!"
+    def transition(self, pokemon_name):
+        self.targetText = f"What? {pokemon_name} is evolving!"
         self.currentText = ""
         arcade.schedule_once(lambda dt: setattr(self, "fadeOutBackground", True), 0.7)
         arcade.schedule_once(lambda dt: setattr(self, "is_evolving", True), 2.7)
@@ -176,4 +175,4 @@ class EvolvingView(arcade.View):
 
     def end(self, dt):
         # Tell the Director we are done — it returns to the Overworld
-        global_bus.publish(CloseViewEvent())
+        self.close()

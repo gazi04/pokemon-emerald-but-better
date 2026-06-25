@@ -1,25 +1,23 @@
 import arcade
 from data.config import Config
-from src.constants import FLICKER_INTERVAL, FONT, CAMERA_LERP_SPEED, TILE_SIZE
+from src.constants import FONT, CAMERA_LERP_SPEED
 
-from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
-from src.model.player import PlayerState
+from src.core.message_service import MessageService
+from src.model.motion.player_motion import PlayerMotion
 from src.controllers.player_input import PlayerInput
 from src.systems.movement_system import MovementSystem
 from src.systems.encounter_system import EncounterSystem
-from src.systems.npc_controller import NpcController
-from src.systems.npc_behaviors import make_behavior
 from src.entities.player_sprite import PlayerSprite
-from src.entities.npc import Npc
 from src.core.event_bus import global_bus
 from src.core.events import (
     BattleEncounterTriggeredEvent,
     NpcInteractEvent,
-    SwapViewEvent,
-    OverlayViewEvent,
 )
+from src.states.base_view import GameView
+from src.states.map_loader import MapLoader
+from src.states.battle_transition import BattleTransition
 
 CONFIG = Config.load()
 
@@ -29,13 +27,19 @@ POKECENTER_MAP = "oldale_town/pokemon_center"
 POKECENTER_SPAWN = (496, 210)
 
 
-class OverworldView(arcade.View):
-    def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
+class OverworldView(GameView):
+    def __init__(
+        self,
+        player_manager: PlayerManager,
+        data_loader: DataLoader,
+        message_service: MessageService,
+    ):
         super().__init__()
 
         self.player_manager = player_manager
         self.save_manager = player_manager.save_manager
         self.data_loader = data_loader
+        self.message_service = message_service
 
         arcade.get_window().ctx.default_texture_filter = (
             arcade.gl.NEAREST,
@@ -43,7 +47,7 @@ class OverworldView(arcade.View):
         )
         arcade.load_font(FONT)
 
-        self.player_state = PlayerState()
+        self.player_state = PlayerMotion()
         self.player_input = PlayerInput()
         self.movement_system = MovementSystem()
         self.player_sprite = PlayerSprite()
@@ -52,11 +56,8 @@ class OverworldView(arcade.View):
         self.keys = set()
         self.camera = None
 
-        self.transitionActive = False
-        self.transitionTimer = 0.0
-        self.maxTransitionTime = 0.8
-        self.canRenderScene = True
-        self.flickerInterval = FLICKER_INTERVAL
+        self.map_loader = MapLoader(self.movement_system, self.player_state)
+        self.transition = BattleTransition()
 
         saved = self.save_manager.saved_position
         if saved:
@@ -93,6 +94,9 @@ class OverworldView(arcade.View):
             self.encounter_system.cleanup()
 
     def on_show_view(self):
+        # Boxless full view: drop any box a transient view (battle/dialog) left
+        # registered, so a stray bark can't queue into a dead box.
+        self.message_service.set_box(None)
         self._subscribe()
         if self.encounter_system:
             self.encounter_system.resubscribe()
@@ -105,37 +109,11 @@ class OverworldView(arcade.View):
     # ------------------------------------------------------------------
 
     def setup(self, map=None, playerPos=None):
-        layer_options = {
-            "collision": {"use_spatial_hash": True},
-            "bush": {"use_spatial_hash": True},
-            "transitions": {"use_spatial_hash": True},
-        }
-        self.tile_map = arcade.tilemap.load_tilemap(
-            map or CONFIG.game.starting_map, scaling=2.0, layer_options=layer_options
-        )
-        self.scene = arcade.Scene.from_tilemap(self.tile_map)
-
-        self.npcs = arcade.SpriteList(use_spatial_hash=False)
-        npc_layer = self.tile_map.get_tilemap_layer("npc")
-        if npc_layer:
-            self.scene.remove_sprite_list_by_name("npc")
-            for obj in npc_layer.tiled_objects:
-                props = obj.properties or {}
-                npc = Npc(
-                    x=obj.coordinates.x * 2 + obj.size.width,
-                    y=(
-                        self.tile_map.height * self.tile_map.tile_height
-                        - obj.coordinates.y
-                    )
-                    * 2
-                    + obj.size.height / 2,
-                    npc_id=props.get("npc_id", ""),
-                    behavior=make_behavior(props),
-                    facing=props.get("facing", "down"),
-                )
-                self.npcs.append(npc)
-
-        self._setup_npc_controller()
+        loaded = self.map_loader.load(map or CONFIG.game.starting_map)
+        self.tile_map = loaded.tile_map
+        self.scene = loaded.scene
+        self.npcs = loaded.npcs
+        self.npc_controller = loaded.npc_controller
 
         if playerPos:
             self.player_state.pixel_x = playerPos[0]
@@ -146,51 +124,11 @@ class OverworldView(arcade.View):
         if self.encounter_system:
             self.encounter_system.cleanup()
 
-        bush_tiles = self._extract_bush_tiles()
-
         self.encounter_system = EncounterSystem(
-            bush_tiles=bush_tiles,
+            bush_tiles=loaded.bush_tiles,
             player_state=self.player_state,
             data_loader=self.data_loader,
         )
-
-    def _setup_npc_controller(self) -> None:
-        """Build the NPC controller for the freshly loaded map."""
-        try:
-            collision_tiles = self.scene["collision"]
-        except KeyError:
-            collision_tiles = arcade.SpriteList()
-
-        map_width = self.tile_map.width * self.tile_map.tile_width * 2
-        map_height = self.tile_map.height * self.tile_map.tile_height * 2
-
-        self.npc_controller = NpcController(
-            npcs=self.npcs,
-            movement_system=self.movement_system,
-            collision_tiles=collision_tiles,
-            player_state=self.player_state,
-            map_width=map_width,
-            map_height=map_height,
-        )
-
-    def _extract_bush_tiles(self) -> set[tuple[int, int]]:
-        """
-        Build a set of integer (grid_x, grid_y) tuples from the bush
-        SpriteList. Done once at map load — O(1) lookup at runtime.
-        The bush layer sprites are scaled 2x, but their center_x/center_y
-        are in pixel space. Dividing by TILE_SIZE gives grid coords that
-        match MovementSystem's grid_x = round(pixel_x / TILE_SIZE).
-        """
-        try:
-            tiles: set[tuple[int, int]] = set()
-            bush_layer = self.scene["bush"]
-            for sprite in bush_layer:
-                gx = round(sprite.center_x / TILE_SIZE)
-                gy = round(sprite.center_y / TILE_SIZE)
-                tiles.add((gx, gy))
-            return tiles
-        except Exception:
-            return set()
 
     def respawn_at_pokecenter(self) -> None:
         """Relocate the player to the Poké Center entrance (used after whiting out)."""
@@ -214,16 +152,7 @@ class OverworldView(arcade.View):
         npc_id = event.npc_id
 
         if npc_id == "poke-mart-npc":
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="shop",
-                    payload={
-                        "previous_view": self,
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
-                    },
-                )
-            )
+            self.overlay("shop", previous_view=self)
             return
 
         npc = self.data_loader.npc_dialog.get(npc_id)
@@ -233,12 +162,7 @@ class OverworldView(arcade.View):
         state, action = self._resolve_dialog(npc_id, npc)
         self.player_manager.npc_manager.mark_talked(npc_id)
 
-        global_bus.publish(
-            OverlayViewEvent(
-                target="dialog",
-                payload={"npc_id": npc_id, "state": state, "action": action},
-            )
-        )
+        self.overlay("dialog", npc_id=npc_id, state=state, action=action)
 
     def _resolve_dialog(self, npc_id: str, npc) -> tuple[str, str]:
         """
@@ -260,28 +184,17 @@ class OverworldView(arcade.View):
     # ------------------------------------------------------------------
 
     def on_update(self, delta_time):
-        if self.transitionActive:
-            self.transitionTimer += delta_time
-            self.canRenderScene = (
-                int(self.transitionTimer / self.flickerInterval) % 2 == 0
-            )
-
-            if self.transitionTimer >= self.maxTransitionTime:
-                name, level, data = self.pending_battle_data
-                global_bus.publish(
-                    SwapViewEvent(
-                        target="battle",
-                        payload={
-                            "pokemon_name": name,
-                            "pokemon_data": data,
-                            "pokemon_level": level,
-                        },
-                    )
+        if self.transition.active:
+            result = self.transition.update(delta_time)
+            if result:
+                name, level, data = result
+                self.swap(
+                    "battle",
+                    pokemon_name=name,
+                    pokemon_data=data,
+                    pokemon_level=level,
                 )
                 self.keys.clear()
-                self.transitionActive = False
-                self.canRenderScene = True
-                self.transitionTimer = 0.0
             return
 
         self.camera.position = arcade.math.lerp_2d(
@@ -315,32 +228,19 @@ class OverworldView(arcade.View):
     def on_draw(self):
         self.clear()
         self.camera.use()
-        if self.scene and self.canRenderScene:
+        if self.scene and self.transition.can_render_scene:
             self.scene.draw(pixelated=True)
         self.npcs.draw(pixelated=True)
         self.player_sprite.draw()
 
     def on_key_press(self, key, _):
         self.keys.add(key)
-        if self.isPressed(CONFIG.controls.bag, key):
+        if self.is_pressed(CONFIG.controls.bag, key):
             self.keys.clear()
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="menu",
-                    payload={
-                        "save_manager": self.save_manager,
-                        "data_loader": self.data_loader,
-                    },
-                )
-            )
-
-    def isPressed(self, configKey, key) -> bool:
-        return getattr(arcade.key, configKey, None) == key
+            self.overlay("menu")
 
     def on_key_release(self, key, _):
         self.keys.discard(key)
 
     def _start_battle_transition(self, name, level, data):
-        self.transitionActive = True
-        self.transitionTimer = 0.0
-        self.pending_battle_data = (name, level, data)
+        self.transition.start(name, level, data)

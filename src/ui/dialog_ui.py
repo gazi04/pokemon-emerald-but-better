@@ -9,11 +9,11 @@ class DialogUI:
         self._manager = arcade.gui.UIManager()
 
         tilemap = arcade.load_tilemap(DIALOG_UI)
-        uiLayer = tilemap.get_tilemap_layer("ui")
+        ui_layer = tilemap.get_tilemap_layer("ui")
 
         self._textbound = {}
 
-        for obj in uiLayer.tiled_objects:
+        for obj in ui_layer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
 
@@ -33,18 +33,18 @@ class DialogUI:
             else:
                 self._textbound["dialog"] = {"x": x, "y": y, "w": w, "h": h}
 
-        self._message_box = TypewriterMessageBox(self._textbound, self._manager)
-        self._message_box.set_font_style(font_color=arcade.color.BLACK)
-        self._message_box.show()
+        self.message_box = TypewriterMessageBox(self._textbound, self._manager)
+        self.message_box.set_font_style(font_color=arcade.color.BLACK)
+        self.message_box.show()
 
     def queue_messages(self, message: str):
-        self._message_box.queue_message(message)
+        self.message_box.queue_message(message)
 
     def is_text_finished(self) -> bool:
-        return not self._message_box.is_processing
+        return not self.message_box.is_processing
 
     def update(self, delta_time: float):
-        self._message_box.update(delta_time)
+        self.message_box.update(delta_time)
 
     def draw(self):
         self._manager.draw()

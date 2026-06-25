@@ -1,9 +1,9 @@
 import random
 
-from src.util import getEnc
+from src.util import get_enc
 from src.constants import ENCOUNTER_RATE
 from src.core.data_loader import DataLoader
-from src.model.player import PlayerState
+from src.model.motion.player_motion import PlayerMotion
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent, BattleEncounterTriggeredEvent
 
@@ -12,7 +12,7 @@ class EncounterSystem:
     def __init__(
         self,
         bush_tiles: set[tuple[int, int]],
-        player_state: PlayerState,
+        player_state: PlayerMotion,
         data_loader: DataLoader,
     ):
         self._bush_tiles = bush_tiles  # set of (grid_x, grid_y) integer pairs
@@ -39,7 +39,7 @@ class EncounterSystem:
         if random.random() >= ENCOUNTER_RATE:
             return
 
-        pokemon_list = getEnc()[self._player_state.map_name]["grass"]
+        pokemon_list = get_enc()[self._player_state.map_name]["grass"]
         pokemon = random.choices(
             pokemon_list, weights=[p["weight"] for p in pokemon_list]
         )[0]

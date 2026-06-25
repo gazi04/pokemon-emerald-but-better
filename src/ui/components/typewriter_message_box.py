@@ -34,6 +34,7 @@ class TypewriterMessageBox:
         self.is_processing = False
         self.message_queue = []
         self.after_text_callback = None
+        self._on_complete = None  # one-shot, fired once then cleared
 
     def show(self):
         self._manager.add(self.dialog_text)
@@ -47,7 +48,29 @@ class TypewriterMessageBox:
             self._next_message()
 
     def set_callback(self, callback):
+        """Persistent callback — fires after every queue-drain (e.g. battle turn flow)."""
         self.after_text_callback = callback
+
+    def set_on_complete(self, callback) -> None:
+        """One-shot callback — fires once when the current queue drains, then clears.
+        Lets a caller say 'show this, then do X' without clobbering the persistent
+        callback or re-firing on later messages."""
+        self._on_complete = callback
+
+    def reset_prompt(self, text: str) -> None:
+        """Replace whatever is showing with a static prompt (no typewriter)."""
+        self.message_queue.clear()
+        self.target_text = text
+        self.current_text = text
+        self.dialog_text.text = text
+        self.dialog_text.trigger_full_render()
+        self.is_processing = False
+        self._on_complete = None
+
+    def clear(self) -> None:
+        self.message_queue.clear()
+        self.is_processing = False
+        self._on_complete = None
 
     def set_font_style(
         self,
@@ -66,6 +89,9 @@ class TypewriterMessageBox:
             self.text_delay_timer = 0.0
         else:
             self.is_processing = False
+            if self._on_complete:
+                cb, self._on_complete = self._on_complete, None  # fire once, clear
+                cb()
             if self.after_text_callback:
                 self.after_text_callback()
 

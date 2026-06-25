@@ -1,6 +1,6 @@
 import arcade
 from src.constants import TILE_SIZE
-from src.model.grid_motion import GridMotion
+from src.model.motion.grid_motion import GridMotion
 from src.systems.npc_behaviors import Behavior, IdleBehavior
 
 

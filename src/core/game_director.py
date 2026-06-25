@@ -17,12 +17,14 @@ from src.core.data_loader import DataLoader
 from src.core.save_manager import SaveManager
 from src.core.player_manager import PlayerManager
 from src.core.event_bus import global_bus
+from src.core.message_service import MessageService
 from src.core.events import (
     SwapViewEvent,
     CloseViewEvent,
     OverlayViewEvent,
     SaveGameRequestEvent,
     SaveCompletedEvent,
+    TextMessageEvent,
 )
 
 
@@ -34,7 +36,9 @@ class GameDirector:
         self.save_manager = SaveManager()
         self.data_loader = DataLoader()
         self.player_manager = PlayerManager(self.save_manager, self.data_loader)
+        self.message_service = MessageService()
 
+        global_bus.subscribe(TextMessageEvent, self.message_service.on_message_event)
         global_bus.subscribe(SwapViewEvent, self._on_swap_view)
         global_bus.subscribe(CloseViewEvent, self._on_close_view)
         global_bus.subscribe(OverlayViewEvent, self._on_overlay_view)
@@ -78,6 +82,7 @@ class GameDirector:
 
         overworld = self._view_cache.get("overworld")
         if overworld and isinstance(overworld, OverworldView):
+            self.player_manager.capture_npc_states()
             success = self.save_manager.flush_save(overworld.player_state)
         else:
             success = False
@@ -93,7 +98,7 @@ class GameDirector:
             from src.states.overworld_view import OverworldView
 
             self._view_cache["overworld"] = OverworldView(
-                self.player_manager, self.data_loader
+                self.player_manager, self.data_loader, self.message_service
             )
         return self._view_cache["overworld"]
 
@@ -107,6 +112,7 @@ class GameDirector:
                 player_manager=self.player_manager,
                 data_loader=self.data_loader,
                 overworld_view=overworld,
+                message_service=self.message_service,
                 foe_pokemon_name=payload["pokemon_name"],
                 foe_pokemon_data=payload["pokemon_data"],
                 foe_level=payload["pokemon_level"],  # kept for flicker transition only
@@ -119,6 +125,7 @@ class GameDirector:
                 player_manager=self.player_manager,
                 data_loader=self.data_loader,
                 overworld_view=overworld,
+                message_service=self.message_service,
                 is_trainer=True,
                 trainer_data=payload["trainer_data"],
                 npc_id=payload.get("npc_id"),
@@ -150,6 +157,7 @@ class GameDirector:
                 overworld,
                 self.data_loader,
                 self.player_manager,
+                self.message_service,
                 payload.get("after_text_callback"),
                 payload.get("npc_id", ""),
                 state=payload.get("state", "default"),
@@ -181,7 +189,8 @@ class GameDirector:
                 previousWindow=payload.get("previous_view", overworld),
                 player_manager=self.player_manager,
                 data_loader=self.data_loader,
-                battleSystem=cast(Any, payload.get("battle_system")),
+                message_service=self.message_service,
+                battle_system=cast(Any, payload.get("battle_system")),
             )
 
         if target == "pokemon_menu":
@@ -192,8 +201,8 @@ class GameDirector:
                 player_manager=self.player_manager,
                 data_loader=self.data_loader,
                 bag=cast(Any, payload.get("bag")),
-                itemIndex=payload.get("item_index", 0),
-                battleSystem=cast(Any, payload.get("battle_system")),
+                item_index=payload.get("item_index", 0),
+                battle_system=cast(Any, payload.get("battle_system")),
                 forced_switch=payload.get("forced_switch", False),
             )
 

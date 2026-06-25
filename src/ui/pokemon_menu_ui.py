@@ -1,7 +1,8 @@
 import arcade
 import arcade.gui
 from src.core.data_loader import DataLoader
-from src.model.player import PlayerPokemon
+from src.model.save.player import PlayerPokemon
+from src.model.static.pokemon import PokemonStat
 
 
 class PokemonMenuUi:
@@ -12,7 +13,7 @@ class PokemonMenuUi:
         self._manager._pixelated = True
 
         tilemap = arcade.load_tilemap("assets/ui/pokemonMenuUiDesign.tmx")
-        uiLayer = tilemap.get_tilemap_layer("ui")
+        ui_layer = tilemap.get_tilemap_layer("ui")
 
         self._profileTexture = arcade.load_texture(
             "assets/ui/sprites/pokemonProfile.png"
@@ -32,7 +33,7 @@ class PokemonMenuUi:
         self._tooltip.visible = False
         self._tooltipButtons = []
 
-        for obj in uiLayer.tiled_objects:
+        for obj in ui_layer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
             x = obj.coordinates.x
@@ -114,7 +115,7 @@ class PokemonMenuUi:
                     width=w,
                     height=h,
                 )
-                self._pokemonUis[slot]["hpText"] = text
+                self._pokemonUis[slot]["hp_text"] = text
                 self._manager.add(text)
             elif "levelText" in obj.name:
                 slot = int(obj.name[-1]) - 1
@@ -128,7 +129,7 @@ class PokemonMenuUi:
                     width=w,
                     height=h,
                 )
-                self._pokemonUis[slot]["levelText"] = text
+                self._pokemonUis[slot]["level_text"] = text
                 self._manager.add(text)
             elif "nameText" in obj.name:
                 slot = int(obj.name[-1]) - 1
@@ -142,11 +143,11 @@ class PokemonMenuUi:
                     width=w,
                     height=h,
                 )
-                self._pokemonUis[slot]["nameText"] = text
+                self._pokemonUis[slot]["name_text"] = text
                 self._manager.add(text)
             elif "hpBar" in obj.name:
                 slot = int(obj.name[-1]) - 1
-                self._pokemonUis[slot]["hpBar"] = {
+                self._pokemonUis[slot]["hp_bar"] = {
                     "x": x,
                     "y": y - h,
                     "w": w,
@@ -188,7 +189,7 @@ class PokemonMenuUi:
             font_name="Pokemon Emerald",
         )
 
-    def setupTooltip(self, options: list[str]):
+    def setup_tooltip(self, options: list[str]):
         for button in self._tooltipButtons:
             self._tooltip.remove(button)
 
@@ -208,24 +209,20 @@ class PokemonMenuUi:
             self._tooltip.add(button)
             self._tooltipButtons.append(button)
 
-    def setValues(self, pokemons: list[PlayerPokemon]):
-        SKIP_KEYS = {"hpBar", "profile"}
+    def set_values(self, pokemons: list[PlayerPokemon]):
+        SKIP_KEYS = {"hp_bar", "profile"}
 
         for i, slot in enumerate(self._pokemonUis):
             if i < len(pokemons):
                 pokemon = pokemons[i]
-                pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
-                maxHp = (
-                    ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
-                    + 5
-                    + pokemon.level
-                )
+                pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
+                max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
 
-                slot["nameText"].text = pokemon.name.upper()
-                slot["levelText"].text = f"Lv{pokemon.level}"
-                slot["hpText"].text = f"{pokemon.hp}/{maxHp}"
+                slot["name_text"].text = pokemon.name.upper()
+                slot["level_text"].text = f"Lv{pokemon.level}"
+                slot["hp_text"].text = f"{pokemon.hp}/{max_hp}"
                 slot["pokemon"].texture = arcade.load_texture(
-                    pokemonProfile.sprites.front
+                    pokemon_profile.sprites.front
                 )
 
                 for key, element in slot.items():
@@ -243,9 +240,9 @@ class PokemonMenuUi:
 
                 slot["profile"].texture = self._emptyTexture
 
-        self.selectPokemon(0)
+        self.select_pokemon(0)
 
-    def selectPokemon(self, index: int):
+    def select_pokemon(self, index: int):
         for i, ui in enumerate(self._pokemonUis):
             if ui["profile"].texture == self._emptyTexture:
                 continue
@@ -262,14 +259,14 @@ class PokemonMenuUi:
                 )
 
             for key, element in ui.items():
-                if key != "hpBar":
+                if key != "hp_bar":
                     self._manager.remove(element)
                     self._manager.add(element)
 
-    def isTooltipShowing(self) -> bool:
+    def is_tooltip_showing(self) -> bool:
         return self._tooltip.visible
 
-    def selectTooltipOption(self, index: int):
+    def select_tooltip_option(self, index: int):
         self._cursorText.x = (
             self._tooltipButtons[len(self._tooltipButtons) - 1 - index].rect.left - 10
         )
@@ -277,7 +274,7 @@ class PokemonMenuUi:
             len(self._tooltipButtons) - 1 - index
         ].rect.center_y
 
-    def showTooltip(self, index: int):
+    def show_tooltip(self, index: int):
         self._tooltip.visible = True
         self._cursorText.visible = True
 
@@ -301,28 +298,24 @@ class PokemonMenuUi:
                 + 5
             )
 
-        self.selectTooltipOption(0)
+        self.select_tooltip_option(0)
 
-    def hideTooltip(self):
+    def hide_tooltip(self):
         self._tooltip.visible = False
         self._cursorText.visible = False
 
-    def drawHpBars(self, pokemons: list[PlayerPokemon]):
+    def draw_hp_bars(self, pokemons: list[PlayerPokemon]):
         for i, pokemon in enumerate(pokemons):
-            pokemonProfile = self.data_loader.get_pokemon(pokemon.name)
-            maxHp = (
-                ((2 * pokemonProfile.stats.hp * pokemon.level) // 100)
-                + 5
-                + pokemon.level
-            )
+            pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
+            max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
 
-            self._drawHpBar(pokemon.hp / maxHp, i)
+            self._draw_hp_bar(pokemon.hp / max_hp, i)
 
-    def _drawHpBar(self, ratio: float, index: int):
-        barData = self._pokemonUis[index]["hpBar"]
+    def _draw_hp_bar(self, ratio: float, index: int):
+        bar_data = self._pokemonUis[index]["hp_bar"]
 
-        fullWidth = barData["w"]
-        currentWidth = fullWidth * ratio
+        full_width = bar_data["w"]
+        current_width = full_width * ratio
 
         color = arcade.color.GREEN
         if ratio < 0.2:
@@ -331,10 +324,10 @@ class PokemonMenuUi:
             color = arcade.color.GOLD
 
         arcade.draw_lrbt_rectangle_filled(
-            left=barData["x"],
-            right=barData["x"] + currentWidth,
-            bottom=barData["y"],
-            top=barData["y"] + barData["h"],
+            left=bar_data["x"],
+            right=bar_data["x"] + current_width,
+            bottom=bar_data["y"],
+            top=bar_data["y"] + bar_data["h"],
             color=color,
         )
 

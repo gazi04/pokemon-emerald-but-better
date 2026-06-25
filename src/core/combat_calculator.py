@@ -1,8 +1,10 @@
 import random
 
-from src.util import calculateMultiplier
-from src.model.combat_result import CombatResult
-from src.model.pokemon import PokemonMove, PokemonStat
+from src.util import calculate_multiplier
+from src.model.battle.combat_result import CombatResult
+from src.enums.stat import Stat
+from src.enums.status_effect import StatusEffect
+from src.model.static.pokemon import PokemonMove, PokemonStat
 
 
 def calculate_damage(
@@ -10,7 +12,7 @@ def calculate_damage(
     attacker_stats: PokemonStat,
     attacker_types: list[str],
     attacker_modifiers: dict,
-    attacker_status: str,
+    attacker_status: StatusEffect,
     move_data: PokemonMove,
     defender_stats: PokemonStat,
     defender_types: list[str],
@@ -18,7 +20,7 @@ def calculate_damage(
     crit_modifier: int,
 ) -> CombatResult:
     """
-    Pure damage calculation. All inputs are plain data — no PokemonBattle
+    Pure damage calculation. All inputs are plain data — no BattlePokemon
     references. Returns a CombatResult; never mutates anything.
     """
     messages = []
@@ -43,23 +45,23 @@ def calculate_damage(
 
     # --- Stat selection ---
     a = _get_stat(
-        "attack" if is_physical else "special_attack",
+        Stat.ATTACK if is_physical else Stat.SPECIAL_ATTACK,
         attacker_stats,
         attacker_modifiers,
         attacker_status,
     )
     d = _get_stat(
-        "defence" if is_physical else "special_defence",
+        Stat.DEFENCE if is_physical else Stat.SPECIAL_DEFENCE,
         defender_stats,
         defender_modifiers,
-        "",
+        StatusEffect.NONE,
     )
 
     # --- STAB ---
     stab = 1.5 if move_data.type in attacker_types else 1.0
 
     # --- Type effectiveness ---
-    effectiveness = calculateMultiplier(move_data.type, defender_types)
+    effectiveness = calculate_multiplier(move_data.type, defender_types)
     if effectiveness >= 2:
         messages.append("Its super effective.")
     elif 0 < effectiveness < 1:
@@ -104,7 +106,9 @@ def _check_accuracy(
     if not accuracy:
         return True
 
-    stage = attacker_modifiers.get("accuracy", 0) - defender_modifiers.get("evasion", 0)
+    stage = attacker_modifiers.get(Stat.ACCURACY, 0) - defender_modifiers.get(
+        Stat.EVASION, 0
+    )
     stage = max(-6, min(6, stage))
 
     if stage < 0:
@@ -123,7 +127,9 @@ def _roll_critical(crit_modifier: int) -> bool:
     return random.randint(1, probabilities[tier]) == 1
 
 
-def _get_stat(stat: str, stats: PokemonStat, modifiers: dict, status: str) -> float:
+def _get_stat(
+    stat: Stat, stats: PokemonStat, modifiers: dict, status: StatusEffect
+) -> float:
     """Apply stat stage modifier and status penalties, return effective stat value."""
     stage = modifiers.get(stat, 0)
 
@@ -134,9 +140,9 @@ def _get_stat(stat: str, stats: PokemonStat, modifiers: dict, status: str) -> fl
     else:
         fraction = 1.0
 
-    raw = getattr(stats, stat.replace(" ", "_"), 0)
+    raw = getattr(stats, stat, 0)
 
-    if stat == "speed" and status == "paralyzed":
+    if stat == Stat.SPEED and status == StatusEffect.PARALYSIS:
         return round(raw * fraction * 0.5)
 
     return round(raw * fraction)

@@ -2,18 +2,17 @@ import arcade
 from data.config import Config
 from src.core.event_bus import global_bus
 from src.core.events import (
-    CloseViewEvent,
-    OverlayViewEvent,
     SaveGameRequestEvent,
     SaveCompletedEvent,
 )
+from src.states.base_view import GameView
 from src.ui.menu_ui import MenuUi
 from src.constants import FONT
 
 CONFIG = Config.load()
 
 
-class MenuView(arcade.View):
+class MenuView(GameView):
     def __init__(self, overworld: arcade.View):
         super().__init__()
 
@@ -60,51 +59,27 @@ class MenuView(arcade.View):
             )
 
     def on_key_press(self, symbol: int, modifiers: int):
-        if self.isPressed(CONFIG.controls.interact, symbol):
+        if self.is_pressed(CONFIG.controls.interact, symbol):
             self.action()
-        elif self.isPressed(CONFIG.controls.up, symbol):
+        elif self.is_pressed(CONFIG.controls.up, symbol):
             self.selectedIndex -= 1
             if self.selectedIndex == -1:
                 self.selectedIndex = len(self.ui.buttons) - 1
-            self.ui.setYOfCursor(self.selectedIndex)
-        elif self.isPressed(CONFIG.controls.down, symbol):
+            self.ui.set_y_of_cursor(self.selectedIndex)
+        elif self.is_pressed(CONFIG.controls.down, symbol):
             self.selectedIndex += 1
             if self.selectedIndex == len(self.ui.buttons):
                 self.selectedIndex = 0
-            self.ui.setYOfCursor(self.selectedIndex)
-        elif self.isPressed(CONFIG.controls.cancel, symbol):
-            global_bus.publish(CloseViewEvent())
-
-    def isPressed(self, configKey, key) -> bool:
-        return getattr(arcade.key, configKey, None) == key
+            self.ui.set_y_of_cursor(self.selectedIndex)
+        elif self.is_pressed(CONFIG.controls.cancel, symbol):
+            self.close()
 
     def action(self):
         if self.selectedIndex == 0:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokedex",
-                    payload={
-                        "previous_view": self,
-                    },
-                )
-            )
+            self.overlay("pokedex", previous_view=self)
         elif self.selectedIndex == 1:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="pokemon_menu",
-                    payload={
-                        "previous_view": self,
-                    },
-                )
-            )
+            self.overlay("pokemon_menu", previous_view=self)
         elif self.selectedIndex == 2:
-            global_bus.publish(
-                OverlayViewEvent(
-                    target="bag",
-                    payload={
-                        "previous_view": self,
-                    },
-                )
-            )
+            self.overlay("bag", previous_view=self)
         elif self.selectedIndex == 3:
             global_bus.publish(SaveGameRequestEvent())

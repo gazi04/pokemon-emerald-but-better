@@ -1,4 +1,4 @@
-from src.model.player import PlayerState
+from src.model.motion.player_motion import PlayerMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
 from src.core.events import NpcInteractEvent
@@ -15,7 +15,7 @@ class PlayerInput:
 
     def process_input(
         self,
-        player_state: PlayerState,
+        player_state: PlayerMotion,
         keys: set,
         controls_config,
         collision_tiles,
