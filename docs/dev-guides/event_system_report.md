@@ -100,8 +100,7 @@ The bus decouples the three architectural layers. A system never imports a view;
 
 Two connection hubs dominate:
 
-**The `GameDirector` is the navigation hub.** In its `__init__` it subscribes to all three nav
-events plus save:
+**The `GameDirector` is the navigation hub.** In its `__init__` it subscribes to all three nav events plus save:
 
 ```python
 global_bus.subscribe(SwapViewEvent,    self._on_swap_view)
@@ -129,8 +128,7 @@ player walks → MovementSystem.publish(PlayerFinishedMoveEvent)
 
 ## 6. The navigation verbs (the ergonomic layer)
 
-Most views don't call `global_bus.publish(...)` directly. The `GameView` base class
-(`src/states/base_view.py`) wraps the three nav events in readable verbs:
+Most views don't call `global_bus.publish(...)` directly. The `GameView` base class (`src/states/base_view.py`) wraps the three nav events in readable verbs:
 
 ```python
 def overlay(self, target, **payload):
@@ -187,16 +185,19 @@ def _on_item_picked_up(self, event: ItemPickedUpEvent):
 ```
 
 ### For a new view target — use the verbs, not the bus
-Don't add a new nav event. Publish `OverlayViewEvent`/`SwapViewEvent` via the base verbs and add a builder branch in `GameDirector._build_overlay_view` / `_build_transient_view`:
+Don't add a new nav event. Publish `OverlayViewEvent`/`SwapViewEvent` via the base verbs, add a `_build_<target>` method, and register it in `GameDirector._overlay_builders` / `_transient_builders` (the dispatch registries that replaced the old `if target == "...":` ladders):
 
 ```python
 # in the view:
 self.overlay("shop", previous_view=self, items=stock)
 
-# in GameDirector._build_overlay_view:
-if target == "shop":
+# in GameDirector: one builder method...
+def _build_shop(self, payload):
     from src.states.shop_view import ShopView
     return ShopView(self.player_manager, self.data_loader, **payload)
+
+# ...and one registry entry in __init__:
+self._overlay_builders = { ..., "shop": self._build_shop }
 ```
 
 ---
@@ -205,10 +206,8 @@ if target == "shop":
 
 - **Subscribe in `on_show_view`, unsubscribe in `on_hide_view`.** A view that subscribes but never unsubscribes keeps receiving events while off-screen — and, because the bus holds the bound method, it can't be garbage-collected. `OverworldView` and `MenuView` follow this pair.
 - **Subscribe is safe to repeat; unsubscribe is safe to over-call.** The dedupe + forgiving-remove design means you don't have to track subscription state defensively.
-- **`publish` is synchronous and ordered.** Listeners run inline, in subscription order, on the
-  caller's stack. A slow or throwing listener blocks/breaks the publisher. Keep handlers light.
-- **A handler that publishes re-enters the bus.** This is how the encounter chain works
-  (one publish triggers a handler that publishes again) — intended, but watch for accidental loops.
+- **`publish` is synchronous and ordered.** Listeners run inline, in subscription order, on the caller's stack. A slow or throwing listener blocks/breaks the publisher. Keep handlers light.
+- **A handler that publishes re-enters the bus.** This is how the encounter chain works (one publish triggers a handler that publishes again) — intended, but watch for accidental loops.
 
 ---
 
@@ -230,8 +229,7 @@ The bus is the seam that lets `systems/` stay arcade-free and lets views stay ig
 
 ## 10. Honest limitations
 
-- **No event history / replay.** Fire-and-forget; a subscriber that wasn't listening at publish
-  time misses the event forever.
+- **No event history / replay.** Fire-and-forget; a subscriber that wasn't listening at publish time misses the event forever.
 - **`payload: dict` on nav events is stringly-typed.** `SwapViewEvent.payload["pokemon_name"]` is not type-checked — a key typo fails at the receiving builder, not at publish.
 - **Single global bus.** Fine for a solo game; there is no scoping/namespacing if the project ever needed isolated event channels.
 - **Synchronous coupling on cost.** Because listeners run inline, an expensive handler silently taxes the publisher. No timing or isolation between subscribers.
