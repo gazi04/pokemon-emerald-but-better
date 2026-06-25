@@ -15,6 +15,7 @@ class BagSystem:
         # Dispatch over effect.type — add an effect kind by adding an applier,
         # not by editing the loop (mirrors npc_behaviors.make_behavior).
         self._effect_appliers = {EffectType.HEAL: self._apply_heal}
+        self._effect_eligibility = {EffectType.HEAL: self._heal_eligible}
 
     def use_pokeball(self, pokeball_index: int):
         if 0 <= pokeball_index < len(self._pokeballs):
@@ -78,9 +79,8 @@ class BagSystem:
 
         item_def = self.data_loader.get_item(inventory_item.name)
         for effect in item_def.effects:
-            if effect.type == EffectType.HEAL and not self._heal_eligible(
-                pokemon, max_hp
-            ):
+            check = self._effect_eligibility.get(effect.type)
+            if check and not check(pokemon, max_hp):
                 return False
 
         return True
