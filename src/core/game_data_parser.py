@@ -5,6 +5,7 @@ from src.model.static.pokemon import (
     PokemonMove,
     PokemonMoveEffect,
     PokemonEvolution,
+    LearnsetMove,
 )
 from src.model.static.item import ItemSpecies, ItemEffect
 from src.model.static.npc import NpcSpecies
@@ -34,6 +35,10 @@ class GameDataParser:
                 evolution=evolution,
                 sprites=sprites,
                 stats=stats,
+                learnset=[
+                    LearnsetMove(move=m["move"], level=m["level"])
+                    for m in raw.get("learnset", [])
+                ],
             )
         return pokemons
 
@@ -69,7 +74,7 @@ class GameDataParser:
         for name, raw in data.items():
             effects = [
                 ItemEffect(
-                    type=e["type"],
+                    type=EffectType(e["type"]),
                     amount=e.get("amount"),
                     catch_rate=e.get("catchRate"),
                 )

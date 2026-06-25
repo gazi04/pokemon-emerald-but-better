@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from src.enums.stat import Stat
@@ -81,6 +81,12 @@ class PokemonEvolution:
 
 
 @dataclass
+class LearnsetMove:
+    move: str
+    level: int
+
+
+@dataclass
 class PokemonSpecies:
     baseExp: int
     catch_rate: int
@@ -89,3 +95,4 @@ class PokemonSpecies:
     evolution: Optional[PokemonEvolution]
     sprites: SpritePaths
     stats: PokemonStat
+    learnset: list[LearnsetMove] = field(default_factory=list)

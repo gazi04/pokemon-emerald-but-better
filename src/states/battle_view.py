@@ -2,13 +2,13 @@ import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
-from src.model.save.player import PlayerPokemonMove
 from src.model.static.trainer import Trainer
 from src.entities.pokemon_sprites import PokemonSprite
 from src.model.battle.battle_pokemon import BattlePokemon
 from data.config import Config
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
+from src.systems.wild_moveset import select_wild_moves
 from src.states.base_view import GameView
 from src.enums.battle_state import BattleState
 
@@ -57,7 +57,7 @@ class BattleView(GameView):
         self.prize_money = 0
 
         if not is_trainer:
-            if foe_pokemon_data is None:
+            if foe_pokemon_data is None or foe_pokemon_name is None or foe_level is None:
                 raise ValueError(
                     f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None."
                 )
@@ -66,7 +66,7 @@ class BattleView(GameView):
                 foe_pokemon_data,
                 foe_pokemon_name,
                 foe_level,
-                [PlayerPokemonMove("tackle", 35)],
+                select_wild_moves(foe_pokemon_data, foe_level, data_loader),
             )
             self.enemy_sprite = PokemonSprite(foe_pokemon_data, True)
         else:
