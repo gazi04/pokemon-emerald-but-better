@@ -33,5 +33,13 @@
   },
   "pokecenter_cord": {
     "currently_no_pokecenter_but_well_have_this_ready": 2
+  },
+  "logging": {
+    "level": "INFO",
+    "console_level": "WARNING",
+    "file_level": "DEBUG",
+    "file_path": "logs/game.log",
+    "max_bytes": 1000000,
+    "backup_count": 3
   }
 }

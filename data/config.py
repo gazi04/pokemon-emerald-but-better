@@ -39,11 +39,21 @@ class GameConfig(BaseModel):
     battle_style: Literal["set", "switch"] = "set"
 
 
+class LoggingConfig(BaseModel):
+    level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    console_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "WARNING"
+    file_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "DEBUG"
+    file_path: str = "logs/game.log"
+    max_bytes: int = 1_000_000  # ~1 MB
+    backup_count: int = 3
+
+
 class Config(BaseModel):
     window: WindowConfig = Field(default_factory=WindowConfig)
     audio: AudioConfig = Field(default_factory=AudioConfig)
     controls: ControlsConfig = Field(default_factory=ControlsConfig)
     game: GameConfig = Field(default_factory=GameConfig)
+    logging: LoggingConfig = Field(default_factory=LoggingConfig)
 
     @classmethod
     def load(cls):

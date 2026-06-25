@@ -8,7 +8,7 @@
 
 ---
 
-## 2. The nine files at a glance
+## 2. The ten files at a glance
 
 | File | Class | One-job summary | Touches arcade? | Publishes events? |
 |---|---|---|---|---|
@@ -17,6 +17,7 @@
 | `battle_system.py` | `BattleSystem` | Run a battle's turns | No | `HpChangedEvent`, `PokemonFaintedEvent` |
 | `bag_system.py` | `BagSystem` | Use items / pokeballs from the bag | No | No (returns data) |
 | `pokemon_menu_system.py` | `PokemonMenuSystem` | Reorder / switch the party | No | No |
+| `wild_moveset.py` | `select_wild_moves` (fn) | Pick a wild foe's moves from its learnset by level | No | No |
 | `npc_manager.py` | `NPCManager` | Track per-NPC interaction flags | No | No |
 | `npc_behaviors.py` | `Behavior` + `make_behavior` | Decide what an NPC wants to do | No | No |
 | `npc_controller.py` | `NpcController` | Drive every NPC each frame + walkability | **Yes** | No |
@@ -34,7 +35,7 @@ Almost every system follows the same three-rule shape:
 2. **Methods return data or mutate the model** — they hand back `list[str]` messages or `bool`, and they write through Facades (`PlayerManager`), not raw save files.
 3. **Cross-layer signalling is via `global_bus.publish(...)`**, never a direct call into a view.
 
-The model to imitate (the scalability audit calls it out) is **`npc_behaviors.make_behavior`**: a factory over pluggable subclasses, configured from data. `BagSystem` already copies it with an effect-dispatch dict. New systems should follow that template.
+The model to imitate (the scalability audit calls it out) is **`npc_behaviors.make_behavior`**: a factory over pluggable subclasses, configured from data. The `{key: handler}` dispatch-table form of it is now copied in four more places (all landed 2026-06-25): `BagSystem._effect_appliers`/`_effect_eligibility` (item effects), `BattlePokemon._effect_handlers` (move effects), `GameDirector._transient/_overlay_builders` (view construction), and `DialogView._action_handlers` (post-dialog NPC roles). New systems should follow that template.
 
 ---
 
@@ -53,12 +54,10 @@ NPCs skip `update` — `NpcController` calls `begin`/`advance` directly so no NP
 Constructed with the map's bush-tile set, the `player_state`, and a `DataLoader`. It **subscribes to `PlayerFinishedMoveEvent`** and, on each landed tile:
 
 1. O(1) set check — is the tile grass? If not, return.
-2. `random() >= ENCOUNTER_RATE`? Return.
-3. Otherwise weight-pick a species from `get_enc()[map_name]["grass"]`, roll a level, and
-   **publish `BattleEncounterTriggeredEvent`**.
+2. Look up the map's table in the cached `data_loader.encounters` (`.get(map_name)` → `None` guard if the map has no data); read its **per-map `encounter_rate`** (falls back to `constants.ENCOUNTER_RATE`). `random() >= rate`? Return.
+3. Otherwise weight-pick a species from `table["grass"]`, roll a level, and **publish `BattleEncounterTriggeredEvent`**.
 
-Note the explicit `resubscribe()`/`cleanup()` pair and `_subscribed` guard — the overworld
-re-subscribes it on show and tears it down on hide, so it doesn't fire while off-screen.
+As of 2026-06-25 it reads the **cached** `data_loader.encounters` instead of re-opening `encounters.json` every step (the old `get_enc()` is gone), and the encounter chance is per-map data, not a global constant. Note the explicit `resubscribe()`/`cleanup()` pair and `_subscribed` guard — the overworld re-subscribes it on show and tears it down on hide, so it doesn't fire while off-screen.
 
 ### The NPC trio
 NPC logic is deliberately split three ways — one reason to change each:
@@ -79,7 +78,7 @@ The biggest system, and orchestration-heavy. It owns a `turn_queue`, a `BattleSt
 
 - **`turn(move_index)` / `turn_use_item(item_index)` / `switch_turn()`** build a `turn_queue` of `(actor, move_index, item_index)` tuples, ordered by speed, then call `execute_next_action`.
 - **`execute_next_action()`** pops one action, runs `_execute_move` (or `_apply_item_to_pokemon`), clears the queue if anyone hit 0 HP, and returns the message list the view will display.
-- **`_execute_move`** is the clean seam: it fetches move data, asks the `BattlePokemon` if it can move (status/PP), calls the **pure** `calculate_damage` (in `core/`, no side effects), applies the damage + effects, then **publishes `HpChangedEvent`** for the UI bar.
+- **`_execute_move`** is the clean seam: it fetches move data, asks the `BattlePokemon` if it can move (status/PP), calls the **pure** `calculate_damage` (in `core/`, no side effects — now passed `type_chart=self.data_loader.types`, the cached type chart, instead of the calculator reading `types.json` itself), applies the damage + effects, then **publishes `HpChangedEvent`** for the UI bar.
 - **`post_turn` / `pokemon_death`** handle end-of-turn status ticks and faints, setting the next `BattleState` (`END`, `TRAINER_SWITCH`, `PLAYER_FAINTED`, …) and publishing `PokemonFaintedEvent`.
 - **Decision helpers the view leans on:** `apply_exp_award()` (returns an `ExpGainResult` so the view reacts without mutating models), `add_caught_pokemon()`, `attempt_catch()` (uses the pure `calc_catch_probability`), `has_usable_pokemon()`, `complete_forced_switch()`.
 - **`save()`** delegates to `PlayerManager.persist_active_pokemon` — persistence is *not* combat's job, so it's a one-line hand-off to the Facade.
@@ -89,13 +88,17 @@ Holds references to the player's `items`/`pokeballs` lists. Its highlight is the
 dict**:
 
 ```python
-self._effect_appliers = {EffectType.HEAL: self._apply_heal}
+self._effect_appliers   = {EffectType.HEAL: self._apply_heal}      # apply (mutates HP)
+self._effect_eligibility = {EffectType.HEAL: self._heal_eligible}  # check (pure, for the UI)
 ```
 
-`_handle_item_effects` looks up an applier by `effect.type` and calls it — **add an effect kind (cure status, boost) by adding an applier, not by editing a loop**. This is `make_behavior`'s pattern applied to items. `use_item` only consumes the item if the effect actually applied (`_apply_heal` returns `False` when the target is full/fainted). `can_use_item` pre-checks eligibility for the UI. `use_pokeball` consumes a ball and returns its `ItemSpecies` for the catch flow.
+`_handle_item_effects` looks up an applier by `effect.type` and calls it; `can_use_item` looks up an **eligibility** check the same way (as of 2026-06-25 it dispatches through `_effect_eligibility` instead of a hardcoded `if effect.type == EffectType.HEAL`). Two parallel dicts because "apply" mutates HP while "check" must stay read-only — the UI greys an item without healing. **Add an effect kind (cure status, boost) = one applier + one eligibility entry, no loop edits**. `use_item` only consumes the item if the effect actually applied (`_apply_heal` returns `False` when the target is full/fainted). `use_pokeball` consumes a ball and returns its `ItemSpecies` for the catch flow. (`ItemEffect.type` is now a typed `EffectType`, parsed at load.)
 
 ### `PokemonMenuSystem` — party order
-The thinnest logic system: swap helpers over the team list. `confirm_switch(toIndex)` swaps a bench Pokémon into the active slot (index 0) unless it's fainted; `move_pokemon`/`start_moving`/ `cancel_moving` drive the drag-to-reorder UI; `move_team_index`/`move_tooltip_index` wrap cursor movement. Note: still carries camelCase fields (`movingPokemonIndex`, `teamIndex`) — flagged as the last snake_case holdout in plan §4, and `start_switching` is dead code.
+The thinnest logic system: swap helpers over the team list. `confirm_switch(to_index)` swaps a bench Pokémon into the active slot (index 0) unless it's fainted; `move_pokemon`/`start_moving`/ `cancel_moving` drive the drag-to-reorder UI; `move_team_index`/`move_tooltip_index` wrap cursor movement. Its fields are now snake_case (`moving_pokemon_index`, `team_index`, `tooltip_index`) — the plan §4 holdout was converted 2026-06-25. `start_switching` is still dead code.
+
+### `wild_moveset.select_wild_moves` — give wild foes real moves
+A pure helper (no class, no arcade): `select_wild_moves(species, level, data_loader)` filters the species `learnset` to moves with `level <= wild's level`, sorts by level, and keeps the **last `MAX_MOVES` (4)** learned — resolving each move's pp via `data_loader.get_move`. Empty/missing learnset falls back to Tackle so a wild is never moveless. `BattleView` calls it when building a wild enemy (replacing the old hardcoded `[tackle]`). Deterministic — same species+level → same moveset; the per-turn *choice* among them is the random part (in `BattleSystem`).
 
 ---
 
@@ -169,8 +172,8 @@ if self.bag_system.can_use_item(item_index, pokemon_id):
 
 ### Add a new item effect (same shape)
 1. Write `_apply_<kind>(self, pokemon_id, pokemon, max_hp, effect) -> bool` on `BagSystem`.
-2. Register it: `self._effect_appliers[EffectType.<KIND>] = self._apply_<kind>`.
-3. Add the effect to the item's JSON. No loop edits.
+2. Register it in **both** dicts: `self._effect_appliers[EffectType.<KIND>] = self._apply_<kind>` and `self._effect_eligibility[EffectType.<KIND>] = self._<kind>_eligible`.
+3. Add the `EffectType.<KIND>` enum member + the effect to the item's JSON. No loop edits.
 
 ---
 
@@ -180,4 +183,4 @@ if self.bag_system.can_use_item(item_index, pokemon_id):
 - **Systems publish, never navigate.** A system fires an event; the *view* turns it into a `swap`/`overlay`. Keep `window.show_view()` out of `systems/`.
 - **Mutate through Facades.** Write party/HP/money via `PlayerManager`, not `save.json`. Persistence is `PlayerManager`'s job (`BattleSystem.save()` is a one-line delegate).
 - **`npc_controller` is the arcade exception.** It imports `arcade` for sprite collision; treat it as overworld glue, not pure logic, if you enforce a `systems → no arcade` lint contract.
-- **Known debt:** `PokemonMenuSystem` still uses camelCase (plan §4) and has dead `start_switching`; `BattleSystem` carries multiple responsibilities (SRP audit). Both are documented, not yet split.
+- **Known debt:** `PokemonMenuSystem` still has dead `start_switching` (camelCase was fixed 2026-06-25); `BattleSystem` carries multiple responsibilities (SRP audit). Documented, not yet split.

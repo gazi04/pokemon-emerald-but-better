@@ -136,6 +136,7 @@ class BattleSystem:
             defender_types=defender.types,
             defender_modifiers=defender.modifiers,
             crit_modifier=attacker.modifiers.get(Stat.CRITS, 0),
+            type_chart=self.data_loader.types,
         )
 
         messages.extend(result.messages)

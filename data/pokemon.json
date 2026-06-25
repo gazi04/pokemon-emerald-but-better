@@ -8,7 +8,12 @@
     },
     "abilities": ["overgrow"],
     "types": ["grass"],
-    "stats": { "hp": 40, "attack": 65, "defence": 35, "special_attack": 45, "special_defence": 55, "speed": 70 }
+    "stats": { "hp": 40, "attack": 65, "defence": 35, "special_attack": 45, "special_defence": 55, "speed": 70 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "spore", "level": 9 }
+    ]
   },
   "torchic": {
     "baseExp": 62,
@@ -19,7 +24,12 @@
     },
     "abilities": ["blaze"],
     "types": ["fire"],
-    "stats": { "hp": 45, "attack": 60, "defence": 40, "special_attack": 70, "special_defence": 50, "speed": 45 }
+    "stats": { "hp": 45, "attack": 60, "defence": 40, "special_attack": 70, "special_defence": 50, "speed": 45 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "close combat", "level": 13 }
+    ]
   },
   "combusken": {
     "baseExp": 142,
@@ -30,7 +40,13 @@
     },
     "abilities": ["blaze"],
     "types": ["fire"],
-    "stats": { "hp": 60, "attack": 80, "defence": 60, "special_attack": 80, "special_defence": 60, "speed": 55 }
+    "stats": { "hp": 60, "attack": 80, "defence": 60, "special_attack": 80, "special_defence": 60, "speed": 55 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "close combat", "level": 9 },
+      { "move": "dragon dance", "level": 13 }
+    ]
   },
   "mudkip": {
     "baseExp": 62,
@@ -41,7 +57,12 @@
     },
     "abilities": ["torrent"],
     "types": ["water"],
-    "stats": { "hp": 50, "attack": 70, "defence": 50, "special_attack": 50, "special_defence": 50, "speed": 40 }
+    "stats": { "hp": 50, "attack": 70, "defence": 50, "special_attack": 50, "special_defence": 50, "speed": 40 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "toxic", "level": 11 }
+    ]
   },
   "poochyena": {
     "baseExp": 55,
@@ -52,7 +73,12 @@
     },
     "abilities": ["run_away"],
     "types": ["dark"],
-    "stats": { "hp": 35, "attack": 55, "defence": 35, "special_attack": 30, "special_defence": 30, "speed": 35 }
+    "stats": { "hp": 35, "attack": 55, "defence": 35, "special_attack": 30, "special_defence": 30, "speed": 35 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "toxic", "level": 9 }
+    ]
   },
   "zigzagoon": {
     "baseExp": 48,
@@ -63,7 +89,12 @@
     },
     "abilities": ["pick_up"],
     "types": ["normal"],
-    "stats": { "hp": 38, "attack": 30, "defence": 41, "special_attack": 30, "special_defence": 41, "speed": 60 }
+    "stats": { "hp": 38, "attack": 30, "defence": 41, "special_attack": 30, "special_defence": 41, "speed": 60 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "thunder wave", "level": 9 }
+    ]
   },
   "wurmple": {
     "baseExp": 54,
@@ -74,7 +105,11 @@
     },
     "abilities": ["shield_dust"],
     "types": ["bug"],
-    "stats": { "hp": 45, "attack": 45, "defence": 35, "special_attack": 20, "special_defence": 30, "speed": 20 }
+    "stats": { "hp": 45, "attack": 45, "defence": 35, "special_attack": 20, "special_defence": 30, "speed": 20 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "toxic", "level": 7 }
+    ]
   },
   "lotad": {
     "baseExp": 44,
@@ -85,7 +120,12 @@
     },
     "abilities": ["swift_swim"],
     "types": ["water", "grass"],
-    "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 40, "special_defence": 50, "speed": 30 }
+    "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 40, "special_defence": 50, "speed": 30 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "spore", "level": 7 }
+    ]
   },
   "seedot": {
     "baseExp": 44,
@@ -96,7 +136,12 @@
     },
     "abilities": ["chlorophyll"],
     "types": ["grass"],
-    "stats": { "hp": 40, "attack": 40, "defence": 50, "special_attack": 30, "special_defence": 30, "speed": 30 }
+    "stats": { "hp": 40, "attack": 40, "defence": 50, "special_attack": 30, "special_defence": 30, "speed": 30 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "spore", "level": 7 }
+    ]
   },
   "taillow": {
     "baseExp": 59,
@@ -107,7 +152,12 @@
     },
     "abilities": ["guts"],
     "types": ["normal", "flying"],
-    "stats": { "hp": 40, "attack": 55, "defence": 30, "special_attack": 30, "special_defence": 30, "speed": 85 }
+    "stats": { "hp": 40, "attack": 55, "defence": 30, "special_attack": 30, "special_defence": 30, "speed": 85 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "dragon dance", "level": 11 }
+    ]
   },
   "wingull": {
     "baseExp": 64,
@@ -118,7 +168,12 @@
     },
     "abilities": ["keen_eye"],
     "types": ["water", "flying"],
-    "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 55, "special_defence": 30, "speed": 85 }
+    "stats": { "hp": 40, "attack": 30, "defence": 30, "special_attack": 55, "special_defence": 30, "speed": 85 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "toxic", "level": 9 }
+    ]
   },
   "ralts": {
     "baseExp": 70,
@@ -129,7 +184,12 @@
     },
     "abilities": ["synchronize"],
     "types": ["psychic", "fairy"],
-    "stats": { "hp": 28, "attack": 25, "defence": 25, "special_attack": 45, "special_defence": 35, "speed": 40 }
+    "stats": { "hp": 28, "attack": 25, "defence": 25, "special_attack": 45, "special_defence": 35, "speed": 40 },
+    "learnset": [
+      { "move": "growl", "level": 1 },
+      { "move": "thunder wave", "level": 6 },
+      { "move": "sludge bomb", "level": 13 }
+    ]
   },
   "shroomish": {
     "baseExp": 65,
@@ -140,7 +200,12 @@
     },
     "abilities": ["effect_spore"],
     "types": ["grass"],
-    "stats": { "hp": 60, "attack": 40, "defence": 60, "special_attack": 40, "special_defence": 60, "speed": 35 }
+    "stats": { "hp": 60, "attack": 40, "defence": 60, "special_attack": 40, "special_defence": 60, "speed": 35 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "spore", "level": 5 },
+      { "move": "toxic", "level": 9 }
+    ]
   },
   "abra": {
     "baseExp": 73,
@@ -151,7 +216,10 @@
     },
     "abilities": ["synchronize"],
     "types": ["psychic"],
-    "stats": { "hp": 25, "attack": 20, "defence": 15, "special_attack": 105, "special_defence": 55, "speed": 90 }
+    "stats": { "hp": 25, "attack": 20, "defence": 15, "special_attack": 105, "special_defence": 55, "speed": 90 },
+    "learnset": [
+      { "move": "thunder wave", "level": 1 }
+    ]
   },
   "makuhita": {
     "baseExp": 87,
@@ -162,7 +230,12 @@
     },
     "abilities": ["guts"],
     "types": ["fighting"],
-    "stats": { "hp": 72, "attack": 60, "defence": 30, "special_attack": 20, "special_defence": 30, "speed": 25 }
+    "stats": { "hp": 72, "attack": 60, "defence": 30, "special_attack": 20, "special_defence": 30, "speed": 25 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "growl", "level": 1 },
+      { "move": "close combat", "level": 10 }
+    ]
   },
   "zubat": {
     "baseExp": 54,
@@ -173,6 +246,11 @@
     },
     "abilities": ["inner_focus"],
     "types": ["poison", "flying"],
-    "stats": { "hp": 40, "attack": 45, "defence": 35, "special_attack": 30, "special_defence": 40, "speed": 55 }
+    "stats": { "hp": 40, "attack": 45, "defence": 35, "special_attack": 30, "special_defence": 40, "speed": 55 },
+    "learnset": [
+      { "move": "tackle", "level": 1 },
+      { "move": "toxic", "level": 7 },
+      { "move": "sludge bomb", "level": 13 }
+    ]
   }
 }

@@ -37,7 +37,8 @@ PokemonSpecies          (pokemon.py)
 ├── baseExp, catch_rate, abilities, types
 ├── evolution: PokemonEvolution | None  (to, levelCap)
 ├── sprites: SpritePaths (back, front)
-└── stats: PokemonStat  (hp, attack, defence, special_attack, special_defence, speed)
+├── stats: PokemonStat  (hp, attack, defence, special_attack, special_defence, speed)
+└── learnset: list[LearnsetMove]  (move, level)  — wild moveset source, default []
 
 PokemonStat             — also the leveled-stat math lives here:
     scaled(base, level, is_hp)   one canonical formula  (pokemon.py:29)
@@ -47,7 +48,12 @@ PokemonStat             — also the leveled-stat math lives here:
 PokemonMove / PokemonMoveEffect  — effect fields are typed enums (Stat/StatusEffect/EffectType),
                                    parsed once by GameDataParser, not per-turn
 
-ItemSpecies (item.py), NpcSpecies (npc.py)
+LearnsetMove (pokemon.py)  — {move, level}; wild_moveset.select_wild_moves picks the last 4
+                             learned ≤ the wild's level (Tackle fallback)
+
+ItemSpecies / ItemEffect (item.py)  — ItemEffect.type is a typed EffectType (parsed at load,
+                                      mirrors PokemonMoveEffect), not a string
+NpcSpecies (npc.py)
 Trainer / TrainerPokemon / TrainerPokemonMove  (trainer.py)  ← spec, not save records
 ```
 
@@ -127,7 +133,7 @@ Progression             (progression.py)
 | `get_stat(stat)` (`:128`) | stage-modified stat value (`getattr` + stage math; HP read directly via `self.stats.hp`) |
 | `take_damage(d)` (`:149`) | the only mutator that touches HP |
 | `check_can_move(i)` (`:168`) | status/PP gating before a move; decrements PP; returns `(messages, can_move)` |
-| `execute_effects(move, target)` (`:199`) | apply stat-stage / status effects, return messages |
+| `execute_effects(move, target)` (`:199`) | apply stat-stage / status effects, return messages — dispatches via `_effect_handlers` (`{EffectType.STAT: _apply_stat_effect, EffectType.STATUS_CONDITION: _apply_status_effect}`), not an inline if/else |
 | `after_a_turn()` (`:251`) | post-turn tick (poison damage) |
 | `sync_from_source()` (`:264`) | pull hp/level/exp back from `source` |
 

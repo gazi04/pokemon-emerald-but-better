@@ -44,6 +44,21 @@ class GameDirector:
         global_bus.subscribe(OverlayViewEvent, self._on_overlay_view)
         global_bus.subscribe(SaveGameRequestEvent, self._on_save_request)
 
+        self._transient_builders = {
+            "battle": self._build_battle,
+            "battle_trainer": self._build_battle_trainer,
+            "evolving": self._build_evolving,
+        }
+        self._overlay_builders = {
+            "menu": self._build_menu,
+            "dialog": self._build_dialog,
+            "shop": self._build_shop,
+            "pokedex": self._build_pokedex,
+            "bag": self._build_bag,
+            "pokemon_menu": self._build_pokemon_menu,
+            "pokemon_information": self._build_pokemon_information,
+        }
+
     # ------------------------------------------------------------------
     # Boot
     # ------------------------------------------------------------------
@@ -103,116 +118,119 @@ class GameDirector:
         return self._view_cache["overworld"]
 
     def _build_transient_view(self, target: str, payload: dict):
-        overworld = self._get_or_create_overworld()
-
-        if target == "battle":
-            from src.states.battle_view import BattleView
-
-            return BattleView(
-                player_manager=self.player_manager,
-                data_loader=self.data_loader,
-                overworld_view=overworld,
-                message_service=self.message_service,
-                foe_pokemon_name=payload["pokemon_name"],
-                foe_pokemon_data=payload["pokemon_data"],
-                foe_level=payload["pokemon_level"],  # kept for flicker transition only
-            )
-
-        if target == "battle_trainer":
-            from src.states.battle_view import BattleView
-
-            return BattleView(
-                player_manager=self.player_manager,
-                data_loader=self.data_loader,
-                overworld_view=overworld,
-                message_service=self.message_service,
-                is_trainer=True,
-                trainer_data=payload["trainer_data"],
-                npc_id=payload.get("npc_id"),
-            )
-
-        if target == "evolving":
-            from src.states.evolving_view import EvolvingView
-
-            return EvolvingView(
-                overworldView=overworld,
-                pokemon=payload["pokemon"],
-                evolvedPokemon=payload["evolved_pokemon"],
-            )
-
-        return None
+        builder = self._transient_builders.get(target)
+        return builder(payload) if builder else None
 
     def _build_overlay_view(self, target: str, payload: dict):
+        builder = self._overlay_builders.get(target)
+        return builder(payload) if builder else None
+
+    # --- transient builders -------------------------------------------
+
+    def _build_battle(self, payload: dict):
+        from src.states.battle_view import BattleView
+
+        return BattleView(
+            player_manager=self.player_manager,
+            data_loader=self.data_loader,
+            overworld_view=self._get_or_create_overworld(),
+            message_service=self.message_service,
+            foe_pokemon_name=payload["pokemon_name"],
+            foe_pokemon_data=payload["pokemon_data"],
+            foe_level=payload["pokemon_level"],  # kept for flicker transition only
+        )
+
+    def _build_battle_trainer(self, payload: dict):
+        from src.states.battle_view import BattleView
+
+        return BattleView(
+            player_manager=self.player_manager,
+            data_loader=self.data_loader,
+            overworld_view=self._get_or_create_overworld(),
+            message_service=self.message_service,
+            is_trainer=True,
+            trainer_data=payload["trainer_data"],
+            npc_id=payload.get("npc_id"),
+        )
+
+    def _build_evolving(self, payload: dict):
+        from src.states.evolving_view import EvolvingView
+
+        return EvolvingView(
+            overworldView=self._get_or_create_overworld(),
+            pokemon=payload["pokemon"],
+            evolvedPokemon=payload["evolved_pokemon"],
+        )
+
+    # --- overlay builders ---------------------------------------------
+
+    def _build_menu(self, payload: dict):
+        from src.states.menu_view import MenuView
+
+        return MenuView(self._get_or_create_overworld())
+
+    def _build_dialog(self, payload: dict):
+        from src.states.dialog_view import DialogView
+
+        return DialogView(
+            self._get_or_create_overworld(),
+            self.data_loader,
+            self.player_manager,
+            self.message_service,
+            payload.get("after_text_callback"),
+            payload.get("npc_id", ""),
+            state=payload.get("state", "default"),
+        )
+
+    def _build_shop(self, payload: dict):
+        from src.states.shop_view import ShopView
+
         overworld = self._get_or_create_overworld()
+        return ShopView(
+            overworld,
+            payload.get("previous_view", overworld),
+            self.data_loader,
+            self.player_manager,
+        )
 
-        if target == "menu":
-            from src.states.menu_view import MenuView
+    def _build_pokedex(self, payload: dict):
+        from src.states.pokedex_view import PokedexView
 
-            return MenuView(overworld)
+        return PokedexView(
+            previous_window=payload.get("previous_view", self._get_or_create_overworld()),
+            player_manager=self.player_manager,
+            data_loader=self.data_loader,
+        )
 
-        if target == "dialog":
-            from src.states.dialog_view import DialogView
+    def _build_bag(self, payload: dict):
+        from src.states.bag_view import BagView
 
-            return DialogView(
-                overworld,
-                self.data_loader,
-                self.player_manager,
-                self.message_service,
-                payload.get("after_text_callback"),
-                payload.get("npc_id", ""),
-                state=payload.get("state", "default"),
-            )
+        return BagView(
+            previousWindow=payload.get("previous_view", self._get_or_create_overworld()),
+            player_manager=self.player_manager,
+            data_loader=self.data_loader,
+            message_service=self.message_service,
+            battle_system=cast(Any, payload.get("battle_system")),
+        )
 
-        if target == "shop":
-            from src.states.shop_view import ShopView
+    def _build_pokemon_menu(self, payload: dict):
+        from src.states.pokemon_menu_view import PokemonMenuView
 
-            return ShopView(
-                overworld,
-                payload.get("previous_view", overworld),
-                self.data_loader,
-                self.player_manager,
-            )
+        return PokemonMenuView(
+            previousView=payload.get("previous_view", self._get_or_create_overworld()),
+            player_manager=self.player_manager,
+            data_loader=self.data_loader,
+            bag=cast(Any, payload.get("bag")),
+            item_index=payload.get("item_index", 0),
+            battle_system=cast(Any, payload.get("battle_system")),
+            forced_switch=payload.get("forced_switch", False),
+        )
 
-        if target == "pokedex":
-            from src.states.pokedex_view import PokedexView
+    def _build_pokemon_information(self, payload: dict):
+        from src.states.pokemon_info_view import PokemonInfoView
 
-            return PokedexView(
-                previous_window=payload.get("previous_view", overworld),
-                player_manager=self.player_manager,
-                data_loader=self.data_loader,
-            )
-
-        if target == "bag":
-            from src.states.bag_view import BagView
-
-            return BagView(
-                previousWindow=payload.get("previous_view", overworld),
-                player_manager=self.player_manager,
-                data_loader=self.data_loader,
-                message_service=self.message_service,
-                battle_system=cast(Any, payload.get("battle_system")),
-            )
-
-        if target == "pokemon_menu":
-            from src.states.pokemon_menu_view import PokemonMenuView
-
-            return PokemonMenuView(
-                previousView=payload.get("previous_view", overworld),
-                player_manager=self.player_manager,
-                data_loader=self.data_loader,
-                bag=cast(Any, payload.get("bag")),
-                item_index=payload.get("item_index", 0),
-                battle_system=cast(Any, payload.get("battle_system")),
-                forced_switch=payload.get("forced_switch", False),
-            )
-
-        if target == "pokemon_information":
-            from src.states.pokemon_info_view import PokemonInfoView
-
-            return PokemonInfoView(
-                previous_view=payload.get("previous_view", overworld),
-                pokemon=payload.get("pokemon"),
-                data_loader=self.data_loader,
-            )
-
-        return None
+        return PokemonInfoView(
+            previous_view=payload.get("previous_view", self._get_or_create_overworld()),
+            pokemon=payload.get("pokemon"),
+            data_loader=self.data_loader,
+        )

@@ -2,8 +2,7 @@
 
 ## 1. What it is
 
-`GameDirector` is the one object that decides *which `arcade.View` is on screen*. It sits directly
-beneath the `arcade.Window` (created in `main.py`) and nothing else is allowed to call `window.show_view(...)`. Views never navigate themselves — they **publish an event**, the Director hears it and swaps the screen. That single rule is what keeps navigation legible: to learn every way the game can change screens, you read one file.
+`GameDirector` is the one object that decides *which `arcade.View` is on screen*. It sits directly beneath the `arcade.Window` (created in `main.py`) and nothing else is allowed to call `window.show_view(...)`. Views never navigate themselves — they **publish an event**, the Director hears it and swaps the screen. That single rule is what keeps navigation legible: to learn every way the game can change screens, you read one file.
 
 It owns three things:
 - the long-lived **service singletons** (`SaveManager`, `DataLoader`, `PlayerManager`, `MessageService`),
@@ -36,7 +35,7 @@ The Director **builds the services once** and hands the *same instances* to ever
 
 ### Two structural patterns worth noting
 - **Lazy view imports.** Every `from src.states.X import XView` sits *inside* the method that builds it, not at module top. Views import from `core`, and `core` would import views → a circular import.  Importing at call-time breaks the cycle.
-- **String-keyed builders.** `_build_transient_view` and `_build_overlay_view` are `if target == "...":` ladders that map a string key to a constructor. Services (`player_manager`, `data_loader`, `message_service`) are injected from the Director's own fields; only *screen-specific* data comes from the event `payload`.
+- **Dispatch registries (`{target: builder}`).** Two dicts built in `__init__` — `_transient_builders` and `_overlay_builders` — map a string key to a per-screen `_build_<target>(payload)` method. `_build_transient_view`/`_build_overlay_view` are now a one-line lookup (`self._transient_builders.get(target)`) instead of an `if target == "...":` ladder. Each builder holds the lazy import + constructor; services (`player_manager`, `data_loader`, `message_service`) are injected from the Director's own fields, only *screen-specific* data comes from the event `payload`. This mirrors `npc_behaviors.make_behavior` — adding a screen no longer edits a shared branch.
 
 ---
 
@@ -51,12 +50,10 @@ Views publish one of three events (via the `GameView` base helpers `self.swap/ov
 | `CloseViewEvent()` | `_on_close_view` | **"I'm done"** — return to the cached Overworld | — |
 
 ### Swap (transient, fresh each time)
-`_on_swap_view` special-cases `"overworld"` (show the cached singleton), otherwise calls
-`_build_transient_view`, which constructs a **brand-new** `BattleView`/`EvolvingView` from the payload. Transient views are disposable — a new battle every encounter.
+`_on_swap_view` special-cases `"overworld"` (show the cached singleton), otherwise calls `_build_transient_view`, which constructs a **brand-new** `BattleView`/`EvolvingView` from the payload. Transient views are disposable — a new battle every encounter.
 
 ### Overlay (stack, services injected)
-`_on_overlay_view` → `_build_overlay_view` constructs the menu/bag/etc. Overlays read
-`payload.get("previous_view", overworld)` so they know who to return to, and pull services from the Director. Because the Overworld is never destroyed, opening the Bag mid-battle or the menu in the field leaves the underlying state intact.
+`_on_overlay_view` → `_build_overlay_view` constructs the menu/bag/etc. Overlays read `payload.get("previous_view", overworld)` so they know who to return to, and pull services from the Director. Because the Overworld is never destroyed, opening the Bag mid-battle or the menu in the field leaves the underlying state intact.
 
 ### Close (back to Overworld)
 `_on_close_view` just shows the cached Overworld. Any transient view (battle won/lost, evolution finished) publishes `CloseViewEvent()` to get home.
@@ -81,8 +78,7 @@ Built once, cached in `_view_cache["overworld"]`, reused forever. This is why th
    self.swap/overlay/close(...)  ──►  Swap/Overlay/CloseViewEvent  ──►  window.show_view(...)
 ```
 
-- **Upstream:** `main.py` instantiates the window, hands it to `GameDirector(window)`, calls
-  `director.start()`, then `arcade.run()`.
+- **Upstream:** `main.py` instantiates the window, hands it to `GameDirector(window)`, calls `director.start()`, then `arcade.run()`.
 - **Sideways (the bus):** `src/core/event_bus.py::global_bus` is the only channel. The Director  subscribes in `__init__`; views publish through the `GameView` nav verbs. Publisher and Director never reference each other directly — the bus decouples them.
 - **Downstream (the views):** the builder ladders construct the ten `arcade.View` subclasses in `src/states/`. Each gets the shared services + its slice of `payload`.
 - **Save path:** `SaveGameRequestEvent` (published by `MenuView`) → `_on_save_request` captures NPC state, calls `save_manager.flush_save(overworld.player_state)`, and replies with `SaveCompletedEvent(success=...)` so the menu can show feedback.
@@ -118,27 +114,31 @@ self.close()
 
 ### Add a brand-new screen (the common extension)
 1. Write the `XView(GameView)` in `src/states/`.
-2. Add one branch to the right builder:
-   - full-screen/disposable → `_build_transient_view`
-   - stacked menu → `_build_overlay_view`
+2. Add a `_build_<target>(self, payload)` method (lazy import + constructor inside it):
    ```python
-   if target == "my_screen":
+   def _build_my_screen(self, payload: dict):
        from src.states.my_view import MyView
-       return MyView(previous_view=payload.get("previous_view", overworld),
+       return MyView(previous_view=payload.get("previous_view", self._get_or_create_overworld()),
                      player_manager=self.player_manager,
                      data_loader=self.data_loader)
    ```
-3. Publish `self.overlay("my_screen", ...)` (or `self.swap`) from wherever it's triggered.
+3. Register it in the right dict in `__init__`:
+   - full-screen/disposable → `_transient_builders`
+   - stacked menu → `_overlay_builders`
+   ```python
+   self._overlay_builders = { ..., "my_screen": self._build_my_screen }
+   ```
+4. Publish `self.overlay("my_screen", ...)` (or `self.swap`) from wherever it's triggered.
 
-That's the whole loop: **one builder branch + one publish call.**
+The loop: **one builder method + one dict entry + one publish call** — the dispatch methods themselves never change.
 
 ---
 
 ## 6. Gotchas & current rough edges
 
 - **Keep imports lazy.** Adding a `from src.states...` at module top will reintroduce the circular import. Always import inside the builder branch.
-- **String keys are unchecked.** A typo'd `target` falls through the ladder and `_build_*` returns `None`, so `show_view` is silently skipped → nothing happens. There is no compile-time guard.
-- **The builders are an Open/Closed smell.** Every new screen edits the ladder. If screens multiply, the scalability audit suggests a `{target: builder}` registry (mirroring   `npc_behaviors.make_behavior`) — not needed yet.
+- **String keys are unchecked.** A typo'd `target` misses the registry (`.get(target)` → `None`), so `show_view` is silently skipped → nothing happens. There is no compile-time guard.
+- **The Open/Closed smell is fixed.** The old `if target == "...":` ladders are now `{target: builder}` registries (`_transient_builders`/`_overlay_builders`), so adding a screen registers a new entry instead of editing a shared branch. (Done 2026-06-25, mirrors `npc_behaviors.make_behavior`.)
 - **Save only works from the Overworld.** `_on_save_request` checks the cached view *is* an  `OverworldView`; saving from elsewhere returns `success=False`.
 
 ---

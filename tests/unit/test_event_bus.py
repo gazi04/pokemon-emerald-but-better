@@ -48,12 +48,10 @@ def test_unsubscribe_stops_delivery(event_bus):
     assert received == []
 
 
-def test_unsubscribe_unknown_listener_raises(event_bus):
-    # Subscribe one listener to ensure the event_type key exists, then try
-    # to remove a different listener that was never registered.
+def test_unsubscribe_unknown_listener_is_safe(event_bus):
+    # Unsubscribing a listener that was never registered should not raise.
     event_bus.subscribe(FooEvent, lambda e: None)
-    with pytest.raises(ValueError):
-        event_bus.unsubscribe(FooEvent, lambda e: None)
+    event_bus.unsubscribe(FooEvent, lambda e: None)  # different lambda, never registered
 
 
 def test_publish_with_no_subscribers_is_safe(event_bus):

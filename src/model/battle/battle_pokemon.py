@@ -24,6 +24,13 @@ class BattlePokemon:
         self.is_enemy = is_enemy
         self._apply(data, name, moves, level, exp, current_hp, source)
 
+        # Dispatch over effect.type — add an effect kind by adding a handler,
+        # not by editing the loop (mirrors npc_behaviors.make_behavior / bag_system).
+        self._effect_handlers = {
+            EffectType.STAT: self._apply_stat_effect,
+            EffectType.STATUS_CONDITION: self._apply_status_effect,
+        }
+
     @classmethod
     def from_player(
         cls,
@@ -206,43 +213,51 @@ class BattlePokemon:
 
         for effect in move.effects:
             destination = self if effect.target == "self" else target
-
-            if effect.type == EffectType.STAT:
-                stat = effect.stat
-                change = effect.change
-                current_stage = destination.modifiers[stat]
-
-                if change > 0 and current_stage == 6:
-                    messages.append(f"{destination.name}'s {stat} won't go any higher!")
-                    continue
-                if change < 0 and current_stage == -6:
-                    messages.append(f"{destination.name}'s {stat} won't go any lower!")
-                    continue
-
-                destination.modifiers[stat] = max(-6, min(6, current_stage + change))
-
-                if change > 0:
-                    adj = (
-                        "sharply "
-                        if change == 2
-                        else ("drastically " if change >= 3 else "")
-                    )
-                    messages.append(f"{destination.name}'s {stat} {adj}rose!")
-                elif change < 0:
-                    adj = (
-                        "harshly "
-                        if change == -2
-                        else ("severely " if change <= -3 else "")
-                    )
-                    messages.append(f"{destination.name}'s {stat} {adj}fell!")
-            else:
-                chance = effect.chance if effect.chance else 100
-                if chance >= random.randint(1, 100):
-                    destination.status_effect = effect.condition
-                    if destination.status_effect == StatusEffect.SLEEP:
-                        destination.sleep_counter = random.randint(2, 5)
+            handler = self._effect_handlers.get(effect.type)
+            if handler:
+                messages.extend(handler(effect, destination))
 
         return messages
+
+    def _apply_stat_effect(
+        self, effect, destination: "BattlePokemon"
+    ) -> list[str]:
+        messages = []
+        stat = effect.stat
+        change = effect.change
+        current_stage = destination.modifiers[stat]
+
+        if change > 0 and current_stage == 6:
+            messages.append(f"{destination.name}'s {stat} won't go any higher!")
+            return messages
+        if change < 0 and current_stage == -6:
+            messages.append(f"{destination.name}'s {stat} won't go any lower!")
+            return messages
+
+        destination.modifiers[stat] = max(-6, min(6, current_stage + change))
+
+        if change > 0:
+            adj = (
+                "sharply " if change == 2 else ("drastically " if change >= 3 else "")
+            )
+            messages.append(f"{destination.name}'s {stat} {adj}rose!")
+        elif change < 0:
+            adj = (
+                "harshly " if change == -2 else ("severely " if change <= -3 else "")
+            )
+            messages.append(f"{destination.name}'s {stat} {adj}fell!")
+
+        return messages
+
+    def _apply_status_effect(
+        self, effect, destination: "BattlePokemon"
+    ) -> list[str]:
+        chance = effect.chance if effect.chance else 100
+        if chance >= random.randint(1, 100):
+            destination.status_effect = effect.condition
+            if destination.status_effect == StatusEffect.SLEEP:
+                destination.sleep_counter = random.randint(2, 5)
+        return []
 
     # ------------------------------------------------------------------
     # Post-turn tick — self-contained state mutation

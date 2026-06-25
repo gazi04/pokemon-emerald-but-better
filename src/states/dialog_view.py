@@ -35,6 +35,12 @@ class DialogView(GameView):
         self.dialog_index = 0
         self.dialog = self.npc.get_dialog(state)
 
+        self._action_handlers = {
+            "shop": self._action_shop,
+            "fight": self._action_fight,
+            "heal": self._action_heal,
+        }
+
         self.ui.queue_messages(self.dialog[self.dialog_index])
 
     def on_show_view(self):
@@ -49,19 +55,22 @@ class DialogView(GameView):
                 self._end_of_dialog()
 
     def _end_of_dialog(self):
-        if self.action == "shop":
-            self.overlay("shop")
-        elif self.action == "fight":
-            self.swap(
-                "battle_trainer",
-                trainer_data=self.npc.team,
-                npc_id=self.npc_id,
-            )
-        elif self.action == "heal":
-            self.player_manager.heal_team()
-            self.close()
-        else:
-            self.close()
+        handler = self._action_handlers.get(self.action, self.close)
+        handler()
+
+    def _action_shop(self):
+        self.overlay("shop")
+
+    def _action_fight(self):
+        self.swap(
+            "battle_trainer",
+            trainer_data=self.npc.team,
+            npc_id=self.npc_id,
+        )
+
+    def _action_heal(self):
+        self.player_manager.heal_team()
+        self.close()
 
     def on_draw(self):
         self.clear()

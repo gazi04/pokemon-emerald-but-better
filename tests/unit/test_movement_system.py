@@ -1,13 +1,14 @@
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent
-from src.model.player import PlayerState
+from src.model.motion.player_motion import PlayerMotion
 from src.systems.movement_system import MovementSystem
 
 
 def make_state(px=0.0, py=0.0, gx=0, gy=0):
-    return PlayerState(pixel_x=px, pixel_y=py, grid_x=gx, grid_y=gy,
-                       map_name="littleroot_town")
+    return PlayerMotion(
+        pixel_x=px, pixel_y=py, grid_x=gx, grid_y=gy, map_name="littleroot_town"
+    )
 
 
 def make_intent(target_x, target_y):
