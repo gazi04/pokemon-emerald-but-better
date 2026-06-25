@@ -1,6 +1,5 @@
 import random
 
-from src.util import get_enc
 from src.constants import ENCOUNTER_RATE
 from src.core.data_loader import DataLoader
 from src.model.motion.player_motion import PlayerMotion
@@ -36,10 +35,14 @@ class EncounterSystem:
         if (event.grid_x, event.grid_y) not in self._bush_tiles:
             return
 
-        if random.random() >= ENCOUNTER_RATE:
+        table = self.data_loader.encounters.get(self._player_state.map_name)
+        if not table:
             return
 
-        pokemon_list = get_enc()[self._player_state.map_name]["grass"]
+        if random.random() >= table.get("encounter_rate", ENCOUNTER_RATE):
+            return
+
+        pokemon_list = table["grass"]
         pokemon = random.choices(
             pokemon_list, weights=[p["weight"] for p in pokemon_list]
         )[0]

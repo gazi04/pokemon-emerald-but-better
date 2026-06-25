@@ -19,6 +19,10 @@ class DataLoader:
         self.npc_dialog: dict[str, NpcSpecies] = GameDataParser.parse_npc_dialog(
             self._read("data/npc_dialog.json")
         )
+        # Raw dicts cached at boot — read every grass step / damage calc, so no
+        # per-call file I/O (mirrors the parsed caches above).
+        self.encounters: dict = self._read("data/encounters.json")
+        self.types: dict = self._read("data/types.json")
 
     def _read(self, path: str) -> dict:
         with open(path) as f:

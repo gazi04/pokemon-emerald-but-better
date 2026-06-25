@@ -1,6 +1,5 @@
 import random
 
-from src.util import calculate_multiplier
 from src.model.battle.combat_result import CombatResult
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
@@ -18,6 +17,7 @@ def calculate_damage(
     defender_types: list[str],
     defender_modifiers: dict,
     crit_modifier: int,
+    type_chart: dict,
 ) -> CombatResult:
     """
     Pure damage calculation. All inputs are plain data — no BattlePokemon
@@ -61,7 +61,7 @@ def calculate_damage(
     stab = 1.5 if move_data.type in attacker_types else 1.0
 
     # --- Type effectiveness ---
-    effectiveness = calculate_multiplier(move_data.type, defender_types)
+    effectiveness = _type_multiplier(move_data.type, defender_types, type_chart)
     if effectiveness >= 2:
         messages.append("Its super effective.")
     elif 0 < effectiveness < 1:
@@ -98,6 +98,13 @@ def calculate_damage(
 # ---------------------------------------------------------------------------
 # Private helpers — pure functions, no side effects
 # ---------------------------------------------------------------------------
+
+
+def _type_multiplier(atk_type: str, def_types: list[str], type_chart: dict) -> float:
+    multiplier = 1.0
+    for t in def_types:
+        multiplier *= type_chart.get(atk_type, {}).get(t, 1.0)
+    return multiplier
 
 
 def _check_accuracy(

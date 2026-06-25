@@ -1,5 +1,6 @@
 {
   "littleroot_town": {
+    "encounter_rate": 0.15,
     "grass": [
       { "name": "poochyena", "levels": [2, 4], "weight": 1 },
       { "name": "zigzagoon", "levels": [2, 4], "weight": 1 }
@@ -7,6 +8,7 @@
   },
 
   "route_101": {
+    "encounter_rate": 0.18,
     "grass": [
       { "name": "poochyena", "levels": [3, 5], "weight": 1 },
       { "name": "zigzagoon", "levels": [3, 5], "weight": 1 },
@@ -15,6 +17,7 @@
   },
 
   "route_102": {
+    "encounter_rate": 0.20,
     "grass": [
       { "name": "zigzagoon", "levels": [4, 6], "weight": 1 },
       { "name": "wurmple", "levels": [4, 6], "weight": 1 },
