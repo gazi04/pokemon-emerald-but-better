@@ -151,10 +151,6 @@ class OverworldView(GameView):
     def _on_npc_interaction(self, event: NpcInteractEvent):
         npc_id = event.npc_id
 
-        if npc_id == "poke-mart-npc":
-            self.overlay("shop", previous_view=self)
-            return
-
         npc = self.data_loader.npc_dialog.get(npc_id)
         if npc is None:
             return
