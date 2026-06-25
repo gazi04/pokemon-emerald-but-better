@@ -2,6 +2,7 @@ from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
 from src.model.save.player import PlayerSave, PlayerPokemon, ItemStack
 from src.model.static.pokemon import PokemonStat
+from src.model.battle.battle_pokemon import BattlePokemon
 from src.systems.npc_manager import NPCManager
 from typing import Optional
 
@@ -57,6 +58,26 @@ class PlayerManager:
         self, pokemon_name: str, new_level: int, exp: int, evolved_name: str = None
     ):
         self.player.update_level(pokemon_name, new_level, exp, evolved_name)
+
+    def persist_active_pokemon(
+        self, battle_pokemon: BattlePokemon, has_evolved: bool
+    ) -> None:
+        """Write a battle Pokémon's hp/pp/level (and evolution) back to the save.
+        Persistence lives here, not in BattleSystem (combat orchestration)."""
+        name = battle_pokemon.name.lower()
+        self.update_pokemon_hp(name, battle_pokemon.current_hp)
+        for move in battle_pokemon.moves:
+            self.update_move_pp(name, move.name, move.pp)
+
+        if not has_evolved:
+            self.update_level(name, battle_pokemon.level, battle_pokemon.exp)
+        else:
+            self.update_level(
+                name,
+                battle_pokemon.level,
+                battle_pokemon.exp,
+                battle_pokemon.evolution.to,
+            )
 
     def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
         return self.player.add_pokemon(pokemon)
