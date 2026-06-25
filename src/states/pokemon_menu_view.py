@@ -36,13 +36,13 @@ class PokemonMenuView(GameView):
         self.ui = PokemonMenuUi(data_loader)
 
         if bag:
-            tooltipOptions = ["Use", "Info"]
+            tooltip_options = ["Use", "Info"]
         elif battle_system:
-            tooltipOptions = ["Switch", "Info"]
+            tooltip_options = ["Switch", "Info"]
         else:
-            tooltipOptions = ["Move", "Info"]
+            tooltip_options = ["Move", "Info"]
 
-        self.ui.setup_tooltip(tooltipOptions)
+        self.ui.setup_tooltip(tooltip_options)
         self.ui.set_values(self.system.team)
 
     def on_draw(self):
@@ -52,15 +52,15 @@ class PokemonMenuView(GameView):
 
     def on_key_press(self, symbol: int, modifiers: int):
         if self.ui.is_tooltip_showing():
-            self._handleTooltipInput(symbol)
+            self._handle_tooltip_input(symbol)
         else:
-            self._handleMenuInput(symbol)
+            self._handle_menu_input(symbol)
 
-    def _handleMenuInput(self, key):
+    def _handle_menu_input(self, key):
         if self.is_pressed(CONFIG.controls.cancel, key):
             if self.forced_switch:
                 return  # Can't back out — a replacement must be chosen.
-            if self.system.isMovingPokemon:
+            if self.system.is_moving_pokemon:
                 self.system.cancel_moving()
             else:
                 self.window.show_view(self.previousView)
@@ -69,45 +69,45 @@ class PokemonMenuView(GameView):
         if self.is_pressed(CONFIG.controls.interact, key):
             if self.forced_switch:
                 self._do_forced_switch()
-            elif self.system.isMovingPokemon:
+            elif self.system.is_moving_pokemon:
                 if not self.battle_system:
-                    self.system.move_pokemon(self.system.teamIndex)
+                    self.system.move_pokemon(self.system.team_index)
                     self.ui.set_values(self.system.team)
             else:
-                self.ui.show_tooltip(self.system.teamIndex)
+                self.ui.show_tooltip(self.system.team_index)
         elif self.is_pressed(CONFIG.controls.down, key):
             self.system.move_team_index(1)
         elif self.is_pressed(CONFIG.controls.up, key):
             self.system.move_team_index(-1)
 
-        self.ui.select_pokemon(self.system.teamIndex)
+        self.ui.select_pokemon(self.system.team_index)
 
     def _do_forced_switch(self):
-        selected = self.system.team[self.system.teamIndex]
+        selected = self.system.team[self.system.team_index]
         # Can't send out a fainted Pokémon or the one already out.
-        if selected.hp <= 0 or self.system.teamIndex == 0:
+        if selected.hp <= 0 or self.system.team_index == 0:
             return
 
-        self.system.confirm_switch(self.system.teamIndex)
+        self.system.confirm_switch(self.system.team_index)
         self.ui.set_values(self.system.team)
         self.previousView.force_switch()
         self.window.show_view(self.previousView)
 
-    def _handleTooltipInput(self, key):
+    def _handle_tooltip_input(self, key):
         if self.is_pressed(CONFIG.controls.cancel, key):
             self.ui.hide_tooltip()
             self.system.reset_tooltip()
         elif self.is_pressed(CONFIG.controls.interact, key):
-            self._tooltipAction()
+            self._tooltip_action()
         elif self.is_pressed(CONFIG.controls.down, key):
-            self.system.move_tooltip_index(1, len(self.ui._tooltipButtons))
-            self.ui.select_tooltip_option(self.system.tooltipIndex)
+            self.system.move_tooltip_index(1, len(self.ui._tooltip_buttons))
+            self.ui.select_tooltip_option(self.system.tooltip_index)
         elif self.is_pressed(CONFIG.controls.up, key):
-            self.system.move_tooltip_index(-1, len(self.ui._tooltipButtons))
-            self.ui.select_tooltip_option(self.system.tooltipIndex)
+            self.system.move_tooltip_index(-1, len(self.ui._tooltip_buttons))
+            self.ui.select_tooltip_option(self.system.tooltip_index)
 
-    def _tooltipAction(self):
-        index = self.system.tooltipIndex
+    def _tooltip_action(self):
+        index = self.system.tooltip_index
         self.ui.hide_tooltip()
         self.system.reset_tooltip()
 
@@ -116,19 +116,19 @@ class PokemonMenuView(GameView):
                 # Use item in battle
                 self.bag.use_item(
                     self.item_index,
-                    self.system.team[self.system.teamIndex].name,
+                    self.system.team[self.system.team_index].name,
                 )
 
                 # Navigate back to BattleView (still held by previousView chain)
-                battleView = self.previousView.previousWindow
-                battleView.on_item_used(self.item_index)
-                self.window.show_view(battleView)
+                battle_view = self.previousView.previousWindow
+                battle_view.on_item_used(self.item_index)
+                self.window.show_view(battle_view)
 
             elif self.bag:
                 # Use item outside battle
                 self.bag.use_item(
                     self.item_index,
-                    self.system.team[self.system.teamIndex].name,
+                    self.system.team[self.system.team_index].name,
                 )
                 self.previousView.update_item()
                 self.window.show_view(self.previousView)
@@ -140,7 +140,7 @@ class PokemonMenuView(GameView):
             self.overlay(
                 "pokemon_information",
                 previous_view=self,
-                pokemon=self.system.team[self.system.teamIndex],
+                pokemon=self.system.team[self.system.team_index],
             )
 
     def _move_pokemon(self):
@@ -148,7 +148,7 @@ class PokemonMenuView(GameView):
             self.system.start_moving()
             return
 
-        success = self.system.confirm_switch(self.system.teamIndex)
+        success = self.system.confirm_switch(self.system.team_index)
         if success:
             self.ui.set_values(self.system.team)
             self.previousView.switch_turn()
