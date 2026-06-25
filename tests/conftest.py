@@ -8,7 +8,13 @@ from src.core.data_loader import DataLoader
 from src.core.event_bus import EventBus, global_bus
 from src.core.save_manager import SaveManager
 from src.core.player_manager import PlayerManager
-from src.model.player import Item, PlayerPokemon, PlayerPokemonMove, PlayerProfile, PlayerState
+from src.model.save.player import (
+    ItemStack,
+    PlayerPokemon,
+    PlayerPokemonMove,
+    PlayerSave,
+)
+from src.model.motion.player_motion import PlayerMotion
 
 FIXTURE_DIR = Path(__file__).parent / "data"
 PROJECT_DATA = Path(__file__).parent.parent / "data"
@@ -37,9 +43,15 @@ def data_loader(tmp_path, monkeypatch):
 def save_manager(tmp_path, monkeypatch):
     """SaveManager with all file paths redirected to tmp_path."""
     monkeypatch.setattr("src.core.save_manager.SAVE_PATH", str(tmp_path / "save.json"))
-    monkeypatch.setattr("src.core.save_manager.SAVE_TMP_PATH", str(tmp_path / "save.tmp.json"))
-    monkeypatch.setattr("src.core.save_manager.SAVE_BAK_PATH", str(tmp_path / "save.bak.json"))
-    monkeypatch.setattr("src.core.save_manager.DEFAULT_PATH", str(FIXTURE_DIR / "player_fixture.json"))
+    monkeypatch.setattr(
+        "src.core.save_manager.SAVE_TMP_PATH", str(tmp_path / "save.tmp.json")
+    )
+    monkeypatch.setattr(
+        "src.core.save_manager.SAVE_BAK_PATH", str(tmp_path / "save.bak.json")
+    )
+    monkeypatch.setattr(
+        "src.core.save_manager.DEFAULT_PATH", str(FIXTURE_DIR / "player_fixture.json")
+    )
     return SaveManager()
 
 
@@ -51,23 +63,28 @@ def player_manager(save_manager):
 
 @pytest.fixture
 def player_state():
-    return PlayerState(map_name="littleroot_town", grid_x=0, grid_y=0, pixel_x=0.0, pixel_y=0.0)
+    return PlayerMotion(
+        map_name="littleroot_town", grid_x=0, grid_y=0, pixel_x=0.0, pixel_y=0.0
+    )
 
 
 @pytest.fixture
 def mudkip_pokemon():
     return PlayerPokemon(
-        name="mudkip", hp=50, level=10, exp=0,
+        name="mudkip",
+        hp=50,
+        level=10,
+        exp=0,
         moves=[PlayerPokemonMove(name="tackle", pp=35)],
     )
 
 
 @pytest.fixture
 def player_profile(mudkip_pokemon):
-    return PlayerProfile(
+    return PlayerSave(
         pokemon=[mudkip_pokemon],
-        items=[Item(name="potion", count=3)],
-        pokeballs=[Item(name="pokeball", count=5)],
+        items=[ItemStack(name="potion", count=3)],
+        pokeballs=[ItemStack(name="pokeball", count=5)],
     )
 
 

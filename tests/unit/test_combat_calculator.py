@@ -1,25 +1,55 @@
+import json
 from unittest.mock import patch
 
 import pytest
 
 from src.core.combat_calculator import _get_stat, calculate_damage
-from src.model.combat_result import CombatResult
-from src.model.pokemon import PokemonMove, PokemonStat
+from src.model.battle.combat_result import CombatResult
+from src.enums.stat import Stat
+from src.enums.status_effect import StatusEffect
+from src.model.static.pokemon import PokemonMove, PokemonStat
+
+with open("data/types.json") as _f:
+    TYPES = json.load(_f)
 
 
 def make_stat(hp=50, attack=50, defence=50, sp_atk=50, sp_def=50, speed=50):
-    return PokemonStat(hp=hp, attack=attack, defence=defence,
-                       special_attack=sp_atk, special_defence=sp_def, speed=speed)
+    return PokemonStat(
+        hp=hp,
+        attack=attack,
+        defence=defence,
+        special_attack=sp_atk,
+        special_defence=sp_def,
+        speed=speed,
+    )
 
 
-def make_move(name="tackle", category="physical", type_="normal", power=40, accuracy=100, pp=35):
-    return PokemonMove(name, {"category": category, "type": type_, "power": power,
-                               "accuracy": accuracy, "pp": pp}, [])
+def make_move(
+    name="tackle", category="physical", type_="normal", power=40, accuracy=100, pp=35
+):
+    return PokemonMove(
+        name=name,
+        category=category,
+        type=type_,
+        power=power,
+        accuracy=accuracy,
+        pp=pp,
+        effects=[],
+    )
 
 
-def calc(attacker_types=None, defender_types=None, move=None, level=10,
-         atk_stat=None, def_stat=None, atk_mods=None, def_mods=None,
-         atk_status="", crit_modifier=0):
+def calc(
+    attacker_types=None,
+    defender_types=None,
+    move=None,
+    level=10,
+    atk_stat=None,
+    def_stat=None,
+    atk_mods=None,
+    def_mods=None,
+    atk_status=StatusEffect.NONE,
+    crit_modifier=0,
+):
     move = move or make_move()
     atk_stat = atk_stat or make_stat()
     def_stat = def_stat or make_stat()
@@ -38,10 +68,12 @@ def calc(attacker_types=None, defender_types=None, move=None, level=10,
         defender_types=defender_types,
         defender_modifiers=def_mods,
         crit_modifier=crit_modifier,
+        type_chart=TYPES,
     )
 
 
 # --- Basic hit ---
+
 
 def test_normal_hit_deals_positive_damage():
     result = calc()
@@ -59,24 +91,47 @@ def test_normal_hit_has_no_effectiveness_message_for_neutral():
 
 # --- Type effectiveness ---
 
+
 def test_super_effective_doubles_damage():
-    neutral = calc(move=make_move(type_="fire"), attacker_types=["normal"], defender_types=["normal"])
-    super_eff = calc(move=make_move(type_="fire"), attacker_types=["normal"], defender_types=["grass"])
+    with patch("src.core.combat_calculator._roll_critical", return_value=False):
+        neutral = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["normal"],
+            defender_types=["normal"],
+        )
+        super_eff = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["normal"],
+            defender_types=["grass"],
+        )
     assert super_eff.effectiveness == 2.0
     assert super_eff.damage > neutral.damage
     assert any("super effective" in m.lower() for m in super_eff.messages)
 
 
 def test_not_very_effective_halves_damage():
-    neutral = calc(move=make_move(type_="fire"), attacker_types=["normal"], defender_types=["normal"])
-    nve = calc(move=make_move(type_="fire"), attacker_types=["normal"], defender_types=["fire"])
+    with patch("src.core.combat_calculator._roll_critical", return_value=False):
+        neutral = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["normal"],
+            defender_types=["normal"],
+        )
+        nve = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["normal"],
+            defender_types=["fire"],
+        )
     assert nve.effectiveness == 0.5
     assert nve.damage < neutral.damage
     assert any("not very effective" in m.lower() for m in nve.messages)
 
 
 def test_immune_type_deals_zero_damage():
-    result = calc(move=make_move(type_="normal"), attacker_types=["normal"], defender_types=["ghost"])
+    result = calc(
+        move=make_move(type_="normal"),
+        attacker_types=["normal"],
+        defender_types=["ghost"],
+    )
     assert result.effectiveness == 0.0
     assert result.damage == 0
     assert any("no effect" in m.lower() for m in result.messages)
@@ -84,14 +139,24 @@ def test_immune_type_deals_zero_damage():
 
 # --- STAB ---
 
+
 def test_stab_increases_damage_vs_no_stab():
     with patch("src.core.combat_calculator._roll_critical", return_value=False):
-        no_stab = calc(move=make_move(type_="fire"), attacker_types=["water"], defender_types=["normal"])
-        stab = calc(move=make_move(type_="fire"), attacker_types=["fire"], defender_types=["normal"])
+        no_stab = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["water"],
+            defender_types=["normal"],
+        )
+        stab = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["fire"],
+            defender_types=["normal"],
+        )
     assert stab.damage > no_stab.damage
 
 
 # --- Status move ---
+
 
 def test_status_move_deals_zero_damage():
     status_move = make_move(category="status", power=None)
@@ -107,6 +172,7 @@ def test_zero_power_move_deals_zero_damage():
 
 # --- Critical hit ---
 
+
 def test_critical_hit_flag_and_higher_damage():
     normal_result = calc(crit_modifier=0)
     with patch("src.core.combat_calculator._roll_critical", return_value=True):
@@ -117,6 +183,7 @@ def test_critical_hit_flag_and_higher_damage():
 
 
 # --- Miss ---
+
 
 def test_miss_returns_zero_damage():
     with patch("src.core.combat_calculator._check_accuracy", return_value=False):
@@ -133,25 +200,33 @@ def test_no_accuracy_move_never_misses():
 
 # --- Stat stages ---
 
+
 def test_positive_stat_stage_increases_effective_stat():
-    low = _get_stat("attack", make_stat(attack=50), {}, "")
-    high = _get_stat("attack", make_stat(attack=50), {"attack": 3}, "")
+    low = _get_stat(Stat.ATTACK, make_stat(attack=50), {}, StatusEffect.NONE)
+    high = _get_stat(
+        Stat.ATTACK, make_stat(attack=50), {Stat.ATTACK: 3}, StatusEffect.NONE
+    )
     assert high > low
 
 
 def test_negative_stat_stage_decreases_effective_stat():
-    base = _get_stat("attack", make_stat(attack=50), {}, "")
-    low = _get_stat("attack", make_stat(attack=50), {"attack": -3}, "")
+    base = _get_stat(Stat.ATTACK, make_stat(attack=50), {}, StatusEffect.NONE)
+    low = _get_stat(
+        Stat.ATTACK, make_stat(attack=50), {Stat.ATTACK: -3}, StatusEffect.NONE
+    )
     assert low < base
 
 
 def test_paralysis_halves_speed():
-    normal_speed = _get_stat("speed", make_stat(speed=100), {}, "")
-    para_speed = _get_stat("speed", make_stat(speed=100), {}, "paralyzed")
+    normal_speed = _get_stat(Stat.SPEED, make_stat(speed=100), {}, StatusEffect.NONE)
+    para_speed = _get_stat(
+        Stat.SPEED, make_stat(speed=100), {}, StatusEffect.PARALYSIS
+    )
     assert para_speed == normal_speed // 2
 
 
 # --- Level scaling ---
+
 
 def test_higher_level_attacker_deals_more_damage():
     low_level = calc(level=5)
@@ -160,6 +235,7 @@ def test_higher_level_attacker_deals_more_damage():
 
 
 # --- Dual-type / STAB combos ---
+
 
 def test_dual_type_defender_multipliers_stack():
     # water vs fire/rock: 2.0 * 2.0 = 4.0
@@ -173,13 +249,21 @@ def test_dual_type_defender_multipliers_stack():
 
 def test_stab_plus_super_effective_stacks():
     with patch("src.core.combat_calculator._roll_critical", return_value=False):
-        stab_se = calc(move=make_move(type_="fire"), attacker_types=["fire"], defender_types=["grass"])
-        no_stab = calc(move=make_move(type_="fire"), attacker_types=["normal"], defender_types=["grass"])
+        stab_se = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["fire"],
+            defender_types=["grass"],
+        )
+        no_stab = calc(
+            move=make_move(type_="fire"),
+            attacker_types=["normal"],
+            defender_types=["grass"],
+        )
     assert stab_se.damage > no_stab.damage
 
 
 def test_burn_status_does_not_affect_attack_currently():
     # burn reducing attack is not implemented — documents missing feature
-    normal = _get_stat("attack", make_stat(attack=100), {}, "")
-    burned = _get_stat("attack", make_stat(attack=100), {}, "burn")
+    normal = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.NONE)
+    burned = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.BURN)
     assert burned == normal

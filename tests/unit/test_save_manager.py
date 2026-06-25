@@ -4,10 +4,11 @@ import pytest
 
 from src.core.save_manager import SaveManager
 from src.core.player_serializer import PlayerSerializer
-from src.model.player import PlayerState
+from src.model.motion.player_motion import PlayerMotion
 
 
 # --- deserialize ---
+
 
 def test_parse_player_pokemon_name(save_manager):
     assert save_manager.player.pokemon[0].name == "mudkip"
@@ -40,16 +41,21 @@ def test_parse_player_pokeballs(save_manager):
 
 # --- serialize round-trip ---
 
+
 def test_deparse_player_round_trip(save_manager):
     original_name = save_manager.player.pokemon[0].name
     data = PlayerSerializer.serialize(save_manager.player)
     re_parsed = PlayerSerializer.deserialize(data)
     assert re_parsed.pokemon[0].name == original_name
     assert re_parsed.pokemon[0].level == save_manager.player.pokemon[0].level
-    assert re_parsed.pokemon[0].moves[0].name == save_manager.player.pokemon[0].moves[0].name
+    assert (
+        re_parsed.pokemon[0].moves[0].name
+        == save_manager.player.pokemon[0].moves[0].name
+    )
 
 
 # --- get_pokemon ---
+
 
 def test_get_pokemon_found(save_manager):
     result = save_manager.player.get_pokemon("mudkip")
@@ -62,6 +68,7 @@ def test_get_pokemon_not_found_returns_none(save_manager):
 
 
 # --- update_hp ---
+
 
 def test_update_hp_normal(save_manager):
     save_manager.player.update_hp("mudkip", 20)
@@ -79,12 +86,14 @@ def test_update_hp_unknown_pokemon_does_not_crash(save_manager):
 
 # --- update_move_pp ---
 
+
 def test_update_move_pp(save_manager):
     save_manager.player.update_move_pp("mudkip", "tackle", 5)
     assert save_manager.player.get_pokemon("mudkip").moves[0].pp == 5
 
 
 # --- update_level ---
+
 
 def test_update_level(save_manager):
     save_manager.player.update_level("mudkip", 15, 200)
@@ -102,8 +111,11 @@ def test_update_level_with_evolution_changes_name(save_manager):
 
 # --- flush_save (replaces compile_save_state tests) ---
 
+
 def test_flush_save_writes_position(save_manager, tmp_path):
-    state = PlayerState(map_name="route_101", direction="up", pixel_x=64.0, pixel_y=128.0)
+    state = PlayerMotion(
+        map_name="route_101", direction="up", pixel_x=64.0, pixel_y=128.0
+    )
     save_manager.flush_save(state)
     data = json.loads((tmp_path / "save.json").read_text())
     assert data["position"]["map_name"] == "route_101"
@@ -112,7 +124,7 @@ def test_flush_save_writes_position(save_manager, tmp_path):
 
 
 def test_flush_save_writes_pokemons(save_manager, tmp_path):
-    state = PlayerState()
+    state = PlayerMotion()
     save_manager.flush_save(state)
     data = json.loads((tmp_path / "save.json").read_text())
     assert len(data["pokemons"]) == 1
@@ -121,8 +133,11 @@ def test_flush_save_writes_pokemons(save_manager, tmp_path):
 
 # --- flush_save + reload ---
 
+
 def test_flush_save_creates_file(save_manager, tmp_path):
-    state = PlayerState(map_name="test_map", direction="right", pixel_x=10.0, pixel_y=20.0)
+    state = PlayerMotion(
+        map_name="test_map", direction="right", pixel_x=10.0, pixel_y=20.0
+    )
     result = save_manager.flush_save(state)
     assert result is True
     assert (tmp_path / "save.json").exists()
@@ -130,11 +145,14 @@ def test_flush_save_creates_file(save_manager, tmp_path):
 
 def test_flush_save_and_reload_preserves_state(save_manager, tmp_path, monkeypatch):
     save_manager.player.update_hp("mudkip", 30)
-    state = PlayerState(map_name="littleroot_town", direction="down", pixel_x=5.0, pixel_y=5.0)
+    state = PlayerMotion(
+        map_name="littleroot_town", direction="down", pixel_x=5.0, pixel_y=5.0
+    )
     save_manager.flush_save(state)
 
     monkeypatch.setattr("src.core.save_manager.SAVE_PATH", str(tmp_path / "save.json"))
     from src.core.save_manager import SaveManager as SM2
+
     sm2 = SM2()
     assert sm2.player.get_pokemon("mudkip").hp == 30
 
@@ -147,8 +165,20 @@ def test_missing_save_json_falls_back_to_default(save_manager):
 def test_parse_player_multi_pokemon(save_manager):
     data = {
         "pokemons": [
-            {"name": "mudkip",  "hp": 50, "level": 10, "exp": 0, "moves": [{"name": "tackle", "pp": 35}]},
-            {"name": "treecko", "hp": 45, "level":  8, "exp": 0, "moves": [{"name": "growl",  "pp": 40}]},
+            {
+                "name": "mudkip",
+                "hp": 50,
+                "level": 10,
+                "exp": 0,
+                "moves": [{"name": "tackle", "pp": 35}],
+            },
+            {
+                "name": "treecko",
+                "hp": 45,
+                "level": 8,
+                "exp": 0,
+                "moves": [{"name": "growl", "pp": 40}],
+            },
         ],
         "items": [],
         "pokeballs": [],
@@ -164,12 +194,33 @@ def test_update_move_unknown_move_name_no_crash(save_manager):
     assert save_manager.player.get_pokemon("mudkip").moves[0].pp == 35
 
 
-def test_load_corrupted_json_raises(tmp_path, monkeypatch):
-    import json as _json
+def test_load_corrupted_save_falls_back(tmp_path, monkeypatch):
+    """A corrupt save.json must not brick startup — fall back to the default."""
     corrupt = tmp_path / "save.json"
     corrupt.write_text("{not valid json}")
     monkeypatch.setattr("src.core.save_manager.SAVE_PATH", str(corrupt))
-    monkeypatch.setattr("src.core.save_manager.DEFAULT_PATH", str(tmp_path / "missing.json"))
+    monkeypatch.setattr(
+        "src.core.save_manager.SAVE_BAK_PATH", str(tmp_path / "missing_bak.json")
+    )
+    # DEFAULT_PATH stays the shipped data/player.json (valid baseline)
     from src.core.save_manager import SaveManager as SM2
-    with pytest.raises((_json.JSONDecodeError, FileNotFoundError)):
+
+    sm = SM2()  # must NOT raise
+    assert sm.player is not None
+
+
+def test_load_all_sources_unreadable_raises(tmp_path, monkeypatch):
+    """If save, backup, and default are all unreadable, loading raises."""
+    corrupt = tmp_path / "save.json"
+    corrupt.write_text("{not valid json}")
+    monkeypatch.setattr("src.core.save_manager.SAVE_PATH", str(corrupt))
+    monkeypatch.setattr(
+        "src.core.save_manager.SAVE_BAK_PATH", str(tmp_path / "missing_bak.json")
+    )
+    monkeypatch.setattr(
+        "src.core.save_manager.DEFAULT_PATH", str(tmp_path / "missing.json")
+    )
+    from src.core.save_manager import SaveManager as SM2
+
+    with pytest.raises(RuntimeError):
         SM2()
