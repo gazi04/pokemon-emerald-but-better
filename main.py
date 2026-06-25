@@ -1,8 +1,10 @@
 import arcade
 from data.config import Config
 from src.core.game_director import GameDirector
+from src.core.logger import configure_logging
 
 CONFIG = Config.load()
+configure_logging(CONFIG.logging)
 
 
 def main():
