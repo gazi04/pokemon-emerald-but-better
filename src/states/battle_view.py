@@ -1,4 +1,5 @@
 import arcade
+import random
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
@@ -41,14 +42,15 @@ class BattleView(GameView):
 
         self.playerPokemon = self.player_manager.player.pokemon
 
-        player_profile = data_loader.get_pokemon(self.playerPokemon[0].name)
+        lead_pokemon = self.playerPokemon[0]
+        player_profile = data_loader.get_pokemon(lead_pokemon.name)
         if player_profile is None:
             raise ValueError(
-                f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
+                f"Player pokemon data for '{lead_pokemon.name}' could not be loaded."
             )
 
         self.your_battle = BattlePokemon.from_player(
-            player_profile, self.playerPokemon[0]
+            data_loader.get_ability(lead_pokemon.ability), player_profile, lead_pokemon
         )
         self.your_sprite = PokemonSprite(player_profile, False)
 
@@ -61,17 +63,21 @@ class BattleView(GameView):
                 raise ValueError(
                     f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None."
                 )
+                
+            abilities = data_loader.get_ability(random.choice(foe_pokemon_data.abilities))
 
             self.enemy_battle = BattlePokemon.from_wild(
                 foe_pokemon_data,
                 foe_pokemon_name,
                 foe_level,
                 select_wild_moves(foe_pokemon_data, foe_level, data_loader),
+                abilities
             )
             self.enemy_sprite = PokemonSprite(foe_pokemon_data, True)
         else:
             first = trainer_data.party[0]
             first_profile = data_loader.get_pokemon(first.name)
+            ability = data_loader.get_ability(first.ability)
             if first_profile is None:
                 raise ValueError(f"Trainer pokemon '{first.name}' not found in data.")
 
@@ -80,6 +86,7 @@ class BattleView(GameView):
                 first.name,
                 first.level,
                 first.moves,
+                ability
             )
             self.enemy_sprite = PokemonSprite(first_profile, True)
 

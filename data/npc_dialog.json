@@ -33,6 +33,7 @@
         "name": "zigzagoon",
         "hp": 10,
         "level": 20,
+        "ability": "blaze",
         "moves": [
           {
             "name": "tackle",

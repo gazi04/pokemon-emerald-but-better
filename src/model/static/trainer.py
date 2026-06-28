@@ -18,6 +18,7 @@ class TrainerPokemon:
 
     name: str
     level: int
+    ability: str
     moves: list[TrainerPokemonMove]
 
 
@@ -34,5 +35,5 @@ class Trainer:
                 for move in pokemon["moves"]
             ]
             self.party.append(
-                TrainerPokemon(pokemon["name"], pokemon["level"], moves)
+                TrainerPokemon(pokemon["name"], pokemon["level"], pokemon["ability"], moves)
             )

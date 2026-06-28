@@ -245,7 +245,8 @@ class BattleSystem:
         """
         pokemon = self.player_manager.player.pokemon[0]
         profile = self.data_loader.get_pokemon(pokemon.name)
-        self.your_pokemon.switching_pokemon(pokemon, profile)
+        ability = self.data_loader.get_ability(pokemon.ability)
+        self.your_pokemon.switching_pokemon(pokemon, ability, profile)
         return [f"Go {pokemon.name}!"]
 
     def apply_exp_award(self) -> ExpGainResult:
@@ -266,6 +267,7 @@ class BattleSystem:
                 level=enemy.level,
                 exp=0,
                 moves=enemy.moves,
+                ability=enemy.ability.name.lower()
             )
         )
 

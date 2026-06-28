@@ -7,6 +7,7 @@ from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
 from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
+from src.model.static.ability import Ability
 
 
 class BattlePokemon:
@@ -18,11 +19,12 @@ class BattlePokemon:
         moves: list,
         level: int,
         exp: int,
+        ability: Ability,
         current_hp: Optional[int],
         source: Optional[PlayerPokemon],
     ):
         self.is_enemy = is_enemy
-        self._apply(data, name, moves, level, exp, current_hp, source)
+        self._apply(data, name, moves, level, exp, ability, current_hp, source)
 
         # Dispatch over effect.type — add an effect kind by adding a handler,
         # not by editing the loop (mirrors npc_behaviors.make_behavior / bag_system).
@@ -34,6 +36,7 @@ class BattlePokemon:
     @classmethod
     def from_player(
         cls,
+        ability: Ability,
         species: PokemonSpecies,
         player_pokemon: PlayerPokemon,
         is_enemy: bool = False,
@@ -45,6 +48,7 @@ class BattlePokemon:
             player_pokemon.moves,
             player_pokemon.level,
             player_pokemon.exp,
+            ability,
             player_pokemon.hp,
             player_pokemon,
         )
@@ -56,9 +60,10 @@ class BattlePokemon:
         name: str,
         level: int,
         moves: list,
+        ability: Ability,
         is_enemy: bool = True,
     ) -> "BattlePokemon":
-        return cls(species, is_enemy, name, moves, level, 0, None, None)
+        return cls(species, is_enemy, name, moves, level, 0, ability, None, None)
 
     def _apply(
         self,
@@ -67,6 +72,7 @@ class BattlePokemon:
         moves: list,
         level: int,
         exp: int,
+        ability: Ability,
         current_hp: Optional[int],
         source: Optional[PlayerPokemon],
     ):
@@ -75,6 +81,8 @@ class BattlePokemon:
         self.source = source
         self.name = name.capitalize()
         self.moves = moves
+        self.ability = ability
+        print(ability)
         self._load_species(data)
         self.progression = Progression(level, exp, self.base_exp, self.evolution)
         self.calculate_stats()
@@ -159,13 +167,14 @@ class BattlePokemon:
     def take_damage(self, damage: int):
         self.current_hp = max(0, self.current_hp - damage)
 
-    def switching_pokemon(self, player_pokemon: PlayerPokemon, data: PokemonSpecies):
+    def switching_pokemon(self, player_pokemon: PlayerPokemon, ability: Ability, data: PokemonSpecies):
         self._apply(
             data,
             player_pokemon.name,
             player_pokemon.moves,
             player_pokemon.level,
             player_pokemon.exp,
+            ability,
             player_pokemon.hp,
             player_pokemon,
         )
@@ -286,6 +295,16 @@ class BattlePokemon:
             messages.append(f"{self.name} is thaw!")
         
         return messages
+    
+    # ------------------------------------------------------------------
+    # The logic of the abilites
+    # ------------------------------------------------------------------
+
+    def on_attack(self):
+        pass
+    
+    def on_hit(self):
+        pass
 
     # ------------------------------------------------------------------
     # Exp and levelling — delegated to self.progression; this object only
