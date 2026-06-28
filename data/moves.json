@@ -59,6 +59,16 @@
             { "target": "opponent", "type": "status condition", "condition": "burn" }
         ]
     },
+    "freeze": {
+        "category": "status",
+        "type": "ice",
+        "power": null,
+        "accuracy": 85,
+        "pp": 15,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "freeze" }
+        ]
+    },
     "thunder wave": {
         "category": "status",
         "type": "electric",

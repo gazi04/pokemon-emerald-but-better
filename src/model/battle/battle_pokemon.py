@@ -183,6 +183,9 @@ class BattlePokemon:
         """
         if self.status_effect == StatusEffect.PARALYSIS and random.random() < 0.25:
             return (["The Pokémon is fully paralyzed!"], False)
+        
+        if self.status_effect == StatusEffect.FREEZE:
+            return (["The Pokémon is freezed!"], False)
 
         if self.sleep_counter != 0 and self.status_effect == StatusEffect.SLEEP:
             self.sleep_counter -= 1
@@ -277,7 +280,11 @@ class BattlePokemon:
             damage = max(1, int(self.max_hp / 8))
             self.take_damage(damage)
             messages.append(f"{self.name} is burned!")
-            
+        
+        if self.status_effect == StatusEffect.FREEZE and random.random() < 0.2:
+            self.status_effect = StatusEffect.NONE
+            messages.append(f"{self.name} is thaw!")
+        
         return messages
 
     # ------------------------------------------------------------------
