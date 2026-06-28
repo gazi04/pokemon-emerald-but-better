@@ -345,6 +345,8 @@ class BattleView(GameView):
         self.ui.draw_hp_bar(self.your_battle.get_hp_ratio(), "player")
         self.ui.draw_exp_bar(self.your_battle.get_exp_ratio())
         self.ui.draw_hp_bar(self.enemy_battle.get_hp_ratio(), "enemy")
+        self.ui.draw_status(self.your_battle.status_effect, "player")
+        self.ui.draw_status(self.enemy_battle.status_effect, "enemy")
 
     def on_update(self, delta_time):
         self.ui.update(delta_time)

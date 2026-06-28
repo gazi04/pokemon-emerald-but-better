@@ -4,6 +4,11 @@ from src.ui.layout_parser import parse_battle_layout
 from src.ui.components.typewriter_message_box import TypewriterMessageBox
 from src.ui.components.battle_menu_panel import BattleMenuPanel
 from src.constants import BATTLE_UI
+from src.enums.status_effect import StatusEffect
+
+# Each StatusEffect value maps directly to a sprite file name.
+_STATUS_DIR = "assets/sprite/status_effect"
+_STATUS_SCALE = 2.0
 
 
 class BattleUiManager:
@@ -18,6 +23,13 @@ class BattleUiManager:
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.manager._pixelated = True
+        
+        # Status-condition icons (poison / paralysis / sleep / burn / freeze)
+        self._status_textures = {
+            status: arcade.load_texture(f"{_STATUS_DIR}/{status.value}.png")
+            for status in StatusEffect
+            if status is not StatusEffect.NONE
+        }
 
         # Static graphics
         self._build_static_graphics()
@@ -120,6 +132,27 @@ class BattleUiManager:
                 texture=arcade.load_texture("assets/ui/sprites/enemyHpBar.png"),
             )
             self.manager.add(self.enemy_hp_widget)
+
+        # Status Effects
+        if "status_effect_player" in self.bounds:
+            b = self.bounds["status_effect_player"]
+            self.status_effect_player = arcade.gui.UIImage(
+                x=b["x"],
+                y=b["y"],
+                width=b["w"],
+                height=b["h"],
+                texture=self._status_textures["burn"],
+            )
+        
+        if "status_effect_enemy" in self.bounds:
+            b = self.bounds["status_effect_enemy"]
+            self.status_effect_enemy = arcade.gui.UIImage(
+                x=b["x"],
+                y=b["y"],
+                width=b["w"],
+                height=b["h"],
+                texture=self._status_textures["burn"],
+            )
 
         # Labels
         if "player_name" in self.bounds:
@@ -328,6 +361,23 @@ class BattleUiManager:
             top=bar["y"] + bar["h"],
             color=color,
         )
+
+    def draw_status(self, status: StatusEffect, target: str):
+        """Draw the status-condition icon for a combatant, just left of its HP
+        bar. Does nothing when the Pokémon has no status."""
+        
+        ui = self.status_effect_player if target == "player" else self.status_effect_enemy
+        
+        if not status or status is StatusEffect.NONE:
+            self.manager.remove(ui)
+            return
+        
+        texture = self._status_textures.get(status)
+        bar = self.hp_bars.get(target)
+
+        ui.texture = texture
+        self.manager.add(ui)
+        
 
     def draw_exp_bar(self, ratio: float):
         if not self.exp_bar:

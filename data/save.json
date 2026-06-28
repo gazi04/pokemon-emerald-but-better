@@ -2,7 +2,7 @@
     "pokemons": [
         {
             "name": "combusken",
-            "hp": 2,
+            "hp": 30,
             "level": 16,
             "exp": 46,
             "moves": [
@@ -12,6 +12,10 @@
                 },
                 {
                     "name": "tackle",
+                    "pp": 10
+                },
+                {
+                    "name": "toxic",
                     "pp": 10
                 }
             ]

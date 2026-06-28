@@ -1,13 +1,13 @@
 {
-    "activeFile": "map/oldale_town/pokemon_center.tmx",
+    "activeFile": "ui/battleUiDesign.tmx",
     "expandedProjectPaths": [
-        "map/little_root_town",
-        "map/oldale_town",
-        "ui",
-        "ui/sprites",
+        "map/tilesets",
         ".",
-        "map",
-        "map/tilesets"
+        "ui/sprites",
+        "map/little_root_town",
+        "ui",
+        "map/oldale_town",
+        "map"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -119,11 +119,11 @@
         },
         "map/oldale_town/pokemon_center.tmx": {
             "expandedObjectLayers": [
-                4,
-                6
+                6,
+                4
             ],
             "scale": 3,
-            "selectedLayer": 1,
+            "selectedLayer": 3,
             "viewCenter": {
                 "x": 248.33333333333331,
                 "y": 133.66666666666669
@@ -299,6 +299,14 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "ui/battleUiDesign.tmx": {
+            "scale": 0.015625,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 16384,
+                "y": 12928
+            }
+        },
         "ui/pokemon_center.tmx": {
             "scale": 2.9667708333333334,
             "selectedLayer": 0,
@@ -325,7 +333,7 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "/home/gazi/Documents/projects/pokemon-emerald/assets/map/tilesets",
+    "last.imagePath": "C:/Users/Enes/Documents/Enes/Pokemon-Emerald/assets/sprite/status_effect",
     "map.fixedSize": false,
     "map.height": 20,
     "map.lastUsedFormat": "tmx",
@@ -333,26 +341,24 @@
     "map.tileWidth": 16,
     "map.width": 10,
     "openFiles": [
-        "map/oldale_town/home1.tmx",
-        "map/oldale_town/pokemon_center.tmx",
-        "map/littleroot_town.tmx",
-        "map/oldale_town/poke_mart.tmx"
+        "ui/battleUiDesign.tmx",
+        "ui/sprites/ui.tsx"
     ],
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "map/oldale_town/home1.tmx",
+        "ui/sprites/ui.tsx",
+        "ui/battleUiDesign.tmx",
         "map/oldale_town/poke_mart.tmx",
         "map/littleroot_town.tmx",
+        "map/oldale_town/home1.tmx",
         "map/oldale_town/pokemon_center.tmx",
         "map/tilesets/interior_areas.tsx",
         "map/oldale_town/home2.tmx",
         "ui/second_home_room.tmx",
         "map/little_root_town/second_home.tmx",
         "map/little_root_town/home.tmx",
-        "map/little_root_town/home_room.tmx",
-        "map/little_root_town/birch_labor.tmx",
-        "map/Interior Tilesets.tsx"
+        "map/little_root_town/home_room.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
