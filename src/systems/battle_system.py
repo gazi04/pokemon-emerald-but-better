@@ -124,6 +124,18 @@ class BattleSystem:
         if not can_move:
             return messages
 
+        # Ability: defender immunity (e.g. Levitate vs Ground) — absolute, so
+        # short-circuit before accuracy/damage are even rolled.
+        immunity_message = defender.immunity_to(move_data)
+        if immunity_message:
+            messages.append(immunity_message)
+            return messages
+
+        # Ability: attacker on-attack power boost (e.g. Blaze at low HP).
+        attack_multiplier, ability_attack_messages = attacker.ability_attack_multiplier(
+            move_data
+        )
+
         # Pure damage calculation — no side effects
         result = calculate_damage(
             attacker_level=attacker.level,
@@ -141,17 +153,22 @@ class BattleSystem:
 
         messages.extend(result.messages)
 
-        # Apply damage
-        hp_before = defender.current_hp
-        if result.damage > 0:
-            defender.take_damage(result.damage)
-
         if result.is_miss:
             return messages
+
+        # Apply damage (with any attacker-ability multiplier)
+        damage = round(result.damage * attack_multiplier)
+        hp_before = defender.current_hp
+        if damage > 0:
+            defender.take_damage(damage)
+            messages.extend(ability_attack_messages)
 
         # Apply move effects (stat changes, status conditions) — state mutation
         effect_messages = attacker.execute_effects(move_data, defender)
         messages.extend(effect_messages)
+
+        # Ability: defender on-hit reaction (e.g. Static paralyses on contact)
+        messages.extend(defender.on_hit(attacker, move_data))
 
         # Publish HP change for UI bar update
         self._publish_hp_change(defender_label, hp_before, defender)

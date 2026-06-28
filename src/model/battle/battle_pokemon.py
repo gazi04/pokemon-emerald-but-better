@@ -82,7 +82,6 @@ class BattlePokemon:
         self.name = name.capitalize()
         self.moves = moves
         self.ability = ability
-        print(ability)
         self._load_species(data)
         self.progression = Progression(level, exp, self.base_exp, self.evolution)
         self.calculate_stats()
@@ -297,14 +296,85 @@ class BattlePokemon:
         return messages
     
     # ------------------------------------------------------------------
-    # The logic of the abilites
+    # Abilities — data-driven hooks fired by BattleSystem during a move.
+    # Mirrors the move-effect dispatch above: each trigger reads this
+    # pokemon's ability effects and applies the ones whose condition holds.
     # ------------------------------------------------------------------
 
-    def on_attack(self):
-        pass
-    
-    def on_hit(self):
-        pass
+    def _ability_effects(self, trigger: str) -> list:
+        if not self.ability or not self.ability.effects:
+            return []
+        return [e for e in self.ability.effects if e.trigger == trigger]
+
+    def _ability_condition_met(self, effect, move) -> bool:
+        """Gate an ability effect on its `condition` (None == always)."""
+        condition = effect.condition
+        if not condition:
+            return True
+        if condition == "low_hp":
+            return self.current_hp <= self.max_hp / 3
+        if condition == "contact":
+            return move is not None and move.category == "physical"
+        if condition == "ground_type":
+            return move is not None and move.type == "ground"
+        return False
+
+    def ability_attack_multiplier(self, move) -> tuple[float, list[str]]:
+        """Attacker hook (trigger 'on_attack'). Returns a damage multiplier and
+        any UI messages — e.g. Blaze powering up the attack at low HP."""
+        multiplier = 1.0
+        messages: list[str] = []
+        for effect in self._ability_effects("on_attack"):
+            if effect.type != "stat_boost":
+                continue
+            if not self._ability_condition_met(effect, move):
+                continue
+            multiplier *= 1 + (effect.change or 0) / 100
+            messages.append(f"{self.name}'s {self.ability.name} powered up the move!")
+        return multiplier, messages
+
+    def immunity_to(self, move) -> Optional[str]:
+        """Defender hook. Returns a message if this pokemon's ability makes it
+        immune to `move` (e.g. Levitate vs Ground), else None."""
+        for effect in self._ability_effects("on_hit"):
+            if effect.type == "immunity" and self._ability_condition_met(effect, move):
+                return f"It doesn't affect {self.name}…"
+        return None
+
+    def on_hit(self, attacker: "BattlePokemon", move) -> list[str]:
+        """Defender hook after being hit (trigger 'on_hit', type 'status') —
+        e.g. Static paralysing the attacker on contact."""
+        messages: list[str] = []
+        for effect in self._ability_effects("on_hit"):
+            if effect.type != "status":
+                continue
+            if not self._ability_condition_met(effect, move):
+                continue
+            chance = effect.chance if effect.chance is not None else 1.0
+            if random.random() >= chance:
+                continue
+
+            victim = attacker if effect.target == "enemy" else self
+            status = self._status_from(effect.status)
+            if status is None or victim.status_effect != StatusEffect.NONE:
+                continue
+
+            victim.status_effect = status
+            if status == StatusEffect.SLEEP:
+                victim.sleep_counter = random.randint(2, 5)
+            messages.append(
+                f"{victim.name} was {status.value} by {self.name}'s {self.ability.name}!"
+            )
+        return messages
+
+    @staticmethod
+    def _status_from(value) -> Optional[StatusEffect]:
+        if not value:
+            return None
+        try:
+            return StatusEffect(value)
+        except ValueError:
+            return None
 
     # ------------------------------------------------------------------
     # Exp and levelling — delegated to self.progression; this object only

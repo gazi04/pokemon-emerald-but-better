@@ -25,7 +25,8 @@
                 "condition": "contact",
                 "stat": null,
                 "change": null,
-                "chance": 0.3
+                "chance": 0.3,
+                "status": "paralyzed"
             }
         ]
     },

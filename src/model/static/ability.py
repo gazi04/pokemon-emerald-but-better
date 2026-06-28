@@ -8,8 +8,9 @@ class AbilityEffect:
     target: str         # "self" | "enemy"
     stat: str | None = None
     change: int | None = None
-    condition: str | None = None   # e.g. "paralysis", "burn" — triggers only under this condition
+    condition: str | None = None   # trigger gate, e.g. "low_hp" | "contact" | "ground_type"
     chance: float | None = None    # 0.0 - 1.0, None means always
+    status: str | None = None      # status to inflict for type=="status" (e.g. "paralyzed")
 
 @dataclass
 class Ability:
