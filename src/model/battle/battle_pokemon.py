@@ -145,6 +145,9 @@ class BattlePokemon:
 
         if stat == Stat.SPEED and self.status_effect == StatusEffect.PARALYSIS:
             fraction *= 0.5
+            
+        if stat == Stat.ATTACK and self.status_effect == StatusEffect.BURN:
+            fraction *= 0.5
 
         return round(base * fraction)
 
@@ -269,6 +272,12 @@ class BattlePokemon:
             damage = max(1, int(self.max_hp / 12.5))
             self.take_damage(damage)
             messages.append(f"{self.name} is hurt by poison!")
+        
+        if self.status_effect == StatusEffect.BURN:
+            damage = max(1, int(self.max_hp / 8))
+            self.take_damage(damage)
+            messages.append(f"{self.name} is burned!")
+            
         return messages
 
     # ------------------------------------------------------------------

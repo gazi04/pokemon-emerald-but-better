@@ -49,6 +49,16 @@
             { "target": "opponent", "type": "status condition", "condition": "poison" }
         ]
     },
+    "will-o-wisp": {
+        "category": "status",
+        "type": "fire",
+        "power": null,
+        "accuracy": 85,
+        "pp": 15,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "burn" }
+        ]
+    },
     "thunder wave": {
         "category": "status",
         "type": "electric",
