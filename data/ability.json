@@ -1,0 +1,47 @@
+{
+    "blaze": {
+        "name": "Blaze",
+        "description": "Powers up Fire-type moves when HP is low.",
+        "effects": [
+            {
+                "trigger": "on_attack",
+                "type": "stat_boost",
+                "target": "self",
+                "stat": "attack",
+                "change": 50,
+                "condition": "low_hp",
+                "chance": null
+            }
+        ]
+    },
+    "static": {
+        "name": "Static",
+        "description": "May paralyze the attacker on contact.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "status",
+                "target": "enemy",
+                "condition": "contact",
+                "stat": null,
+                "change": null,
+                "chance": 0.3
+            }
+        ]
+    },
+    "levitate": {
+        "name": "Levitate",
+        "description": "Gives immunity to Ground-type moves.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "immunity",
+                "target": "self",
+                "condition": "ground_type",
+                "stat": null,
+                "change": null,
+                "chance": null
+            }
+        ]
+    }
+}

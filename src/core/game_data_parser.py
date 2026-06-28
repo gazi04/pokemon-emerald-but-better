@@ -10,6 +10,7 @@ from src.model.static.pokemon import (
 from src.model.static.item import ItemSpecies, ItemEffect
 from src.model.static.npc import NpcSpecies
 from src.model.static.trainer import Trainer
+from src.model.static.ability import Ability
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
@@ -102,3 +103,12 @@ class GameDataParser:
                 team=Trainer(raw.get("team", [])),
             )
         return npcs
+    
+    @staticmethod
+    def parse_ability(data: dict) -> dict[str, Ability]:
+        ability = {}
+        
+        for name, raw in data.items():
+            ability[name] = Ability(raw)
+        
+        return ability
