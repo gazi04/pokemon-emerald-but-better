@@ -125,13 +125,13 @@ class PokemonInformationUI:
                     )
                 )
 
-        abilities = _profile.abilities or []
-        ability = abilities[0].upper() if abilities else "—"
+        ability = pokemon.ability
+        ability_description = data_loader.get_ability(ability).description
 
         _label_map_info = {
             "name": pokemon.name.upper(),
-            "abylity_name": ability,
-            "ability_description": "—",
+            "abylity_name": ability.upper(),
+            "ability_description": ability_description,
         }
 
         for obj in tilemap.get_tilemap_layer("pokemon_profile").tiled_objects:

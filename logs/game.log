@@ -1,0 +1,4 @@
+11:25:33 WARNING src.core.save_manager: Failed to load save 'data/save.json': PlayerPokemon.__init__() missing 1 required positional argument: 'ability'
+11:25:33 WARNING src.core.save_manager: Failed to load save 'data/player.json': PlayerPokemon.__init__() missing 1 required positional argument: 'ability'
+11:26:01 WARNING src.core.save_manager: Failed to load save 'data/save.json': PlayerPokemon.__init__() missing 1 required positional argument: 'ability'
+11:26:01 WARNING src.core.save_manager: Failed to load save 'data/player.json': PlayerPokemon.__init__() missing 1 required positional argument: 'ability'

@@ -14,6 +14,7 @@ class PlayerPokemon:
     hp: int
     level: int
     exp: int
+    ability: str
     moves: list[PlayerPokemonMove]
 
     @property

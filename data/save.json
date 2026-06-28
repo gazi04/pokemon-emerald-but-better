@@ -5,6 +5,7 @@
             "hp": 30,
             "level": 16,
             "exp": 46,
+            "ability": "blaze",
             "moves": [
                 {
                     "name": "close combat",
@@ -25,6 +26,7 @@
             "hp": 0,
             "level": 9,
             "exp": 46,
+            "ability": "blaze",
             "moves": [
                 {
                     "name": "tackle",
