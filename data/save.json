@@ -2,7 +2,7 @@
     "pokemons": [
         {
             "name": "combusken",
-            "hp": 30,
+            "hp": 3,
             "level": 16,
             "exp": 46,
             "ability": "blaze",
@@ -16,7 +16,7 @@
                     "pp": 10
                 },
                 {
-                    "name": "freeze",
+                    "name": "blaze kick",
                     "pp": 10
                 }
             ]

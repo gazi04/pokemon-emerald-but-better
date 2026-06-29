@@ -68,13 +68,17 @@ class BattleSystem:
     def switch_pokemon(self) -> list[str]:
         pokemon = self.player_manager.player.pokemon[0]
         pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
+        ability = self.data_loader.get_ability(pokemon.ability)
 
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
+        
+        messages = [f"Go {pokemon.name}!"]
 
-        self.your_pokemon.switching_pokemon(pokemon, pokemon_profile)
+        self.your_pokemon.switching_pokemon(pokemon, ability, pokemon_profile)
 
-        return [f"Go {pokemon.name}!"]
+        messages.extend(self.your_pokemon.on_switch_in(self.enemy_pokemon))
+        return messages
 
     def execute_next_action(self) -> list[str]:
         if not self.turn_queue:
@@ -197,6 +201,9 @@ class BattleSystem:
 
         messages.extend(self.your_pokemon.after_a_turn())
         messages.extend(self.enemy_pokemon.after_a_turn())
+        
+        messages.extend(self.your_pokemon.on_turn_end(self.enemy_pokemon))
+        messages.extend(self.enemy_pokemon.on_turn_end(self.your_pokemon))
 
         if self.your_pokemon.current_hp != hp_before_yours:
             self._publish_hp_change("player", hp_before_yours, self.your_pokemon)
@@ -260,12 +267,18 @@ class BattleSystem:
         already been reordered so the new active is at index 0. No enemy turn
         follows a forced switch.
         """
+        messages = []
+         
         pokemon = self.player_manager.player.pokemon[0]
         profile = self.data_loader.get_pokemon(pokemon.name)
         ability = self.data_loader.get_ability(pokemon.ability)
         self.your_pokemon.switching_pokemon(pokemon, ability, profile)
-        return [f"Go {pokemon.name}!"]
-
+        
+        messages.extend(self.your_pokemon.on_switch_in(self.enemy_pokemon))
+        messages.append(f"Go {pokemon.name}!")
+        
+        return messages
+    
     def apply_exp_award(self) -> ExpGainResult:
         """Award pending exp to the active Pokémon and clear it. Returns the
         ExpGainResult so the view can react (level-up / evolve / nothing)

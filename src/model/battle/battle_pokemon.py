@@ -7,7 +7,7 @@ from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
 from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
-from src.model.static.ability import Ability
+from src.model.static.ability import Ability, AbilityEffect
 
 
 class BattlePokemon:
@@ -301,70 +301,129 @@ class BattlePokemon:
     # pokemon's ability effects and applies the ones whose condition holds.
     # ------------------------------------------------------------------
 
-    def _ability_effects(self, trigger: str) -> list:
+    def _ability_effects(self, trigger: str) -> list[AbilityEffect]:
         if not self.ability or not self.ability.effects:
             return []
         return [e for e in self.ability.effects if e.trigger == trigger]
 
-    def _ability_condition_met(self, effect, move) -> bool:
+    def _ability_condition_met(self, effect:AbilityEffect, move:PokemonMove = None) -> bool:
         """Gate an ability effect on its `condition` (None == always)."""
         condition = effect.condition
         if not condition:
             return True
         if condition == "low_hp":
             return self.current_hp <= self.max_hp / 3
-        if condition == "contact":
+        if condition == "contact" and move:
             return move is not None and move.category == "physical"
-        if condition == "ground_type":
+        if condition == "ground_type" and move:
             return move is not None and move.type == "ground"
         return False
 
-    def ability_attack_multiplier(self, move) -> tuple[float, list[str]]:
+    def ability_attack_multiplier(self, move:PokemonMove) -> tuple[float, list[str]]:
         """Attacker hook (trigger 'on_attack'). Returns a damage multiplier and
         any UI messages — e.g. Blaze powering up the attack at low HP."""
         multiplier = 1.0
         messages: list[str] = []
         for effect in self._ability_effects("on_attack"):
-            if effect.type != "stat_boost":
+            if effect.type != "damage_boost":
                 continue
             if not self._ability_condition_met(effect, move):
                 continue
+            if move.type != effect.move_type:
+                continue
             multiplier *= 1 + (effect.change or 0) / 100
             messages.append(f"{self.name}'s {self.ability.name} powered up the move!")
+        
         return multiplier, messages
 
-    def immunity_to(self, move) -> Optional[str]:
+    def immunity_to(self, move:PokemonMove) -> Optional[str]:
         """Defender hook. Returns a message if this pokemon's ability makes it
         immune to `move` (e.g. Levitate vs Ground), else None."""
         for effect in self._ability_effects("on_hit"):
-            if effect.type == "immunity" and self._ability_condition_met(effect, move):
+            if effect.type in ["immunity", "absorb"] and self._ability_condition_met(effect, move):
                 return f"It doesn't affect {self.name}…"
         return None
 
-    def on_hit(self, attacker: "BattlePokemon", move) -> list[str]:
-        """Defender hook after being hit (trigger 'on_hit', type 'status') —
-        e.g. Static paralysing the attacker on contact."""
+    def on_hit(self, attacker: "BattlePokemon", move: PokemonMove) -> list[str]:
         messages: list[str] = []
         for effect in self._ability_effects("on_hit"):
-            if effect.type != "status":
-                continue
             if not self._ability_condition_met(effect, move):
                 continue
             chance = effect.chance if effect.chance is not None else 1.0
             if random.random() >= chance:
                 continue
 
-            victim = attacker if effect.target == "enemy" else self
-            status = self._status_from(effect.status)
-            if status is None or victim.status_effect != StatusEffect.NONE:
+            if effect.type == "status":
+                victim = attacker if effect.target == "enemy" else self
+                applied, message = self._apply_status_effect_ability(effect, victim)
+                if applied:
+                    messages.append(message)
+
+            elif effect.type == "absorb":
+                messages.extend(self._heal_from_ability(effect))
+
+        return messages
+    
+    def _apply_status_effect_ability(self, effect:AbilityEffect, destination:"BattlePokemon"):
+        status = self._status_from(effect.status)
+        if status is None or destination.status_effect != StatusEffect.NONE:
+            return (False, "")
+
+        destination.status_effect = status
+        if status == StatusEffect.SLEEP:
+            destination.sleep_counter = random.randint(2, 5)
+            
+        return (True, f"{destination.name} was {status.value} by {self.name}'s {self.ability.name}!")
+    
+    def _heal_from_ability(self, effect: AbilityEffect) -> list[str]:
+        if effect.change is None:
+            return []
+
+        regained = int(self.max_hp * effect.change / 100)
+        self.current_hp = min(self.max_hp, self.current_hp + regained)
+        return [f"{self.name} restored HP using {self.ability.name}!"]
+    
+    def on_switch_in(self, opponent: "BattlePokemon") -> list[str]:
+        messages = []
+        for effect in self._ability_effects("on_switch_in"):
+            if not self._ability_condition_met(effect):
                 continue
 
-            victim.status_effect = status
-            if status == StatusEffect.SLEEP:
-                victim.sleep_counter = random.randint(2, 5)
-            messages.append(
-                f"{victim.name} was {status.value} by {self.name}'s {self.ability.name}!"
-            )
+            if effect.type == "stat_change":
+                target = opponent if effect.target == "enemy" else self
+                messages.extend(self._apply_stat_effect(effect, target))
+                messages.append(f"{self.name}'s {self.ability.name} took effect!")
+
+            elif effect.type == "status":
+                target = opponent if effect.target == "enemy" else self
+                applied, message = self._apply_status_effect_ability(effect, target)
+                if applied:
+                    messages.append(message)
+
+        return messages
+    
+    def on_turn_end(self, opponent: "BattlePokemon") -> list[str]:
+        messages = []
+        for effect in self._ability_effects("on_turn_end"):
+            if not self._ability_condition_met(effect):
+                continue
+
+            if effect.type == "stat_change":
+                target = opponent if effect.target == "enemy" else self
+                messages.extend(self._apply_stat_effect(effect, target))
+
+            elif effect.type == "cure_status":
+                if self.status_effect != StatusEffect.NONE:
+                    chance = effect.chance if effect.chance is not None else 1.0
+                    if random.random() < chance:
+                        cured = self.status_effect.value
+                        self.status_effect = StatusEffect.NONE
+                        self.sleep_counter = 0
+                        messages.append(f"{self.name}'s {self.ability.name} cured its {cured}!")
+
+            elif effect.type == "heal":
+                messages.extend(self._heal_from_ability(effect))
+
         return messages
 
     @staticmethod

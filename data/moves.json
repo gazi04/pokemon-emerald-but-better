@@ -108,5 +108,23 @@
         "effects": [
             { "target": "opponent", "type": "status condition", "condition": "poison", "chance": 30 }
         ]
+    },
+    "earthquake": {
+        "category": "physical",
+        "type": "gronud",
+        "power": 100,
+        "accuracy": 100,
+        "pp": 10,
+        "effects": []
+    },
+    "blaze kick": {
+        "category": "physical",
+        "type": "fire",
+        "power": 90,
+        "accuracy": 90,
+        "pp": 10,
+        "effects": [
+            { "target": "opponent", "type": "status condition", "condition": "burn", "chance": 10 }
+        ]
     }
 }
