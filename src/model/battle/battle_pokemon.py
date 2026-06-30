@@ -135,6 +135,7 @@ class BattlePokemon:
         }
         self.status_effect = StatusEffect.NONE
         self.sleep_counter = 0
+        self.flinched = False
 
     def calculate_stats(self):
         self.stats = self.base_stat.at_level(self.level)
@@ -189,11 +190,15 @@ class BattlePokemon:
         Returns (messages, can_move).
         BattleSystem calls this; it never mutates the defender.
         """
+        if self.flinched:
+            self.flinched = False
+            return (["The Pokemon is flinched!"], False)
+        
         if self.status_effect == StatusEffect.PARALYSIS and random.random() < 0.25:
-            return (["The Pokémon is fully paralyzed!"], False)
+            return (["The Pokemon is fully paralyzed!"], False)
         
         if self.status_effect == StatusEffect.FREEZE:
-            return (["The Pokémon is freezed!"], False)
+            return (["The Pokemon is freezed!"], False)
 
         if self.sleep_counter != 0 and self.status_effect == StatusEffect.SLEEP:
             self.sleep_counter -= 1
@@ -266,12 +271,22 @@ class BattlePokemon:
     def _apply_status_effect(
         self, effect, destination: "BattlePokemon"
     ) -> list[str]:
+        message = []
         chance = effect.chance if effect.chance else 100
         if chance >= random.randint(1, 100):
-            destination.status_effect = effect.condition
-            if destination.status_effect == StatusEffect.SLEEP:
-                destination.sleep_counter = random.randint(2, 5)
-        return []
+            if destination.status_effect == StatusEffect.NONE and effect.condition != StatusEffect.FLINCH:
+                message.append(f"{destination.name} was {effect.condition}.")
+                
+                destination.status_effect = effect.condition
+                if destination.status_effect == StatusEffect.SLEEP:
+                    destination.sleep_counter = random.randint(2, 5)
+            elif destination.status_effect != StatusEffect.NONE or effect.condition != StatusEffect.FLINCH:
+                message.append(f"{destination.name} already has a condition.")
+                
+            if effect.condition == StatusEffect.FLINCH:
+                destination.flinched = True
+            
+        return message
 
     # ------------------------------------------------------------------
     # Post-turn tick — self-contained state mutation
@@ -279,6 +294,7 @@ class BattlePokemon:
 
     def after_a_turn(self) -> list[str]:
         messages = []
+        
         if self.status_effect == StatusEffect.POISON:
             damage = max(1, int(self.max_hp / 12.5))
             self.take_damage(damage)

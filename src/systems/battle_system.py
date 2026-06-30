@@ -177,12 +177,10 @@ class BattleSystem:
             prefix = "" if attacker == self.your_pokemon else "Foe "
             messages.append(f"{prefix}{attacker.name} used {move_data.name}!")
 
-            # Status / PP checks only run once per turn, not per hit
-            # Status / PP checks — BattlePokemon handles its own state
+            # Status / PP checks
             status_messages, can_move = attacker.check_can_move(move_index)
             messages.extend(status_messages)
             if not can_move:
-                self._move_missed_or_blocked = True
                 return messages
 
         # Ability: defender immunity (e.g. Levitate vs Ground) — absolute, so
