@@ -20,8 +20,18 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            {"target": "self", "type": "stat", "stat": "defence", "change": -1},
-            {"target": "self", "type": "stat", "stat": "special_defence", "change": -1}
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "defence",
+                "change": -1
+            },
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "special_defence",
+                "change": -1
+            }
         ]
     },
     "growl": {
@@ -34,7 +44,12 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            {"target": "opponent", "type": "stat", "stat": "attack", "change": -1}
+            {
+                "target": "opponent",
+                "type": "stat",
+                "stat": "attack",
+                "change": -1
+            }
         ]
     },
     "dragon dance": {
@@ -47,8 +62,18 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            {"target": "self", "type": "stat", "stat": "attack", "change": 1},
-            {"target": "self", "type": "stat", "stat": "speed", "change": 1}
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "attack",
+                "change": 1
+            },
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "speed",
+                "change": 1
+            }
         ]
     },
     "toxic": {
@@ -61,7 +86,11 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "poison" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "poison"
+            }
         ]
     },
     "will-o-wisp": {
@@ -74,7 +103,11 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "burn" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "burn"
+            }
         ]
     },
     "freeze": {
@@ -87,7 +120,11 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "freeze" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "freeze"
+            }
         ]
     },
     "thunder wave": {
@@ -100,7 +137,11 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "paralyzed" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "paralyzed"
+            }
         ]
     },
     "spore": {
@@ -113,7 +154,11 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "sleep" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "sleep"
+            }
         ]
     },
     "nuzzle": {
@@ -126,7 +171,12 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "paralyzed", "chance": 100 }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "paralyzed",
+                "chance": 100
+            }
         ]
     },
     "sludge bomb": {
@@ -139,7 +189,12 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "poison", "chance": 30 }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "poison",
+                "chance": 30
+            }
         ]
     },
     "earthquake": {
@@ -163,7 +218,12 @@
         "crit": 1,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "burn", "chance": 10 }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "burn",
+                "chance": 10
+            }
         ]
     },
     "quick attack": {
@@ -209,7 +269,12 @@
         "crit": 0,
         "multi_hit": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "flinch", "chance": 100 }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "flinch",
+                "chance": 100
+            }
         ]
     },
     "double slap": {
@@ -220,7 +285,10 @@
         "pp": 10,
         "priority": 0,
         "crit": 0,
-        "multi_hit": [2, 5],
+        "multi_hit": [
+            2,
+            5
+        ],
         "effects": []
     },
     "fury attack": {
@@ -231,7 +299,10 @@
         "pp": 20,
         "priority": 0,
         "crit": 0,
-        "multi_hit": [2, 5],
+        "multi_hit": [
+            2,
+            5
+        ],
         "effects": []
     },
     "bullet seed": {
@@ -242,7 +313,10 @@
         "pp": 30,
         "priority": 0,
         "crit": 0,
-        "multi_hit": [2, 5],
+        "multi_hit": [
+            2,
+            5
+        ],
         "effects": []
     },
     "double kick": {
@@ -253,7 +327,10 @@
         "pp": 30,
         "priority": 0,
         "crit": 0,
-        "multi_hit": [2, 2],
+        "multi_hit": [
+            2,
+            2
+        ],
         "effects": []
     },
     "night slash": {
@@ -277,5 +354,22 @@
         "crit": 1,
         "multi_hit": null,
         "effects": []
+    },
+    "confuse ray": {
+        "category": "status",
+        "type": "ghost",
+        "power": null,
+        "accuracy": 100,
+        "pp": 10,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "effects": [
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "confusion"
+            }
+        ]
     }
 }

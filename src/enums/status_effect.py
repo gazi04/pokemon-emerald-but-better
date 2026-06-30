@@ -9,3 +9,4 @@ class StatusEffect(StrEnum):
     BURN = "burn"
     FREEZE = "freeze"
     FLINCH = "flinch"
+    CONFUSION = "confusion"

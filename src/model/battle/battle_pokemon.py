@@ -136,6 +136,7 @@ class BattlePokemon:
         self.status_effect = StatusEffect.NONE
         self.sleep_counter = 0
         self.flinched = False
+        self.confusion_counter = 0
 
     def calculate_stats(self):
         self.stats = self.base_stat.at_level(self.level)
@@ -209,12 +210,33 @@ class BattlePokemon:
             # Woke up — still can't move this turn
             return ([f"{self.name} woke up!"], False)
 
+        # Confusion — volatile; its message carries through even if the move
+        # still goes off, so accumulate rather than early-return on a clear.
+        pre_messages: list[str] = []
+        if self.confusion_counter > 0:
+            self.confusion_counter -= 1
+            if self.confusion_counter == 0:
+                pre_messages.append(f"{self.name} snapped out of its confusion!")
+            else:
+                pre_messages.append(f"{self.name} is confused!")
+                if random.random() < 1 / 3:
+                    self.take_damage(self._confusion_self_damage())
+                    pre_messages.append("It hurt itself in its confusion!")
+                    return (pre_messages, False)
+
         if self.moves[move_index].pp <= 0:
-            return (["But there is no PP left!"], False)
+            return (pre_messages + ["But there is no PP left!"], False)
 
         # Decrement PP here — move is confirmed to execute
         self.moves[move_index].pp -= 1
-        return ([], True)
+        return (pre_messages, True)
+
+    def _confusion_self_damage(self) -> int:
+        """A typeless 40-power physical hit against the pokemon's own defence."""
+        attack = self.get_stat(Stat.ATTACK)
+        defence = max(1, self.get_stat(Stat.DEFENCE))
+        raw = ((2 * self.level / 5 + 2) * 40 * attack / defence) / 50 + 2
+        return max(1, round(raw))
 
     # ------------------------------------------------------------------
     # Effect application — stat stage changes and status conditions
@@ -274,6 +296,14 @@ class BattlePokemon:
         message = []
         chance = effect.chance if effect.chance else 100
         if chance >= random.randint(1, 100):
+            if effect.condition == StatusEffect.CONFUSION:
+                # Volatile — independent of the major status condition.
+                if destination.confusion_counter == 0:
+                    destination.confusion_counter = random.randint(2, 5)
+                    message.append(f"{destination.name} became confused!")
+                else:
+                    message.append(f"{destination.name} is already confused.")
+                return message
             if destination.status_effect == StatusEffect.NONE and effect.condition != StatusEffect.FLINCH:
                 message.append(f"{destination.name} was {effect.condition}.")
                 
