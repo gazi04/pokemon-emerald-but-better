@@ -28,7 +28,7 @@ class BattleUiManager:
         self._status_textures = {
             status: arcade.load_texture(f"{_STATUS_DIR}/{status.value}.png")
             for status in StatusEffect
-            if status is not StatusEffect.NONE
+            if status is not StatusEffect.NONE and status is not StatusEffect.FLINCH
         }
 
         # Static graphics

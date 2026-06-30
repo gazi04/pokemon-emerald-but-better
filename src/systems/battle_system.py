@@ -44,13 +44,21 @@ class BattleSystem:
     def turn(self, move_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+    
+        player_priority = self.data_loader.get_move(self.your_pokemon.moves[move_index].name).priority
+        enemy_priority = self.data_loader.get_move(self.enemy_pokemon.moves[enemy_move_index].name).priority
 
-        if self.your_pokemon.get_stat(Stat.SPEED) >= self.enemy_pokemon.get_stat(Stat.SPEED):
+        if self._player_moves_first(self.your_pokemon.get_stat(Stat.SPEED), player_priority, self.enemy_pokemon.get_stat(Stat.SPEED), enemy_priority):
             self.turn_queue = [("player", move_index, -1), ("enemy", enemy_move_index, -1)]
         else:
             self.turn_queue = [("enemy", enemy_move_index, -1), ("player", move_index, -1)]
 
         return self.execute_next_action()
+    
+    def _player_moves_first(self, player_speed: int, player_priority: int, enemy_speed: int, enemy_priority: int) -> bool:
+        return player_priority > enemy_priority or (
+            player_priority == enemy_priority and player_speed >= enemy_speed
+        )
 
     def turn_use_item(self, item_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
