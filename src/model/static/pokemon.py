@@ -65,6 +65,9 @@ class PokemonMove:
     power: int
     accuracy: int
     pp: int
+    priority: int
+    crit: int
+    multi_hit: list[int] | None
     effects: list[PokemonMoveEffect]
 
 

@@ -65,7 +65,10 @@ class GameDataParser:
                 power=raw["power"],
                 accuracy=raw["accuracy"],
                 pp=raw["pp"],
-                effects=effects,
+                priority=raw["priority"],
+                crit=raw["crit"],
+                multi_hit=raw["multi_hit"],
+                effects=effects
             )
         return moves
 
