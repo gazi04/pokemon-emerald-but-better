@@ -98,7 +98,7 @@ class BattleSystem:
         if attacker_key == "player" and self.your_pokemon.current_hp > 0:
             if item_index == -1:
                 messages.extend(
-                    self._execute_move(
+                    self._dispatch_move(
                         self.your_pokemon, self.enemy_pokemon, move_index, "enemy"
                     )
                 )
@@ -107,13 +107,58 @@ class BattleSystem:
 
         elif attacker_key == "enemy" and self.enemy_pokemon.current_hp > 0:
             messages.extend(
-                self._execute_move(
+                self._dispatch_move(
                     self.enemy_pokemon, self.your_pokemon, move_index, "player"
                 )
             )
 
         if self.your_pokemon.current_hp <= 0 or self.enemy_pokemon.current_hp <= 0:
             self.turn_queue.clear()
+
+        return messages
+    
+    def _dispatch_move(
+        self,
+        attacker: BattlePokemon,
+        defender: BattlePokemon,
+        move_index: int,
+        defender_label: str,
+    ) -> list[str]:
+        """Routes to single-hit or multi-hit execution based on move data."""
+        move_data = self.data_loader.get_move(attacker.moves[move_index].name)
+
+        if move_data.multi_hit:
+            return self._execute_move_multiple_times(
+                attacker, defender, move_index, defender_label
+            )
+        return self._execute_move(attacker, defender, move_index, defender_label)
+
+    def _execute_move_multiple_times(
+        self,
+        attacker: BattlePokemon,
+        defender: BattlePokemon,
+        move_index: int,
+        defender_label: str
+    ) -> list[str]:
+        move_data = self.data_loader.get_move(attacker.moves[move_index].name)
+        min_hits, max_hits = move_data.multi_hit
+        times = random.randint(min_hits, max_hits)
+
+        messages = []
+        hits_landed = 0
+
+        for hit_number in range(1, times + 1):
+            hit_messages = self._execute_move(
+                attacker, defender, move_index, defender_label,
+                announce=(hit_number == 1),
+            )
+            messages.extend(hit_messages)
+            hits_landed += 1
+
+            if defender.current_hp <= 0:
+                break
+        if hits_landed > 1:
+            messages.append(f"Hit {hits_landed} time(s)!")
 
         return messages
 
@@ -123,18 +168,22 @@ class BattleSystem:
         defender: BattlePokemon,
         move_index: int,
         defender_label: str,
+        announce:bool = True
     ) -> list[str]:
         move_data = self.data_loader.get_move(attacker.moves[move_index].name)
         messages = []
 
-        prefix = "" if attacker == self.your_pokemon else "Foe "
-        messages.append(f"{prefix}{attacker.name} used {move_data.name}!")
+        if announce:
+            prefix = "" if attacker == self.your_pokemon else "Foe "
+            messages.append(f"{prefix}{attacker.name} used {move_data.name}!")
 
-        # Status / PP checks — BattlePokemon handles its own state
-        status_messages, can_move = attacker.check_can_move(move_index)
-        messages.extend(status_messages)
-        if not can_move:
-            return messages
+            # Status / PP checks only run once per turn, not per hit
+            # Status / PP checks — BattlePokemon handles its own state
+            status_messages, can_move = attacker.check_can_move(move_index)
+            messages.extend(status_messages)
+            if not can_move:
+                self._move_missed_or_blocked = True
+                return messages
 
         # Ability: defender immunity (e.g. Levitate vs Ground) — absolute, so
         # short-circuit before accuracy/damage are even rolled.
@@ -159,7 +208,7 @@ class BattleSystem:
             defender_stats=defender.stats,
             defender_types=defender.types,
             defender_modifiers=defender.modifiers,
-            crit_modifier=attacker.modifiers.get(Stat.CRITS, 0),
+            crit_modifier=attacker.modifiers.get(Stat.CRITS, 0) + move_data.crit,
             type_chart=self.data_loader.types,
         )
 

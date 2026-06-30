@@ -24,8 +24,6 @@ class DataLoader:
             self._read("data/ability.json")
         )
         
-        print(self.get_move("sucker punch"))
-        
         # Raw dicts cached at boot — read every grass step / damage calc, so no
         # per-call file I/O (mirrors the parsed caches above).
         self.encounters: dict = self._read("data/encounters.json")

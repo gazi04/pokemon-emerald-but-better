@@ -1,6 +1,19 @@
 {
     "pokemons": [
         {
+            "name": "mudkip",
+            "hp": 30,
+            "level": 1,
+            "exp": 46,
+            "ability": "blaze",
+            "moves": [
+                {
+                    "name": "double kick",
+                    "pp": 10
+                }
+            ]
+        },
+        {
             "name": "combusken",
             "hp": 33,
             "level": 16,
@@ -12,24 +25,11 @@
                     "pp": 1
                 },
                 {
-                    "name": "tackle",
+                    "name": "night slash",
                     "pp": 10
                 },
                 {
                     "name": "blaze kick",
-                    "pp": 10
-                }
-            ]
-        },
-        {
-            "name": "mudkip",
-            "hp": 0,
-            "level": 9,
-            "exp": 46,
-            "ability": "blaze",
-            "moves": [
-                {
-                    "name": "tackle",
                     "pp": 10
                 }
             ]
