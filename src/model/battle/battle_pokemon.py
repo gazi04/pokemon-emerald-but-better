@@ -1,7 +1,7 @@
 import random
 from typing import Optional, cast
 from src.model.static.pokemon import PokemonMove, PokemonSpecies, PokemonStat
-from src.model.save.player import PlayerPokemon
+from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
@@ -16,7 +16,7 @@ class BattlePokemon:
         data: PokemonSpecies,
         is_enemy: bool,
         name: str,
-        moves: list,
+        moves: list[PlayerPokemonMove],
         level: int,
         exp: int,
         ability: Ability,
@@ -69,7 +69,7 @@ class BattlePokemon:
         self,
         data: PokemonSpecies,
         name: str,
-        moves: list,
+        moves: list[PlayerPokemonMove],
         level: int,
         exp: int,
         ability: Ability,
@@ -103,6 +103,10 @@ class BattlePokemon:
     @level.setter
     def level(self, value: int):
         self.progression.level = value
+
+    @property
+    def current_hp(self):
+        return self.current_hp
 
     @property
     def exp(self) -> int:
