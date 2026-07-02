@@ -143,7 +143,9 @@ class BattleUiManager:
                 height=b["h"],
                 texture=self._status_textures["burn"],
             )
-        
+            self.manager.add(self.status_effect_player)
+            self.status_effect_player.visible = False
+
         if "status_effect_enemy" in self.bounds:
             b = self.bounds["status_effect_enemy"]
             self.status_effect_enemy = arcade.gui.UIImage(
@@ -153,6 +155,8 @@ class BattleUiManager:
                 height=b["h"],
                 texture=self._status_textures["burn"],
             )
+            self.manager.add(self.status_effect_enemy)
+            self.status_effect_enemy.visible = False
 
         # Labels
         if "player_name" in self.bounds:
@@ -363,21 +367,16 @@ class BattleUiManager:
         )
 
     def draw_status(self, status: StatusEffect, target: str):
-        """Draw the status-condition icon for a combatant, just left of its HP
-        bar. Does nothing when the Pokémon has no status."""
-        
         ui = self.status_effect_player if target == "player" else self.status_effect_enemy
-        
-        if not status or status is StatusEffect.NONE:
-            self.manager.remove(ui)
-            return
-        
-        texture = self._status_textures.get(status)
-        bar = self.hp_bars.get(target)
 
-        ui.texture = texture
-        self.manager.add(ui)
-        
+        if not status or status is StatusEffect.NONE:
+            ui.visible = False
+            return
+
+        texture = self._status_textures.get(status)
+        if texture:
+            ui.texture = texture
+            ui.visible = True
 
     def draw_exp_bar(self, ratio: float):
         if not self.exp_bar:
