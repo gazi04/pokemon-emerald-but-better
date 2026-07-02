@@ -2,21 +2,25 @@
     "pokemons": [
         {
             "name": "mudkip",
-            "hp": 30,
-            "level": 1,
+            "hp": 37,
+            "level": 15,
             "exp": 46,
             "ability": "blaze",
             "moves": [
                 {
                     "name": "fake out",
                     "pp": 10
+                },
+                {
+                    "name": "will-o-wisp",
+                    "pp": 10
                 }
             ]
         },
         {
             "name": "combusken",
-            "hp": 33,
-            "level": 16,
+            "hp": 45,
+            "level": 18,
             "exp": 46,
             "ability": "blaze",
             "moves": [

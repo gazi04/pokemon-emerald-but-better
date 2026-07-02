@@ -15,6 +15,7 @@ from src.model.save.player import PlayerPokemon
 from src.model.static.item import ItemSpecies
 from src.model.static.trainer import Trainer, TrainerPokemon
 from typing import Optional
+from src.systems.enemy_ai import EnemyAI
 
 
 class BattleSystem:
@@ -36,6 +37,8 @@ class BattleSystem:
         self.battle_state = BattleState.INTRO
         self.exp = 0
         self.has_evolved = False
+        
+        self.ai = EnemyAI(1, data_loader)
 
         self.is_trainer = is_trainer
         self.trainer_party = trainer_data.party if trainer_data else []
@@ -43,7 +46,7 @@ class BattleSystem:
 
     def turn(self, move_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
-        enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+        enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
     
         player_priority = self.data_loader.get_move(self.your_pokemon.moves[move_index].name).priority
         enemy_priority = self.data_loader.get_move(self.enemy_pokemon.moves[enemy_move_index].name).priority
@@ -62,13 +65,13 @@ class BattleSystem:
 
     def turn_use_item(self, item_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
-        enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+        enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
         self.turn_queue = [("player", -1, item_index), ("enemy", enemy_move_index, -1)]
         return self.execute_next_action()
 
     def switch_turn(self) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
-        enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+        enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
 
         self.turn_queue = [("enemy", enemy_move_index, -1)]
         return self.execute_next_action()

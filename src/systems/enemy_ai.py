@@ -7,9 +7,9 @@ from src.core.data_loader import DataLoader
 from src.enums.stat import Stat
 
 class EnemyAI:
-    def __init__(self, smartness: float, typechart: dict, data_loader: DataLoader):
+    def __init__(self, smartness: float, data_loader: DataLoader):
         self.smartness = max(0.0, min(1.0, smartness))
-        self.typechart = typechart
+        self.typechart = data_loader.types
         self.data_loader = data_loader
 
     def evaluate_hp(self, enemy_pokemon_hp: int, enemy_pokemon_max_hp: int, player_pokemon_hp: int, player_pokemon_hp_max: int) -> float:
@@ -36,12 +36,12 @@ class EnemyAI:
         
         return damage
     
-    def minimax(self, enemy_pokemon: BattlePokemon, player_pokemon: BattlePokemon) -> dict[PlayerPokemonMove, float]:
+    def minimax(self, enemy_pokemon: BattlePokemon, player_pokemon: BattlePokemon) -> dict[str, float]:
         move_scores = {}
 
         for ai_move in enemy_pokemon.moves:
             if ai_move.pp == 0:
-                move_scores[ai_move] = -float('inf')
+                move_scores[ai_move.name] = -float('inf')
                 continue
 
             worst_case_score = float('inf')
@@ -81,7 +81,7 @@ class EnemyAI:
                 if outcome_score < worst_case_score:
                     worst_case_score = outcome_score
 
-            move_scores[ai_move] = worst_case_score
+            move_scores[ai_move.name] = worst_case_score
 
         return move_scores
     
@@ -96,6 +96,8 @@ class EnemyAI:
         best_moves = sorted(move_scores.keys(), key=lambda m: move_scores[m], reverse=True)
 
         if random.random() < self.smartness:
-            return enemy_pokemon.moves.index(best_moves[0])
-        else:
-            return random.choice(range(len(enemy_pokemon.moves)))
+            for index, move in enumerate(enemy_pokemon.moves):
+                if move.name == best_moves[0]:
+                    return index
+        
+        return random.choice(range(len(enemy_pokemon.moves)))

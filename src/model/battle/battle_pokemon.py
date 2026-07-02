@@ -105,10 +105,6 @@ class BattlePokemon:
         self.progression.level = value
 
     @property
-    def current_hp(self):
-        return self.current_hp
-
-    @property
     def exp(self) -> int:
         return self.progression.exp
 
@@ -301,24 +297,25 @@ class BattlePokemon:
         chance = effect.chance if effect.chance else 100
         if chance >= random.randint(1, 100):
             if effect.condition == StatusEffect.CONFUSION:
-                # Volatile — independent of the major status condition.
                 if destination.confusion_counter == 0:
                     destination.confusion_counter = random.randint(2, 5)
                     message.append(f"{destination.name} became confused!")
                 else:
                     message.append(f"{destination.name} is already confused.")
                 return message
-            if destination.status_effect == StatusEffect.NONE and effect.condition != StatusEffect.FLINCH:
+            
+            if effect.condition == StatusEffect.FLINCH:
+                destination.flinched = True
+                return []
+                
+            if destination.status_effect == StatusEffect.NONE:
                 message.append(f"{destination.name} was {effect.condition}.")
                 
                 destination.status_effect = effect.condition
                 if destination.status_effect == StatusEffect.SLEEP:
                     destination.sleep_counter = random.randint(2, 5)
-            elif destination.status_effect != StatusEffect.NONE or effect.condition != StatusEffect.FLINCH:
+            else:
                 message.append(f"{destination.name} already has a condition.")
-                
-            if effect.condition == StatusEffect.FLINCH:
-                destination.flinched = True
             
         return message
 
