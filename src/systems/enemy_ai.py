@@ -25,6 +25,11 @@ class EnemyAI:
         if not move.power:
             return 0
         
+        if defender.immunity_to(move):
+            return 0
+        
+        multiplier, _ = attacker.ability_attack_multiplier(move)
+        
         result = calculate_damage(
             attacker.level, attacker.stats, attacker.types, attacker.modifiers, 
             attacker.status_effect, move, defender.stats, defender.types, 
@@ -33,8 +38,10 @@ class EnemyAI:
         damage = result.damage
         if result.is_critical:
             damage //= 2  
+            
+        accuracy = move.accuracy if move.accuracy else 100
         
-        return damage
+        return round((damage * multiplier) / (accuracy / 100))
     
     def minimax(self, enemy_pokemon: BattlePokemon, player_pokemon: BattlePokemon) -> dict[str, float]:
         move_scores = {}
@@ -62,21 +69,17 @@ class EnemyAI:
                 )
 
                 if is_player_first:
-                    player_damage = self.simulate_damage(player_pokemon, enemy_pokemon, player_move_data)
-                    enemy_hp -= player_damage
+                    enemy_hp -= self.simulate_damage(player_pokemon, enemy_pokemon, player_move_data)
                     
                     if enemy_hp > 0:
-                        ai_dmg = self.simulate_damage(enemy_pokemon, player_pokemon, ai_move_data)
-                        player_hp -= ai_dmg
+                        player_hp -= self.simulate_damage(enemy_pokemon, player_pokemon, ai_move_data)
                 else:
-                    ai_dmg = self.simulate_damage(enemy_pokemon, player_pokemon, ai_move_data)
-                    player_hp -= ai_dmg
+                    player_hp -= self.simulate_damage(enemy_pokemon, player_pokemon, ai_move_data)
                     
                     if player_hp > 0:
-                        player_damage = self.simulate_damage(player_pokemon, enemy_pokemon, player_move_data)
-                        enemy_hp -= player_damage
+                        enemy_hp -= self.simulate_damage(player_pokemon, enemy_pokemon, player_move_data)
 
-                outcome_score = self.evaluate_hp(enemy_hp, enemy_pokemon.max_hp, player_hp, player_pokemon.max_hp)
+                outcome_score = self.evaluate_hp(enemy_hp, enemy_pokemon.max_hp, player_hp, player_pokemon.max_hp) 
 
                 if outcome_score < worst_case_score:
                     worst_case_score = outcome_score
@@ -94,6 +97,8 @@ class EnemyAI:
         move_scores = self.minimax(enemy_pokemon, player_pokemon)
     
         best_moves = sorted(move_scores.keys(), key=lambda m: move_scores[m], reverse=True)
+        
+        print(move_scores)
 
         if random.random() < self.smartness:
             for index, move in enumerate(enemy_pokemon.moves):
