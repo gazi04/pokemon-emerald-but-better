@@ -68,6 +68,7 @@ class PokemonMove:
     priority: int
     crit: int
     multi_hit: list[int] | None
+    condition: str | None
     effects: list[PokemonMoveEffect]
 
 

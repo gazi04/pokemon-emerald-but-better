@@ -14,6 +14,7 @@ from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.save.player import PlayerPokemon
 from src.model.static.item import ItemSpecies
 from src.model.static.trainer import Trainer, TrainerPokemon
+from src.model.static.pokemon import PokemonMove
 from typing import Optional
 from src.systems.enemy_ai import EnemyAI
 
@@ -37,6 +38,8 @@ class BattleSystem:
         self.battle_state = BattleState.INTRO
         self.exp = 0
         self.has_evolved = False
+        
+        self._last_player_move = ""
         
         self.ai = EnemyAI(1, data_loader)
 
@@ -185,6 +188,15 @@ class BattleSystem:
             messages.extend(status_messages)
             if not can_move:
                 return messages
+            
+            failure_message = self._check_move_condition(move_data, attacker)
+            if failure_message:
+                messages.append(failure_message)
+                return messages
+
+        if defender.is_protected:
+            messages.append(f"{defender.name} protected itself!")
+            return messages
 
         # Ability: defender immunity (e.g. Levitate vs Ground) — absolute, so
         # short-circuit before accuracy/damage are even rolled.
@@ -235,7 +247,25 @@ class BattleSystem:
         # Publish HP change for UI bar update
         self._publish_hp_change(defender_label, hp_before, defender)
 
+        self._last_player_move = move_data.name
+
         return messages
+    
+    def _check_move_condition(self, move_data:PokemonMove, attacker:BattlePokemon) -> str | None:
+        """Returns a failure message if the move's condition isn't met, else None."""
+        condition = move_data.condition
+        if not condition:
+            return None
+
+        if condition == "first_turn_only":
+            if not attacker.is_first_turn:   
+                return f"But {move_data.name} failed!"
+
+        if condition == "not_consecutive":
+            if self._last_player_move == move_data.name:
+                return f"But {move_data.name} failed!"
+
+        return None
 
     def _apply_item_to_pokemon(self, item_index: int) -> list[str]:
         item = self.player_manager.player.items[item_index]

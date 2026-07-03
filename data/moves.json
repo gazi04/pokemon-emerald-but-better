@@ -8,6 +8,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": []
     },
     "close combat": {
@@ -19,6 +20,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "self",
@@ -43,6 +45,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -61,6 +64,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "self",
@@ -85,6 +89,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -102,6 +107,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -119,6 +125,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -136,6 +143,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -153,6 +161,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -170,6 +179,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -188,6 +198,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -206,6 +217,7 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": []
     },
     "blaze kick": {
@@ -217,6 +229,7 @@
         "priority": 0,
         "crit": 1,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
@@ -235,6 +248,7 @@
         "priority": 1,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": []
     },
     "extreme speed": {
@@ -246,6 +260,7 @@
         "priority": 2,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": []
     },
     "sucker punch": {
@@ -257,6 +272,7 @@
         "priority": 1,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": []
     },
     "fake out": {
@@ -268,6 +284,7 @@
         "priority": 3,
         "crit": 0,
         "multi_hit": null,
+        "condition": "first_turn_only",
         "effects": [
             {
                 "target": "opponent",
@@ -289,6 +306,7 @@
             2,
             5
         ],
+        "condition": null,
         "effects": []
     },
     "fury attack": {
@@ -303,6 +321,7 @@
             2,
             5
         ],
+        "condition": null,
         "effects": []
     },
     "bullet seed": {
@@ -317,6 +336,7 @@
             2,
             5
         ],
+        "condition": null,
         "effects": []
     },
     "double kick": {
@@ -331,6 +351,7 @@
             2,
             2
         ],
+        "condition": null,
         "effects": []
     },
     "night slash": {
@@ -342,6 +363,7 @@
         "priority": 0,
         "crit": 1,
         "multi_hit": null,
+        "condition": null,
         "effects": []
     },
     "stone edge": {
@@ -353,6 +375,7 @@
         "priority": 0,
         "crit": 1,
         "multi_hit": null,
+        "condition": null,
         "effects": []
     },
     "confuse ray": {
@@ -364,11 +387,29 @@
         "priority": 0,
         "crit": 0,
         "multi_hit": null,
+        "condition": null,
         "effects": [
             {
                 "target": "opponent",
                 "type": "status condition",
                 "condition": "confusion"
+            }
+        ]
+    },
+    "protect": {
+        "category": "status",
+        "type": "normal",
+        "power": null,
+        "accuracy": null,
+        "pp": 10,
+        "priority": 4,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": "not_consecutive",
+        "effects": [
+            {
+                "target": "self",
+                "type": "protect"
             }
         ]
     }

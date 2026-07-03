@@ -14,6 +14,10 @@
                 {
                     "name": "will-o-wisp",
                     "pp": 10
+                },
+                {
+                    "name": "protect",
+                    "pp": 10
                 }
             ]
         },

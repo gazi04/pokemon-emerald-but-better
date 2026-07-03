@@ -68,6 +68,7 @@ class GameDataParser:
                 priority=raw["priority"],
                 crit=raw["crit"],
                 multi_hit=raw["multi_hit"],
+                condition=raw["condition"],
                 effects=effects
             )
         return moves

@@ -31,6 +31,7 @@ class BattlePokemon:
         self._effect_handlers = {
             EffectType.STAT: self._apply_stat_effect,
             EffectType.STATUS_CONDITION: self._apply_status_effect,
+            EffectType.PROTECT: self._apply_protect
         }
 
     @classmethod
@@ -136,6 +137,8 @@ class BattlePokemon:
         self.status_effect = StatusEffect.NONE
         self.sleep_counter = 0
         self.flinched = False
+        self.is_first_turn = True
+        self.is_protected = False
         self.confusion_counter = 0
 
     def calculate_stats(self):
@@ -325,6 +328,10 @@ class BattlePokemon:
                 message.append(f"{destination.name} already has a condition.")
             
         return message
+    
+    def _apply_protect(self, effect, destination: "BattlePokemon") -> list[str]:
+        destination.is_protected = True
+        return [f"{destination.name} protected itself!"]
 
     # ------------------------------------------------------------------
     # Post-turn tick — self-contained state mutation
@@ -346,6 +353,9 @@ class BattlePokemon:
         if self.status_effect == StatusEffect.FREEZE and random.random() < 0.2:
             self.status_effect = StatusEffect.NONE
             messages.append(f"{self.name} is thaw!")
+        
+        self.is_protected = False
+        self.is_first_turn = False
         
         return messages
     
