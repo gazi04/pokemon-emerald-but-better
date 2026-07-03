@@ -309,6 +309,13 @@ class BattlePokemon:
                 return []
                 
             if destination.status_effect == StatusEffect.NONE:
+                if effect.condition == StatusEffect.BURN and "fire" in destination.types: 
+                    return []
+                if effect.condition == StatusEffect.POISON and ("poison" in destination.types or "steel" in destination.types): 
+                    return []
+                if effect.condition == StatusEffect.PARALYSIS and ("ground" in destination.types or "electric" in destination.types): 
+                    return []
+                
                 message.append(f"{destination.name} was {effect.condition}.")
                 
                 destination.status_effect = effect.condition
@@ -414,6 +421,13 @@ class BattlePokemon:
     def _apply_status_effect_ability(self, effect:AbilityEffect, destination:"BattlePokemon"):
         status = self._status_from(effect.status)
         if status is None or destination.status_effect != StatusEffect.NONE:
+            return (False, "")
+
+        if effect.condition == StatusEffect.BURN and "fire" in destination.types:
+            return (False, "")
+        if effect.condition == StatusEffect.POISON and ("poison" in destination.types or "steel" in destination.types): 
+            return (False, "")
+        if effect.condition == StatusEffect.PARALYSIS and ("ground" in destination.types or "electric" in destination.types): 
             return (False, "")
 
         destination.status_effect = status

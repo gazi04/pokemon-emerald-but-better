@@ -74,12 +74,11 @@ class EnemyAI:
             elif effect.type == EffectType.STATUS_CONDITION:
                 status_condition = effect.condition
                 if effect.target != 'self' and target.status_effect == StatusEffect.NONE:
-                    if status_condition == "burn" and "fire" in target.types: continue
-                    if status_condition == "poison" and ("poison" in target.types or "steel" in target.types): continue
-                    if status_condition == "paralyzed" and "ground" in target.types and move.type == "electric": continue
+                    if status_condition == StatusEffect.BURN and "fire" in target.types: continue
+                    if status_condition == StatusEffect.POISON and ("poison" in target.types or "steel" in target.types): continue
+                    if status_condition == StatusEffect.PARALYSIS and ("ground" in target.types or "electric" in target.types): continue
 
                     score += status_weights.get(status_condition, 0) * factor
-                    # Explicitly update status so the next simulation turn knows they are statused
                     target.status_effect = status_condition
         return score
     
