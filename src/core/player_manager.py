@@ -1,6 +1,6 @@
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
-from src.model.save.player import PlayerSave, PlayerPokemon, ItemStack
+from src.model.save.player import PlayerSave, PlayerPokemon, ItemStack, PlayerPokemonMove
 from src.model.static.pokemon import PokemonStat
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.systems.npc_manager import NPCManager
@@ -58,6 +58,18 @@ class PlayerManager:
         self, pokemon_name: str, new_level: int, exp: int, evolved_name: str = None
     ):
         self.player.update_level(pokemon_name, new_level, exp, evolved_name)
+        
+    def learn_move(self, pokemon_name: str, move_name:str, index:int = None):
+        move_data = self.data_loader.get_move(move_name)
+        if not move_data:
+            return
+        
+        move = PlayerPokemonMove(move_name, move_data.pp)
+        
+        if index:
+            self.player.replace_move(pokemon_name, move, index)
+        else:
+            self.player.learn_move(pokemon_name, move)
 
     def persist_active_pokemon(
         self, battle_pokemon: BattlePokemon, has_evolved: bool

@@ -72,6 +72,26 @@ class PlayerSave:
         if evolved_name:
             pokemon.name = evolved_name
 
+    def learn_move(self, pokemon_name: str, move: PlayerPokemonMove):
+        pokemon = self.get_pokemon(pokemon_name)
+        if not pokemon:
+            return
+        
+        if len(pokemon.moves) == 4:
+            return
+        
+        pokemon.moves.append(move)
+        
+    def replace_move(self, pokemon_name: str, move: PlayerPokemonMove, index: int):
+        pokemon = self.get_pokemon(pokemon_name)
+        if not pokemon:
+            return
+        
+        if len(pokemon.moves) < 4:
+            return
+        
+        pokemon.moves[index] = move
+
     def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
         if len(self.pokemon) >= 6:
             return False
