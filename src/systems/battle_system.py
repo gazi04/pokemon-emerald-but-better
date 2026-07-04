@@ -40,7 +40,11 @@ class BattleSystem:
         self.has_evolved = False
         
         self._last_player_move = ""
-        
+
+        # Move-learning queue for the active pokemon after a level-up.
+        self._learn_queue: list[str] = []
+        self._pending_learn: Optional[str] = None
+
         self.ai = EnemyAI(1, data_loader)
 
         self.is_trainer = is_trainer
@@ -374,6 +378,76 @@ class BattleSystem:
         result = self.your_pokemon.gain_exp(self.exp)
         self.exp = 0
         return result
+    
+    # ------------------------------------------------------------------
+    # Move learning after a level-up. The view drives this like the other
+    # message-gated sub-flows: queue the names, then pump next_move_to_learn()
+    # until it returns None, handling a replacement prompt in between.
+    # ------------------------------------------------------------------
+
+    def queue_moves_to_learn(self, move_names: list[str]) -> None:
+        self._learn_queue.extend(move_names)
+
+    def has_pending_learn(self) -> bool:
+        return bool(self._learn_queue) or self._pending_learn is not None
+
+    def current_learning_move(self) -> Optional[str]:
+        """The move awaiting a forget-a-move choice, or None."""
+        return self._pending_learn
+
+    def next_move_to_learn(self) -> Optional[dict]:
+        """Advance the learn queue.
+        Returns None when done, {"type": "learned", ...} when a free slot let the
+        move be learned outright, or {"type": "needs_replace", ...} when the
+        moveset is full and the player must pick a move to forget.
+        """
+        if not self._learn_queue:
+            return None
+
+        name = self._learn_queue.pop(0)
+        if self.your_pokemon.knows_move(name):
+            return self.next_move_to_learn()  # already knows it — skip
+
+        move = self.data_loader.get_move(name)
+        display = (move.name if move else name).capitalize()
+
+        if self.your_pokemon.has_free_move_slot():
+            self.your_pokemon.learn_move(name, move.pp if move else 0)
+            return {
+                "type": "learned",
+                "messages": [f"{self.your_pokemon.name} learned {display}!"],
+            }
+
+        self._pending_learn = name
+        return {
+            "type": "needs_replace",
+            "move": display,
+            "messages": [
+                f"{self.your_pokemon.name} wants to learn {display}.",
+                f"But {self.your_pokemon.name} already knows four moves.",
+                f"Forget a move to make room for {display}?",
+            ],
+        }
+
+    def replace_learned_move(self, index: int) -> list[str]:
+        """Forget the move at `index` and learn the pending one."""
+        name = self._pending_learn
+        self._pending_learn = None
+        move = self.data_loader.get_move(name)
+        display = (move.name if move else name).capitalize()
+        forgotten = self.your_pokemon.replace_move(index, name, move.pp if move else 0)
+        return [
+            f"{self.your_pokemon.name} forgot {forgotten.capitalize()}...",
+            f"...and learned {display}!",
+        ]
+
+    def skip_learned_move(self) -> list[str]:
+        """Decline to learn the pending move."""
+        name = self._pending_learn
+        self._pending_learn = None
+        move = self.data_loader.get_move(name)
+        display = (move.name if move else name).capitalize()
+        return [f"{self.your_pokemon.name} did not learn {display}."]
 
     def add_caught_pokemon(self) -> None:
         """Add the just-caught enemy to the party (CAUGHT flow)."""

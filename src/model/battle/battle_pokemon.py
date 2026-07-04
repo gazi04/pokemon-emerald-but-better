@@ -2,6 +2,9 @@ import random
 from typing import Optional, cast
 from src.model.static.pokemon import PokemonMove, PokemonSpecies, PokemonStat
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
+
+MAX_MOVES = 4
+
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
@@ -122,6 +125,7 @@ class BattlePokemon:
         self.types = data.types
         self.evolution = data.evolution
         self.base_exp = data.baseExp
+        self.learnset = data.learnset
 
     def _reset_battle_state(self):
         self.modifiers: dict[Stat, int] = {
@@ -523,6 +527,7 @@ class BattlePokemon:
 
     def gain_exp(self, exp: int) -> ExpGainResult:
         old_stats = self.stats.copy()
+        level_before = self.level
         levels_gained = self.progression.add_exp(exp)
 
         if levels_gained:
@@ -536,7 +541,37 @@ class BattlePokemon:
             stats_after=self.stats.copy(),
             evolved=self.progression.can_evolve(),
             evolves_to=self.progression.evolves_to,
+            moves_to_learn=self._moves_learned_between(level_before, self.level),
         )
+
+    # ------------------------------------------------------------------
+    # Move learning — the moves list is shared with the source PlayerPokemon,
+    # so mutating it here also updates the party member (persists on save).
+    # ------------------------------------------------------------------
+
+    def _moves_learned_between(self, old_level: int, new_level: int) -> list[str]:
+        """Learnset moves whose level was crossed (old, new], not already known."""
+        learned: list[str] = []
+        for entry in self.learnset:
+            if old_level < entry.level <= new_level and not self.knows_move(entry.move):
+                if entry.move not in learned:
+                    learned.append(entry.move)
+        return learned
+
+    def knows_move(self, name: str) -> bool:
+        return any(m.name.lower() == name.lower() for m in self.moves)
+
+    def has_free_move_slot(self) -> bool:
+        return len(self.moves) < MAX_MOVES
+
+    def learn_move(self, name: str, pp: int) -> None:
+        self.moves.append(PlayerPokemonMove(name, pp))
+
+    def replace_move(self, index: int, name: str, pp: int) -> str:
+        """Overwrite the move at `index`; returns the forgotten move's name."""
+        forgotten = self.moves[index].name
+        self.moves[index] = PlayerPokemonMove(name, pp)
+        return forgotten
 
     def exp_yield(self):
         return self.progression.exp_yield()

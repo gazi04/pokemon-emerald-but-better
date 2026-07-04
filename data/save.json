@@ -1,6 +1,31 @@
 {
     "pokemons": [
         {
+            "name": "combusken",
+            "hp": 45,
+            "level": 18,
+            "exp": 5830,
+            "ability": "blaze",
+            "moves": [
+                {
+                    "name": "close combat",
+                    "pp": 1
+                },
+                {
+                    "name": "will-o-wisp",
+                    "pp": 10
+                },
+                {
+                    "name": "blaze kick",
+                    "pp": 10
+                },
+                {
+                    "name": "protect",
+                    "pp": 10
+                }
+            ]
+        },
+        {
             "name": "mudkip",
             "hp": 37,
             "level": 15,
@@ -17,27 +42,6 @@
                 },
                 {
                     "name": "protect",
-                    "pp": 10
-                }
-            ]
-        },
-        {
-            "name": "combusken",
-            "hp": 45,
-            "level": 18,
-            "exp": 46,
-            "ability": "blaze",
-            "moves": [
-                {
-                    "name": "close combat",
-                    "pp": 1
-                },
-                {
-                    "name": "will-o-wisp",
-                    "pp": 10
-                },
-                {
-                    "name": "blaze kick",
                     "pp": 10
                 }
             ]

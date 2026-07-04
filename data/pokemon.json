@@ -45,7 +45,7 @@
       { "move": "tackle", "level": 1 },
       { "move": "growl", "level": 1 },
       { "move": "close combat", "level": 9 },
-      { "move": "dragon dance", "level": 13 }
+      { "move": "dragon dance", "level": 19 }
     ]
   },
   "mudkip": {

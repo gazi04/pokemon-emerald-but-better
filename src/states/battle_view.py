@@ -58,6 +58,10 @@ class BattleView(GameView):
         self.trainer_data = trainer_data
         self.prize_money = 0
 
+        # Move-learning sub-flow state.
+        self.learning_move_mode = False       # move menu is picking a move to forget
+        self._on_learning_done = None         # called once the learn queue empties
+
         if not is_trainer:
             if foe_pokemon_data is None or foe_pokemon_name is None or foe_level is None:
                 raise ValueError(
@@ -217,6 +221,8 @@ class BattleView(GameView):
             self._handle_player_fainted()
         elif self.battle_system.battle_state == BattleState.LOST:
             self._end_loss()
+        elif self.battle_system.battle_state == BattleState.LEARNING_MOVE:
+            self._continue_move_learning()
         elif self.battle_system.battle_state == BattleState.END:
             self._handle_battle_finishing()
 
@@ -273,11 +279,15 @@ class BattleView(GameView):
 
     def _trainer_give_exp(self):
         result = self.battle_system.apply_exp_award()
-        self.battle_system.battle_state = BattleState.TRAINER_SENDING
 
         if result.leveled_up:
+            # Show level-up text, then learn moves, then send the next pokemon.
+            self.battle_system.queue_moves_to_learn(result.moves_to_learn)
+            self._on_learning_done = self._trainer_send_next_pokemon
+            self.battle_system.battle_state = BattleState.LEARNING_MOVE
             self._on_level_up(self.your_battle)
         else:
+            self.battle_system.battle_state = BattleState.TRAINER_SENDING
             self._trainer_send_next_pokemon()
 
     def _trainer_send_next_pokemon(self):
@@ -316,9 +326,60 @@ class BattleView(GameView):
         if result.evolved:
             self._evolution(self.your_battle.name.lower(), result.evolves_to)
         elif result.leveled_up:
+            # Level-up text, then any move learning, then leave the battle.
+            self.battle_system.queue_moves_to_learn(result.moves_to_learn)
+            self._on_learning_done = self.run
+            self.battle_system.battle_state = BattleState.LEARNING_MOVE
             self._on_level_up(self.your_battle)
         else:
             self.run()
+
+    # ------------------------------------------------------------------
+    # Move learning — message-gated sub-flow. LEARNING_MOVE state re-enters
+    # here each time the text box empties until the learn queue is drained.
+    # ------------------------------------------------------------------
+
+    def _continue_move_learning(self):
+        if self.battle_system.current_learning_move() is not None:
+            # A "needs replace" prompt just finished — let the player pick.
+            self._open_forget_selector()
+        else:
+            self._process_next_move_learn()
+
+    def _process_next_move_learn(self):
+        outcome = self.battle_system.next_move_to_learn()
+        if outcome is None:
+            done = self._on_learning_done or self.run
+            self._on_learning_done = None
+            done()
+            return
+
+        self.battle_system.battle_state = BattleState.LEARNING_MOVE
+        self.ui.queue_messages(outcome["messages"])
+        self.ui.switch_mode("dialog")
+
+    def _open_forget_selector(self):
+        """Reuse the move menu to choose which move to forget."""
+        self.learning_move_mode = True
+        self.update_ui_moves()
+        self.ui.menu_panel.selection_index = 0
+        self.ui.switch_mode("moves")
+        self.move_hover(0)
+
+    def _forget_move(self, index: int):
+        self.learning_move_mode = False
+        messages = self.battle_system.replace_learned_move(index)
+        self.update_ui_moves()
+        self.battle_system.battle_state = BattleState.LEARNING_MOVE
+        self.ui.queue_messages(messages)
+        self.ui.switch_mode("dialog")
+
+    def _cancel_learn_move(self):
+        self.learning_move_mode = False
+        messages = self.battle_system.skip_learned_move()
+        self.battle_system.battle_state = BattleState.LEARNING_MOVE
+        self.ui.queue_messages(messages)
+        self.ui.switch_mode("dialog")
 
     def _on_level_up(self, pokemon: BattlePokemon):
         self.ui.set_player_info(
@@ -423,11 +484,17 @@ class BattleView(GameView):
                         arcade.schedule_once(self._reset_to_main_menu, 2)
 
             elif self.ui.active_component == "moves":
-                self.start_turn(self.ui.menu_panel.selection_index)
+                if self.learning_move_mode:
+                    self._forget_move(self.ui.menu_panel.selection_index)
+                else:
+                    self.start_turn(self.ui.menu_panel.selection_index)
 
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
             if self.ui.active_component == "moves":
-                self.ui.switch_mode("main")
+                if self.learning_move_mode:
+                    self._cancel_learn_move()
+                else:
+                    self.ui.switch_mode("main")
 
     def move_hover(self, index):
         if index is not None and index < len(self.your_battle.moves):
