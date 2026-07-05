@@ -33,6 +33,7 @@ class PlayerSave:
     pokemon: list[PlayerPokemon]
     items: list[ItemStack]
     pokeballs: list[ItemStack]
+    berries: list[ItemStack]
     seen: list[str] = field(default_factory=list)
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)

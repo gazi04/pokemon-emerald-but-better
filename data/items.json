@@ -18,5 +18,15 @@
                 "catchRate": 1
             }
         ]
+    },
+    "sitrus berry": {
+        "description": "A hold item that restores 30 HP in battle.",
+        "price": 300,
+        "effects": [
+            {
+                "type": "heal",
+                "amount": 30
+            }
+        ]
     }
 }

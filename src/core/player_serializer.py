@@ -35,12 +35,14 @@ class PlayerSerializer:
 
         items = [ItemStack(item["name"], item["count"]) for item in data["items"]]
         pokeballs = [ItemStack(pb["name"], pb["count"]) for pb in data["pokeballs"]]
+        berries = [ItemStack(berry["name"], berry["count"]) for berry in data["berries"]]
         seen = data.get("seen", [])
 
         return PlayerSave(
             pokemon=pokemons,
             items=items,
             pokeballs=pokeballs,
+            berries=berries,
             seen=seen,
             money=data.get("money", 0),
             npc_states=data.get("npc_states", []),

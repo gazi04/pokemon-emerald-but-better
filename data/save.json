@@ -59,6 +59,12 @@
             "count": 99
         }
     ],
+    "berries": [
+        {
+            "name": "sitrus berry",
+            "count": 99
+        }
+    ],
     "position": {
         "map_name": "littleroot_town",
         "direction": "down",
