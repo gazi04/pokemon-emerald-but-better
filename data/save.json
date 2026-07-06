@@ -6,6 +6,7 @@
             "level": 18,
             "exp": 5830,
             "ability": "blaze",
+            "held_item": null,
             "moves": [
                 {
                     "name": "close combat",
@@ -31,6 +32,7 @@
             "level": 15,
             "exp": 46,
             "ability": "blaze",
+            "held_item": null,
             "moves": [
                 {
                     "name": "fake out",

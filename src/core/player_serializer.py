@@ -29,6 +29,7 @@ class PlayerSerializer:
                     level=pokemon["level"],
                     exp=pokemon["exp"],
                     ability=pokemon["ability"],
+                    held_item=pokemon["held_item"],
                     moves=moves,
                 )
             )

@@ -13,7 +13,7 @@ class PlayerManager:
         self.data_loader = data_loader
         self.player: Optional[PlayerSave] = save_manager.player
         self.npc_manager = NPCManager()
-        print(self.player)
+        
         if (
             hasattr(save_manager.player, "npc_states")
             and save_manager.player.npc_states

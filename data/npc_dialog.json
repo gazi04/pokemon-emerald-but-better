@@ -34,6 +34,7 @@
         "hp": 45,
         "level": 20,
         "ability": "speed_boost",
+        "held_item": null,
         "moves": [
           {
             "name": "extreme speed",
@@ -54,6 +55,7 @@
         "hp": 45,
         "level": 20,
         "ability": "intimidate",
+        "held_item": null,
         "moves": [
           {
             "name": "sucker punch",

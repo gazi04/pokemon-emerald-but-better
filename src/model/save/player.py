@@ -16,6 +16,7 @@ class PlayerPokemon:
     exp: int
     ability: str
     moves: list[PlayerPokemonMove]
+    held_item: str | None
 
     @property
     def is_fainted(self) -> bool:
