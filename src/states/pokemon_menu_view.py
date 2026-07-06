@@ -32,11 +32,12 @@ class PokemonMenuView(GameView):
         self.forced_switch = forced_switch
 
         self.data_loader = data_loader
+        self.player_manager = player_manager
         self.system = PokemonMenuSystem(player_manager)
         self.ui = PokemonMenuUi(data_loader)
 
         if bag:
-            tooltip_options = ["Use", "Info"]
+            tooltip_options = ["Give it", "Use", "Info"]
         elif battle_system:
             tooltip_options = ["Switch", "Info"]
         else:
@@ -111,12 +112,16 @@ class PokemonMenuView(GameView):
         self.ui.hide_tooltip()
         self.system.reset_tooltip()
 
-        if index == 1:
+        if index == 2:
+            if self.bag:
+                pass
+
+        elif index == 1:
             if self.bag and self.battle_system:
                 # Use item in battle
                 self.bag.use_item(
                     self.item_index,
-                    self.system.team[self.system.team_index].name,
+                    self._get_current_pokemon().name,
                 )
 
                 # Navigate back to BattleView (still held by previousView chain)
@@ -128,7 +133,7 @@ class PokemonMenuView(GameView):
                 # Use item outside battle
                 self.bag.use_item(
                     self.item_index,
-                    self.system.team[self.system.team_index].name,
+                    self._get_current_pokemon().name,
                 )
                 self.previousView.update_item()
                 self.window.show_view(self.previousView)
@@ -140,8 +145,11 @@ class PokemonMenuView(GameView):
             self.overlay(
                 "pokemon_information",
                 previous_view=self,
-                pokemon=self.system.team[self.system.team_index],
+                pokemon=self._get_current_pokemon(),
             )
+
+    def _get_current_pokemon(self):
+        return self.system.team[self.system.team_index]
 
     def _move_pokemon(self):
         if not self.battle_system:

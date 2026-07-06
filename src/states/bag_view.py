@@ -82,17 +82,17 @@ class BagView(GameView):
                 self.update_item()
 
         elif self.is_pressed(CONFIG.controls.right, symbol):
-            self.bagIndex = 1 if self.bagIndex == 0 else 0
+            self.bagIndex = (self.bagIndex + 1) % 3
             self.change_bag()
 
         elif self.is_pressed(CONFIG.controls.left, symbol):
-            self.bagIndex = 0 if self.bagIndex == 1 else 1
+            self.bagIndex = (self.bagIndex - 1) % 3
             self.change_bag()
 
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
             self.window.show_view(self.previousWindow)
 
-        elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex == 0:
+        elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex in (0, 2):
             self.overlay(
                 "pokemon_menu",
                 previous_view=self,
@@ -131,9 +131,13 @@ class BagView(GameView):
         if self.bagIndex == 0:
             self.inventory = self.bagSystem.get_items()
             self.ui.change_bag("items")
-        else:
+        elif self.bagIndex == 1:
             self.inventory = self.bagSystem.get_pokeballs()
             self.ui.change_bag("pokeball")
+        elif self.bagIndex == 2:
+            self.inventory = self.bagSystem.get_berries()
+            self.ui.change_bag("berry")
+            
         self.ui.setup_invetory()
         self.update_item()
 

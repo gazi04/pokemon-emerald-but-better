@@ -11,6 +11,7 @@ class BagSystem:
 
         self._items = player_manager.player.items
         self._pokeballs = player_manager.player.pokeballs
+        self._berries = player_manager.player.berries
 
         # Dispatch over effect.type — add an effect kind by adding an applier,
         # not by editing the loop (mirrors npc_behaviors.make_behavior).
@@ -90,3 +91,6 @@ class BagSystem:
 
     def get_pokeballs(self):
         return self._pokeballs
+
+    def get_berries(self):
+        return self._berries
