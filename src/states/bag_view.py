@@ -97,7 +97,7 @@ class BagView(GameView):
                 "pokemon_menu",
                 previous_view=self,
                 bag=self.bagSystem,
-                item_index=self.currentIndex,
+                item=self.inventory[self.currentIndex].name,
                 battle_system=self.battle_system,
             )
             self.update_item()

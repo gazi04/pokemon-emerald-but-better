@@ -2,7 +2,7 @@
     "pokemons": [
         {
             "name": "combusken",
-            "hp": 45,
+            "hp": 20,
             "level": 18,
             "exp": 5830,
             "ability": "blaze",

@@ -59,9 +59,9 @@ class BattleSystem:
         enemy_priority = self.data_loader.get_move(self.enemy_pokemon.moves[enemy_move_index].name).priority
 
         if self._player_moves_first(self.your_pokemon.get_stat(Stat.SPEED), player_priority, self.enemy_pokemon.get_stat(Stat.SPEED), enemy_priority):
-            self.turn_queue = [("player", move_index, -1), ("enemy", enemy_move_index, -1)]
+            self.turn_queue = [("player", move_index, None), ("enemy", enemy_move_index, None)]
         else:
-            self.turn_queue = [("enemy", enemy_move_index, -1), ("player", move_index, -1)]
+            self.turn_queue = [("enemy", enemy_move_index, None), ("player", move_index, None)]
 
         return self.execute_next_action()
     
@@ -70,17 +70,17 @@ class BattleSystem:
             player_priority == enemy_priority and player_speed >= enemy_speed
         )
 
-    def turn_use_item(self, item_index: int) -> list[str]:
+    def turn_use_item(self, item_index: str) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
-        self.turn_queue = [("player", -1, item_index), ("enemy", enemy_move_index, -1)]
+        self.turn_queue = [("player", -1, item_index), ("enemy", enemy_move_index, None)]
         return self.execute_next_action()
 
     def switch_turn(self) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
 
-        self.turn_queue = [("enemy", enemy_move_index, -1)]
+        self.turn_queue = [("enemy", enemy_move_index, None)]
         return self.execute_next_action()
 
     def switch_pokemon(self) -> list[str]:
@@ -106,7 +106,7 @@ class BattleSystem:
         attacker_key, move_index, item_index = self.turn_queue.pop(0)
 
         if attacker_key == "player" and self.your_pokemon.current_hp > 0:
-            if item_index == -1:
+            if not item_index:
                 messages.extend(
                     self._dispatch_move(
                         self.your_pokemon, self.enemy_pokemon, move_index, "enemy"
@@ -271,8 +271,7 @@ class BattleSystem:
 
         return None
 
-    def _apply_item_to_pokemon(self, item_index: int) -> list[str]:
-        item = self.player_manager.player.items[item_index]
+    def _apply_item_to_pokemon(self, item_index: str) -> list[str]:
         self.your_pokemon.sync_from_source()
 
         global_bus.publish(
@@ -284,7 +283,7 @@ class BattleSystem:
             )
         )
 
-        return [f"{self.your_pokemon.name} used {item.name}!"]
+        return [f"{self.your_pokemon.name} used {item_index}!"]
 
     def post_turn(self) -> list[str]:
         messages = []

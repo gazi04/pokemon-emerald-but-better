@@ -150,7 +150,7 @@ class GameDirector:
             message_service=self.message_service,
             is_trainer=True,
             trainer_data=payload["trainer_data"],
-            npc_id=payload.get("npc_id"),
+            npc_id=payload.get("npc_id", ""),
         )
 
     def _build_evolving(self, payload: dict):
@@ -221,7 +221,7 @@ class GameDirector:
             player_manager=self.player_manager,
             data_loader=self.data_loader,
             bag=cast(Any, payload.get("bag")),
-            item_index=payload.get("item_index", 0),
+            item=payload.get("item", ""),
             battle_system=cast(Any, payload.get("battle_system")),
             forced_switch=payload.get("forced_switch", False),
         )

@@ -347,8 +347,8 @@
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "ui/sprites/ui.tsx",
         "ui/battleUiDesign.tmx",
+        "ui/sprites/ui.tsx",
         "map/oldale_town/poke_mart.tmx",
         "map/littleroot_town.tmx",
         "map/oldale_town/home1.tmx",

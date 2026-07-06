@@ -168,8 +168,9 @@ class PokemonInformationUI:
 
         exp_to_next = max(0, (lvl + 1) ** 3 - pokemon.exp)
 
+        item_name = pokemon.held_item.upper() if pokemon.held_item else "NONE"
         _label_map_stats = {
-            "item": "ITEM: NONE",
+            "item": f"ITEM: {item_name}",
             "ribbon": "—",
             "exp": "EXP.",
             "exp_count": str(pokemon.exp),

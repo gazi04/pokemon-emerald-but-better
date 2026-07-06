@@ -168,7 +168,7 @@ class BattleView(GameView):
         self.ui.queue_messages(self.battle_system.turn(index))
         self.ui.switch_mode("dialog")
 
-    def on_item_used(self, item_index: int):
+    def on_item_used(self, item_index: str):
         self.ui.queue_messages(self.battle_system.turn_use_item(item_index))
         self.ui.switch_mode("dialog")
 

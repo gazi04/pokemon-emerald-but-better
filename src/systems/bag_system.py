@@ -28,14 +28,12 @@ class BagSystem:
 
         return None
 
-    def use_item(self, item_index: int, pokemon_id: str):
+    def use_item(self, item_index: str, pokemon_id: str):
         if len(self._items) <= 0:
             return
 
-        item = self._items[item_index]
-
-        if self._handle_item_effects(pokemon_id.lower(), item.name):
-            self.player_manager.consume_item(item.name)
+        if self._handle_item_effects(pokemon_id.lower(), item_index):
+            self.player_manager.consume_item(item_index)
 
     @staticmethod
     def _heal_eligible(pokemon, max_hp: int) -> bool:

@@ -19,7 +19,7 @@ class PokemonMenuView(GameView):
         player_manager: PlayerManager,
         data_loader: DataLoader,
         bag: Optional[BagSystem] = None,
-        item_index: int = 0,
+        item: str = "",
         battle_system: Optional[BattleSystem] = None,
         forced_switch: bool = False,
     ):
@@ -28,7 +28,7 @@ class PokemonMenuView(GameView):
         self.previousView = previousView
         self.bag = bag
         self.battle_system = battle_system
-        self.item_index = item_index
+        self.item = item
         self.forced_switch = forced_switch
 
         self.data_loader = data_loader
@@ -114,25 +114,27 @@ class PokemonMenuView(GameView):
 
         if index == 2:
             if self.bag:
-                pass
+                self._get_current_pokemon().held_item = self.item
+                
+                self.window.show_view(self.previousView)
 
         elif index == 1:
             if self.bag and self.battle_system:
                 # Use item in battle
                 self.bag.use_item(
-                    self.item_index,
+                    self.item,
                     self._get_current_pokemon().name,
                 )
 
                 # Navigate back to BattleView (still held by previousView chain)
                 battle_view = self.previousView.previousWindow
-                battle_view.on_item_used(self.item_index)
+                battle_view.on_item_used(self.item)
                 self.window.show_view(battle_view)
 
             elif self.bag:
                 # Use item outside battle
                 self.bag.use_item(
-                    self.item_index,
+                    self.item,
                     self._get_current_pokemon().name,
                 )
                 self.previousView.update_item()
