@@ -23,6 +23,7 @@ class DataLoader:
         self.ability: dict[str, Ability] = GameDataParser.parse_ability(
             self._read("data/ability.json")
         )
+        print(self.get_item("life orb"))
         
         # Raw dicts cached at boot — read every grass step / damage calc, so no
         # per-call file I/O (mirrors the parsed caches above).

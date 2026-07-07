@@ -77,19 +77,7 @@ class GameDataParser:
     def parse_items(data: dict) -> dict[str, ItemSpecies]:
         items = {}
         for name, raw in data.items():
-            effects = [
-                ItemEffect(
-                    type=EffectType(e["type"]),
-                    amount=e.get("amount"),
-                    catch_rate=e.get("catchRate"),
-                )
-                for e in raw["effects"]
-            ]
-            items[name] = ItemSpecies(
-                description=raw["description"],
-                price=raw["price"],
-                effects=effects,
-            )
+            items[name] = ItemSpecies(raw)
         return items
 
     @staticmethod
