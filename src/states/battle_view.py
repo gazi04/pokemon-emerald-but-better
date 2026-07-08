@@ -50,7 +50,14 @@ class BattleView(GameView):
             )
 
         self.your_battle = BattlePokemon.from_player(
-            data_loader.get_ability(lead_pokemon.ability), player_profile, lead_pokemon
+            data_loader.get_ability(lead_pokemon.ability),
+            player_profile,
+            lead_pokemon,
+            held_item=(
+                data_loader.get_item(lead_pokemon.held_item)
+                if lead_pokemon.held_item
+                else None
+            ),
         )
         self.your_sprite = PokemonSprite(player_profile, False)
 

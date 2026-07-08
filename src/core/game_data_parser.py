@@ -77,7 +77,9 @@ class GameDataParser:
     def parse_items(data: dict) -> dict[str, ItemSpecies]:
         items = {}
         for name, raw in data.items():
-            items[name] = ItemSpecies(raw)
+            species = ItemSpecies(raw)
+            species.name = name.title()
+            items[name] = species
         return items
 
     @staticmethod

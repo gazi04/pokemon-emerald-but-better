@@ -93,7 +93,8 @@ class BattleSystem:
         
         messages = [f"Go {pokemon.name}!"]
 
-        self.your_pokemon.switching_pokemon(pokemon, ability, pokemon_profile)
+        held_item = self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
+        self.your_pokemon.switching_pokemon(pokemon, ability, pokemon_profile, held_item)
 
         messages.extend(self.your_pokemon.on_switch_in(self.enemy_pokemon))
         return messages
@@ -234,8 +235,10 @@ class BattleSystem:
         if result.is_miss:
             return messages
 
-        # Apply damage (with any attacker-ability multiplier)
-        damage = round(result.damage * attack_multiplier)
+        # Apply damage (attacker ability boost + held-item boost, e.g. Life Orb,
+        # type boosters, Choice Band/Specs).
+        item_multiplier = attacker.item_attack_multiplier(move_data)
+        damage = round(result.damage * attack_multiplier * item_multiplier)
         hp_before = defender.current_hp
         if damage > 0:
             defender.take_damage(damage)
@@ -245,8 +248,18 @@ class BattleSystem:
         effect_messages = attacker.execute_effects(move_data, defender)
         messages.extend(effect_messages)
 
-        # Ability: defender on-hit reaction (e.g. Static paralyses on contact)
+        # Ability + held-item on-hit reactions (Static, Rocky Helmet), and the
+        # attacker's own Life Orb recoil — only when a hit actually landed.
         messages.extend(defender.on_hit(attacker, move_data))
+        if damage > 0:
+            messages.extend(defender.item_on_hit(attacker, move_data))
+            messages.extend(attacker.item_recoil_self(move_data))
+
+        # Held-berry reactions to the new state (Lum on status, pinch berries on HP)
+        messages.extend(defender.consume_berry_on_status())
+        messages.extend(attacker.consume_berry_on_status())
+        messages.extend(defender.consume_berry_on_hp())
+        messages.extend(attacker.consume_berry_on_hp())
 
         # Publish HP change for UI bar update
         self._publish_hp_change(defender_label, hp_before, defender)
@@ -295,6 +308,13 @@ class BattleSystem:
         
         messages.extend(self.your_pokemon.on_turn_end(self.enemy_pokemon))
         messages.extend(self.enemy_pokemon.on_turn_end(self.your_pokemon))
+
+        # Held items: Leftovers heal, then pinch berries if end-of-turn damage
+        # (poison/burn) dropped the holder to its berry threshold.
+        messages.extend(self.your_pokemon.item_turn_end())
+        messages.extend(self.enemy_pokemon.item_turn_end())
+        messages.extend(self.your_pokemon.consume_berry_on_hp())
+        messages.extend(self.enemy_pokemon.consume_berry_on_hp())
 
         if self.your_pokemon.current_hp != hp_before_yours:
             self._publish_hp_change("player", hp_before_yours, self.your_pokemon)
@@ -363,7 +383,8 @@ class BattleSystem:
         pokemon = self.player_manager.player.pokemon[0]
         profile = self.data_loader.get_pokemon(pokemon.name)
         ability = self.data_loader.get_ability(pokemon.ability)
-        self.your_pokemon.switching_pokemon(pokemon, ability, profile)
+        held_item = self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
+        self.your_pokemon.switching_pokemon(pokemon, ability, profile, held_item)
         
         messages.extend(self.your_pokemon.on_switch_in(self.enemy_pokemon))
         messages.append(f"Go {pokemon.name}!")

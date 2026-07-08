@@ -57,6 +57,7 @@ class BattleAttributes:
 
 @dataclass
 class ItemSpecies:
+    name: str               # display name, set by the parser from the data key
     description: str
     price: int
     category: str           # "medicine" | "pokeball" | "berry" | "held_item"
@@ -66,6 +67,7 @@ class ItemSpecies:
     battle_attributes: BattleAttributes | None
 
     def __init__(self, item: dict):
+        self.name = item.get("name", "")
         self.description = item["description"]
         self.price = item["price"]
         self.category = ItemCategory(item["category"])
