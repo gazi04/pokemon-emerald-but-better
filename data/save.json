@@ -49,23 +49,20 @@
             ]
         }
     ],
-    "items": [
-        {
-            "name": "potion",
+    "items": {
+        "potion": {
             "count": 3,
             "category": "medicine"
         },
-        {
-            "name": "pokeball",
+        "pokeball":  {
             "count": 99,
             "category": "pokeball"
         },
-        {
-            "name": "sitrus berry",
+        "sitrus berry": {
             "count": 99,
             "category": "berry"
         }
-    ],
+    },
     "battle_items": [],
     "position": {
         "map_name": "littleroot_town",

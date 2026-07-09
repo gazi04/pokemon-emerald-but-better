@@ -93,23 +93,21 @@ class PlayerManager:
 
     def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
         return self.player.add_pokemon(pokemon)
+    
+    def update_pokemon_held_item(self, pokemon_id:str, item_id:str | None):
+        pokemon = self.get_pokemon(pokemon_id)
+        pokemon.held_item = item_id
 
     def mark_seen(self, pokemon_name: str):
         self.player.mark_seen(pokemon_name)
 
-    def add_item(self, name: str, count: int) -> bool:
-        for item in self.player.items:
-            if item.name == name:
-                item.count += count
-                return True
-        self.player.items.append(ItemStack(name, count))
-        return True
+    def add_item(self, item_id: str, count: int = 1):
+        category = self.data_loader.get_item(item_id).category
+        
+        self.player.add_item(item_id, category, count)
 
     def consume_item(self, name: str) -> bool:
         return self.player.consume_item(name)
-
-    def consume_pokeball(self, name: str) -> bool:
-        return self.player.consume_pokeball(name)
 
     def get_money(self) -> int:
         return self.player.money

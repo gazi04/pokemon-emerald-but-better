@@ -1,24 +1,22 @@
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.enums.effect_type import EffectType
+from src.enums.item_category import ItemCategory
 from src.model.static.pokemon import PokemonStat
-
+from src.model.static.item import ItemSpecies 
+from src.model.save.player import ItemStack 
 
 class BagSystem:
     def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
         self.player_manager = player_manager
         self.data_loader    = data_loader
 
-        self._items       = player_manager.player.items.get("items", [])
-        self._pokeballs   = player_manager.player.items.get("pokeballs", [])
-        self._berries     = player_manager.player.items.get("berries", [])
-        self._held_items  = player_manager.player.items.get("held_items", [])
+        self._items       = player_manager.player.items
 
         self._effect_appliers = {
             EffectType.HEAL:        self._apply_heal,
             EffectType.CURE_STATUS: self._apply_cure_status,
-            EffectType.RESTORE_PP:  self._apply_restore_pp,
-            EffectType.STAT_BOOST:  self._apply_stat_boost,
+            EffectType.RESTORE_PP:  self._apply_restore_pp
         }
 
         self._effect_eligibility = {
@@ -77,55 +75,27 @@ class BagSystem:
         for move in pokemon.moves:
             if move.pp < move.max_pp:
                 new_pp = min(move.pp + effect.amount, move.max_pp)
-                self.player_manager.update_pokemon_move_pp(pokemon_id, move.name, new_pp)
+                self.player_manager.update_move_pp(pokemon_id, move.name, new_pp)
 
-        return True
-
-    def _apply_stat_boost(self, pokemon_id: str, pokemon, max_hp: int, effect) -> bool:
-        # Stat boosts from bag items (outside battle) are permanent EV-style
-        # In battle this is handled by BattleSystem, not BagSystem
         return True
 
     # ── Core item use ─────────────────────────────────────────────────────────
 
-    def use_item(self, item_index: int, pokemon_id: str) -> bool:
-        item_stack = self._items[item_index]
-        item_def   = self.data_loader.get_item(item_stack.name)
-
-        if not item_def:
-            return False
-
-        if self._handle_item_effects(pokemon_id.lower(), item_stack.name):
-            self.player_manager.consume_item(item_stack.name)
+    def use_item(self, item_id: str, pokemon_id: str) -> bool:
+        if self._handle_item_effects(pokemon_id.lower(), item_id):
+            self.player_manager.consume_item(item_id)
             return True
 
         return False
 
-    def use_pokeball(self, pokeball_index: int):
-        if 0 <= pokeball_index < len(self._pokeballs):
-            pokeball = self._pokeballs[pokeball_index]
-            if pokeball.count > 0:
-                self.player_manager.consume_pokeball(pokeball.name)
-                return self.data_loader.get_item(pokeball.name)
+    def use_pokeball(self, pokeball_id: str) -> ItemSpecies | None:
+        pokeball = self._items.get(pokeball_id)
+            
+        if pokeball and pokeball.count > 0 and pokeball.category == ItemCategory.POKEBALL:
+            self.player_manager.consume_item(pokeball.name)
+            return self.data_loader.get_item(pokeball.name)
+        
         return None
-
-    def can_use_item(self, item_index: int, pokemon_id: str) -> bool:
-        if not self._items:
-            return False
-
-        inventory_item = self._items[item_index]
-        pokemon        = self.player_manager.player.get_pokemon(pokemon_id)
-        if not pokemon:
-            return False
-
-        pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
-        max_hp          = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
-        item_def        = self.data_loader.get_item(inventory_item.name)
-
-        return all(
-            not (check := self._effect_eligibility.get(effect.type)) or check(pokemon, max_hp, effect)
-            for effect in item_def.effects
-        )
 
     def _handle_item_effects(self, pokemon_id: str, item_name: str) -> bool:
         pokemon = self.player_manager.player.get_pokemon(pokemon_id)
@@ -133,8 +103,8 @@ class BagSystem:
             return False
 
         pokemon_profile = self.data_loader.get_pokemon(pokemon_id)
-        max_hp          = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
-        item_def        = self.data_loader.get_item(item_name)
+        max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
+        item_def = self.data_loader.get_item(item_name)
 
         return all(
             not (applier := self._effect_appliers.get(effect.type)) or applier(pokemon_id, pokemon, max_hp, effect)
@@ -154,8 +124,7 @@ class BagSystem:
             return False
 
         if pokemon.held_item:
-            # Return current held item to bag before replacing
-            self.player_manager.add_item(pokemon.held_item)
+            return False
 
         self.player_manager.update_pokemon_held_item(pokemon_id, item_name)
         self.player_manager.consume_item(item_name)
@@ -171,9 +140,16 @@ class BagSystem:
         self.player_manager.update_pokemon_held_item(pokemon_id, None)
         return True
 
-    # ── Getters ───────────────────────────────────────────────────────────────
+    def get_items(self) -> dict[str, list[ItemStack]]:
+        result: dict[str, list[ItemStack]] = {}
 
-    def get_items(self)     -> list: return self._items
-    def get_pokeballs(self) -> list: return self._pokeballs
-    def get_berries(self)   -> list: return self._berries
-    def get_held_items(self)-> list: return self._held_items
+        for item_id, stack in self._items.items():
+            if stack.count <= 0:
+                continue
+
+            if stack.category not in result:
+                result[stack.category] = []
+
+            result[stack.category].append(stack)
+
+        return result

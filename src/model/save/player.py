@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional
-
+from src.enums.item_category import ItemCategory
 
 @dataclass
 class PlayerPokemonMove:
@@ -33,7 +33,7 @@ class ItemStack:
 @dataclass
 class PlayerSave:
     pokemon: list[PlayerPokemon]
-    items: list[ItemStack]
+    items: dict[str, ItemStack]
     seen: list[str] = field(default_factory=list)
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)
@@ -104,12 +104,22 @@ class PlayerSave:
         if name not in self.seen:
             self.seen.append(name)
 
+    def add_item(self, item_id: str, category: str, count: int):
+        item = self.items.get(item_id)
+        
+        if not item:
+            self.items[item_id] = ItemStack(item_id, count, ItemCategory(category))
+            return
+        
+        item.count += count
     
-    def consume_item(self, name: str) -> bool:
-        for i, item in enumerate(self.items):
-            if item.name == name:
-                item.count -= 1
-                if item.count <= 0:
-                    self.items.pop(i)
-                return True
-        return False
+    def consume_item(self, item_id: str) -> bool:
+        item = self.items.get(item_id)
+        if not item:
+            return False
+        
+        item.count -= 1
+        if item.count <= 0:
+            self.items.pop(item_id)
+        
+        return True

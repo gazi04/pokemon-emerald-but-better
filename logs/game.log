@@ -2,3 +2,7 @@
 11:25:33 WARNING src.core.save_manager: Failed to load save 'data/player.json': PlayerPokemon.__init__() missing 1 required positional argument: 'ability'
 11:26:01 WARNING src.core.save_manager: Failed to load save 'data/save.json': PlayerPokemon.__init__() missing 1 required positional argument: 'ability'
 11:26:01 WARNING src.core.save_manager: Failed to load save 'data/player.json': PlayerPokemon.__init__() missing 1 required positional argument: 'ability'
+15:02:44 WARNING src.core.save_manager: Failed to load save 'data/save.json': string indices must be integers, not 'str'
+15:02:44 WARNING src.core.save_manager: Failed to load save 'data/player.json': 'held_item'
+15:03:34 WARNING src.core.save_manager: Failed to load save 'data/save.json': 'builtin_function_or_method' object is not iterable
+15:03:34 WARNING src.core.save_manager: Failed to load save 'data/player.json': 'held_item'

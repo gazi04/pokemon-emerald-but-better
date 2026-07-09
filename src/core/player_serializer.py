@@ -35,7 +35,10 @@ class PlayerSerializer:
                 )
             )
 
-        items = [ItemStack(item["name"], item["count"], ItemCategory(item["category"])) for item in data["items"]]
+        items = {}
+        for key, item in data["items"].items():
+            items[key] = ItemStack(key, item["count"], ItemCategory(item["category"]))
+            
         seen = data.get("seen", [])
 
         return PlayerSave(

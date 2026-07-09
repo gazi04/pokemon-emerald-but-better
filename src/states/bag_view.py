@@ -8,10 +8,17 @@ from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
 from src.systems.battle_system import BattleSystem
 from src.constants import MAX_VISIBLE_ITEMS
+from src.enums.item_category import ItemCategory
 from src.states.base_view import GameView
 
 CONFIG = Config.load()
 
+BAG_CATEGORIES = [
+    ItemCategory.MEDICINE,
+    ItemCategory.POKEBALL,
+    ItemCategory.HELD_ITEM,
+    ItemCategory.BERRY
+]
 
 class BagView(GameView):
     def __init__(
@@ -33,7 +40,8 @@ class BagView(GameView):
         self.battle_system = battle_system
         self.previousWindow = previousWindow
 
-        self.inventory = self.bagSystem.get_items()
+        self.bag = self.bagSystem.get_items()
+        self.current_inventory = self.bag.get(ItemCategory.MEDICINE)
         self.bagIndex = 0
         self.currentIndex = 0
         self.topVisibleIndex = 0
@@ -44,15 +52,15 @@ class BagView(GameView):
     def update_item(self):
         for i in range(MAX_VISIBLE_ITEMS):
             inventory_index = self.topVisibleIndex + i
-            if inventory_index < len(self.inventory):
-                item = self.inventory[inventory_index]
+            if inventory_index < len(self.current_inventory):
+                item = self.current_inventory[inventory_index]
                 name = item.name.upper()
                 display = f"{name:<14} x{item.count}" if item.count > 0 else name
                 self.ui.itemLabels[i].text = display
             else:
                 self.ui.itemLabels[i].text = ""
 
-        if len(self.inventory) <= 0:
+        if len(self.current_inventory) <= 0:
             self.currentIndex = 0
             self.ui.set_text("There isn't any items.")
             return
@@ -60,7 +68,7 @@ class BagView(GameView):
         index = self.currentIndex - self.topVisibleIndex
         self.ui.set_y_of_cursor(index)
 
-        item_data = self.data_loader.get_item(self.inventory[self.currentIndex].name)
+        item_data = self.data_loader.get_item(self.current_inventory[self.currentIndex].name)
         if item_data is not None:
             self.ui.set_text(item_data.description)
         else:
@@ -75,18 +83,18 @@ class BagView(GameView):
                 self.update_item()
 
         elif self.is_pressed(CONFIG.controls.down, symbol):
-            if self.currentIndex < len(self.inventory) - 1:
+            if self.currentIndex < len(self.current_inventory) - 1:
                 self.currentIndex += 1
                 if self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS:
                     self.topVisibleIndex += 1
                 self.update_item()
 
         elif self.is_pressed(CONFIG.controls.right, symbol):
-            self.bagIndex = (self.bagIndex + 1) % 3
+            self.bagIndex = (self.bagIndex + 1) % len(BAG_CATEGORIES)
             self.change_bag()
 
         elif self.is_pressed(CONFIG.controls.left, symbol):
-            self.bagIndex = (self.bagIndex - 1) % 3
+            self.bagIndex = (self.bagIndex - 1) % len(BAG_CATEGORIES)
             self.change_bag()
 
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
@@ -97,7 +105,7 @@ class BagView(GameView):
                 "pokemon_menu",
                 previous_view=self,
                 bag=self.bagSystem,
-                item=self.inventory[self.currentIndex].name,
+                item=self.current_inventory[self.currentIndex].name,
                 battle_system=self.battle_system,
             )
             self.update_item()
@@ -128,15 +136,10 @@ class BagView(GameView):
 
     def change_bag(self):
         self.currentIndex = 0
-        if self.bagIndex == 0:
-            self.inventory = self.bagSystem.get_items()
-            self.ui.change_bag("items")
-        elif self.bagIndex == 1:
-            self.inventory = self.bagSystem.get_pokeballs()
-            self.ui.change_bag("pokeball")
-        elif self.bagIndex == 2:
-            self.inventory = self.bagSystem.get_berries()
-            self.ui.change_bag("berry")
+        
+        category = BAG_CATEGORIES[self.bagIndex]
+        self.current_inventory = self.bag.get(category, [])
+        self.ui.change_bag(category)
             
         self.ui.setup_invetory()
         self.update_item()
