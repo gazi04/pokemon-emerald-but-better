@@ -27,14 +27,13 @@ class PlayerPokemon:
 class ItemStack:
     name: str
     count: int
+    category: str
 
 
 @dataclass
 class PlayerSave:
     pokemon: list[PlayerPokemon]
     items: list[ItemStack]
-    pokeballs: list[ItemStack]
-    berries: list[ItemStack]
     seen: list[str] = field(default_factory=list)
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)
@@ -105,18 +104,12 @@ class PlayerSave:
         if name not in self.seen:
             self.seen.append(name)
 
+    
     def consume_item(self, name: str) -> bool:
-        return self._consume(self.items, name)
-
-    def consume_pokeball(self, name: str) -> bool:
-        return self._consume(self.pokeballs, name)
-
-    @staticmethod
-    def _consume(stacks: "list[ItemStack]", name: str) -> bool:
-        for i, stack in enumerate(stacks):
-            if stack.name == name:
-                stack.count -= 1
-                if stack.count <= 0:
-                    stacks.pop(i)
+        for i, item in enumerate(self.items):
+            if item.name == name:
+                item.count -= 1
+                if item.count <= 0:
+                    self.items.pop(i)
                 return True
         return False

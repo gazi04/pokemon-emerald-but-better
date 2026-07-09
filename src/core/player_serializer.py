@@ -2,6 +2,7 @@ from typing import Optional
 
 from src.model.save.player import PlayerSave, PlayerPokemon, PlayerPokemonMove, ItemStack
 from src.model.motion.player_motion import PlayerMotion
+from src.enums.item_category import ItemCategory
 
 
 class PlayerSerializer:
@@ -34,16 +35,12 @@ class PlayerSerializer:
                 )
             )
 
-        items = [ItemStack(item["name"], item["count"]) for item in data["items"]]
-        pokeballs = [ItemStack(pb["name"], pb["count"]) for pb in data["pokeballs"]]
-        berries = [ItemStack(berry["name"], berry["count"]) for berry in data["berries"]]
+        items = [ItemStack(item["name"], item["count"], ItemCategory(item["category"])) for item in data["items"]]
         seen = data.get("seen", [])
 
         return PlayerSave(
             pokemon=pokemons,
             items=items,
-            pokeballs=pokeballs,
-            berries=berries,
             seen=seen,
             money=data.get("money", 0),
             npc_states=data.get("npc_states", []),
