@@ -17,6 +17,9 @@ class PlayerPokemon:
     ability: str
     moves: list[PlayerPokemonMove]
     held_item: str | None
+    # Persistent major status ("poison"/"burn"/… or None). Volatile states
+    # (confusion, sleep counter) live only inside battle.
+    status_condition: str | None = None
 
     @property
     def is_fainted(self) -> bool:
@@ -57,6 +60,11 @@ class PlayerSave:
         for move in pokemon.moves:
             if move.name == move_name:
                 move.pp = pp
+
+    def update_status(self, pokemon_name: str, status: str | None):
+        pokemon = self.get_pokemon(pokemon_name)
+        if pokemon:
+            pokemon.status_condition = status
 
     def update_level(
         self,

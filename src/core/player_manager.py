@@ -54,6 +54,9 @@ class PlayerManager:
     def update_move_pp(self, pokemon_name: str, move_name: str, pp: int):
         self.player.update_move_pp(pokemon_name, move_name, pp)
 
+    def update_pokemon_status(self, pokemon_name: str, status: str | None):
+        self.player.update_status(pokemon_name, status)
+
     def update_level(
         self, pokemon_name: str, new_level: int, exp: int, evolved_name: str = None
     ):
@@ -78,6 +81,10 @@ class PlayerManager:
         Persistence lives here, not in BattleSystem (combat orchestration)."""
         name = battle_pokemon.name.lower()
         self.update_pokemon_hp(name, battle_pokemon.current_hp)
+        # Persist the major status so it carries out of battle (and can be
+        # cured with a bag item on the overworld). NONE -> None (healthy).
+        status = battle_pokemon.status_effect
+        self.update_pokemon_status(name, status.value if status.value else None)
         for move in battle_pokemon.moves:
             self.update_move_pp(name, move.name, move.pp)
 

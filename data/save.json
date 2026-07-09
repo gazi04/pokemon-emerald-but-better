@@ -61,6 +61,10 @@
         "sitrus berry": {
             "count": 99,
             "category": "berry"
+        },
+        "ether": {
+            "count": 99,
+            "category": "medicine"
         }
     },
     "battle_items": [],

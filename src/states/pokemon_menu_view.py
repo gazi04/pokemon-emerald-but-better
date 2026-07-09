@@ -120,7 +120,9 @@ class PokemonMenuView(GameView):
 
         elif index == 1:
             if self.bag and self.battle_system:
-                # Use item in battle
+                # Sync the active pokemon's live HP/status into the save first,
+                # so the bag heals/cures from current battle values, then apply.
+                self.battle_system.sync_active_to_save()
                 self.bag.use_item(
                     self.item,
                     self._get_current_pokemon().name,

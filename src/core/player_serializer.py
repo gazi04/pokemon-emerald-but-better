@@ -32,6 +32,7 @@ class PlayerSerializer:
                     ability=pokemon["ability"],
                     held_item=pokemon["held_item"],
                     moves=moves,
+                    status_condition=pokemon.get("status_condition"),
                 )
             )
 

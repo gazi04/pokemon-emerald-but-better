@@ -102,6 +102,10 @@ class BattlePokemon:
 
         self._reset_battle_state()
 
+        # Carry a persisted major status into battle (e.g. still poisoned).
+        if source is not None and source.status_condition:
+            self.status_effect = StatusEffect(source.status_condition)
+
     # ------------------------------------------------------------------
     # Progression is delegated to self.progression; level and exp stay
     # readable/writable on the battle object for combat code that needs them.
@@ -657,6 +661,21 @@ class BattlePokemon:
         self.current_hp = self.source.hp
         self.level = self.source.level
         self.exp = self.source.exp
+        self.status_effect = (
+            StatusEffect(self.source.status_condition)
+            if self.source.status_condition
+            else StatusEffect.NONE
+        )
+
+    def sync_to_source(self):
+        """Push live battle HP + major status back onto the save member, so a
+        bag item (which reads/writes the save) operates on current values."""
+        if self.source is None:
+            return
+        self.source.hp = self.current_hp
+        self.source.status_condition = (
+            self.status_effect.value if self.status_effect.value else None
+        )
 
     def get_hp_ratio(self) -> float:
         return self.current_hp / self.max_hp

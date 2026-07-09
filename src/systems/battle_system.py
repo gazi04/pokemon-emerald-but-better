@@ -284,6 +284,11 @@ class BattleSystem:
 
         return None
 
+    def sync_active_to_save(self) -> None:
+        """Push the active pokemon's live HP/status to the save so a bag item
+        (which operates on the save) heals/cures from current values."""
+        self.your_pokemon.sync_to_source()
+
     def _apply_item_to_pokemon(self, item_index: str) -> list[str]:
         self.your_pokemon.sync_from_source()
 

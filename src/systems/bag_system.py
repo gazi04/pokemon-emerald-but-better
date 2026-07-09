@@ -35,12 +35,14 @@ class BagSystem:
     def _cure_status_eligible(pokemon, max_hp: int, effect) -> bool:
         return pokemon.status_condition is not None
 
-    @staticmethod
-    def _restore_pp_eligible(pokemon, max_hp: int, effect) -> bool:
-        return any(
-            move.pp < move.max_pp
-            for move in pokemon.moves
-        )
+    def _restore_pp_eligible(self, pokemon, max_hp: int, effect) -> bool:
+        return any(move.pp < self._max_pp(move) for move in pokemon.moves)
+
+    def _max_pp(self, move) -> int:
+        """A move's max PP comes from its species data — the single source of
+        truth — not a field duplicated on the save."""
+        move_data = self.data_loader.get_move(move.name.lower())
+        return move_data.pp if move_data else move.pp
 
     # ── Appliers ──────────────────────────────────────────────────────────────
 
@@ -73,8 +75,9 @@ class BagSystem:
             return False
 
         for move in pokemon.moves:
-            if move.pp < move.max_pp:
-                new_pp = min(move.pp + effect.amount, move.max_pp)
+            max_pp = self._max_pp(move)
+            if move.pp < max_pp:
+                new_pp = min(move.pp + effect.amount, max_pp)
                 self.player_manager.update_move_pp(pokemon_id, move.name, new_pp)
 
         return True
