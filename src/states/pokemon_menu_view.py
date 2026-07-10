@@ -119,29 +119,19 @@ class PokemonMenuView(GameView):
                 self.window.show_view(self.previousView)
 
         elif index == 1:
-            if self.bag and self.battle_system:
-                # Sync the active pokemon's live HP/status into the save first,
-                # so the bag heals/cures from current battle values, then apply.
-                self.battle_system.sync_active_to_save()
-                self.bag.use_item(
-                    self.item,
-                    self._get_current_pokemon().name,
-                )
-
-                # Navigate back to BattleView (still held by previousView chain)
-                battle_view = self.previousView.previousWindow
-                battle_view.on_item_used(self.item)
-                self.window.show_view(battle_view)
-
-            elif self.bag:
-                # Use item outside battle
-                self.bag.use_item(
-                    self.item,
-                    self._get_current_pokemon().name,
-                )
-                self.previousView.update_item()
-                self.window.show_view(self.previousView)
-
+            if self.bag:
+                # PP items (Ether) need a move chosen first — open the moves tab
+                # as a picker; the callback applies the item to that move.
+                if self.bag.is_pp_item(self.item):
+                    self.overlay(
+                        "pokemon_information",
+                        previous_view=self,
+                        pokemon=self._get_current_pokemon(),
+                        select_move=True,
+                        on_select_move=self._use_item,
+                    )
+                else:
+                    self._use_item()
             elif len(self.system.team) > 1:
                 self._move_pokemon()
 
@@ -151,6 +141,25 @@ class PokemonMenuView(GameView):
                 previous_view=self,
                 pokemon=self._get_current_pokemon(),
             )
+
+    def _use_item(self, move_index: int | None = None):
+        """Apply the selected bag item to the current pokemon. `move_index` is
+        the chosen move for PP items (None for others). Also the on_select_move
+        callback for the move picker."""
+        pokemon_name = self._get_current_pokemon().name
+
+        if self.battle_system:
+            # Sync live battle HP/status to the save so the item works on
+            # current values, apply, then let the battle pull it back.
+            self.battle_system.sync_active_to_save()
+            self.bag.use_item(self.item, pokemon_name, move_index)
+            battle_view = self.previousView.previousWindow
+            battle_view.on_item_used(self.item)
+            self.window.show_view(battle_view)
+        else:
+            self.bag.use_item(self.item, pokemon_name, move_index)
+            self.previousView.update_item()
+            self.window.show_view(self.previousView)
 
     def _get_current_pokemon(self):
         return self.system.team[self.system.team_index]

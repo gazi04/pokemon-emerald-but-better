@@ -233,4 +233,6 @@ class GameDirector:
             previous_view=payload.get("previous_view", self._get_or_create_overworld()),
             pokemon=payload.get("pokemon"),
             data_loader=self.data_loader,
+            select_move=payload.get("select_move", False),
+            on_select_move=payload.get("on_select_move"),
         )

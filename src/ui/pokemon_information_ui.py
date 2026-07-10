@@ -372,6 +372,13 @@ class PokemonInformationUI:
     def get_current_tab(self) -> int:
         return self._current_tab
 
+    def current_move(self) -> int:
+        """Index of the highlighted move on the moves tab (for PP items)."""
+        return self._current_move
+
+    def show_moves_tab(self):
+        self._set_tab(2)
+
     def next_tab(self):
         self._set_tab(self._current_tab + 1)
 
