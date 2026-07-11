@@ -61,16 +61,22 @@ class PlayerSerializer:
                     "hp": pokemon.hp,
                     "level": pokemon.level,
                     "exp": pokemon.exp,
+                    "ability": pokemon.ability,
+                    "held_item": pokemon.held_item,
+                    "status_condition": pokemon.status_condition,
                     "moves": moves,
                 }
             )
 
+        # Mirror deserialize: items is a dict keyed by item id.
+        items = {
+            item_id: {"count": stack.count, "category": stack.category}
+            for item_id, stack in player.items.items()
+        }
+
         data = {
             "pokemons": pokemons,
-            "items": [{"name": i.name, "count": i.count} for i in player.items],
-            "pokeballs": [
-                {"name": pb.name, "count": pb.count} for pb in player.pokeballs
-            ],
+            "items": items,
             "seen": list(player.seen),
             "money": player.money,
             "npc_states": player.npc_states,

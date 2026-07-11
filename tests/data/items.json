@@ -3,14 +3,28 @@
     "description": "Restores 20 HP.",
     "price": 300,
     "effects": [
-      {"type": "heal", "amount": 20}
-    ]
+      {
+        "type": "heal",
+        "amount": 20
+      }
+    ],
+    "category": "medicine",
+    "holdable": false,
+    "battle_condition": null,
+    "battle_attributes": null
   },
   "pokeball": {
     "description": "A ball for catching Pokemon.",
     "price": 200,
     "effects": [
-      {"type": "catch", "catchRate": 1}
-    ]
+      {
+        "type": "catch",
+        "catchRate": 1
+      }
+    ],
+    "category": "pokeball",
+    "holdable": false,
+    "battle_condition": null,
+    "battle_attributes": null
   }
 }

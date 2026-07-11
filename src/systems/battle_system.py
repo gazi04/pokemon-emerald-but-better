@@ -107,7 +107,9 @@ class BattleSystem:
         attacker_key, move_index, item_index = self.turn_queue.pop(0)
 
         if attacker_key == "player" and self.your_pokemon.current_hp > 0:
-            if not item_index:
+            # No item this action (None or a negative sentinel) -> it's a move.
+            # A real item can sit at index 0, so a truthiness check is wrong.
+            if item_index is None or item_index < 0:
                 messages.extend(
                     self._dispatch_move(
                         self.your_pokemon, self.enemy_pokemon, move_index, "enemy"
@@ -483,8 +485,9 @@ class BattleSystem:
                 hp=enemy.current_hp,
                 level=enemy.level,
                 exp=0,
+                ability=enemy.ability.name.lower() if enemy.ability else "",
                 moves=enemy.moves,
-                ability=enemy.ability.name.lower()
+                held_item=None,
             )
         )
 

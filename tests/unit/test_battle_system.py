@@ -1,7 +1,6 @@
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 
 from src.core.player_manager import PlayerManager
 from src.core.event_bus import global_bus
@@ -41,6 +40,7 @@ def make_profile(
         evolution=None,
         sprites=SpritePaths(back="b.png", front="f.png"),
         stats=stats,
+        learnset=[],
     )
 
 
@@ -53,9 +53,11 @@ def make_battle_pokemon(
         hp=999,
         level=level,
         exp=0,
+        ability="",
         moves=[PlayerPokemonMove(name="tackle", pp=35)],
+        held_item=None,
     )
-    battle = BattlePokemon.from_player(profile, pp, is_enemy)
+    battle = BattlePokemon.from_player(None, profile, pp, is_enemy)
     battle.current_hp = battle.max_hp
     return battle
 
@@ -70,6 +72,10 @@ def make_poke_move(
         power=power,
         accuracy=accuracy,
         pp=35,
+        priority=0,
+        crit=0,
+        multi_hit=None,
+        condition=None,
         effects=[],
     )
 

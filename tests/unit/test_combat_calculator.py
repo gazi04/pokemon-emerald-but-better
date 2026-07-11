@@ -1,10 +1,8 @@
 import json
 from unittest.mock import patch
 
-import pytest
 
 from src.core.combat_calculator import _get_stat, calculate_damage
-from src.model.battle.combat_result import CombatResult
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.model.static.pokemon import PokemonMove, PokemonStat
@@ -34,6 +32,10 @@ def make_move(
         power=power,
         accuracy=accuracy,
         pp=pp,
+        priority=0,
+        crit=0,
+        multi_hit=None,
+        condition=None,
         effects=[],
     )
 
@@ -262,8 +264,8 @@ def test_stab_plus_super_effective_stacks():
     assert stab_se.damage > no_stab.damage
 
 
-def test_burn_status_does_not_affect_attack_currently():
-    # burn reducing attack is not implemented — documents missing feature
+def test_burn_halves_attack():
+    # Burn now halves the physical Attack used in the damage calc.
     normal = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.NONE)
     burned = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.BURN)
-    assert burned == normal
+    assert burned == normal // 2

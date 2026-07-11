@@ -1,4 +1,3 @@
-import pytest
 
 
 def test_get_pokemon_returns_correct_types(data_loader):

@@ -5,17 +5,29 @@
       "hp": 50,
       "level": 10,
       "exp": 0,
+      "ability": "torrent",
+      "held_item": null,
       "moves": [
-        {"name": "tackle", "pp": 35}
+        {
+          "name": "tackle",
+          "pp": 35
+        }
       ]
     }
   ],
-  "items": [
-    {"name": "potion", "count": 3}
-  ],
-  "pokeballs": [
-    {"name": "pokeball", "count": 5}
-  ],
+  "items": {
+    "potion": {
+      "count": 3,
+      "category": "medicine"
+    },
+    "pokeball": {
+      "count": 5,
+      "category": "pokeball"
+    }
+  },
+  "seen": [],
+  "money": 0,
+  "npc_states": [],
   "position": {
     "map_name": "littleroot_town",
     "direction": "down",
