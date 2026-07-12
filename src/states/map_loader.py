@@ -147,5 +147,4 @@ class MapLoader:
                 tiles.add((gx, gy))
             return tiles
         except Exception:
-            log.exception("Failed to extract bush tiles; treating map as bushless")
             return set()

@@ -75,7 +75,7 @@ class PlayerInput:
             if hit_transitions:
                 return {
                     "type": "transition",
-                    "properties": dict(hit_transitions[0].properties),
+                    "properties": dict(transitions.properties),
                 }
 
             # Block if an NPC stands on the target tile

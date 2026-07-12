@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="48" height="48" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="16">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="48" height="48" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="17">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <tileset firstgid="6073" source="tilesets/locations/full_map.tsx"/>
  <layer id="1" name="walkable" width="48" height="48">
@@ -54,6 +54,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="6" name="spawns">
+  <object id="16" name="from_littleroot_town" x="392" y="664"/>
+ </objectgroup>
  <layer id="3" name="bush" width="48" height="48">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

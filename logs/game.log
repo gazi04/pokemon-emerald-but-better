@@ -72,3 +72,31 @@ Traceback (most recent call last):
     raise SceneKeyError(key)
 arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
 15:51:47 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:39:27 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+21:39:27 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:40:30 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+21:40:30 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:42:29 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:43:00 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:45:15 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:45:39 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:48:48 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:49:12 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:49:30 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:49:34 INFO    src.world.map_manager: Active map -> 'root101' (spawn='from_littleroot_town')
+21:50:04 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))
+21:50:12 INFO    src.world.map_manager: Active map -> 'root101' (spawn='from_littleroot_town')

@@ -1,13 +1,13 @@
 {
-    "activeFile": "map/oldale_town/pokemon_center.tmx",
+    "activeFile": "map/oldale_town.tmx",
     "expandedProjectPaths": [
-        "map/little_root_town",
         "map/oldale_town",
-        "ui",
-        "ui/sprites",
+        "map/little_root_town",
         ".",
+        "map/tilesets",
+        "ui/sprites",
         "map",
-        "map/tilesets"
+        "ui"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -19,7 +19,7 @@
             "scaleInEditor": 1
         },
         "map/Tiles.tsx": {
-            "scaleInDock": 3
+            "scaleInDock": 1
         },
         "map/little_root_town/birch_labor.tmx": {
             "scale": 3,
@@ -65,11 +65,11 @@
             }
         },
         "map/littleroot_town_original.tmx": {
-            "scale": 0.75,
+            "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 124,
-                "y": 167.99999999999994
+                "x": 283.3333333333333,
+                "y": 295.33333333333337
             }
         },
         "map/oldale_town.tmx": {
@@ -132,11 +132,14 @@
             }
         },
         "map/root101.tmx": {
+            "expandedObjectLayers": [
+                6
+            ],
             "scale": 1,
-            "selectedLayer": 0,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 312,
-                "y": 431
+                "x": 392,
+                "y": 664
             }
         },
         "map/rote101.tmx": {
@@ -324,26 +327,25 @@
     "map.tileWidth": 16,
     "map.width": 10,
     "openFiles": [
-        "map/oldale_town/home1.tmx",
-        "map/oldale_town/pokemon_center.tmx",
-        "map/littleroot_town.tmx",
-        "map/oldale_town/poke_mart.tmx"
+        "map/oldale_town.tmx",
+        "map/littleroot_town_original.tmx",
+        "map/root101.tmx"
     ],
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "map/tilesets/Game Boy Advance - Pokemon Emerald - Miscellaneous - Pokemon Menu.tsx",
+        "map/tilesets/interior_areas.tsx",
+        "map/root101.tmx",
+        "map/littleroot_town_original.tmx",
+        "map/oldale_town.tmx",
         "map/littleroot_town.tmx",
         "map/oldale_town/poke_mart.tmx",
         "map/oldale_town/pokemon_center.tmx",
         "map/oldale_town/home1.tmx",
-        "map/tilesets/interior_areas.tsx",
         "map/oldale_town/home2.tmx",
         "ui/second_home_room.tmx",
-        "map/little_root_town/second_home.tmx",
-        "map/little_root_town/home.tmx",
-        "map/little_root_town/home_room.tmx",
-        "map/little_root_town/birch_labor.tmx",
-        "map/Interior Tilesets.tsx"
+        "map/little_root_town/second_home.tmx"
     ],
     "resizeMap.removeObjects": false,
     "tileset.lastUsedFormat": "tsx",
