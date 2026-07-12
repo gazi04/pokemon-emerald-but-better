@@ -24,10 +24,10 @@ from src.world.transition import parse_transition
 
 CONFIG = Config.load()
 
-# Where the player respawns after whiting out. Matches the Poké Center door
-# entrance (see the "door_pokecenter" transition in littleroot_town.tmx).
+# Where the player respawns after whiting out — the Poké Center's named
+# "entrance" spawn point (authored in oldale_town/pokemon_center.tmx).
 POKECENTER_MAP = "oldale_town/pokemon_center"
-POKECENTER_SPAWN = (496, 210)
+POKECENTER_SPAWN = "entrance"
 
 
 class OverworldView(GameView):
@@ -238,6 +238,9 @@ class OverworldView(GameView):
         if self.is_pressed(CONFIG.controls.bag, key):
             self.keys.clear()
             self.overlay("menu")
+            
+        if self.is_pressed(CONFIG.controls.cancel, key):
+            print(f"x {self.player_state.pixel_x}, y {self.player_state.pixel_y}")
 
     def on_key_release(self, key, _):
         self.keys.discard(key)

@@ -57,33 +57,27 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 0.75,
-            "selectedLayer": 1,
+            "scale": 3,
+            "selectedLayer": 6,
             "viewCenter": {
                 "x": 1560,
-                "y": 968
+                "y": 968.3333333333333
             }
         },
         "map/littleroot_town_original.tmx": {
-            "expandedObjectLayers": [
-                2
-            ],
-            "scale": 3,
-            "selectedLayer": 0,
+            "scale": 0.75,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 9.333333333333314,
-                "y": 131.83333333333331
+                "x": 124,
+                "y": 167.99999999999994
             }
         },
         "map/oldale_town.tmx": {
-            "expandedObjectLayers": [
-                2
-            ],
-            "scale": 3,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 5.666666666666657,
-                "y": 11.166666666666657
+                "x": 75,
+                "y": 197
             }
         },
         "map/oldale_town/Interior Tilesets.tsx": {
@@ -119,8 +113,8 @@
         },
         "map/oldale_town/pokemon_center.tmx": {
             "expandedObjectLayers": [
-                4,
-                6
+                6,
+                4
             ],
             "scale": 3,
             "selectedLayer": 1,
@@ -138,14 +132,11 @@
             }
         },
         "map/root101.tmx": {
-            "expandedObjectLayers": [
-                2
-            ],
-            "scale": 2,
+            "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 275,
-                "y": 292.25
+                "x": 312,
+                "y": 431
             }
         },
         "map/rote101.tmx": {
@@ -341,10 +332,10 @@
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "map/oldale_town/home1.tmx",
-        "map/oldale_town/poke_mart.tmx",
         "map/littleroot_town.tmx",
+        "map/oldale_town/poke_mart.tmx",
         "map/oldale_town/pokemon_center.tmx",
+        "map/oldale_town/home1.tmx",
         "map/tilesets/interior_areas.tsx",
         "map/oldale_town/home2.tmx",
         "ui/second_home_room.tmx",
@@ -354,6 +345,7 @@
         "map/little_root_town/birch_labor.tmx",
         "map/Interior Tilesets.tsx"
     ],
+    "resizeMap.removeObjects": false,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 16,

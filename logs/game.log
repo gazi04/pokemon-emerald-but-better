@@ -1,1 +1,74 @@
 15:33:15 INFO    src.world.map_manager: Active map -> 'littleroot_town' (spawn=(3087.0, 624.0))
+15:40:37 INFO    src.world.map_manager: Active map -> 'littleroot_town' (spawn=(3087.0, 624.0))
+15:46:44 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:46:44 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(3087.0, 624.0))
+15:47:05 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:47:05 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(3087.0, 624.0))
+15:47:20 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:47:20 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(3087.0, 624.0))
+15:47:44 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:47:44 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(3087.0, 624.0))
+15:48:04 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:48:04 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(0, 0))
+15:50:09 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:50:09 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(0, 0))
+15:51:35 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:51:35 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 840))
+15:51:47 ERROR   src.states.map_loader: Failed to extract bush tiles; treating map as bushless
+Traceback (most recent call last):
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\src\states\map_loader.py", line 143, in _extract_bush_tiles
+    bush_layer = scene["bush"]
+                 ~~~~~^^^^^^^^
+  File "C:\Users\Enes\Documents\Enes\Pokemon-Emerald\.venv\Lib\site-packages\arcade\scene.py", line 155, in __getitem__
+    raise SceneKeyError(key)
+arcade.scene.SceneKeyError: "This scene does not contain a SpriteList named 'bush'."
+15:51:47 INFO    src.world.map_manager: Active map -> 'littleroot_town_original' (spawn=(368, 846))

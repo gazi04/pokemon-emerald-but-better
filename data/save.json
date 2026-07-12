@@ -42,9 +42,9 @@
         }
     ],
     "position": {
-        "map_name": "littleroot_town",
+        "map_name": "littleroot_town_original",
         "direction": "down",
-        "pixel_x": 3087.0,
-        "pixel_y": 624.0
+        "pixel_x": 368,
+        "pixel_y": 846
     }
 }
