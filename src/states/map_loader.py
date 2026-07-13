@@ -7,8 +7,29 @@ from src.core.logger import get_logger
 from src.systems.npc_controller import NpcController
 from src.systems.npc_behaviors import make_behavior
 from src.entities.npc import Npc
+from src.world.transition_layer import TransitionLayer
 
 log = get_logger(__name__)
+
+
+MAP_SCALE = 2.0
+
+
+def object_to_world(
+    obj, tile_map: arcade.TileMap, scale: float = MAP_SCALE
+) -> tuple[float, float]:
+    """Convert a Tiled object's position to arcade world coordinates.
+
+    Single source of truth for the map's object→world transform, shared by NPC
+    spawning and spawn-point extraction so they always agree. Tiled is y-down
+    with a top-left origin; arcade is y-up and the scene is scaled.
+    """
+    x = obj.coordinates.x * scale + obj.size.width
+    y = (
+        (tile_map.height * tile_map.tile_height - obj.coordinates.y) * scale
+        + obj.size.height / 2
+    )
+    return (x, y)
 
 
 @dataclass
@@ -20,6 +41,8 @@ class LoadedMap:
     npcs: arcade.SpriteList
     npc_controller: NpcController
     bush_tiles: set[tuple[int, int]]
+    spawns: dict[str, tuple[float, float]]
+    transitions: TransitionLayer
 
 
 class MapLoader:
@@ -45,8 +68,30 @@ class MapLoader:
         npcs = self._spawn_npcs(tile_map, scene)
         npc_controller = self._build_npc_controller(tile_map, scene, npcs)
         bush_tiles = self._extract_bush_tiles(scene)
+        spawns = self._extract_spawns(tile_map)
+        transitions = TransitionLayer.from_map(tile_map, scene)
 
-        return LoadedMap(tile_map, scene, npcs, npc_controller, bush_tiles)
+        return LoadedMap(
+            tile_map, scene, npcs, npc_controller, bush_tiles, spawns, transitions
+        )
+
+    def _extract_spawns(
+        self, tile_map: arcade.TileMap
+    ) -> dict[str, tuple[float, float]]:
+        """Read named spawn points from the 'spawns' object layer. Each object's
+        `name` property (falling back to its Tiled name) keys its world position.
+        Absent layer -> no named spawns (legacy maps still use transition coords).
+        """
+        spawns: dict[str, tuple[float, float]] = {}
+        layer = tile_map.get_tilemap_layer("spawns")
+        if not layer:
+            return spawns
+        for obj in layer.tiled_objects:
+            props = obj.properties or {}
+            name = props.get("name") or obj.name
+            if name:
+                spawns[name] = object_to_world(obj, tile_map)
+        return spawns
 
     def _spawn_npcs(
         self, tile_map: arcade.TileMap, scene: arcade.Scene
@@ -57,10 +102,10 @@ class MapLoader:
             scene.remove_sprite_list_by_name("npc")
             for obj in npc_layer.tiled_objects:
                 props = obj.properties or {}
+                world_x, world_y = object_to_world(obj, tile_map)
                 npc = Npc(
-                    x=obj.coordinates.x * 2 + obj.size.width,
-                    y=(tile_map.height * tile_map.tile_height - obj.coordinates.y) * 2
-                    + obj.size.height / 2,
+                    x=world_x,
+                    y=world_y,
                     npc_id=props.get("npc_id", ""),
                     behavior=make_behavior(props),
                     facing=props.get("facing", "down"),
@@ -107,5 +152,4 @@ class MapLoader:
                 tiles.add((gx, gy))
             return tiles
         except Exception:
-            log.exception("Failed to extract bush tiles; treating map as bushless")
             return set()

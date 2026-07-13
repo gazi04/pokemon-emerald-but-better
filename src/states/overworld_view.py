@@ -18,13 +18,16 @@ from src.core.events import (
 from src.states.base_view import GameView
 from src.states.map_loader import MapLoader
 from src.states.battle_transition import BattleTransition
+from src.world.map_registry import MapRegistry
+from src.world.map_manager import MapManager
+from src.world.transition import parse_transition
 
 CONFIG = Config.load()
 
-# Where the player respawns after whiting out. Matches the Poké Center door
-# entrance (see the "door_pokecenter" transition in littleroot_town.tmx).
+# Where the player respawns after whiting out — the Poké Center's named
+# "entrance" spawn point (authored in oldale_town/pokemon_center.tmx).
 POKECENTER_MAP = "oldale_town/pokemon_center"
-POKECENTER_SPAWN = (496, 210)
+POKECENTER_SPAWN = "entrance"
 
 
 class OverworldView(GameView):
@@ -56,28 +59,25 @@ class OverworldView(GameView):
         self.keys = set()
         self.camera = None
 
-        self.map_loader = MapLoader(self.movement_system, self.player_state)
+        self.map_manager = MapManager(
+            loader=MapLoader(self.movement_system, self.player_state),
+            registry=MapRegistry(CONFIG.game.maps_dir),
+            player_state=self.player_state,
+        )
         self.transition = BattleTransition()
 
         saved = self.save_manager.saved_position
         if saved:
-            self.player_state.map_name = saved.get(
-                "map_name", self.player_state.map_name
-            )
             self.player_state.direction = saved.get(
                 "direction", self.player_state.direction
             )
-            map_path = f"assets/map/{self.player_state.map_name}.tmx"
-            self.setup(map_path)
-            self.player_state.pixel_x = saved["pixel_x"]
-            self.player_state.pixel_y = saved["pixel_y"]
-        else:
-            self.setup()
-            position = (
-                self.tile_map.get_tilemap_layer("position").tiled_objects[0].coordinates
+            self.setup(
+                saved.get("map_name", self.player_state.map_name),
+                (saved["pixel_x"], saved["pixel_y"]),
             )
-            self.player_state.pixel_x = position.x * 2
-            self.player_state.pixel_y = position.y / 2 - 110
+        else:
+            self.setup(CONFIG.game.starting_map)
+            self._spawn_at_position_layer()
 
     # ------------------------------------------------------------------
     # Subscription management
@@ -108,36 +108,42 @@ class OverworldView(GameView):
     # Setup
     # ------------------------------------------------------------------
 
-    def setup(self, map=None, playerPos=None):
-        loaded = self.map_loader.load(map or CONFIG.game.starting_map)
+    def setup(self, map_ref=None, spawn=None):
+        loaded = self.map_manager.load(map_ref or CONFIG.game.starting_map, spawn)
+        self._apply_loaded(loaded)
+
+    def _apply_loaded(self, loaded) -> None:
+        """Wire a freshly-loaded map into the view's render + systems."""
         self.tile_map = loaded.tile_map
         self.scene = loaded.scene
         self.npcs = loaded.npcs
         self.npc_controller = loaded.npc_controller
-
-        if playerPos:
-            self.player_state.pixel_x = playerPos[0]
-            self.player_state.pixel_y = playerPos[1]
-
+        self.transitions = loaded.transitions
         self.camera = arcade.Camera2D()
 
         if self.encounter_system:
             self.encounter_system.cleanup()
-
         self.encounter_system = EncounterSystem(
             bush_tiles=loaded.bush_tiles,
             player_state=self.player_state,
             data_loader=self.data_loader,
         )
 
+    def _spawn_at_position_layer(self) -> None:
+        """New-game fallback: place the player at the map's legacy 'position'
+        object when it has no named spawn points yet."""
+        layer = self.tile_map.get_tilemap_layer("position")
+        if layer and layer.tiled_objects:
+            position = layer.tiled_objects[0].coordinates
+            self.player_state.pixel_x = position.x * 2
+            self.player_state.pixel_y = position.y / 2 - 110
+
     def respawn_at_pokecenter(self) -> None:
-        """Relocate the player to the Poké Center entrance (used after whiting out)."""
-        self.player_state.map_name = POKECENTER_MAP
+        """Relocate the player to the Poké Center (used after whiting out).
+        Uses the shared warp seam — becomes a named spawn once authored."""
         self.player_state.direction = "up"
-        self.setup(
-            f"assets/map/{POKECENTER_MAP}.tmx",
-            [POKECENTER_SPAWN[0], POKECENTER_SPAWN[1]],
-        )
+        loaded = self.map_manager.warp(POKECENTER_MAP, POKECENTER_SPAWN)
+        self._apply_loaded(loaded)
 
     # ------------------------------------------------------------------
     # Event handlers
@@ -204,14 +210,13 @@ class OverworldView(GameView):
             self.keys,
             CONFIG.controls,
             self.scene["collision"],
-            self.scene["transitions"],
+            self.transitions,
             self.npcs,
         )
 
         if intent and intent["type"] == "transition":
-            path = f"assets/map/{intent['map']}.tmx"
-            self.player_state.map_name = intent["map"]
-            self.setup(path, [intent["x"], intent["y"]])
+            loaded = self.map_manager.transition(parse_transition(intent["properties"]))
+            self._apply_loaded(loaded)
             intent = None
 
         self.movement_system.update(delta_time, self.player_state, intent)
@@ -234,6 +239,9 @@ class OverworldView(GameView):
         if self.is_pressed(CONFIG.controls.bag, key):
             self.keys.clear()
             self.overlay("menu")
+            
+        if self.is_pressed(CONFIG.controls.cancel, key):
+            print(f"x {self.player_state.pixel_x}, y {self.player_state.pixel_y}")
 
     def on_key_release(self, key, _):
         self.keys.discard(key)

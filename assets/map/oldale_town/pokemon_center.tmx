@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="4">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="5">
  <tileset firstgid="1" source="../Interior Tilesets.tsx"/>
  <tileset firstgid="12289" source="../tilesets/interior_areas.tsx"/>
  <tileset firstgid="33769" source="../tilesets/locations/interior_ares.tsx"/>
@@ -61,19 +61,20 @@
 </data>
  </layer>
  <objectgroup id="4" name="transitions">
-  <object id="1" gid="36802" x="239.938" y="233.063" width="16" height="16">
+  <object id="1" gid="36802" x="240.667" y="233" width="16" height="16">
    <properties>
-    <property name="destination map" value="littleroot_town"/>
-    <property name="x" type="int" value="3119"/>
-    <property name="y" type="int" value="1648"/>
+    <property name="target_map" value="oldale_town"/>
+    <property name="target_spawn" value="pokecenter_door"/>
    </properties>
   </object>
   <object id="2" gid="36801" x="224.063" y="232.938" width="16" height="16">
    <properties>
-    <property name="destination map" value="littleroot_town"/>
-    <property name="x" type="int" value="3119"/>
-    <property name="y" type="int" value="1648"/>
+    <property name="target_map" value="oldale_town"/>
+    <property name="target_spawn" value="pokecenter_door"/>
    </properties>
   </object>
+ </objectgroup>
+ <objectgroup id="7" name="spawns">
+  <object id="4" name="entrance" x="224" y="208" width="16" height="16"/>
  </objectgroup>
 </map>

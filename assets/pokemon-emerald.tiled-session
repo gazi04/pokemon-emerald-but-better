@@ -19,7 +19,7 @@
             "scaleInEditor": 1
         },
         "map/Tiles.tsx": {
-            "scaleInDock": 3
+            "scaleInDock": 1
         },
         "map/little_root_town/birch_labor.tmx": {
             "scale": 3,
@@ -57,33 +57,35 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 0.75,
-            "selectedLayer": 1,
+            "scale": 3,
+            "selectedLayer": 6,
             "viewCenter": {
                 "x": 1560,
-                "y": 968
+                "y": 968.3333333333333
             }
         },
         "map/littleroot_town_original.tmx": {
             "expandedObjectLayers": [
-                2
+                6,
+                7
             ],
-            "scale": 3,
-            "selectedLayer": 0,
+            "scale": 5.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 9.333333333333314,
-                "y": 131.83333333333331
+                "x": 264,
+                "y": 200
             }
         },
         "map/oldale_town.tmx": {
             "expandedObjectLayers": [
-                2
+                5,
+                6
             ],
-            "scale": 3,
-            "selectedLayer": 0,
+            "scale": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 5.666666666666657,
-                "y": 11.166666666666657
+                "x": 312,
+                "y": 216
             }
         },
         "map/oldale_town/Interior Tilesets.tsx": {
@@ -107,26 +109,27 @@
         },
         "map/oldale_town/poke_mart.tmx": {
             "expandedObjectLayers": [
-                4,
-                5
+                5,
+                4
             ],
-            "scale": 1.7456249999999998,
-            "selectedLayer": 3,
+            "scale": 3,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 87.64769065520947,
-                "y": 136.34085213032583
+                "x": 120,
+                "y": 216
             }
         },
         "map/oldale_town/pokemon_center.tmx": {
             "expandedObjectLayers": [
                 6,
-                4
+                4,
+                7
             ],
             "scale": 3,
-            "selectedLayer": 3,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 248.33333333333331,
-                "y": 133.66666666666669
+                "x": 232,
+                "y": 216
             }
         },
         "map/pokemon_center.tmx": {
@@ -139,13 +142,14 @@
         },
         "map/root101.tmx": {
             "expandedObjectLayers": [
-                2
+                6,
+                7
             ],
-            "scale": 2,
-            "selectedLayer": 0,
+            "scale": 1.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 275,
-                "y": 292.25
+                "x": 388,
+                "y": 410
             }
         },
         "map/rote101.tmx": {
@@ -349,12 +353,15 @@
     "map.tileWidth": 16,
     "map.width": 10,
     "openFiles": [
-        "ui/sprites/ui.tsx",
-        "ui/pokemon_info_ui_design.tmx"
+        "map/oldale_town.tmx",
+        "map/littleroot_town_original.tmx",
+        "map/root101.tmx",
+        "map/Interior Tilesets.tsx"
     ],
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
+
         "ui/sprites/ui.tsx",
         "ui/pokemon_info_ui_design.tmx",
         "ui/battleUiDesign.tmx",
@@ -362,12 +369,14 @@
         "map/littleroot_town.tmx",
         "map/oldale_town/home1.tmx",
         "map/oldale_town/pokemon_center.tmx",
-        "map/tilesets/interior_areas.tsx",
+        "map/oldale_town/home1.tmx",
         "map/oldale_town/home2.tmx",
         "ui/second_home_room.tmx",
         "map/little_root_town/second_home.tmx",
         "map/little_root_town/home.tmx"
+
     ],
+    "resizeMap.removeObjects": false,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 16,

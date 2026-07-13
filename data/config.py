@@ -31,6 +31,7 @@ class ControlsConfig(BaseModel):
 
 
 class GameConfig(BaseModel):
+    maps_dir: str = "assets/map"
     starting_map: str = "assets/map/littleroot_town.tmx"
     starting_tile_x: int = 15
     starting_tile_y: int = 12
