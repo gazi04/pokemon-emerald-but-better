@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="34">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="38">
  <tileset firstgid="1" source="tilesets/locations/full_map.tsx"/>
  <tileset firstgid="524289" source="Tiles.tsx"/>
  <layer id="1" name="walkable" width="32" height="32">
@@ -63,6 +63,18 @@
     <property name="target_spawn" value="from_oldale_town"/>
    </properties>
   </object>
+  <object id="34" gid="525346" x="176" y="320" width="16" height="16">
+   <properties>
+    <property name="target_map" value="oldale_town/pokemon_center"/>
+    <property name="target_spawn" value="entrance"/>
+   </properties>
+  </object>
+  <object id="37" gid="525346" x="304" y="208" width="16" height="16">
+   <properties>
+    <property name="target_map" value="oldale_town/poke_mart"/>
+    <property name="target_spawn" value="entrance"/>
+   </properties>
+  </object>
  </objectgroup>
  <layer id="3" name="collision" width="32" height="32">
   <data encoding="csv">
@@ -102,5 +114,7 @@
  </layer>
  <objectgroup id="5" name="spawns">
   <object id="33" name="entrance_from_bottom" gid="524290" x="240" y="384" width="16" height="16"/>
+  <object id="35" name="pokecenter_door" gid="524290" x="176" y="336" width="16" height="16"/>
+  <object id="36" name="pokemark_door" gid="524290" x="304" y="224" width="16" height="16"/>
  </objectgroup>
 </map>

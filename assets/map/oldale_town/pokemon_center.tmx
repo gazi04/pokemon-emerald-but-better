@@ -61,20 +61,20 @@
 </data>
  </layer>
  <objectgroup id="4" name="transitions">
-  <object id="1" gid="36802" x="239.938" y="233.063" width="16" height="16">
+  <object id="1" gid="36802" x="240.667" y="233" width="16" height="16">
    <properties>
-    <property name="target_map" value="littleroot_town"/>
+    <property name="target_map" value="oldale_town"/>
     <property name="target_spawn" value="pokecenter_door"/>
    </properties>
   </object>
   <object id="2" gid="36801" x="224.063" y="232.938" width="16" height="16">
    <properties>
-    <property name="target_map" value="littleroot_town"/>
+    <property name="target_map" value="oldale_town"/>
     <property name="target_spawn" value="pokecenter_door"/>
    </properties>
   </object>
  </objectgroup>
  <objectgroup id="7" name="spawns">
-  <object id="4" name="entrance" x="240" y="219" width="16" height="16"/>
+  <object id="4" name="entrance" x="224" y="208" width="16" height="16"/>
  </objectgroup>
 </map>

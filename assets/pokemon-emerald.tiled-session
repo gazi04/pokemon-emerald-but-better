@@ -81,11 +81,11 @@
                 5,
                 6
             ],
-            "scale": 1.5,
-            "selectedLayer": 3,
+            "scale": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 248,
-                "y": 392
+                "x": 312,
+                "y": 216
             }
         },
         "map/oldale_town/Interior Tilesets.tsx": {
@@ -109,26 +109,27 @@
         },
         "map/oldale_town/poke_mart.tmx": {
             "expandedObjectLayers": [
-                4,
-                5
+                5,
+                4
             ],
-            "scale": 1.7456249999999998,
-            "selectedLayer": 3,
+            "scale": 3,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 87.64769065520947,
-                "y": 136.34085213032583
+                "x": 120,
+                "y": 216
             }
         },
         "map/oldale_town/pokemon_center.tmx": {
             "expandedObjectLayers": [
                 6,
-                4
+                4,
+                7
             ],
             "scale": 3,
-            "selectedLayer": 1,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 248.33333333333331,
-                "y": 133.66666666666669
+                "x": 232,
+                "y": 216
             }
         },
         "map/pokemon_center.tmx": {
@@ -144,11 +145,11 @@
                 6,
                 7
             ],
-            "scale": 2,
-            "selectedLayer": 4,
+            "scale": 1.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 392,
-                "y": 360
+                "x": 388,
+                "y": 410
             }
         },
         "map/rote101.tmx": {
