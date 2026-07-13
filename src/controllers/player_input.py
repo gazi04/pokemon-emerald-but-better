@@ -67,16 +67,11 @@ class PlayerInput:
             target_x = player_state.pixel_x + dx
             target_y = player_state.pixel_y + dy
 
-            # Check transitions — hand the raw object properties to the
-            # MapManager, which owns the transition/spawn schema.
-            hit_transitions = arcade.get_sprites_at_point(
-                (target_x, target_y), transitions
-            )
-            if hit_transitions:
-                return {
-                    "type": "transition",
-                    "properties": dict(transitions.properties),
-                }
+            # Check transitions — the layer handles rectangle regions and legacy
+            # gid doors; MapManager owns what the properties mean.
+            transition_props = transitions.find(target_x, target_y)
+            if transition_props is not None:
+                return {"type": "transition", "properties": transition_props}
 
             # Block if an NPC stands on the target tile
             if npcs is not None and arcade.get_sprites_at_point(

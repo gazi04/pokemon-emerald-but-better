@@ -7,6 +7,7 @@ import pytest
 
 from src.world.map_registry import MapRegistry
 from src.world.transition import Transition, parse_transition
+from src.world.transition_layer import TransitionLayer, TransitionZone
 from src.world.map_manager import MapManager
 
 
@@ -54,6 +55,30 @@ def test_parse_transition_legacy_coords():
 def test_parse_transition_missing_map_raises():
     with pytest.raises(KeyError):
         parse_transition({"x": 1, "y": 2})
+
+
+# --- TransitionLayer (rectangle regions) -----------------------------------
+
+
+def test_zone_contains():
+    z = TransitionZone(left=100, bottom=100, right=200, top=200, properties={"k": "v"})
+    assert z.contains(150, 150)
+    assert z.contains(100, 100) and z.contains(200, 200)  # edges inclusive
+    assert not z.contains(250, 150)
+
+
+def test_layer_finds_rectangle_zone_first():
+    z1 = TransitionZone(0, 0, 50, 50, {"target_map": "a"})
+    z2 = TransitionZone(50, 50, 100, 100, {"target_map": "b"})
+    layer = TransitionLayer([z1, z2], sprites=None)
+    assert layer.find(10, 10)["target_map"] == "a"
+    assert layer.find(75, 75)["target_map"] == "b"
+    assert layer.find(300, 300) is None
+    assert len(layer) == 2
+
+
+def test_layer_empty_returns_none():
+    assert TransitionLayer([], sprites=None).find(5, 5) is None
 
 
 # --- MapManager ------------------------------------------------------------

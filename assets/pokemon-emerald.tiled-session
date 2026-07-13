@@ -1,13 +1,13 @@
 {
-    "activeFile": "map/oldale_town.tmx",
+    "activeFile": "map/littleroot_town_original.tmx",
     "expandedProjectPaths": [
-        "map/oldale_town",
-        "map/little_root_town",
-        ".",
-        "map/tilesets",
         "ui/sprites",
+        "map/oldale_town",
+        "map/tilesets",
         "map",
-        "ui"
+        ".",
+        "ui",
+        "map/little_root_town"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -74,10 +74,10 @@
         },
         "map/oldale_town.tmx": {
             "scale": 1,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 75,
-                "y": 197
+                "x": 174,
+                "y": 281
             }
         },
         "map/oldale_town/Interior Tilesets.tsx": {
@@ -136,10 +136,10 @@
                 6
             ],
             "scale": 1,
-            "selectedLayer": 2,
+            "selectedLayer": 3,
             "viewCenter": {
                 "x": 392,
-                "y": 664
+                "y": 580
             }
         },
         "map/rote101.tmx": {
@@ -329,23 +329,24 @@
     "openFiles": [
         "map/oldale_town.tmx",
         "map/littleroot_town_original.tmx",
-        "map/root101.tmx"
+        "map/root101.tmx",
+        "map/Interior Tilesets.tsx"
     ],
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "map/tilesets/Game Boy Advance - Pokemon Emerald - Miscellaneous - Pokemon Menu.tsx",
-        "map/tilesets/interior_areas.tsx",
+        "map/oldale_town.tmx",
+        "map/Interior Tilesets.tsx",
         "map/root101.tmx",
         "map/littleroot_town_original.tmx",
-        "map/oldale_town.tmx",
+        "map/tilesets/Game Boy Advance - Pokemon Emerald - Miscellaneous - Pokemon Menu.tsx",
+        "map/tilesets/interior_areas.tsx",
         "map/littleroot_town.tmx",
         "map/oldale_town/poke_mart.tmx",
         "map/oldale_town/pokemon_center.tmx",
         "map/oldale_town/home1.tmx",
         "map/oldale_town/home2.tmx",
-        "ui/second_home_room.tmx",
-        "map/little_root_town/second_home.tmx"
+        "ui/second_home_room.tmx"
     ],
     "resizeMap.removeObjects": false,
     "tileset.lastUsedFormat": "tsx",

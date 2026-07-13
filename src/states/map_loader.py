@@ -7,6 +7,7 @@ from src.core.logger import get_logger
 from src.systems.npc_controller import NpcController
 from src.systems.npc_behaviors import make_behavior
 from src.entities.npc import Npc
+from src.world.transition_layer import TransitionLayer
 
 log = get_logger(__name__)
 
@@ -41,6 +42,7 @@ class LoadedMap:
     npc_controller: NpcController
     bush_tiles: set[tuple[int, int]]
     spawns: dict[str, tuple[float, float]]
+    transitions: TransitionLayer
 
 
 class MapLoader:
@@ -67,8 +69,11 @@ class MapLoader:
         npc_controller = self._build_npc_controller(tile_map, scene, npcs)
         bush_tiles = self._extract_bush_tiles(scene)
         spawns = self._extract_spawns(tile_map)
+        transitions = TransitionLayer.from_map(tile_map, scene)
 
-        return LoadedMap(tile_map, scene, npcs, npc_controller, bush_tiles, spawns)
+        return LoadedMap(
+            tile_map, scene, npcs, npc_controller, bush_tiles, spawns, transitions
+        )
 
     def _extract_spawns(
         self, tile_map: arcade.TileMap

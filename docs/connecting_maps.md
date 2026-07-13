@@ -29,14 +29,18 @@ in Tiled** — no code changes per connection.
 
 ## Two object layers you author
 
-| Layer name    | Object type            | Purpose                                   |
-|---------------|------------------------|-------------------------------------------|
-| `transitions` | **Tile object** (gid)  | The door you walk into. Must be a *tile* object so it renders + is hit-tested. |
-| `spawns`      | **Rectangle** (no gid) | A named landing spot. 16×16, name it. |
+| Layer name    | Object type              | Purpose                                   |
+|---------------|--------------------------|-------------------------------------------|
+| `transitions` | **Rectangle** (preferred)| The region you walk into. Draw it over the door tile(s). Detected by point-in-rect. |
+| `spawns`      | **Rectangle**            | A named landing spot. 16×16, name it. |
 
-> ⚠️ **Most common mistake:** authoring a transition as a plain rectangle. The
-> player detects transitions by hitting a **sprite**, and only *tile* objects
-> become sprites. Doors = tile objects. Spawns = rectangles.
+Both are **plain rectangle objects** — just draw them. Each transition rectangle
+is independent and carries its own properties, so a map can have as many doors
+as you want (a plain *tile* layer can't — it shares one property set per tile).
+
+> **Legacy note:** older maps used *tile/gid* objects for doors. Those still
+> work (via a sprite hit-test fallback), so nothing needs migrating — but new
+> transitions should be plain rectangles.
 
 ### Transition object properties
 
@@ -68,9 +72,9 @@ To connect **Map A** ⇄ **Map B**:
    player should appear when coming *from A*. Name it, e.g. `from_a`.
 2. **Map A** — add (or open) the `spawns` layer. Draw a rectangle where the
    player appears coming *from B*. Name it, e.g. `from_b`.
-3. **Map A** — on the `transitions` layer, place a **tile object** on the door.
-   Add properties `target_map = <B's id>`, `target_spawn = from_a`.
-4. **Map B** — place a tile object on its door with
+3. **Map A** — on the `transitions` layer, draw a **rectangle** over the door
+   tile(s). Add properties `target_map = <B's id>`, `target_spawn = from_a`.
+4. **Map B** — draw a rectangle over its door with
    `target_map = <A's id>`, `target_spawn = from_b`.
 5. Save both maps. Walk through — no code needed.
 
@@ -162,7 +166,7 @@ that fixes NPCs and spawns together).
 
 ## Checklist
 
-- [ ] Door is a **tile object** on the `transitions` layer (not a rectangle).
+- [ ] Door is a **rectangle** on the `transitions` layer, drawn over the door tile(s).
 - [ ] Door has `target_map` (correct id, incl. subfolder) + `target_spawn`.
 - [ ] Destination has a `spawns` rectangle with the **matching name**.
 - [ ] Spawn sits **one tile inside** the door (no instant re-trigger).

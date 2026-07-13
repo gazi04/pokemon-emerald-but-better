@@ -118,6 +118,7 @@ class OverworldView(GameView):
         self.scene = loaded.scene
         self.npcs = loaded.npcs
         self.npc_controller = loaded.npc_controller
+        self.transitions = loaded.transitions
         self.camera = arcade.Camera2D()
 
         if self.encounter_system:
@@ -209,7 +210,7 @@ class OverworldView(GameView):
             self.keys,
             CONFIG.controls,
             self.scene["collision"],
-            self.scene["transitions"],
+            self.transitions,
             self.npcs,
         )
 
