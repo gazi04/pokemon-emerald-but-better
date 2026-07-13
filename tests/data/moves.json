@@ -5,7 +5,11 @@
     "power": 40,
     "accuracy": 100,
     "pp": 35,
-    "effects": []
+    "effects": [],
+    "priority": 0,
+    "crit": 0,
+    "multi_hit": null,
+    "condition": null
   },
   "close combat": {
     "category": "physical",
@@ -14,9 +18,23 @@
     "accuracy": 100,
     "pp": 5,
     "effects": [
-      {"target": "self", "type": "stat", "stat": "defence", "change": -1},
-      {"target": "self", "type": "stat", "stat": "special_defence", "change": -1}
-    ]
+      {
+        "target": "self",
+        "type": "stat",
+        "stat": "defence",
+        "change": -1
+      },
+      {
+        "target": "self",
+        "type": "stat",
+        "stat": "special_defence",
+        "change": -1
+      }
+    ],
+    "priority": 0,
+    "crit": 0,
+    "multi_hit": null,
+    "condition": null
   },
   "growl": {
     "category": "status",
@@ -25,8 +43,17 @@
     "accuracy": 100,
     "pp": 40,
     "effects": [
-      {"target": "opponent", "type": "stat", "stat": "attack", "change": -1}
-    ]
+      {
+        "target": "opponent",
+        "type": "stat",
+        "stat": "attack",
+        "change": -1
+      }
+    ],
+    "priority": 0,
+    "crit": 0,
+    "multi_hit": null,
+    "condition": null
   },
   "ember": {
     "category": "special",
@@ -34,7 +61,11 @@
     "power": 40,
     "accuracy": 100,
     "pp": 25,
-    "effects": []
+    "effects": [],
+    "priority": 0,
+    "crit": 0,
+    "multi_hit": null,
+    "condition": null
   },
   "toxic": {
     "category": "status",
@@ -43,7 +74,15 @@
     "accuracy": 90,
     "pp": 10,
     "effects": [
-      {"target": "opponent", "type": "status condition", "condition": "poison"}
-    ]
+      {
+        "target": "opponent",
+        "type": "status condition",
+        "condition": "poison"
+      }
+    ],
+    "priority": 0,
+    "crit": 0,
+    "multi_hit": null,
+    "condition": null
   }
 }

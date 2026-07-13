@@ -2,41 +2,119 @@
   "treecko": {
     "baseExp": 62,
     "evolution": null,
-    "sprites": { "back": "back.png", "front": "front.png" },
-    "abilities": ["overgrow"],
-    "types": ["grass"],
-    "stats": { "hp": 40, "attack": 45, "defence": 35, "special_attack": 65, "special_defence": 55, "speed": 70 }
+    "sprites": {
+      "back": "back.png",
+      "front": "front.png"
+    },
+    "abilities": [
+      "overgrow"
+    ],
+    "types": [
+      "grass"
+    ],
+    "stats": {
+      "hp": 40,
+      "attack": 45,
+      "defence": 35,
+      "special_attack": 65,
+      "special_defence": 55,
+      "speed": 70
+    },
+    "learnset": []
   },
   "torchic": {
     "baseExp": 62,
-    "evolution": { "to": "combusken", "level": 16 },
-    "sprites": { "back": "back.png", "front": "front.png" },
-    "abilities": ["blaze"],
-    "types": ["fire"],
-    "stats": { "hp": 45, "attack": 60, "defence": 40, "special_attack": 70, "special_defence": 50, "speed": 45 }
+    "evolution": {
+      "to": "combusken",
+      "level": 16
+    },
+    "sprites": {
+      "back": "back.png",
+      "front": "front.png"
+    },
+    "abilities": [
+      "blaze"
+    ],
+    "types": [
+      "fire"
+    ],
+    "stats": {
+      "hp": 45,
+      "attack": 60,
+      "defence": 40,
+      "special_attack": 70,
+      "special_defence": 50,
+      "speed": 45
+    },
+    "learnset": []
   },
   "mudkip": {
     "baseExp": 62,
     "evolution": null,
-    "sprites": { "back": "back.png", "front": "front.png" },
-    "abilities": ["torrent"],
-    "types": ["water"],
-    "stats": { "hp": 50, "attack": 70, "defence": 50, "special_attack": 50, "special_defence": 50, "speed": 40 }
+    "sprites": {
+      "back": "back.png",
+      "front": "front.png"
+    },
+    "abilities": [
+      "torrent"
+    ],
+    "types": [
+      "water"
+    ],
+    "stats": {
+      "hp": 50,
+      "attack": 70,
+      "defence": 50,
+      "special_attack": 50,
+      "special_defence": 50,
+      "speed": 40
+    },
+    "learnset": []
   },
   "poochyena": {
     "baseExp": 55,
     "evolution": null,
-    "sprites": { "back": "back.png", "front": "front.png" },
-    "abilities": ["run_away"],
-    "types": ["dark"],
-    "stats": { "hp": 35, "attack": 55, "defence": 35, "special_attack": 30, "special_defence": 30, "speed": 35 }
+    "sprites": {
+      "back": "back.png",
+      "front": "front.png"
+    },
+    "abilities": [
+      "run_away"
+    ],
+    "types": [
+      "dark"
+    ],
+    "stats": {
+      "hp": 35,
+      "attack": 55,
+      "defence": 35,
+      "special_attack": 30,
+      "special_defence": 30,
+      "speed": 35
+    },
+    "learnset": []
   },
   "zigzagoon": {
     "baseExp": 48,
     "evolution": null,
-    "sprites": { "back": "back.png", "front": "front.png" },
-    "abilities": ["pick_up"],
-    "types": ["normal"],
-    "stats": { "hp": 38, "attack": 30, "defence": 41, "special_attack": 30, "special_defence": 41, "speed": 60 }
+    "sprites": {
+      "back": "back.png",
+      "front": "front.png"
+    },
+    "abilities": [
+      "pick_up"
+    ],
+    "types": [
+      "normal"
+    ],
+    "stats": {
+      "hp": 38,
+      "attack": 30,
+      "defence": 41,
+      "special_attack": 30,
+      "special_defence": 41,
+      "speed": 60
+    },
+    "learnset": []
   }
 }

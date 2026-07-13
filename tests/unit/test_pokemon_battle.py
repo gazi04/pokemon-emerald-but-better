@@ -40,6 +40,7 @@ def make_profile(
         evolution=evolution,
         sprites=sprites,
         stats=stats,
+        learnset=[],
     )
 
 
@@ -58,9 +59,11 @@ def make_battle(
         hp=999,
         level=level,
         exp=0,
+        ability="",
         moves=[PlayerPokemonMove(name="tackle", pp=35)],
+        held_item=None,
     )
-    battle = BattlePokemon.from_player(profile, player_pokemon, is_enemy)
+    battle = BattlePokemon.from_player(None, profile, player_pokemon, is_enemy)
     battle.current_hp = battle.max_hp
     if hp_override is not None:
         battle.current_hp = hp_override
@@ -83,6 +86,10 @@ def make_move(
         power=power,
         accuracy=accuracy,
         pp=pp,
+        priority=0,
+        crit=0,
+        multi_hit=None,
+        condition=None,
         effects=effects or [],
     )
 
@@ -236,15 +243,14 @@ def test_gain_exp_multiple_level_ups():
     assert result.leveled_up
 
 
-def test_status_overwrites_existing_currently():
-    # Current behavior: no guard prevents overwriting an existing status.
-    # This documents the known bug — in real Pokémon, a 2nd status can't apply.
+def test_status_does_not_overwrite_existing():
+    # A second major status can't be applied over an existing one.
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
     defender.status_effect = StatusEffect.PARALYSIS
     effect = PokemonMoveEffect(target="opponent", type="status condition", condition="poison", chance=100)
     attacker.execute_effects(make_move(effects=[effect]), defender)
-    assert defender.status_effect == StatusEffect.POISON
+    assert defender.status_effect == StatusEffect.PARALYSIS
 
 
 def test_sync_from_source_updates_current_hp():

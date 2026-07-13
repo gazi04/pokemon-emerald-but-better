@@ -1,0 +1,182 @@
+{
+    "blaze": {
+        "name": "Blaze",
+        "description": "Powers up Fire-type moves when HP is low.",
+        "effects": [
+            {
+                "trigger": "on_attack",
+                "type": "damage_boost",
+                "target": "self",
+                "move_type": "fire",
+                "change": 50,
+                "condition": "low_hp",
+                "chance": null
+            }
+        ]
+    },
+    "overgrow": {
+        "name": "Overgrow",
+        "description": "Powers up Grass-type moves when HP is low.",
+        "effects": [
+            {
+                "trigger": "on_attack",
+                "type": "damage_boost",
+                "target": "self",
+                "move_type": "grass",
+                "change": 50,
+                "condition": "low_hp",
+                "chance": null
+            }
+        ]
+    },
+    "torrent": {
+        "name": "Torrent",
+        "description": "Powers up Water-type moves when HP is low.",
+        "effects": [
+            {
+                "trigger": "on_attack",
+                "type": "damage_boost",
+                "target": "self",
+                "move_type": "water",
+                "change": 50,
+                "condition": "low_hp",
+                "chance": null
+            }
+        ]
+    },
+    "static": {
+        "name": "Static",
+        "description": "May paralyze the attacker on contact.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "status",
+                "target": "enemy",
+                "move_type": null,
+                "condition": "contact",
+                "status": "paralyzed",
+                "chance": 0.3
+            }
+        ]
+    },
+    "flame_body": {
+        "name": "Flame Body",
+        "description": "May burn the attacker on contact.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "status",
+                "target": "enemy",
+                "move_type": null,
+                "condition": "contact",
+                "status": "burned",
+                "chance": 0.3
+            }
+        ]
+    },
+    "poison_point": {
+        "name": "Poison Point",
+        "description": "May poison the attacker on contact.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "status",
+                "target": "enemy",
+                "move_type": null,
+                "condition": "contact",
+                "status": "poisoned",
+                "chance": 0.3
+            }
+        ]
+    },
+    "levitate": {
+        "name": "Levitate",
+        "description": "Gives immunity to Ground-type moves.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "immunity",
+                "target": "self",
+                "move_type": "ground",
+                "condition": null,
+                "chance": null
+            }
+        ]
+    },
+    "water_absorb": {
+        "name": "Water Absorb",
+        "description": "Restores HP when hit by a Water-type move.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "heal",
+                "target": "self",
+                "move_type": "water",
+                "change": 25,
+                "condition": null,
+                "chance": null
+            }
+        ]
+    },
+    "volt_absorb": {
+        "name": "Volt Absorb",
+        "description": "Restores HP when hit by an Electric-type move.",
+        "effects": [
+            {
+                "trigger": "on_hit",
+                "type": "heal",
+                "target": "self",
+                "move_type": "electric",
+                "change": 25,
+                "condition": null,
+                "chance": null
+            }
+        ]
+    },
+    "intimidate": {
+        "name": "Intimidate",
+        "description": "Lowers the foe's Attack on switch in.",
+        "effects": [
+            {
+                "trigger": "on_switch_in",
+                "type": "stat_change",
+                "target": "enemy",
+                "move_type": null,
+                "stat": "attack",
+                "change": -1,
+                "condition": null,
+                "chance": null
+            }
+        ]
+    },
+    "speed_boost": {
+        "name": "Speed Boost",
+        "description": "Raises Speed by one stage each turn.",
+        "effects": [
+            {
+                "trigger": "on_turn_end",
+                "type": "stat_change",
+                "target": "self",
+                "move_type": null,
+                "stat": "speed",
+                "change": 1,
+                "condition": null,
+                "chance": null
+            }
+        ]
+    },
+    "shed_skin": {
+        "name": "Shed Skin",
+        "description": "May heal a status condition each turn.",
+        "effects": [
+            {
+                "trigger": "on_turn_end",
+                "type": "cure_status",
+                "target": "self",
+                "move_type": null,
+                "condition": "any_status",
+                "chance": 0.33
+            }
+        ]
+    }
+}

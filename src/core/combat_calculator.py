@@ -151,5 +151,8 @@ def _get_stat(
 
     if stat == Stat.SPEED and status == StatusEffect.PARALYSIS:
         return round(raw * fraction * 0.5)
+    
+    if stat == Stat.ATTACK and status == StatusEffect.BURN:
+        return round(raw * fraction * 0.5)
 
     return round(raw * fraction)

@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-import pytest
 
-from src.core.event_bus import EventBus
 
 
 @dataclass

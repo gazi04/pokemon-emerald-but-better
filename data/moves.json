@@ -5,17 +5,35 @@
         "power": 40,
         "accuracy": 100,
         "pp": 35,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": []
-    }, 
+    },
     "close combat": {
         "category": "physical",
         "type": "fighting",
         "power": 120,
         "accuracy": 100,
         "pp": 5,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            {"target": "self", "type": "stat", "stat": "defence", "change": -1},
-            {"target": "self", "type": "stat", "stat": "special_defence", "change": -1}
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "defence",
+                "change": -1
+            },
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "special_defence",
+                "change": -1
+            }
         ]
     },
     "growl": {
@@ -24,8 +42,17 @@
         "power": null,
         "accuracy": 100,
         "pp": 40,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            {"target": "opponent", "type": "stat", "stat": "attack", "change": -1}
+            {
+                "target": "opponent",
+                "type": "stat",
+                "stat": "attack",
+                "change": -1
+            }
         ]
     },
     "dragon dance": {
@@ -34,9 +61,23 @@
         "power": null,
         "accuracy": null,
         "pp": 20,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            {"target": "self", "type": "stat", "stat": "attack", "change": 1},
-            {"target": "self", "type": "stat", "stat": "speed", "change": 1}
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "attack",
+                "change": 1
+            },
+            {
+                "target": "self",
+                "type": "stat",
+                "stat": "speed",
+                "change": 1
+            }
         ]
     },
     "toxic": {
@@ -45,8 +86,52 @@
         "power": null,
         "accuracy": 90,
         "pp": 10,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "poison" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "poison"
+            }
+        ]
+    },
+    "will-o-wisp": {
+        "category": "status",
+        "type": "fire",
+        "power": null,
+        "accuracy": 85,
+        "pp": 15,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
+        "effects": [
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "burn"
+            }
+        ]
+    },
+    "freeze": {
+        "category": "status",
+        "type": "ice",
+        "power": null,
+        "accuracy": 85,
+        "pp": 15,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
+        "effects": [
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "freeze"
+            }
         ]
     },
     "thunder wave": {
@@ -55,8 +140,16 @@
         "power": null,
         "accuracy": 90,
         "pp": 20,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "paralyzed" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "paralyzed"
+            }
         ]
     },
     "spore": {
@@ -65,8 +158,16 @@
         "power": null,
         "accuracy": 100,
         "pp": 15,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "sleep" }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "sleep"
+            }
         ]
     },
     "nuzzle": {
@@ -75,8 +176,17 @@
         "power": 20,
         "accuracy": 100,
         "pp": 20,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "paralyzed", "chance": 100 }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "paralyzed",
+                "chance": 100
+            }
         ]
     },
     "sludge bomb": {
@@ -85,8 +195,222 @@
         "power": 90,
         "accuracy": 100,
         "pp": 10,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
         "effects": [
-            { "target": "opponent", "type": "status condition", "condition": "poison", "chance": 30 }
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "poison",
+                "chance": 30
+            }
+        ]
+    },
+    "earthquake": {
+        "category": "physical",
+        "type": "ground",
+        "power": 100,
+        "accuracy": 100,
+        "pp": 10,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
+        "effects": []
+    },
+    "blaze kick": {
+        "category": "physical",
+        "type": "fire",
+        "power": 90,
+        "accuracy": 90,
+        "pp": 10,
+        "priority": 0,
+        "crit": 1,
+        "multi_hit": null,
+        "condition": null,
+        "effects": [
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "burn",
+                "chance": 10
+            }
+        ]
+    },
+    "quick attack": {
+        "category": "physical",
+        "type": "normal",
+        "power": 40,
+        "accuracy": 100,
+        "pp": 30,
+        "priority": 1,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
+        "effects": []
+    },
+    "extreme speed": {
+        "category": "physical",
+        "type": "normal",
+        "power": 80,
+        "accuracy": 100,
+        "pp": 5,
+        "priority": 2,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
+        "effects": []
+    },
+    "sucker punch": {
+        "category": "physical",
+        "type": "dark",
+        "power": 70,
+        "accuracy": 100,
+        "pp": 5,
+        "priority": 1,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
+        "effects": []
+    },
+    "fake out": {
+        "category": "physical",
+        "type": "normal",
+        "power": 40,
+        "accuracy": 100,
+        "pp": 10,
+        "priority": 3,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": "first_turn_only",
+        "effects": [
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "flinch",
+                "chance": 100
+            }
+        ]
+    },
+    "double slap": {
+        "category": "physical",
+        "type": "normal",
+        "power": 15,
+        "accuracy": 85,
+        "pp": 10,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": [
+            2,
+            5
+        ],
+        "condition": null,
+        "effects": []
+    },
+    "fury attack": {
+        "category": "physical",
+        "type": "normal",
+        "power": 15,
+        "accuracy": 85,
+        "pp": 20,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": [
+            2,
+            5
+        ],
+        "condition": null,
+        "effects": []
+    },
+    "bullet seed": {
+        "category": "physical",
+        "type": "grass",
+        "power": 25,
+        "accuracy": 100,
+        "pp": 30,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": [
+            2,
+            5
+        ],
+        "condition": null,
+        "effects": []
+    },
+    "double kick": {
+        "category": "physical",
+        "type": "fighting",
+        "power": 30,
+        "accuracy": 100,
+        "pp": 30,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": [
+            2,
+            2
+        ],
+        "condition": null,
+        "effects": []
+    },
+    "night slash": {
+        "category": "physical",
+        "type": "dark",
+        "power": 70,
+        "accuracy": 100,
+        "pp": 15,
+        "priority": 0,
+        "crit": 1,
+        "multi_hit": null,
+        "condition": null,
+        "effects": []
+    },
+    "stone edge": {
+        "category": "physical",
+        "type": "rock",
+        "power": 100,
+        "accuracy": 80,
+        "pp": 5,
+        "priority": 0,
+        "crit": 1,
+        "multi_hit": null,
+        "condition": null,
+        "effects": []
+    },
+    "confuse ray": {
+        "category": "status",
+        "type": "ghost",
+        "power": null,
+        "accuracy": 100,
+        "pp": 10,
+        "priority": 0,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": null,
+        "effects": [
+            {
+                "target": "opponent",
+                "type": "status condition",
+                "condition": "confusion"
+            }
+        ]
+    },
+    "protect": {
+        "category": "status",
+        "type": "normal",
+        "power": null,
+        "accuracy": null,
+        "pp": 10,
+        "priority": 4,
+        "crit": 0,
+        "multi_hit": null,
+        "condition": "not_consecutive",
+        "effects": [
+            {
+                "target": "self",
+                "type": "protect"
+            }
         ]
     }
 }

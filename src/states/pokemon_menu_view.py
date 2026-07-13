@@ -19,7 +19,7 @@ class PokemonMenuView(GameView):
         player_manager: PlayerManager,
         data_loader: DataLoader,
         bag: Optional[BagSystem] = None,
-        item_index: int = 0,
+        item: str = "",
         battle_system: Optional[BattleSystem] = None,
         forced_switch: bool = False,
     ):
@@ -28,15 +28,16 @@ class PokemonMenuView(GameView):
         self.previousView = previousView
         self.bag = bag
         self.battle_system = battle_system
-        self.item_index = item_index
+        self.item = item
         self.forced_switch = forced_switch
 
         self.data_loader = data_loader
+        self.player_manager = player_manager
         self.system = PokemonMenuSystem(player_manager)
         self.ui = PokemonMenuUi(data_loader)
 
         if bag:
-            tooltip_options = ["Use", "Info"]
+            tooltip_options = ["Give it", "Use", "Info"]
         elif battle_system:
             tooltip_options = ["Switch", "Info"]
         else:
@@ -111,28 +112,26 @@ class PokemonMenuView(GameView):
         self.ui.hide_tooltip()
         self.system.reset_tooltip()
 
-        if index == 1:
-            if self.bag and self.battle_system:
-                # Use item in battle
-                self.bag.use_item(
-                    self.item_index,
-                    self.system.team[self.system.team_index].name,
-                )
-
-                # Navigate back to BattleView (still held by previousView chain)
-                battle_view = self.previousView.previousWindow
-                battle_view.on_item_used(self.item_index)
-                self.window.show_view(battle_view)
-
-            elif self.bag:
-                # Use item outside battle
-                self.bag.use_item(
-                    self.item_index,
-                    self.system.team[self.system.team_index].name,
-                )
-                self.previousView.update_item()
+        if index == 2:
+            if self.bag:
+                self._get_current_pokemon().held_item = self.item
+                
                 self.window.show_view(self.previousView)
 
+        elif index == 1:
+            if self.bag:
+                # PP items (Ether) need a move chosen first — open the moves tab
+                # as a picker; the callback applies the item to that move.
+                if self.bag.is_pp_item(self.item):
+                    self.overlay(
+                        "pokemon_information",
+                        previous_view=self,
+                        pokemon=self._get_current_pokemon(),
+                        select_move=True,
+                        on_select_move=self._use_item,
+                    )
+                else:
+                    self._use_item()
             elif len(self.system.team) > 1:
                 self._move_pokemon()
 
@@ -140,8 +139,30 @@ class PokemonMenuView(GameView):
             self.overlay(
                 "pokemon_information",
                 previous_view=self,
-                pokemon=self.system.team[self.system.team_index],
+                pokemon=self._get_current_pokemon(),
             )
+
+    def _use_item(self, move_index: int | None = None):
+        """Apply the selected bag item to the current pokemon. `move_index` is
+        the chosen move for PP items (None for others). Also the on_select_move
+        callback for the move picker."""
+        pokemon_name = self._get_current_pokemon().name
+
+        if self.battle_system:
+            # Sync live battle HP/status to the save so the item works on
+            # current values, apply, then let the battle pull it back.
+            self.battle_system.sync_active_to_save()
+            self.bag.use_item(self.item, pokemon_name, move_index)
+            battle_view = self.previousView.previousWindow
+            battle_view.on_item_used(self.item)
+            self.window.show_view(battle_view)
+        else:
+            self.bag.use_item(self.item, pokemon_name, move_index)
+            self.previousView.update_item()
+            self.window.show_view(self.previousView)
+
+    def _get_current_pokemon(self):
+        return self.system.team[self.system.team_index]
 
     def _move_pokemon(self):
         if not self.battle_system:

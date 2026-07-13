@@ -125,13 +125,13 @@ class PokemonInformationUI:
                     )
                 )
 
-        abilities = _profile.abilities or []
-        ability = abilities[0].upper() if abilities else "—"
+        ability = pokemon.ability
+        ability_description = data_loader.get_ability(ability).description
 
         _label_map_info = {
             "name": pokemon.name.upper(),
-            "abylity_name": ability,
-            "ability_description": "—",
+            "abylity_name": ability.upper(),
+            "ability_description": ability_description,
         }
 
         for obj in tilemap.get_tilemap_layer("pokemon_profile").tiled_objects:
@@ -168,8 +168,9 @@ class PokemonInformationUI:
 
         exp_to_next = max(0, (lvl + 1) ** 3 - pokemon.exp)
 
+        item_name = pokemon.held_item.upper() if pokemon.held_item else "NONE"
         _label_map_stats = {
-            "item": "ITEM: NONE",
+            "item": f"ITEM: {item_name}",
             "ribbon": "—",
             "exp": "EXP.",
             "exp_count": str(pokemon.exp),
@@ -370,6 +371,13 @@ class PokemonInformationUI:
 
     def get_current_tab(self) -> int:
         return self._current_tab
+
+    def current_move(self) -> int:
+        """Index of the highlighted move on the moves tab (for PP items)."""
+        return self._current_move
+
+    def show_moves_tab(self):
+        self._set_tab(2)
 
     def next_tab(self):
         self._set_tab(self._current_tab + 1)

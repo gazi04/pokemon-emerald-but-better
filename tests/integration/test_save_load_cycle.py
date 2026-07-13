@@ -2,7 +2,6 @@
 Integration test: full save → disk → reload cycle via SaveManager.
 """
 
-import pytest
 
 from src.model.motion.player_motion import PlayerMotion
 

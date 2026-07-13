@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from src.model.static.pokemon import PokemonStat
 
@@ -12,3 +12,6 @@ class ExpGainResult:
     stats_after: PokemonStat
     evolved: bool
     evolves_to: str
+    # Names of moves the pokemon reached the level to learn this gain (in order),
+    # excluding moves it already knows. Empty if none.
+    moves_to_learn: list[str] = field(default_factory=list)

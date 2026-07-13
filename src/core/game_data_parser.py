@@ -10,6 +10,7 @@ from src.model.static.pokemon import (
 from src.model.static.item import ItemSpecies, ItemEffect
 from src.model.static.npc import NpcSpecies
 from src.model.static.trainer import Trainer
+from src.model.static.ability import Ability
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
@@ -64,7 +65,11 @@ class GameDataParser:
                 power=raw["power"],
                 accuracy=raw["accuracy"],
                 pp=raw["pp"],
-                effects=effects,
+                priority=raw["priority"],
+                crit=raw["crit"],
+                multi_hit=raw["multi_hit"],
+                condition=raw["condition"],
+                effects=effects
             )
         return moves
 
@@ -72,19 +77,9 @@ class GameDataParser:
     def parse_items(data: dict) -> dict[str, ItemSpecies]:
         items = {}
         for name, raw in data.items():
-            effects = [
-                ItemEffect(
-                    type=EffectType(e["type"]),
-                    amount=e.get("amount"),
-                    catch_rate=e.get("catchRate"),
-                )
-                for e in raw["effects"]
-            ]
-            items[name] = ItemSpecies(
-                description=raw["description"],
-                price=raw["price"],
-                effects=effects,
-            )
+            species = ItemSpecies(raw)
+            species.name = name.title()
+            items[name] = species
         return items
 
     @staticmethod
@@ -102,3 +97,12 @@ class GameDataParser:
                 team=Trainer(raw.get("team", [])),
             )
         return npcs
+    
+    @staticmethod
+    def parse_ability(data: dict) -> dict[str, Ability]:
+        ability = {}
+        
+        for name, raw in data.items():
+            ability[name] = Ability(raw)
+        
+        return ability

@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from src.core.save_manager import SaveManager
 from src.core.player_serializer import PlayerSerializer
 from src.model.motion.player_motion import PlayerMotion
 
@@ -31,12 +30,13 @@ def test_parse_player_move_pp(save_manager):
 
 
 def test_parse_player_items(save_manager):
-    assert save_manager.player.items[0].name == "potion"
-    assert save_manager.player.items[0].count == 3
+    # items is now a dict keyed by item id
+    assert save_manager.player.items["potion"].count == 3
 
 
 def test_parse_player_pokeballs(save_manager):
-    assert save_manager.player.pokeballs[0].name == "pokeball"
+    # pokeballs are just items in the "pokeball" category
+    assert save_manager.player.items["pokeball"].count == 5
 
 
 # --- serialize round-trip ---
@@ -170,6 +170,8 @@ def test_parse_player_multi_pokemon(save_manager):
                 "hp": 50,
                 "level": 10,
                 "exp": 0,
+                "ability": "torrent",
+                "held_item": None,
                 "moves": [{"name": "tackle", "pp": 35}],
             },
             {
@@ -177,11 +179,12 @@ def test_parse_player_multi_pokemon(save_manager):
                 "hp": 45,
                 "level": 8,
                 "exp": 0,
+                "ability": "overgrow",
+                "held_item": None,
                 "moves": [{"name": "growl", "pp": 40}],
             },
         ],
-        "items": [],
-        "pokeballs": [],
+        "items": {},
     }
     profile = PlayerSerializer.deserialize(data)
     assert len(profile.pokemon) == 2

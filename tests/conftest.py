@@ -1,4 +1,3 @@
-import os
 import shutil
 from pathlib import Path
 
@@ -30,7 +29,7 @@ def data_loader(tmp_path, monkeypatch):
     """DataLoader pointed at fixture data in a tmp working directory."""
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    for name in ("pokemon.json", "moves.json", "items.json", "npc_dialog.json"):
+    for name in ("pokemon.json", "moves.json", "items.json", "npc_dialog.json", "ability.json"):
         shutil.copy(FIXTURE_DIR / name, data_dir / name)
     # util functions read types.json and encounters.json from cwd/data/
     for name in ("types.json", "encounters.json"):
@@ -75,7 +74,9 @@ def mudkip_pokemon():
         hp=50,
         level=10,
         exp=0,
+        ability="torrent",
         moves=[PlayerPokemonMove(name="tackle", pp=35)],
+        held_item=None,
     )
 
 
@@ -83,8 +84,10 @@ def mudkip_pokemon():
 def player_profile(mudkip_pokemon):
     return PlayerSave(
         pokemon=[mudkip_pokemon],
-        items=[ItemStack(name="potion", count=3)],
-        pokeballs=[ItemStack(name="pokeball", count=5)],
+        items={
+            "potion": ItemStack(name="potion", count=3, category="medicine"),
+            "pokeball": ItemStack(name="pokeball", count=5, category="pokeball"),
+        },
     )
 
 

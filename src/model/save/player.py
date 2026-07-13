@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional
-
+from src.enums.item_category import ItemCategory
 
 @dataclass
 class PlayerPokemonMove:
@@ -14,7 +14,12 @@ class PlayerPokemon:
     hp: int
     level: int
     exp: int
+    ability: str
     moves: list[PlayerPokemonMove]
+    held_item: str | None
+    # Persistent major status ("poison"/"burn"/… or None). Volatile states
+    # (confusion, sleep counter) live only inside battle.
+    status_condition: str | None = None
 
     @property
     def is_fainted(self) -> bool:
@@ -25,13 +30,13 @@ class PlayerPokemon:
 class ItemStack:
     name: str
     count: int
+    category: str
 
 
 @dataclass
 class PlayerSave:
     pokemon: list[PlayerPokemon]
-    items: list[ItemStack]
-    pokeballs: list[ItemStack]
+    items: dict[str, ItemStack]
     seen: list[str] = field(default_factory=list)
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)
@@ -56,6 +61,11 @@ class PlayerSave:
             if move.name == move_name:
                 move.pp = pp
 
+    def update_status(self, pokemon_name: str, status: str | None):
+        pokemon = self.get_pokemon(pokemon_name)
+        if pokemon:
+            pokemon.status_condition = status
+
     def update_level(
         self,
         pokemon_name: str,
@@ -71,6 +81,26 @@ class PlayerSave:
         if evolved_name:
             pokemon.name = evolved_name
 
+    def learn_move(self, pokemon_name: str, move: PlayerPokemonMove):
+        pokemon = self.get_pokemon(pokemon_name)
+        if not pokemon:
+            return
+        
+        if len(pokemon.moves) == 4:
+            return
+        
+        pokemon.moves.append(move)
+        
+    def replace_move(self, pokemon_name: str, move: PlayerPokemonMove, index: int):
+        pokemon = self.get_pokemon(pokemon_name)
+        if not pokemon:
+            return
+        
+        if len(pokemon.moves) < 4:
+            return
+        
+        pokemon.moves[index] = move
+
     def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
         if len(self.pokemon) >= 6:
             return False
@@ -82,18 +112,22 @@ class PlayerSave:
         if name not in self.seen:
             self.seen.append(name)
 
-    def consume_item(self, name: str) -> bool:
-        return self._consume(self.items, name)
-
-    def consume_pokeball(self, name: str) -> bool:
-        return self._consume(self.pokeballs, name)
-
-    @staticmethod
-    def _consume(stacks: "list[ItemStack]", name: str) -> bool:
-        for i, stack in enumerate(stacks):
-            if stack.name == name:
-                stack.count -= 1
-                if stack.count <= 0:
-                    stacks.pop(i)
-                return True
-        return False
+    def add_item(self, item_id: str, category: str, count: int):
+        item = self.items.get(item_id)
+        
+        if not item:
+            self.items[item_id] = ItemStack(item_id, count, ItemCategory(category))
+            return
+        
+        item.count += count
+    
+    def consume_item(self, item_id: str) -> bool:
+        item = self.items.get(item_id)
+        if not item:
+            return False
+        
+        item.count -= 1
+        if item.count <= 0:
+            self.items.pop(item_id)
+        
+        return True
