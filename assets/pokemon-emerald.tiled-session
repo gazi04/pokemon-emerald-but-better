@@ -65,19 +65,27 @@
             }
         },
         "map/littleroot_town_original.tmx": {
-            "scale": 1.5,
-            "selectedLayer": 2,
+            "expandedObjectLayers": [
+                6,
+                7
+            ],
+            "scale": 5.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 283.3333333333333,
-                "y": 295.33333333333337
+                "x": 264,
+                "y": 200
             }
         },
         "map/oldale_town.tmx": {
-            "scale": 1,
-            "selectedLayer": 2,
+            "expandedObjectLayers": [
+                5,
+                6
+            ],
+            "scale": 1.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 174,
-                "y": 281
+                "x": 248,
+                "y": 392
             }
         },
         "map/oldale_town/Interior Tilesets.tsx": {
@@ -133,13 +141,14 @@
         },
         "map/root101.tmx": {
             "expandedObjectLayers": [
-                6
+                6,
+                7
             ],
-            "scale": 1,
-            "selectedLayer": 3,
+            "scale": 2,
+            "selectedLayer": 4,
             "viewCenter": {
                 "x": 392,
-                "y": 580
+                "y": 360
             }
         },
         "map/rote101.tmx": {
