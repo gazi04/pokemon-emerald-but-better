@@ -366,7 +366,7 @@ class BattlePokemon:
         messages = []
 
         if self.status_effect == StatusEffect.POISON:
-            damage = max(1, int(self.max_hp / 12.5))
+            damage = max(1, int(self.max_hp / 8))
             self.take_damage(damage)
             messages.append(f"{self.name} is hurt by poison!")
 

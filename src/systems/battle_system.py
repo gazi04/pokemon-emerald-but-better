@@ -513,10 +513,15 @@ class BattleSystem:
         display = (move.name if move else name).capitalize()
         return [f"{self.your_pokemon.name} did not learn {display}."]
 
-    def add_caught_pokemon(self) -> None:
-        """Add the just-caught enemy to the party (CAUGHT flow)."""
+    def add_caught_pokemon(self) -> dict:
+        """Add the just-caught enemy to the party (CAUGHT flow).
+
+        Returns the same {"success", "messages"} shape as attempt_catch().
+        "messages" is empty on success (nothing extra to show after "Gotcha!");
+        on failure (party already has 6) it explains the Pokemon was lost.
+        """
         enemy = self.enemy_pokemon
-        self.player_manager.add_pokemon(
+        added = self.player_manager.add_pokemon(
             PlayerPokemon(
                 name=enemy.name.lower(),
                 hp=enemy.current_hp,
@@ -527,6 +532,15 @@ class BattleSystem:
                 held_item=None,
             )
         )
+        if added:
+            return {"success": True, "messages": []}
+        return {
+            "success": False,
+            "messages": [
+                "Your party is full!",
+                f"{enemy.name} could not be added to your team.",
+            ],
+        }
 
     def attempt_catch(self, item_data: ItemSpecies) -> dict:
         ball_modifier = 1

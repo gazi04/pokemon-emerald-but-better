@@ -56,7 +56,12 @@ class SaveManager:
                 os.fsync(f.fileno())  # force tmp contents to disk before the rename
 
             if os.path.exists(SAVE_PATH):
-                shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)
+                try:
+                    shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)
+                except Exception as e:
+                    # Backup is best-effort — never let it block promoting a
+                    # good, already-fsynced save.
+                    log.warning("Failed to back up save '%s': %s", SAVE_PATH, e)
 
             os.replace(SAVE_TMP_PATH, SAVE_PATH)
             self.saved_position = data.get("position")

@@ -68,6 +68,7 @@ class BattleView(GameView):
         # Move-learning sub-flow state.
         self.learning_move_mode = False  # move menu is picking a move to forget
         self._on_learning_done = None  # called once the learn queue empties
+        self._pending_catch_close = False  # party-full message shown; next callback closes battle
 
         if not is_trainer:
             if (
@@ -204,9 +205,19 @@ class BattleView(GameView):
         self._refresh_active_pokemon_ui()
 
     def what_happend_after_text(self):
-        if self.battle_system.battle_state == BattleState.CAUGHT:
-            self.battle_system.add_caught_pokemon()
+        if self._pending_catch_close:
+            self._pending_catch_close = False
             self.run()
+            return
+
+        if self.battle_system.battle_state == BattleState.CAUGHT:
+            result = self.battle_system.add_caught_pokemon()
+            if result["messages"]:
+                self._pending_catch_close = True
+                self.ui.queue_messages(result["messages"])
+                self.ui.switch_mode("dialog")
+            else:
+                self.run()
             return
 
         if self.battle_system.battle_state == BattleState.CURRENTLY_TURN:
