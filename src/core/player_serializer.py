@@ -1,6 +1,11 @@
 from typing import Optional
 
-from src.model.save.player import PlayerSave, PlayerPokemon, PlayerPokemonMove, ItemStack
+from src.model.save.player import (
+    PlayerSave,
+    PlayerPokemon,
+    PlayerPokemonMove,
+    ItemStack,
+)
 from src.model.motion.player_motion import PlayerMotion
 from src.enums.item_category import ItemCategory
 
@@ -39,7 +44,7 @@ class PlayerSerializer:
         items = {}
         for key, item in data["items"].items():
             items[key] = ItemStack(key, item["count"], ItemCategory(item["category"]))
-            
+
         seen = data.get("seen", [])
 
         return PlayerSave(

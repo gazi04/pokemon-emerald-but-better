@@ -239,7 +239,7 @@ class OverworldView(GameView):
         if self.is_pressed(CONFIG.controls.bag, key):
             self.keys.clear()
             self.overlay("menu")
-            
+
         if self.is_pressed(CONFIG.controls.cancel, key):
             print(f"x {self.player_state.pixel_x}, y {self.player_state.pixel_y}")
 

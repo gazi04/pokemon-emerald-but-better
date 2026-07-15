@@ -37,7 +37,7 @@ class MapRegistry:
         p = value.replace("\\", "/")
         prefix = self._maps_dir + "/"
         if p.startswith(prefix):
-            p = p[len(prefix):]
+            p = p[len(prefix) :]
         if p.endswith(".tmx"):
             p = p[:-4]
         return p

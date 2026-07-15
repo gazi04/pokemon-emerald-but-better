@@ -29,14 +29,16 @@ class BattlePokemon:
         held_item: Optional[ItemSpecies] = None,
     ):
         self.is_enemy = is_enemy
-        self._apply(data, name, moves, level, exp, ability, current_hp, source, held_item)
+        self._apply(
+            data, name, moves, level, exp, ability, current_hp, source, held_item
+        )
 
         # Dispatch over effect.type — add an effect kind by adding a handler,
         # not by editing the loop (mirrors npc_behaviors.make_behavior / bag_system).
         self._effect_handlers = {
             EffectType.STAT: self._apply_stat_effect,
             EffectType.STATUS_CONDITION: self._apply_status_effect,
-            EffectType.PROTECT: self._apply_protect
+            EffectType.PROTECT: self._apply_protect,
         }
 
     @classmethod
@@ -72,7 +74,9 @@ class BattlePokemon:
         is_enemy: bool = True,
         held_item: Optional[ItemSpecies] = None,
     ) -> "BattlePokemon":
-        return cls(species, is_enemy, name, moves, level, 0, ability, None, None, held_item)
+        return cls(
+            species, is_enemy, name, moves, level, 0, ability, None, None, held_item
+        )
 
     def _apply(
         self,
@@ -172,7 +176,7 @@ class BattlePokemon:
 
         if stat == Stat.SPEED and self.status_effect == StatusEffect.PARALYSIS:
             fraction *= 0.5
-            
+
         if stat == Stat.ATTACK and self.status_effect == StatusEffect.BURN:
             fraction *= 0.5
 
@@ -219,10 +223,10 @@ class BattlePokemon:
         if self.flinched:
             self.flinched = False
             return (["The Pokemon is flinched!"], False)
-        
+
         if self.status_effect == StatusEffect.PARALYSIS and random.random() < 0.25:
             return (["The Pokemon is fully paralyzed!"], False)
-        
+
         if self.status_effect == StatusEffect.FREEZE:
             return (["The Pokemon is freezed!"], False)
 
@@ -285,9 +289,7 @@ class BattlePokemon:
 
         return messages
 
-    def _apply_stat_effect(
-        self, effect, destination: "BattlePokemon"
-    ) -> list[str]:
+    def _apply_stat_effect(self, effect, destination: "BattlePokemon") -> list[str]:
         messages = []
         stat = effect.stat
         change = effect.change
@@ -303,21 +305,15 @@ class BattlePokemon:
         destination.modifiers[stat] = max(-6, min(6, current_stage + change))
 
         if change > 0:
-            adj = (
-                "sharply " if change == 2 else ("drastically " if change >= 3 else "")
-            )
+            adj = "sharply " if change == 2 else ("drastically " if change >= 3 else "")
             messages.append(f"{destination.name}'s {stat} {adj}rose!")
         elif change < 0:
-            adj = (
-                "harshly " if change == -2 else ("severely " if change <= -3 else "")
-            )
+            adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
             messages.append(f"{destination.name}'s {stat} {adj}fell!")
 
         return messages
 
-    def _apply_status_effect(
-        self, effect, destination: "BattlePokemon"
-    ) -> list[str]:
+    def _apply_status_effect(self, effect, destination: "BattlePokemon") -> list[str]:
         message = []
         chance = effect.chance if effect.chance else 100
         if chance >= random.randint(1, 100):
@@ -328,29 +324,36 @@ class BattlePokemon:
                 else:
                     message.append(f"{destination.name} is already confused.")
                 return message
-            
+
             if effect.condition == StatusEffect.FLINCH:
                 destination.flinched = True
                 return []
-                
+
             if destination.status_effect == StatusEffect.NONE:
-                if effect.condition == StatusEffect.BURN and "fire" in destination.types: 
+                if (
+                    effect.condition == StatusEffect.BURN
+                    and "fire" in destination.types
+                ):
                     return []
-                if effect.condition == StatusEffect.POISON and ("poison" in destination.types or "steel" in destination.types): 
+                if effect.condition == StatusEffect.POISON and (
+                    "poison" in destination.types or "steel" in destination.types
+                ):
                     return []
-                if effect.condition == StatusEffect.PARALYSIS and ("ground" in destination.types or "electric" in destination.types): 
+                if effect.condition == StatusEffect.PARALYSIS and (
+                    "ground" in destination.types or "electric" in destination.types
+                ):
                     return []
-                
+
                 message.append(f"{destination.name} was {effect.condition}.")
-                
+
                 destination.status_effect = effect.condition
                 if destination.status_effect == StatusEffect.SLEEP:
                     destination.sleep_counter = random.randint(2, 5)
             else:
                 message.append(f"{destination.name} already has a condition.")
-            
+
         return message
-    
+
     def _apply_protect(self, effect, destination: "BattlePokemon") -> list[str]:
         destination.is_protected = True
         return [f"{destination.name} protected itself!"]
@@ -361,26 +364,26 @@ class BattlePokemon:
 
     def after_a_turn(self) -> list[str]:
         messages = []
-        
+
         if self.status_effect == StatusEffect.POISON:
             damage = max(1, int(self.max_hp / 12.5))
             self.take_damage(damage)
             messages.append(f"{self.name} is hurt by poison!")
-        
+
         if self.status_effect == StatusEffect.BURN:
             damage = max(1, int(self.max_hp / 8))
             self.take_damage(damage)
             messages.append(f"{self.name} is burned!")
-        
+
         if self.status_effect == StatusEffect.FREEZE and random.random() < 0.2:
             self.status_effect = StatusEffect.NONE
             messages.append(f"{self.name} is thaw!")
-        
+
         self.is_protected = False
         self.is_first_turn = False
-        
+
         return messages
-    
+
     # ------------------------------------------------------------------
     # Abilities — data-driven hooks fired by BattleSystem during a move.
     # Mirrors the move-effect dispatch above: each trigger reads this
@@ -392,7 +395,9 @@ class BattlePokemon:
             return []
         return [e for e in self.ability.effects if e.trigger == trigger]
 
-    def _ability_condition_met(self, effect:AbilityEffect, move:PokemonMove = None) -> bool:
+    def _ability_condition_met(
+        self, effect: AbilityEffect, move: PokemonMove = None
+    ) -> bool:
         """Gate an ability effect on its `condition` (None == always)."""
         condition = effect.condition
         if not condition:
@@ -405,7 +410,7 @@ class BattlePokemon:
             return move is not None and move.type == "ground"
         return False
 
-    def ability_attack_multiplier(self, move:PokemonMove) -> tuple[float, list[str]]:
+    def ability_attack_multiplier(self, move: PokemonMove) -> tuple[float, list[str]]:
         """Attacker hook (trigger 'on_attack'). Returns a damage multiplier and
         any UI messages — e.g. Blaze powering up the attack at low HP."""
         multiplier = 1.0
@@ -419,14 +424,16 @@ class BattlePokemon:
                 continue
             multiplier *= 1 + (effect.change or 0) / 100
             messages.append(f"{self.name}'s {self.ability.name} powered up the move!")
-        
+
         return multiplier, messages
 
-    def immunity_to(self, move:PokemonMove) -> Optional[str]:
+    def immunity_to(self, move: PokemonMove) -> Optional[str]:
         """Defender hook. Returns a message if this pokemon's ability makes it
         immune to `move` (e.g. Levitate vs Ground), else None."""
         for effect in self._ability_effects("on_hit"):
-            if effect.type in ["immunity", "absorb"] and self._ability_condition_met(effect, move):
+            if effect.type in ["immunity", "absorb"] and self._ability_condition_met(
+                effect, move
+            ):
                 return f"It doesn't affect {self.name}…"
         return None
 
@@ -449,25 +456,34 @@ class BattlePokemon:
                 messages.extend(self._heal_from_ability(effect))
 
         return messages
-    
-    def _apply_status_effect_ability(self, effect:AbilityEffect, destination:"BattlePokemon"):
+
+    def _apply_status_effect_ability(
+        self, effect: AbilityEffect, destination: "BattlePokemon"
+    ):
         status = self._status_from(effect.status)
         if status is None or destination.status_effect != StatusEffect.NONE:
             return (False, "")
 
         if effect.condition == StatusEffect.BURN and "fire" in destination.types:
             return (False, "")
-        if effect.condition == StatusEffect.POISON and ("poison" in destination.types or "steel" in destination.types): 
+        if effect.condition == StatusEffect.POISON and (
+            "poison" in destination.types or "steel" in destination.types
+        ):
             return (False, "")
-        if effect.condition == StatusEffect.PARALYSIS and ("ground" in destination.types or "electric" in destination.types): 
+        if effect.condition == StatusEffect.PARALYSIS and (
+            "ground" in destination.types or "electric" in destination.types
+        ):
             return (False, "")
 
         destination.status_effect = status
         if status == StatusEffect.SLEEP:
             destination.sleep_counter = random.randint(2, 5)
-            
-        return (True, f"{destination.name} was {status.value} by {self.name}'s {self.ability.name}!")
-    
+
+        return (
+            True,
+            f"{destination.name} was {status.value} by {self.name}'s {self.ability.name}!",
+        )
+
     def _heal_from_ability(self, effect: AbilityEffect) -> list[str]:
         if effect.change is None:
             return []
@@ -475,7 +491,7 @@ class BattlePokemon:
         regained = int(self.max_hp * effect.change / 100)
         self.current_hp = min(self.max_hp, self.current_hp + regained)
         return [f"{self.name} restored HP using {self.ability.name}!"]
-    
+
     # ------------------------------------------------------------------
     # Held items — data-driven hooks fired by BattleSystem, mirroring the
     # ability hooks. Berries are consumed (removed from the holder + its save
@@ -497,7 +513,9 @@ class BattlePokemon:
         multiplier = 1.0
 
         if attrs.damage_multiplier:
-            move_type = item.battle_condition.move_type if item.battle_condition else None
+            move_type = (
+                item.battle_condition.move_type if item.battle_condition else None
+            )
             if move_type is None or move.type == move_type:
                 multiplier *= attrs.damage_multiplier
 
@@ -532,7 +550,9 @@ class BattlePokemon:
             return []
         for effect in item.effects:
             if effect.type == EffectType.RECOIL_TO_ATTACKER and effect.percent:
-                attacker.take_damage(max(1, int(attacker.max_hp * effect.percent / 100)))
+                attacker.take_damage(
+                    max(1, int(attacker.max_hp * effect.percent / 100))
+                )
                 return [f"{attacker.name} was hurt by {self.name}'s {item.name}!"]
         return []
 
@@ -616,7 +636,7 @@ class BattlePokemon:
                     messages.append(message)
 
         return messages
-    
+
     def on_turn_end(self, opponent: "BattlePokemon") -> list[str]:
         messages = []
         for effect in self._ability_effects("on_turn_end"):
@@ -634,7 +654,9 @@ class BattlePokemon:
                         cured = self.status_effect.value
                         self.status_effect = StatusEffect.NONE
                         self.sleep_counter = 0
-                        messages.append(f"{self.name}'s {self.ability.name} cured its {cured}!")
+                        messages.append(
+                            f"{self.name}'s {self.ability.name} cured its {cured}!"
+                        )
 
             elif effect.type == "heal":
                 messages.extend(self._heal_from_ability(effect))

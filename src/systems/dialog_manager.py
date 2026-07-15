@@ -4,8 +4,7 @@ Single responsibility: dialog retrieval and selection logic.
 """
 
 import json
-from pathlib import Path
-from typing import Optional, List
+from typing import List
 from src.systems.npc_manager import NPCManager
 from src.core.logger import get_logger
 

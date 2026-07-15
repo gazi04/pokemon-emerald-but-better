@@ -1,5 +1,4 @@
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 from src.enums.item_category import ItemCategory
 from src.enums.effect_type import EffectType
 
@@ -29,10 +28,10 @@ class ItemEffect:
 @dataclass
 class BattleCondition:
     trigger: str
-    threshold: float | None = None   # for hp_threshold
-    status: str | None = None   # for on_status
+    threshold: float | None = None  # for hp_threshold
+    status: str | None = None  # for on_status
     contact_only: bool = False  # for on_hit
-    move_type: str | None = None   # for on_attack type filters
+    move_type: str | None = None  # for on_attack type filters
 
     def __init__(self, data: dict):
         self.trigger = data["trigger"]
@@ -57,10 +56,10 @@ class BattleAttributes:
 
 @dataclass
 class ItemSpecies:
-    name: str               # display name, set by the parser from the data key
+    name: str  # display name, set by the parser from the data key
     description: str
     price: int
-    category: str           # "medicine" | "pokeball" | "berry" | "held_item"
+    category: str  # "medicine" | "pokeball" | "berry" | "held_item"
     holdable: bool
     effects: list[ItemEffect]
     battle_condition: BattleCondition | None
@@ -73,7 +72,13 @@ class ItemSpecies:
         self.category = ItemCategory(item["category"])
         self.holdable = item["holdable"]
         self.effects = [ItemEffect(e) for e in item.get("effects", [])]
-        self.battle_condition = BattleCondition(
-            item["battle_condition"]) if item.get("battle_condition") else None
-        self.battle_attributes = BattleAttributes(
-            item["battle_attributes"]) if item.get("battle_attributes") else None
+        self.battle_condition = (
+            BattleCondition(item["battle_condition"])
+            if item.get("battle_condition")
+            else None
+        )
+        self.battle_attributes = (
+            BattleAttributes(item["battle_attributes"])
+            if item.get("battle_attributes")
+            else None
+        )

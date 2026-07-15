@@ -8,7 +8,9 @@ class BattleTransition:
     on_update doesn't. `update()` returns the pending battle data tuple on the
     frame the flicker completes, else None."""
 
-    def __init__(self, max_time: float = 0.8, flicker_interval: float = FLICKER_INTERVAL):
+    def __init__(
+        self, max_time: float = 0.8, flicker_interval: float = FLICKER_INTERVAL
+    ):
         self.active = False
         self.can_render_scene = True
         self.max_time = max_time

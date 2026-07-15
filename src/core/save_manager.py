@@ -42,7 +42,9 @@ class SaveManager:
                 log.warning("Failed to load save '%s': %s", path, e)
 
         # Even the shipped default failed — unrecoverable install.
-        raise RuntimeError(f"Could not load any save (tried {candidates})") from last_error
+        raise RuntimeError(
+            f"Could not load any save (tried {candidates})"
+        ) from last_error
 
     def flush_save(self, player_state) -> bool:
         try:

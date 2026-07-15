@@ -26,9 +26,8 @@ def object_to_world(
     """
     x = obj.coordinates.x * scale + obj.size.width
     y = (
-        (tile_map.height * tile_map.tile_height - obj.coordinates.y) * scale
-        + obj.size.height / 2
-    )
+        tile_map.height * tile_map.tile_height - obj.coordinates.y
+    ) * scale + obj.size.height / 2
     return (x, y)
 
 

@@ -115,5 +115,7 @@ class MapManager:
         try:
             self.loaded.npcs.clear()
         except Exception:
-            log.exception("Error clearing NPCs while unloading '%s'", self.current_map_id)
+            log.exception(
+                "Error clearing NPCs while unloading '%s'", self.current_map_id
+            )
         self.loaded = None

@@ -115,7 +115,7 @@ class PokemonMenuView(GameView):
         if index == 2:
             if self.bag:
                 self._get_current_pokemon().held_item = self.item
-                
+
                 self.window.show_view(self.previousView)
 
         elif index == 1:

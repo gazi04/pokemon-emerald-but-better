@@ -23,12 +23,13 @@ class BattleUiManager:
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.manager._pixelated = True
-        
+
         # Status-condition icons (poison / paralysis / sleep / burn / freeze)
         self._status_textures = {
             status: arcade.load_texture(f"{_STATUS_DIR}/{status.value}.png")
             for status in StatusEffect
-            if status not in (StatusEffect.NONE, StatusEffect.FLINCH, StatusEffect.CONFUSION)
+            if status
+            not in (StatusEffect.NONE, StatusEffect.FLINCH, StatusEffect.CONFUSION)
         }
 
         # Static graphics
@@ -367,7 +368,11 @@ class BattleUiManager:
         )
 
     def draw_status(self, status: StatusEffect, target: str):
-        ui = self.status_effect_player if target == "player" else self.status_effect_enemy
+        ui = (
+            self.status_effect_player
+            if target == "player"
+            else self.status_effect_enemy
+        )
 
         if not status or status is StatusEffect.NONE:
             ui.visible = False

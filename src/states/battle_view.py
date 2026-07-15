@@ -66,23 +66,29 @@ class BattleView(GameView):
         self.prize_money = 0
 
         # Move-learning sub-flow state.
-        self.learning_move_mode = False       # move menu is picking a move to forget
-        self._on_learning_done = None         # called once the learn queue empties
+        self.learning_move_mode = False  # move menu is picking a move to forget
+        self._on_learning_done = None  # called once the learn queue empties
 
         if not is_trainer:
-            if foe_pokemon_data is None or foe_pokemon_name is None or foe_level is None:
+            if (
+                foe_pokemon_data is None
+                or foe_pokemon_name is None
+                or foe_level is None
+            ):
                 raise ValueError(
                     f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None."
                 )
-                
-            abilities = data_loader.get_ability(random.choice(foe_pokemon_data.abilities))
+
+            abilities = data_loader.get_ability(
+                random.choice(foe_pokemon_data.abilities)
+            )
 
             self.enemy_battle = BattlePokemon.from_wild(
                 foe_pokemon_data,
                 foe_pokemon_name,
                 foe_level,
                 select_wild_moves(foe_pokemon_data, foe_level, data_loader),
-                abilities
+                abilities,
             )
             self.enemy_sprite = PokemonSprite(foe_pokemon_data, True)
         else:
@@ -93,11 +99,7 @@ class BattleView(GameView):
                 raise ValueError(f"Trainer pokemon '{first.name}' not found in data.")
 
             self.enemy_battle = BattlePokemon.from_wild(
-                first_profile,
-                first.name,
-                first.level,
-                first.moves,
-                ability
+                first_profile, first.name, first.level, first.moves, ability
             )
             self.enemy_sprite = PokemonSprite(first_profile, True)
 

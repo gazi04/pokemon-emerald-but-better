@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from src.enums.item_category import ItemCategory
 
+
 @dataclass
 class PlayerPokemonMove:
     name: str
@@ -85,20 +86,20 @@ class PlayerSave:
         pokemon = self.get_pokemon(pokemon_name)
         if not pokemon:
             return
-        
+
         if len(pokemon.moves) == 4:
             return
-        
+
         pokemon.moves.append(move)
-        
+
     def replace_move(self, pokemon_name: str, move: PlayerPokemonMove, index: int):
         pokemon = self.get_pokemon(pokemon_name)
         if not pokemon:
             return
-        
+
         if len(pokemon.moves) < 4:
             return
-        
+
         pokemon.moves[index] = move
 
     def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
@@ -114,20 +115,20 @@ class PlayerSave:
 
     def add_item(self, item_id: str, category: str, count: int):
         item = self.items.get(item_id)
-        
+
         if not item:
             self.items[item_id] = ItemStack(item_id, count, ItemCategory(category))
             return
-        
+
         item.count += count
-    
+
     def consume_item(self, item_id: str) -> bool:
         item = self.items.get(item_id)
         if not item:
             return False
-        
+
         item.count -= 1
         if item.count <= 0:
             self.items.pop(item_id)
-        
+
         return True

@@ -6,34 +6,41 @@ from src.model.static.pokemon import PokemonStat
 from src.model.static.item import ItemSpecies, ItemEffect
 from src.model.save.player import ItemStack, PlayerPokemon
 
+
 class BagSystem:
     def __init__(self, player_manager: PlayerManager, data_loader: DataLoader):
         self.player_manager = player_manager
-        self.data_loader    = data_loader
+        self.data_loader = data_loader
 
-        self._items       = player_manager.player.items
+        self._items = player_manager.player.items
 
         self._effect_appliers = {
-            EffectType.HEAL:        self._apply_heal,
+            EffectType.HEAL: self._apply_heal,
             EffectType.CURE_STATUS: self._apply_cure_status,
-            EffectType.RESTORE_PP:  self._apply_restore_pp
+            EffectType.RESTORE_PP: self._apply_restore_pp,
         }
 
         self._effect_eligibility = {
-            EffectType.HEAL:        self._heal_eligible,
+            EffectType.HEAL: self._heal_eligible,
             EffectType.CURE_STATUS: self._cure_status_eligible,
-            EffectType.RESTORE_PP:  self._restore_pp_eligible,
+            EffectType.RESTORE_PP: self._restore_pp_eligible,
         }
 
     # ── Eligibility checks ────────────────────────────────────────────────────
 
-    def _heal_eligible(self, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect) -> bool:
+    def _heal_eligible(
+        self, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect
+    ) -> bool:
         return 0 < pokemon.hp < max_hp
 
-    def _cure_status_eligible(self, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect) -> bool:
+    def _cure_status_eligible(
+        self, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect
+    ) -> bool:
         return pokemon.status_condition is not None
 
-    def _restore_pp_eligible(self, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect) -> bool:
+    def _restore_pp_eligible(
+        self, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect
+    ) -> bool:
         return any(move.pp < self._max_pp(move) for move in pokemon.moves)
 
     def _max_pp(self, move) -> int:
@@ -44,7 +51,14 @@ class BagSystem:
 
     # ── Appliers ──────────────────────────────────────────────────────────────
 
-    def _apply_heal(self, pokemon_id: str, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect, move_index=None) -> bool:
+    def _apply_heal(
+        self,
+        pokemon_id: str,
+        pokemon: PlayerPokemon,
+        max_hp: int,
+        effect: ItemEffect,
+        move_index=None,
+    ) -> bool:
         if not self._heal_eligible(pokemon, max_hp, effect):
             return False
 
@@ -58,7 +72,14 @@ class BagSystem:
         self.player_manager.update_pokemon_hp(pokemon_id, new_hp)
         return True
 
-    def _apply_cure_status(self, pokemon_id: str, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect, move_index=None) -> bool:
+    def _apply_cure_status(
+        self,
+        pokemon_id: str,
+        pokemon: PlayerPokemon,
+        max_hp: int,
+        effect: ItemEffect,
+        move_index=None,
+    ) -> bool:
         if not self._cure_status_eligible(pokemon, max_hp, effect):
             return False
 
@@ -68,7 +89,14 @@ class BagSystem:
 
         return False
 
-    def _apply_restore_pp(self, pokemon_id: str, pokemon: PlayerPokemon, max_hp: int, effect: ItemEffect, move_index=None) -> bool:
+    def _apply_restore_pp(
+        self,
+        pokemon_id: str,
+        pokemon: PlayerPokemon,
+        max_hp: int,
+        effect: ItemEffect,
+        move_index=None,
+    ) -> bool:
         """Restore PP to a single chosen move (Ether/Leppa). A missing
         move_index means "all moves" (Elixir-style items)."""
         if move_index is None:
@@ -91,7 +119,9 @@ class BagSystem:
 
     # ── Core item use ─────────────────────────────────────────────────────────
 
-    def use_item(self, item_id: str, pokemon_id: str, move_index: int | None = None) -> bool:
+    def use_item(
+        self, item_id: str, pokemon_id: str, move_index: int | None = None
+    ) -> bool:
         if self._handle_item_effects(pokemon_id.lower(), item_id, move_index):
             self.player_manager.consume_item(item_id)
             return True
@@ -105,14 +135,20 @@ class BagSystem:
 
     def use_pokeball(self, pokeball_id: str) -> ItemSpecies | None:
         pokeball = self._items.get(pokeball_id)
-            
-        if pokeball and pokeball.count > 0 and pokeball.category == ItemCategory.POKEBALL:
+
+        if (
+            pokeball
+            and pokeball.count > 0
+            and pokeball.category == ItemCategory.POKEBALL
+        ):
             self.player_manager.consume_item(pokeball.name)
             return self.data_loader.get_item(pokeball.name)
-        
+
         return None
 
-    def _handle_item_effects(self, pokemon_id: str, item_name: str, move_index: int | None = None) -> bool:
+    def _handle_item_effects(
+        self, pokemon_id: str, item_name: str, move_index: int | None = None
+    ) -> bool:
         pokemon = self.player_manager.player.get_pokemon(pokemon_id)
         if not pokemon:
             return False

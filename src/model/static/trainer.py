@@ -36,5 +36,11 @@ class Trainer:
                 for move in pokemon["moves"]
             ]
             self.party.append(
-                TrainerPokemon(pokemon["name"], pokemon["level"], pokemon["ability"], pokemon["held_item"], moves)
+                TrainerPokemon(
+                    pokemon["name"],
+                    pokemon["level"],
+                    pokemon["ability"],
+                    pokemon["held_item"],
+                    moves,
+                )
             )

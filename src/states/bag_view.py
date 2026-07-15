@@ -17,8 +17,9 @@ BAG_CATEGORIES = [
     ItemCategory.MEDICINE,
     ItemCategory.POKEBALL,
     ItemCategory.HELD_ITEM,
-    ItemCategory.BERRY
+    ItemCategory.BERRY,
 ]
+
 
 class BagView(GameView):
     def __init__(
@@ -68,7 +69,9 @@ class BagView(GameView):
         index = self.currentIndex - self.topVisibleIndex
         self.ui.set_y_of_cursor(index)
 
-        item_data = self.data_loader.get_item(self.current_inventory[self.currentIndex].name)
+        item_data = self.data_loader.get_item(
+            self.current_inventory[self.currentIndex].name
+        )
         if item_data is not None:
             self.ui.set_text(item_data.description)
         else:
@@ -100,7 +103,10 @@ class BagView(GameView):
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
             self.window.show_view(self.previousWindow)
 
-        elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex in (0, 2):
+        elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex in (
+            0,
+            2,
+        ):
             self.overlay(
                 "pokemon_menu",
                 previous_view=self,
@@ -136,11 +142,11 @@ class BagView(GameView):
 
     def change_bag(self):
         self.currentIndex = 0
-        
+
         category = BAG_CATEGORIES[self.bagIndex]
         self.current_inventory = self.bag.get(category, [])
         self.ui.change_bag(category)
-            
+
         self.ui.setup_invetory()
         self.update_item()
 

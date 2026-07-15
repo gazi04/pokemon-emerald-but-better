@@ -23,7 +23,7 @@ class DataLoader:
         self.ability: dict[str, Ability] = GameDataParser.parse_ability(
             self._read("data/ability.json")
         )
-        
+
         # Raw dicts cached at boot — read every grass step / damage calc, so no
         # per-call file I/O (mirrors the parsed caches above).
         self.encounters: dict = self._read("data/encounters.json")
@@ -35,7 +35,7 @@ class DataLoader:
 
     def get_pokemon(self, name: str) -> PokemonSpecies | None:
         return self.pokemons.get(name)
-    
+
     def get_ability(self, name: str) -> Ability | None:
         return self.ability.get(name)
 

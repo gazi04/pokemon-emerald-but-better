@@ -1,6 +1,11 @@
 from src.core.save_manager import SaveManager
 from src.core.data_loader import DataLoader
-from src.model.save.player import PlayerSave, PlayerPokemon, ItemStack, PlayerPokemonMove
+from src.model.save.player import (
+    PlayerSave,
+    PlayerPokemon,
+    ItemStack,
+    PlayerPokemonMove,
+)
 from src.model.static.pokemon import PokemonStat
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.systems.npc_manager import NPCManager
@@ -8,12 +13,14 @@ from typing import Optional
 
 
 class PlayerManager:
-    def __init__(self, save_manager: SaveManager, data_loader: Optional[DataLoader] = None):
+    def __init__(
+        self, save_manager: SaveManager, data_loader: Optional[DataLoader] = None
+    ):
         self.save_manager = save_manager
         self.data_loader = data_loader
         self.player: Optional[PlayerSave] = save_manager.player
         self.npc_manager = NPCManager()
-        
+
         if (
             hasattr(save_manager.player, "npc_states")
             and save_manager.player.npc_states
@@ -61,14 +68,14 @@ class PlayerManager:
         self, pokemon_name: str, new_level: int, exp: int, evolved_name: str = None
     ):
         self.player.update_level(pokemon_name, new_level, exp, evolved_name)
-        
-    def learn_move(self, pokemon_name: str, move_name:str, index:int = None):
+
+    def learn_move(self, pokemon_name: str, move_name: str, index: int = None):
         move_data = self.data_loader.get_move(move_name)
         if not move_data:
             return
-        
+
         move = PlayerPokemonMove(move_name, move_data.pp)
-        
+
         if index:
             self.player.replace_move(pokemon_name, move, index)
         else:
@@ -100,8 +107,8 @@ class PlayerManager:
 
     def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
         return self.player.add_pokemon(pokemon)
-    
-    def update_pokemon_held_item(self, pokemon_id:str, item_id:str | None):
+
+    def update_pokemon_held_item(self, pokemon_id: str, item_id: str | None):
         pokemon = self.get_pokemon(pokemon_id)
         pokemon.held_item = item_id
 
@@ -110,7 +117,7 @@ class PlayerManager:
 
     def add_item(self, item_id: str, count: int = 1):
         category = self.data_loader.get_item(item_id).category
-        
+
         self.player.add_item(item_id, category, count)
 
     def consume_item(self, name: str) -> bool:

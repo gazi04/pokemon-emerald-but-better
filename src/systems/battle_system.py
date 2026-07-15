@@ -38,7 +38,7 @@ class BattleSystem:
         self.battle_state = BattleState.INTRO
         self.exp = 0
         self.has_evolved = False
-        
+
         self._last_player_move = ""
 
         # Move-learning queue for the active pokemon after a level-up.
@@ -54,18 +54,39 @@ class BattleSystem:
     def turn(self, move_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
-    
-        player_priority = self.data_loader.get_move(self.your_pokemon.moves[move_index].name).priority
-        enemy_priority = self.data_loader.get_move(self.enemy_pokemon.moves[enemy_move_index].name).priority
 
-        if self._player_moves_first(self.your_pokemon.get_stat(Stat.SPEED), player_priority, self.enemy_pokemon.get_stat(Stat.SPEED), enemy_priority):
-            self.turn_queue = [("player", move_index, None), ("enemy", enemy_move_index, None)]
+        player_priority = self.data_loader.get_move(
+            self.your_pokemon.moves[move_index].name
+        ).priority
+        enemy_priority = self.data_loader.get_move(
+            self.enemy_pokemon.moves[enemy_move_index].name
+        ).priority
+
+        if self._player_moves_first(
+            self.your_pokemon.get_stat(Stat.SPEED),
+            player_priority,
+            self.enemy_pokemon.get_stat(Stat.SPEED),
+            enemy_priority,
+        ):
+            self.turn_queue = [
+                ("player", move_index, None),
+                ("enemy", enemy_move_index, None),
+            ]
         else:
-            self.turn_queue = [("enemy", enemy_move_index, None), ("player", move_index, None)]
+            self.turn_queue = [
+                ("enemy", enemy_move_index, None),
+                ("player", move_index, None),
+            ]
 
         return self.execute_next_action()
-    
-    def _player_moves_first(self, player_speed: int, player_priority: int, enemy_speed: int, enemy_priority: int) -> bool:
+
+    def _player_moves_first(
+        self,
+        player_speed: int,
+        player_priority: int,
+        enemy_speed: int,
+        enemy_priority: int,
+    ) -> bool:
         return player_priority > enemy_priority or (
             player_priority == enemy_priority and player_speed >= enemy_speed
         )
@@ -73,7 +94,10 @@ class BattleSystem:
     def turn_use_item(self, item_index: str) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
-        self.turn_queue = [("player", -1, item_index), ("enemy", enemy_move_index, None)]
+        self.turn_queue = [
+            ("player", -1, item_index),
+            ("enemy", enemy_move_index, None),
+        ]
         return self.execute_next_action()
 
     def switch_turn(self) -> list[str]:
@@ -90,11 +114,15 @@ class BattleSystem:
 
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
-        
+
         messages = [f"Go {pokemon.name}!"]
 
-        held_item = self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
-        self.your_pokemon.switching_pokemon(pokemon, ability, pokemon_profile, held_item)
+        held_item = (
+            self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
+        )
+        self.your_pokemon.switching_pokemon(
+            pokemon, ability, pokemon_profile, held_item
+        )
 
         messages.extend(self.your_pokemon.on_switch_in(self.enemy_pokemon))
         return messages
@@ -129,7 +157,7 @@ class BattleSystem:
             self.turn_queue.clear()
 
         return messages
-    
+
     def _dispatch_move(
         self,
         attacker: BattlePokemon,
@@ -151,7 +179,7 @@ class BattleSystem:
         attacker: BattlePokemon,
         defender: BattlePokemon,
         move_index: int,
-        defender_label: str
+        defender_label: str,
     ) -> list[str]:
         move_data = self.data_loader.get_move(attacker.moves[move_index].name)
         min_hits, max_hits = move_data.multi_hit
@@ -162,7 +190,10 @@ class BattleSystem:
 
         for hit_number in range(1, times + 1):
             hit_messages = self._execute_move(
-                attacker, defender, move_index, defender_label,
+                attacker,
+                defender,
+                move_index,
+                defender_label,
                 announce=(hit_number == 1),
             )
             messages.extend(hit_messages)
@@ -181,7 +212,7 @@ class BattleSystem:
         defender: BattlePokemon,
         move_index: int,
         defender_label: str,
-        announce:bool = True
+        announce: bool = True,
     ) -> list[str]:
         move_data = self.data_loader.get_move(attacker.moves[move_index].name)
         messages = []
@@ -195,7 +226,7 @@ class BattleSystem:
             messages.extend(status_messages)
             if not can_move:
                 return messages
-            
+
             failure_message = self._check_move_condition(move_data, attacker)
             if failure_message:
                 messages.append(failure_message)
@@ -269,15 +300,17 @@ class BattleSystem:
         self._last_player_move = move_data.name
 
         return messages
-    
-    def _check_move_condition(self, move_data:PokemonMove, attacker:BattlePokemon) -> str | None:
+
+    def _check_move_condition(
+        self, move_data: PokemonMove, attacker: BattlePokemon
+    ) -> str | None:
         """Returns a failure message if the move's condition isn't met, else None."""
         condition = move_data.condition
         if not condition:
             return None
 
         if condition == "first_turn_only":
-            if not attacker.is_first_turn:   
+            if not attacker.is_first_turn:
                 return f"But {move_data.name} failed!"
 
         if condition == "not_consecutive":
@@ -312,7 +345,7 @@ class BattleSystem:
 
         messages.extend(self.your_pokemon.after_a_turn())
         messages.extend(self.enemy_pokemon.after_a_turn())
-        
+
         messages.extend(self.your_pokemon.on_turn_end(self.enemy_pokemon))
         messages.extend(self.enemy_pokemon.on_turn_end(self.your_pokemon))
 
@@ -335,7 +368,9 @@ class BattleSystem:
             messages.extend(self.pokemon_death(self.enemy_pokemon))
             return messages
 
-        self.battle_state = BattleState.POST_TURN if len(messages) > 0 else BattleState.WAITING
+        self.battle_state = (
+            BattleState.POST_TURN if len(messages) > 0 else BattleState.WAITING
+        )
         return messages
 
     def pokemon_death(self, died_pokemon: BattlePokemon) -> list[str]:
@@ -386,18 +421,20 @@ class BattleSystem:
         follows a forced switch.
         """
         messages = []
-         
+
         pokemon = self.player_manager.player.pokemon[0]
         profile = self.data_loader.get_pokemon(pokemon.name)
         ability = self.data_loader.get_ability(pokemon.ability)
-        held_item = self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
+        held_item = (
+            self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
+        )
         self.your_pokemon.switching_pokemon(pokemon, ability, profile, held_item)
-        
+
         messages.extend(self.your_pokemon.on_switch_in(self.enemy_pokemon))
         messages.append(f"Go {pokemon.name}!")
-        
+
         return messages
-    
+
     def apply_exp_award(self) -> ExpGainResult:
         """Award pending exp to the active Pokémon and clear it. Returns the
         ExpGainResult so the view can react (level-up / evolve / nothing)
@@ -405,7 +442,7 @@ class BattleSystem:
         result = self.your_pokemon.gain_exp(self.exp)
         self.exp = 0
         return result
-    
+
     # ------------------------------------------------------------------
     # Move learning after a level-up. The view drives this like the other
     # message-gated sub-flows: queue the names, then pump next_move_to_learn()

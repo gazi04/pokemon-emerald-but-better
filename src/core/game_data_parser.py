@@ -7,7 +7,7 @@ from src.model.static.pokemon import (
     PokemonEvolution,
     LearnsetMove,
 )
-from src.model.static.item import ItemSpecies, ItemEffect
+from src.model.static.item import ItemSpecies
 from src.model.static.npc import NpcSpecies
 from src.model.static.trainer import Trainer
 from src.model.static.ability import Ability
@@ -24,7 +24,9 @@ class GameDataParser:
             sprites = SpritePaths(**raw["sprites"])
             stats = PokemonStat(**raw["stats"])
             evolution = (
-                PokemonEvolution(to=raw["evolution"]["to"], levelCap=raw["evolution"]["level"])
+                PokemonEvolution(
+                    to=raw["evolution"]["to"], levelCap=raw["evolution"]["level"]
+                )
                 if raw["evolution"]
                 else None
             )
@@ -53,7 +55,9 @@ class GameDataParser:
                     type=EffectType(e["type"]),
                     stat=Stat(e["stat"]) if e.get("stat") else None,
                     change=e.get("change"),
-                    condition=StatusEffect(e["condition"]) if e.get("condition") else None,
+                    condition=StatusEffect(e["condition"])
+                    if e.get("condition")
+                    else None,
                     chance=e.get("chance"),
                 )
                 for e in raw["effects"]
@@ -69,7 +73,7 @@ class GameDataParser:
                 crit=raw["crit"],
                 multi_hit=raw["multi_hit"],
                 condition=raw["condition"],
-                effects=effects
+                effects=effects,
             )
         return moves
 
@@ -97,12 +101,12 @@ class GameDataParser:
                 team=Trainer(raw.get("team", [])),
             )
         return npcs
-    
+
     @staticmethod
     def parse_ability(data: dict) -> dict[str, Ability]:
         ability = {}
-        
+
         for name, raw in data.items():
             ability[name] = Ability(raw)
-        
+
         return ability
