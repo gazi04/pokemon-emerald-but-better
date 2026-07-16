@@ -87,7 +87,6 @@ class MapManager:
         position = self._resolve_spawn(loaded, spawn)
         if position is not None:
             self._player_state.pixel_x, self._player_state.pixel_y = position
-            self._player_state.pixel_y += 8
 
     def _resolve_spawn(
         self, loaded: LoadedMap, spawn: Spawn

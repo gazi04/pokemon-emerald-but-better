@@ -22,12 +22,14 @@ def object_to_world(
 
     Single source of truth for the map's object→world transform, shared by NPC
     spawning and spawn-point extraction so they always agree. Tiled is y-down
-    with a top-left origin; arcade is y-up and the scene is scaled.
+    with a top-left origin; arcade is y-up and the scene is scaled. Tiled gid
+    objects anchor at their bottom-left corner, so each axis shifts by half the
+    object's size — in world units, hence scaled — to reach the sprite's center.
     """
-    x = obj.coordinates.x * scale + obj.size.width
+    x = obj.coordinates.x * scale + obj.size.width / 2 * scale
     y = (
         tile_map.height * tile_map.tile_height - obj.coordinates.y
-    ) * scale + obj.size.height / 2
+    ) * scale + obj.size.height / 2 * scale
     return (x, y)
 
 
