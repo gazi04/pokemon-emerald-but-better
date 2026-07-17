@@ -1,5 +1,7 @@
 import arcade
 import random
+from typing import Optional
+
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
@@ -27,8 +29,8 @@ class BattleView(GameView):
         foe_pokemon_data=None,
         foe_level=None,
         is_trainer=False,
-        trainer_data: Trainer = None,
-        npc_id: str = None,
+        trainer_data: Optional[Trainer] = None,
+        npc_id: Optional[str] = None,
     ):
         super().__init__()
 
@@ -50,7 +52,7 @@ class BattleView(GameView):
             )
 
         self.your_battle = BattlePokemon.from_player(
-            data_loader.get_ability(lead_pokemon.ability),
+            data_loader.require_ability(lead_pokemon.ability),
             player_profile,
             lead_pokemon,
             held_item=(
@@ -80,7 +82,7 @@ class BattleView(GameView):
                     f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None."
                 )
 
-            abilities = data_loader.get_ability(
+            abilities = data_loader.require_ability(
                 random.choice(foe_pokemon_data.abilities)
             )
 
@@ -93,9 +95,11 @@ class BattleView(GameView):
             )
             self.enemy_sprite = PokemonSprite(foe_pokemon_data, True)
         else:
+            if trainer_data is None:
+                raise ValueError("A trainer battle requires trainer_data.")
             first = trainer_data.party[0]
             first_profile = data_loader.get_pokemon(first.name)
-            ability = data_loader.get_ability(first.ability)
+            ability = data_loader.require_ability(first.ability)
             if first_profile is None:
                 raise ValueError(f"Trainer pokemon '{first.name}' not found in data.")
 
@@ -171,7 +175,7 @@ class BattleView(GameView):
                 "Normal", self.your_battle.moves[0].pp, 35
             )
         if update_texture:
-            texture = self.data_loader.get_pokemon(
+            texture = self.data_loader.require_pokemon(
                 self.your_battle.name.lower()
             ).sprites.back
             self.your_sprite.set_new_texture(texture)

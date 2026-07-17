@@ -42,7 +42,7 @@ class BagView(GameView):
         self.previousWindow = previousWindow
 
         self.bag = self.bagSystem.get_items()
-        self.current_inventory = self.bag.get(ItemCategory.MEDICINE)
+        self.current_inventory = self.bag.get(ItemCategory.MEDICINE, [])
         self.bagIndex = 0
         self.currentIndex = 0
         self.topVisibleIndex = 0

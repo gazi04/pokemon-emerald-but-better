@@ -41,13 +41,13 @@ class ShopView(GameView):
         arcade.get_window().default_camera.use()
         self.ui.draw()
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, symbol, modifiers):
         if self._mode == "options":
-            self._handle_options(key)
+            self._handle_options(symbol)
         elif self._mode == "items":
-            self._handle_items(key)
+            self._handle_items(symbol)
         elif self._mode == "amount":
-            self._handle_amount(key)
+            self._handle_amount(symbol)
 
     def _handle_options(self, key):
         if self.is_pressed(CONFIG.controls.up, key) or self.is_pressed(

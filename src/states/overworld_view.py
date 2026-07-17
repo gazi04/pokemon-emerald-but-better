@@ -53,7 +53,9 @@ class OverworldView(GameView):
         self.encounter_system = None
 
         self.keys = set()
-        self.camera = None
+        # The window exists before any view is constructed, so build the camera
+        # eagerly — setup() replaces it per map, but it is never None.
+        self.camera = arcade.Camera2D()
 
         self.map_manager = MapManager(
             loader=MapLoader(self.movement_system, self.player_state),
@@ -230,17 +232,17 @@ class OverworldView(GameView):
         self.npcs.draw(pixelated=True)
         self.player_sprite.draw()
 
-    def on_key_press(self, key, _):
-        self.keys.add(key)
-        if self.is_pressed(CONFIG.controls.bag, key):
+    def on_key_press(self, symbol, modifiers):
+        self.keys.add(symbol)
+        if self.is_pressed(CONFIG.controls.bag, symbol):
             self.keys.clear()
             self.overlay("menu")
 
-        if self.is_pressed(CONFIG.controls.cancel, key):
+        if self.is_pressed(CONFIG.controls.cancel, symbol):
             print(f"x {self.player_state.pixel_x}, y {self.player_state.pixel_y}")
 
-    def on_key_release(self, key, _):
-        self.keys.discard(key)
+    def on_key_release(self, symbol, modifiers):
+        self.keys.discard(symbol)
 
     def _start_battle_transition(self, name, level, data):
         self.transition.start(name, level, data)
