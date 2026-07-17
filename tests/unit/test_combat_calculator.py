@@ -23,7 +23,12 @@ def make_stat(hp=50, attack=50, defence=50, sp_atk=50, sp_def=50, speed=50):
 
 
 def make_move(
-    name="tackle", category="physical", type_="normal", power=40, accuracy=100, pp=35
+    name="tackle",
+    category="physical",
+    type_="normal",
+    power: int | None = 40,
+    accuracy: int | None = 100,
+    pp=35,
 ):
     return PokemonMove(
         name=name,
@@ -221,9 +226,7 @@ def test_negative_stat_stage_decreases_effective_stat():
 
 def test_paralysis_halves_speed():
     normal_speed = _get_stat(Stat.SPEED, make_stat(speed=100), {}, StatusEffect.NONE)
-    para_speed = _get_stat(
-        Stat.SPEED, make_stat(speed=100), {}, StatusEffect.PARALYSIS
-    )
+    para_speed = _get_stat(Stat.SPEED, make_stat(speed=100), {}, StatusEffect.PARALYSIS)
     assert para_speed == normal_speed // 2
 
 

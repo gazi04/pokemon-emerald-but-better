@@ -154,7 +154,33 @@ def test_flush_save_and_reload_preserves_state(save_manager, tmp_path, monkeypat
     from src.core.save_manager import SaveManager as SM2
 
     sm2 = SM2()
-    assert sm2.player.get_pokemon("mudkip").hp == 30
+    mudkip = sm2.player.get_pokemon("mudkip")
+    assert mudkip is not None
+    assert mudkip.hp == 30
+
+
+def test_flush_save_succeeds_when_backup_copy_fails(save_manager, tmp_path, monkeypatch):
+    """A failing backup copy must not block promoting the new save."""
+    state = PlayerMotion(
+        map_name="oldale_town", direction="down", pixel_x=1.0, pixel_y=2.0
+    )
+    # First flush creates save.json so the backup branch (copy2) is
+    # actually exercised on the second flush below.
+    save_manager.flush_save(state)
+
+    def _raise(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr("src.core.save_manager.shutil.copy2", _raise)
+
+    state2 = PlayerMotion(
+        map_name="petalburg_city", direction="up", pixel_x=3.0, pixel_y=4.0
+    )
+    result = save_manager.flush_save(state2)
+
+    assert result is True
+    data = json.loads((tmp_path / "save.json").read_text())
+    assert data["position"]["map_name"] == "petalburg_city"
 
 
 def test_missing_save_json_falls_back_to_default(save_manager):

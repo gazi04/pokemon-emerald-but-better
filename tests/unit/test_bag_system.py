@@ -1,5 +1,6 @@
 """Tests for the current BagSystem: heal / cure-status / restore-PP items,
 including PP move-targeting and item eligibility."""
+
 from unittest.mock import MagicMock
 
 
@@ -11,7 +12,12 @@ from src.model.static.pokemon import (
     SpritePaths,
     PokemonStat,
 )
-from src.model.save.player import PlayerSave, PlayerPokemon, PlayerPokemonMove, ItemStack
+from src.model.save.player import (
+    PlayerSave,
+    PlayerPokemon,
+    PlayerPokemonMove,
+    ItemStack,
+)
 from src.enums.item_category import ItemCategory
 
 
@@ -95,9 +101,7 @@ def make_bag(hp=30, level=50, status=None, moves=None):
     )
     save = PlayerSave(
         pokemon=[pokemon],
-        items={
-            name: ItemStack(name, 3, ItemCategory.MEDICINE) for name in ITEMS
-        },
+        items={name: ItemStack(name, 3, ItemCategory.MEDICINE) for name in ITEMS},
     )
     pm = MagicMock()
     pm.player = save
@@ -107,8 +111,10 @@ def make_bag(hp=30, level=50, status=None, moves=None):
     pm.consume_item.side_effect = save.consume_item
 
     dl = MagicMock()
-    dl.get_item.side_effect = lambda n: ITEMS[n]
-    dl.get_pokemon.return_value = _species()
+    # BagSystem uses both: require_* where a miss is a bug, get_* where it probes.
+    dl.get_item.side_effect = lambda n: ITEMS.get(n)
+    dl.require_item.side_effect = lambda n: ITEMS[n]
+    dl.require_pokemon.return_value = _species()
     dl.get_move.return_value = _move()  # max pp 35
 
     return BagSystem(pm, dl), save, pokemon
@@ -173,8 +179,8 @@ def test_ether_restores_only_the_chosen_move():
     moves = [PlayerPokemonMove("tackle", 5), PlayerPokemonMove("growl", 2)]
     bag, save, mon = make_bag(moves=moves)
     assert bag.use_item("ether", "mudkip", move_index=1) is True
-    assert mon.moves[0].pp == 5          # untouched
-    assert mon.moves[1].pp == 2 + 10     # restored
+    assert mon.moves[0].pp == 5  # untouched
+    assert mon.moves[1].pp == 2 + 10  # restored
 
 
 def test_ether_noop_on_full_move_not_consumed():

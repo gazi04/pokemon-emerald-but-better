@@ -1,5 +1,6 @@
 """Tests for the data-driven ability hooks on BattlePokemon
 (Blaze / Static / Levitate)."""
+
 from unittest.mock import patch
 
 
@@ -19,36 +20,67 @@ BLAZE = {
     "name": "Blaze",
     "description": "",
     "effects": [
-        {"trigger": "on_attack", "type": "damage_boost", "target": "self",
-         "stat": "attack", "change": 50, "condition": "low_hp",
-         "chance": None, "move_type": "fire"},
+        {
+            "trigger": "on_attack",
+            "type": "damage_boost",
+            "target": "self",
+            "stat": "attack",
+            "change": 50,
+            "condition": "low_hp",
+            "chance": None,
+            "move_type": "fire",
+        },
     ],
 }
 STATIC = {
     "name": "Static",
     "description": "",
     "effects": [
-        {"trigger": "on_hit", "type": "status", "target": "enemy",
-         "condition": "contact", "stat": None, "change": None, "chance": 0.3,
-         "status": "paralyzed"},
+        {
+            "trigger": "on_hit",
+            "type": "status",
+            "target": "enemy",
+            "condition": "contact",
+            "stat": None,
+            "change": None,
+            "chance": 0.3,
+            "status": "paralyzed",
+        },
     ],
 }
 LEVITATE = {
     "name": "Levitate",
     "description": "",
     "effects": [
-        {"trigger": "on_hit", "type": "immunity", "target": "self",
-         "condition": "ground_type", "stat": None, "change": None, "chance": None},
+        {
+            "trigger": "on_hit",
+            "type": "immunity",
+            "target": "self",
+            "condition": "ground_type",
+            "stat": None,
+            "change": None,
+            "chance": None,
+        },
     ],
 }
 
 
 def _species(types=("normal",)):
     return PokemonSpecies(
-        baseExp=62, catch_rate=45, abilities=[], types=list(types), evolution=None,
+        baseExp=62,
+        catch_rate=45,
+        abilities=[],
+        types=list(types),
+        evolution=None,
         sprites=SpritePaths(back="b", front="f"),
-        stats=PokemonStat(hp=100, attack=60, defence=50, special_attack=50,
-                          special_defence=50, speed=45),
+        stats=PokemonStat(
+            hp=100,
+            attack=60,
+            defence=50,
+            special_attack=50,
+            special_defence=50,
+            speed=45,
+        ),
         learnset=[],
     )
 

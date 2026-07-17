@@ -1,5 +1,6 @@
 """Tests for level-up move learning on BattlePokemon (learnset detection,
 auto-learn into a free slot, and replacing a move when the set is full)."""
+
 from src.model.battle.battle_pokemon import BattlePokemon, MAX_MOVES
 from src.model.static.pokemon import (
     PokemonSpecies,
@@ -19,15 +20,30 @@ LEARNSET = [
 
 def _mon(moves, learnset=LEARNSET, level=4):
     sp = PokemonSpecies(
-        baseExp=62, catch_rate=45, abilities=[], types=["normal"], evolution=None,
+        baseExp=62,
+        catch_rate=45,
+        abilities=[],
+        types=["normal"],
+        evolution=None,
         sprites=SpritePaths(back="b", front="f"),
-        stats=PokemonStat(hp=50, attack=60, defence=50, special_attack=50,
-                          special_defence=50, speed=45),
+        stats=PokemonStat(
+            hp=50,
+            attack=60,
+            defence=50,
+            special_attack=50,
+            special_defence=50,
+            speed=45,
+        ),
         learnset=learnset,
     )
     pp = PlayerPokemon(
-        "mon", 999, level, 0, "x",
-        [PlayerPokemonMove(n, 10) for n in moves], None,
+        "mon",
+        999,
+        level,
+        0,
+        "x",
+        [PlayerPokemonMove(n, 10) for n in moves],
+        None,
     )
     return BattlePokemon.from_player(None, sp, pp, False), pp
 

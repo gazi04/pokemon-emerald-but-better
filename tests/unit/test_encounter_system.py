@@ -13,7 +13,7 @@ FAKE_ENC = {
 def make_system(bush_tiles=None, map_name="littleroot_town"):
     player_state = PlayerMotion(map_name=map_name)
     dl = MagicMock()
-    dl.get_pokemon.return_value = MagicMock()
+    dl.require_pokemon.return_value = MagicMock()
     dl.encounters = FAKE_ENC  # cached table on the DataLoader
     tiles = bush_tiles or {(5, 5)}
     system = EncounterSystem(tiles, player_state, dl)
@@ -103,7 +103,7 @@ def test_resubscribe_does_not_double_subscribe():
 def test_encounter_event_has_pokemon_data():
     system, _, dl = make_system(bush_tiles={(2, 2)})
     fake_profile = MagicMock()
-    dl.get_pokemon.return_value = fake_profile
+    dl.require_pokemon.return_value = fake_profile
     received = []
     global_bus.subscribe(BattleEncounterTriggeredEvent, received.append)
 

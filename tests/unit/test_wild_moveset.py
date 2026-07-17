@@ -32,19 +32,25 @@ def make_species(learnset):
         evolution=None,
         sprites=SpritePaths(back="b.png", front="f.png"),
         stats=PokemonStat(
-            hp=40, attack=65, defence=35,
-            special_attack=45, special_defence=55, speed=70,
+            hp=40,
+            attack=65,
+            defence=35,
+            special_attack=45,
+            special_defence=55,
+            speed=70,
         ),
         learnset=learnset,
     )
 
 
 def test_level_gates_out_higher_moves():
-    species = make_species([
-        LearnsetMove("tackle", 1),
-        LearnsetMove("growl", 1),
-        LearnsetMove("spore", 9),
-    ])
+    species = make_species(
+        [
+            LearnsetMove("tackle", 1),
+            LearnsetMove("growl", 1),
+            LearnsetMove("spore", 9),
+        ]
+    )
     loader = FakeDataLoader({"tackle": 35, "growl": 40, "spore": 15})
 
     names = [m.name for m in select_wild_moves(species, 5, loader)]
@@ -62,16 +68,24 @@ def test_includes_move_at_exact_level():
 
 
 def test_caps_at_four_keeping_last_learned():
-    species = make_species([
-        LearnsetMove("tackle", 1),
-        LearnsetMove("growl", 2),
-        LearnsetMove("toxic", 3),
-        LearnsetMove("spore", 4),
-        LearnsetMove("close combat", 5),
-    ])
-    loader = FakeDataLoader({
-        "tackle": 35, "growl": 40, "toxic": 10, "spore": 15, "close combat": 5,
-    })
+    species = make_species(
+        [
+            LearnsetMove("tackle", 1),
+            LearnsetMove("growl", 2),
+            LearnsetMove("toxic", 3),
+            LearnsetMove("spore", 4),
+            LearnsetMove("close combat", 5),
+        ]
+    )
+    loader = FakeDataLoader(
+        {
+            "tackle": 35,
+            "growl": 40,
+            "toxic": 10,
+            "spore": 15,
+            "close combat": 5,
+        }
+    )
 
     names = [m.name for m in select_wild_moves(species, 50, loader)]
 

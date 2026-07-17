@@ -1,4 +1,5 @@
 from src.model.battle.battle_pokemon import BattlePokemon
+from src.enums.effect_type import EffectType
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
@@ -139,7 +140,7 @@ def test_take_damage_does_not_go_negative():
 def test_execute_effects_stat_boost_increases_modifier():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
-    effect = PokemonMoveEffect(target="self", type="stat", stat="attack", change=1)
+    effect = PokemonMoveEffect(target="self", type=EffectType.STAT, stat=Stat.ATTACK, change=1)
     move = make_move(effects=[effect])
     attacker.execute_effects(move, defender)
     assert attacker.modifiers[Stat.ATTACK] == 1
@@ -148,7 +149,9 @@ def test_execute_effects_stat_boost_increases_modifier():
 def test_execute_effects_stat_drop_on_opponent():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
-    effect = PokemonMoveEffect(target="opponent", type="stat", stat="defence", change=-1)
+    effect = PokemonMoveEffect(
+        target="opponent", type=EffectType.STAT, stat=Stat.DEFENCE, change=-1
+    )
     move = make_move(effects=[effect])
     attacker.execute_effects(move, defender)
     assert defender.modifiers[Stat.DEFENCE] == -1
@@ -157,7 +160,7 @@ def test_execute_effects_stat_drop_on_opponent():
 def test_stat_stage_capped_at_plus_six():
     pb = make_battle()
     pb.modifiers[Stat.ATTACK] = 6
-    effect = PokemonMoveEffect(target="self", type="stat", stat="attack", change=1)
+    effect = PokemonMoveEffect(target="self", type=EffectType.STAT, stat=Stat.ATTACK, change=1)
     move = make_move(effects=[effect])
     messages = pb.execute_effects(move, make_battle())
     assert pb.modifiers[Stat.ATTACK] == 6
@@ -168,7 +171,7 @@ def test_stat_stage_capped_at_minus_six():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
     defender.modifiers[Stat.ATTACK] = -6
-    effect = PokemonMoveEffect(target="opponent", type="stat", stat="attack", change=-1)
+    effect = PokemonMoveEffect(target="opponent", type=EffectType.STAT, stat=Stat.ATTACK, change=-1)
     move = make_move(effects=[effect])
     messages = attacker.execute_effects(move, defender)
     assert defender.modifiers[Stat.ATTACK] == -6
@@ -181,7 +184,9 @@ def test_stat_stage_capped_at_minus_six():
 def test_execute_effects_applies_poison():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
-    effect = PokemonMoveEffect(target="opponent", type="status condition", condition="poison", chance=100)
+    effect = PokemonMoveEffect(
+        target="opponent", type=EffectType.STATUS_CONDITION, condition=StatusEffect.POISON, chance=100
+    )
     move = make_move(effects=[effect])
     attacker.execute_effects(move, defender)
     assert defender.status_effect == StatusEffect.POISON
@@ -248,13 +253,16 @@ def test_status_does_not_overwrite_existing():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
     defender.status_effect = StatusEffect.PARALYSIS
-    effect = PokemonMoveEffect(target="opponent", type="status condition", condition="poison", chance=100)
+    effect = PokemonMoveEffect(
+        target="opponent", type=EffectType.STATUS_CONDITION, condition=StatusEffect.POISON, chance=100
+    )
     attacker.execute_effects(make_move(effects=[effect]), defender)
     assert defender.status_effect == StatusEffect.PARALYSIS
 
 
 def test_sync_from_source_updates_current_hp():
     pb = make_battle()
+    assert pb.source is not None
     pb.source.hp = 5
     pb.sync_from_source()
     assert pb.current_hp == 5

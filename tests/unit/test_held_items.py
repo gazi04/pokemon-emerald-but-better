@@ -1,5 +1,6 @@
 """Tests for held-item battle hooks on BattlePokemon (Life Orb, type boosters,
 Choice items, Rocky Helmet, Leftovers, pinch berries, Lum)."""
+
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.model.static.item import ItemSpecies
 from src.model.static.pokemon import (
@@ -15,8 +16,13 @@ from src.enums.stat import Stat
 
 def _item(**kw):
     raw = {
-        "description": "", "price": 0, "category": "held_item", "holdable": True,
-        "battle_condition": None, "battle_attributes": None, "effects": [],
+        "description": "",
+        "price": 0,
+        "category": "held_item",
+        "holdable": True,
+        "battle_condition": None,
+        "battle_attributes": None,
+        "effects": [],
     }
     raw.update({k: v for k, v in kw.items() if k != "name"})
     sp = ItemSpecies(raw)
@@ -25,41 +31,74 @@ def _item(**kw):
 
 
 ITEMS = {
-    "life orb": _item(name="Life Orb", battle_condition={"trigger": "on_attack"},
-                      battle_attributes={"damage_multiplier": 1.3},
-                      effects=[{"type": "recoil_to_self", "percent": 10}]),
-    "charcoal": _item(name="Charcoal",
-                      battle_condition={"trigger": "on_attack", "move_type": "fire"},
-                      battle_attributes={"damage_multiplier": 1.2}),
-    "choice band": _item(name="Choice Band",
-                         battle_attributes={"stat_multiplier": {"stat": "attack", "multiplier": 1.5}}),
-    "rocky helmet": _item(name="Rocky Helmet",
-                          battle_condition={"trigger": "on_hit", "contact_only": True},
-                          effects=[{"type": "recoil_to_attacker", "percent": 17}]),
-    "leftovers": _item(name="Leftovers", battle_condition={"trigger": "on_turn_end"},
-                       effects=[{"type": "heal", "percent": 6}]),
-    "sitrus berry": _item(name="Sitrus Berry", category="berry",
-                          battle_condition={"trigger": "hp_threshold", "threshold": 0.5},
-                          effects=[{"type": "heal", "percent": 25}]),
-    "salac berry": _item(name="Salac Berry", category="berry",
-                         battle_condition={"trigger": "hp_threshold", "threshold": 0.25},
-                         effects=[{"type": "stat", "stat": "speed", "change": 1}]),
-    "lum berry": _item(name="Lum Berry", category="berry",
-                       battle_condition={"trigger": "on_status", "status": "any"},
-                       effects=[{"type": "cure_status", "status": "all"}]),
+    "life orb": _item(
+        name="Life Orb",
+        battle_condition={"trigger": "on_attack"},
+        battle_attributes={"damage_multiplier": 1.3},
+        effects=[{"type": "recoil_to_self", "percent": 10}],
+    ),
+    "charcoal": _item(
+        name="Charcoal",
+        battle_condition={"trigger": "on_attack", "move_type": "fire"},
+        battle_attributes={"damage_multiplier": 1.2},
+    ),
+    "choice band": _item(
+        name="Choice Band",
+        battle_attributes={"stat_multiplier": {"stat": "attack", "multiplier": 1.5}},
+    ),
+    "rocky helmet": _item(
+        name="Rocky Helmet",
+        battle_condition={"trigger": "on_hit", "contact_only": True},
+        effects=[{"type": "recoil_to_attacker", "percent": 17}],
+    ),
+    "leftovers": _item(
+        name="Leftovers",
+        battle_condition={"trigger": "on_turn_end"},
+        effects=[{"type": "heal", "percent": 6}],
+    ),
+    "sitrus berry": _item(
+        name="Sitrus Berry",
+        category="berry",
+        battle_condition={"trigger": "hp_threshold", "threshold": 0.5},
+        effects=[{"type": "heal", "percent": 25}],
+    ),
+    "salac berry": _item(
+        name="Salac Berry",
+        category="berry",
+        battle_condition={"trigger": "hp_threshold", "threshold": 0.25},
+        effects=[{"type": "stat", "stat": "speed", "change": 1}],
+    ),
+    "lum berry": _item(
+        name="Lum Berry",
+        category="berry",
+        battle_condition={"trigger": "on_status", "status": "any"},
+        effects=[{"type": "cure_status", "status": "all"}],
+    ),
 }
 
 
-def _mon(item=None, frac=1.0, src_item=None):
+def _mon(item: str | None = None, frac=1.0, src_item=None):
     sp = PokemonSpecies(
-        baseExp=62, catch_rate=45, abilities=[], types=["normal"], evolution=None,
+        baseExp=62,
+        catch_rate=45,
+        abilities=[],
+        types=["normal"],
+        evolution=None,
         sprites=SpritePaths(back="b", front="f"),
-        stats=PokemonStat(hp=100, attack=100, defence=100, special_attack=100,
-                          special_defence=100, speed=100),
+        stats=PokemonStat(
+            hp=100,
+            attack=100,
+            defence=100,
+            special_attack=100,
+            special_defence=100,
+            speed=100,
+        ),
         learnset=[],
     )
-    pp = PlayerPokemon("mon", 999, 50, 0, "x", [PlayerPokemonMove("tackle", 35)], src_item)
-    b = BattlePokemon.from_player(None, sp, pp, False, held_item=ITEMS.get(item))
+    pp = PlayerPokemon(
+        "mon", 999, 50, 0, "x", [PlayerPokemonMove("tackle", 35)], src_item
+    )
+    b = BattlePokemon.from_player(None, sp, pp, False, held_item=ITEMS.get(item) if item else None)
     b.current_hp = int(b.max_hp * frac)
     return b, pp
 
