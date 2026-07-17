@@ -109,7 +109,9 @@ class BattleView(GameView):
             ) * 10
             trainer_data.party.pop(0)
 
-        self.player_manager.mark_seen(foe_pokemon_name)
+        # Both branches above set enemy_battle; foe_pokemon_name is None for
+        # trainer battles, which would record None into the Pokédex.
+        self.player_manager.mark_seen(self.enemy_battle.name.lower())
 
         self.battle_system = BattleSystem(
             self.your_battle,
@@ -321,19 +323,23 @@ class BattleView(GameView):
             self.battle_system.battle_state = BattleState.END
             return
 
-        self.set_enemy(next_data.name, next_data.level, next_data.moves)
+        self.set_enemy(
+            next_data.name, next_data.level, next_data.moves, next_data.ability
+        )
 
         self.ui.set_enemy_info(next_data.name.upper(), next_data.level)
         self.ui.queue_messages([f"Trainer sent out {next_data.name}!"])
         self.battle_system.battle_state = BattleState.WAITING
 
-    def set_enemy(self, name: str, level: int, moves: list):
+    def set_enemy(self, name: str, level: int, moves: list, ability: str):
         """Swap the active enemy pokemon, keeping sprite, battle model, and
         battle system in sync. Single entry point so callers can't desync them."""
-        profile = self.data_loader.get_pokemon(name)
+        profile = self.data_loader.require_pokemon(name)
 
         self.enemy_sprite.set_new_texture(profile.sprites.front)
-        self.enemy_battle = BattlePokemon.from_wild(profile, name, level, moves)
+        self.enemy_battle = BattlePokemon.from_wild(
+            profile, name, level, moves, self.data_loader.require_ability(ability)
+        )
         self.battle_system.enemy_pokemon = self.enemy_battle
 
     def _handle_battle_finishing(self):

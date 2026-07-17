@@ -24,7 +24,6 @@ class ShopView(GameView):
 
         self.items = data_loader.items
         self._item_names = list(self.items.keys())
-        self.bag = player_manager.player.items + player_manager.player.pokeballs
 
         self.ui = ShopUI(self.items)
 
@@ -83,13 +82,11 @@ class ShopView(GameView):
             self._mode = "amount"
             item = self.items[self._get_item_name()]
 
-            bag_item = None
-            for it in self.bag:
-                if it.name == self._get_item_name():
-                    bag_item = it
-                    break
+            # Read live: add_item() mutates the player's inventory, so a snapshot
+            # taken at view init would show a stale count after a purchase.
+            bag_item = self.player_manager.player.items.get(self._get_item_name())
 
-            self.ui.show_amount(bag_item.count, 1, item.price)
+            self.ui.show_amount(bag_item.count if bag_item else 0, 1, item.price)
 
         elif self.is_pressed(CONFIG.controls.cancel, key):
             self._mode = "options"

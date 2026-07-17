@@ -132,7 +132,9 @@ class BagView(GameView):
                     )
                 return
 
-            pokeball = self.bagSystem.use_pokeball(self.currentIndex)
+            pokeball = self.bagSystem.use_pokeball(
+                self.current_inventory[self.currentIndex].name
+            )
             if pokeball:
                 result = self.battle_system.attempt_catch(pokeball)
                 self.update_item()

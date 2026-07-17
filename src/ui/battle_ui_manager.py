@@ -142,7 +142,7 @@ class BattleUiManager:
                 y=b["y"],
                 width=b["w"],
                 height=b["h"],
-                texture=self._status_textures["burn"],
+                texture=self._status_textures[StatusEffect.BURN],
             )
             self.manager.add(self.status_effect_player)
             self.status_effect_player.visible = False
@@ -154,7 +154,7 @@ class BattleUiManager:
                 y=b["y"],
                 width=b["w"],
                 height=b["h"],
-                texture=self._status_textures["burn"],
+                texture=self._status_textures[StatusEffect.BURN],
             )
             self.manager.add(self.status_effect_enemy)
             self.status_effect_enemy.visible = False

@@ -44,10 +44,6 @@ class OverworldView(GameView):
         self.data_loader = data_loader
         self.message_service = message_service
 
-        arcade.get_window().ctx.default_texture_filter = (
-            arcade.gl.NEAREST,
-            arcade.gl.NEAREST,
-        )
         arcade.load_font(FONT)
 
         self.player_state = PlayerMotion()
