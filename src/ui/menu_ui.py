@@ -1,5 +1,6 @@
 import arcade
 import arcade.gui
+from src.tiled import object_layer
 
 
 class MenuUi:
@@ -8,7 +9,7 @@ class MenuUi:
         self._manager._pixelated = True
 
         tilemap = arcade.load_tilemap("assets/ui/menuUiDesign.tmx")
-        uiLayout = tilemap.get_tilemap_layer("ui")
+        uiLayout = object_layer(tilemap, "ui")
 
         self.buttons: list[arcade.gui.UILabel] = []
 

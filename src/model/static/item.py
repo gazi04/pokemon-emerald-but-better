@@ -5,7 +5,7 @@ from src.enums.effect_type import EffectType
 
 @dataclass
 class ItemEffect:
-    type: str
+    type: EffectType
     amount: int | None = None
     percent: float | None = None
     catch_rate: float | None = None

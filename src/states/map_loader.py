@@ -4,6 +4,7 @@ import arcade
 
 from src.constants import TILE_SIZE
 from src.core.logger import get_logger
+from src.tiled import find_object_layer
 from src.systems.npc_controller import NpcController
 from src.systems.npc_behaviors import make_behavior
 from src.entities.npc import Npc
@@ -84,21 +85,23 @@ class MapLoader:
         Absent layer -> no named spawns (legacy maps still use transition coords).
         """
         spawns: dict[str, tuple[float, float]] = {}
-        layer = tile_map.get_tilemap_layer("spawns")
+        layer = find_object_layer(tile_map, "spawns")
         if not layer:
             return spawns
         for obj in layer.tiled_objects:
             props = obj.properties or {}
-            name = props.get("name") or obj.name
-            if name:
-                spawns[name] = object_to_world(obj, tile_map)
+            # Tiled property values are a union (str/int/float/Color/...);
+            # spawn names are authored as text, so key them as str.
+            raw_name = props.get("name") or obj.name
+            if raw_name:
+                spawns[str(raw_name)] = object_to_world(obj, tile_map)
         return spawns
 
     def _spawn_npcs(
         self, tile_map: arcade.TileMap, scene: arcade.Scene
     ) -> arcade.SpriteList:
         npcs = arcade.SpriteList(use_spatial_hash=False)
-        npc_layer = tile_map.get_tilemap_layer("npc")
+        npc_layer = find_object_layer(tile_map, "npc")
         if npc_layer:
             scene.remove_sprite_list_by_name("npc")
             for obj in npc_layer.tiled_objects:
@@ -109,7 +112,7 @@ class MapLoader:
                     y=world_y,
                     npc_id=props.get("npc_id", ""),
                     behavior=make_behavior(props),
-                    facing=props.get("facing", "down"),
+                    facing=str(props.get("facing", "down")),
                 )
                 npcs.append(npc)
         return npcs

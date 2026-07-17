@@ -63,7 +63,7 @@ class EnemyAI:
 
     def simulate_effects_move(
         self, move: PokemonMove, user: BattlePokemon, target: BattlePokemon
-    ) -> int:
+    ) -> float:
         if not move.effects or target.immunity_to(move):
             return 0
 
@@ -83,30 +83,37 @@ class EnemyAI:
             factor = chance / 100
 
             if effect.type == EffectType.STAT:
+                # PokemonMoveEffect is one dataclass covering every effect kind,
+                # discriminated by `type`, so stat/change are only populated for
+                # STAT. Bind them once here — a STAT effect missing either is
+                # malformed data, so skip rather than score it.
                 stat_key = effect.stat
+                change = effect.change
+                if stat_key is None or change is None:
+                    continue
                 if effect.target == "self":
-                    if (effect.change > 0 and user.modifiers.get(stat_key, 0) >= 6) or (
-                        effect.change < 0 and user.modifiers.get(stat_key, 0) <= -6
+                    if (change > 0 and user.modifiers.get(stat_key, 0) >= 6) or (
+                        change < 0 and user.modifiers.get(stat_key, 0) <= -6
                     ):
                         continue
-                    score += (effect.change * 15) * factor
+                    score += (change * 15) * factor
                     user.modifiers[stat_key] = max(
-                        -6, min(6, user.modifiers.get(stat_key, 0) + effect.change)
+                        -6, min(6, user.modifiers.get(stat_key, 0) + change)
                     )
                 else:
-                    if (
-                        effect.change > 0 and target.modifiers.get(stat_key, 0) >= 6
-                    ) or (
-                        effect.change < 0 and target.modifiers.get(stat_key, 0) <= -6
+                    if (change > 0 and target.modifiers.get(stat_key, 0) >= 6) or (
+                        change < 0 and target.modifiers.get(stat_key, 0) <= -6
                     ):
                         continue
-                    score += (effect.change * 15) * factor * -1
+                    score += (change * 15) * factor * -1
                     target.modifiers[stat_key] = max(
-                        -6, min(6, target.modifiers.get(stat_key, 0) + effect.change)
+                        -6, min(6, target.modifiers.get(stat_key, 0) + change)
                     )
 
             elif effect.type == EffectType.STATUS_CONDITION:
                 status_condition = effect.condition
+                if status_condition is None:
+                    continue
                 if (
                     effect.target != "self"
                     and target.status_effect == StatusEffect.NONE
@@ -143,7 +150,7 @@ class EnemyAI:
         enemy_move: PokemonMove,
         player_pokemon: BattlePokemon,
         player_move: PokemonMove,
-    ) -> int:
+    ) -> float:
         points = 0
 
         is_player_first = self._player_moves_first(
@@ -193,7 +200,7 @@ class EnemyAI:
         if ai_move.pp == 0:
             return -float("inf")
 
-        ai_move_data = self.data_loader.get_move(ai_move.name)
+        ai_move_data = self.data_loader.require_move(ai_move.name)
         player_moves = [m for m in player.moves if m.pp > 0]
 
         if not player_moves:
@@ -201,7 +208,7 @@ class EnemyAI:
 
         outcomes = []
         for p_move in player_moves:
-            pokemon_move_data = self.data_loader.get_move(p_move.name)
+            pokemon_move_data = self.data_loader.require_move(p_move.name)
 
             enemy_pokemon_copy, player_pokemon_copy = (
                 copy.deepcopy(enemy),

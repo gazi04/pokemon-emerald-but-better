@@ -6,6 +6,7 @@ from src.model.static.pokemon import PokemonStat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
 from src.core.data_loader import DataLoader
+from src.tiled import object_layer
 
 _FONT = "Pokemon Emerald"
 
@@ -35,7 +36,7 @@ class PokemonInformationUI:
 
         tilemap = arcade.load_tilemap(POKEMON_INFORMATION_UI)
 
-        for obj in tilemap.get_tilemap_layer("static").tiled_objects:
+        for obj in object_layer(tilemap, "static").tiled_objects:
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
             w, h = obj.size.width, obj.size.height
@@ -71,7 +72,7 @@ class PokemonInformationUI:
                 )
                 self._manager.add(self._tab_label)
 
-        for obj in tilemap.get_tilemap_layer("profile").tiled_objects:
+        for obj in object_layer(tilemap, "profile").tiled_objects:
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
             w, h = obj.size.width, obj.size.height
@@ -126,7 +127,7 @@ class PokemonInformationUI:
                 )
 
         ability = pokemon.ability
-        ability_description = data_loader.get_ability(ability).description
+        ability_description = data_loader.require_ability(ability).description
 
         _label_map_info = {
             "name": pokemon.name.upper(),
@@ -134,10 +135,10 @@ class PokemonInformationUI:
             "ability_description": ability_description,
         }
 
-        for obj in tilemap.get_tilemap_layer("pokemon_profile").tiled_objects:
+        for obj in object_layer(tilemap, "pokemon_profile").tiled_objects:
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
-            w = obj.size.width
+            w = int(obj.size.width)
             h = obj.size.height
 
             if obj.name == "type":
@@ -180,10 +181,10 @@ class PokemonInformationUI:
 
         stats = self._generate_stats(_profile.stats, lvl)
 
-        for obj in tilemap.get_tilemap_layer("pokemon_stats").tiled_objects:
+        for obj in object_layer(tilemap, "pokemon_stats").tiled_objects:
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
-            w = obj.size.width
+            w = int(obj.size.width)
             h = obj.size.height
 
             if obj.name in stats:
@@ -222,10 +223,10 @@ class PokemonInformationUI:
         self._current_move = 0
         move_index = 0
 
-        for obj in tilemap.get_tilemap_layer("pokemon_moves").tiled_objects:
+        for obj in object_layer(tilemap, "pokemon_moves").tiled_objects:
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
-            w = obj.size.width
+            w = int(obj.size.width)
             h = obj.size.height
 
             if obj.name == "description":
@@ -243,7 +244,7 @@ class PokemonInformationUI:
                 self._tab[2].append(self.description)
             elif "move" in obj.name and move_index < len(pokemon.moves):
                 move_data = pokemon.moves[move_index]
-                move_profile = data_loader.get_move(move_data.name)
+                move_profile = data_loader.require_move(move_data.name)
 
                 type_y = y - h / 2
 

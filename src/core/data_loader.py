@@ -44,3 +44,27 @@ class DataLoader:
 
     def get_item(self, name: str) -> ItemSpecies | None:
         return self.items.get(name)
+
+    # require_* variants for callers that treat a miss as a bug (bad name, JSON
+    # drift, wrong casing). They fail at the lookup naming the key, instead of
+    # letting a None escape into an AttributeError further down the call stack.
+    # Use get_* when absence is a legitimate outcome.
+
+    def require_pokemon(self, name: str) -> PokemonSpecies:
+        return self._require(self.pokemons, name, "pokemon")
+
+    def require_ability(self, name: str) -> Ability:
+        return self._require(self.ability, name, "ability")
+
+    def require_move(self, name: str) -> PokemonMove:
+        return self._require(self.moves, name, "move")
+
+    def require_item(self, name: str) -> ItemSpecies:
+        return self._require(self.items, name, "item")
+
+    @staticmethod
+    def _require[T](cache: dict[str, T], name: str, kind: str) -> T:
+        try:
+            return cache[name]
+        except KeyError:
+            raise KeyError(f"Unknown {kind} '{name}'") from None

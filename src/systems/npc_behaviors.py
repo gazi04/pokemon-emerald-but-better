@@ -7,6 +7,8 @@ make decisions. One behavior = one responsibility.
 """
 
 import random
+from typing import Optional
+
 from src.constants import TILE_SIZE
 
 # Arcade is y-up: "up" increases y.
@@ -22,7 +24,7 @@ _DIRECTIONS = list(_OFFSETS.keys())
 class Behavior:
     """Base class. Subclasses return an intent dict or None."""
 
-    def decide(self, npc, world, delta_time: float):
+    def decide(self, npc, world, delta_time: float) -> Optional[dict]:
         return None
 
 

@@ -21,6 +21,8 @@ class PokemonInfoView(GameView):
         super().__init__(background_color=(0, 104, 96))
         self.previous_view = previous_view
 
+        if pokemon is None:
+            raise ValueError("PokemonInfoView requires a pokemon to display.")
         self.ui = PokemonInformationUI(pokemon, data_loader)
 
         # "Select move" mode: locked to the moves tab, used to pick which move a
@@ -31,26 +33,26 @@ class PokemonInfoView(GameView):
         if select_move:
             self.ui.show_moves_tab()
 
-    def on_key_press(self, key: int, modifiers: int):
-        if self.is_pressed(CONFIG.controls.cancel, key):
+    def on_key_press(self, symbol: int, modifiers: int):
+        if self.is_pressed(CONFIG.controls.cancel, symbol):
             self.window.show_view(self.previous_view)
             return
 
         if self.select_move:
-            self._handle_move_select(key)
+            self._handle_move_select(symbol)
             return
 
-        if self.is_pressed(CONFIG.controls.right, key):
+        if self.is_pressed(CONFIG.controls.right, symbol):
             self.ui.next_tab()
-        elif self.is_pressed(CONFIG.controls.left, key):
+        elif self.is_pressed(CONFIG.controls.left, symbol):
             self.ui.prev_tab()
         elif (
-            self.is_pressed(CONFIG.controls.down, key)
+            self.is_pressed(CONFIG.controls.down, symbol)
             and self.ui.get_current_tab() == 2
         ):
             self.ui.next_move()
         elif (
-            self.is_pressed(CONFIG.controls.up, key) and self.ui.get_current_tab() == 2
+            self.is_pressed(CONFIG.controls.up, symbol) and self.ui.get_current_tab() == 2
         ):
             self.ui.prev_move()
 

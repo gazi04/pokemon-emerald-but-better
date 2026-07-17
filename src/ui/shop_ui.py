@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 from src.model.static.item import ItemSpecies
 from src.constants import SHOP_UI
+from src.tiled import object_layer
 
 FONT = "Pokemon Emerald"
 FONT_SIZE = 26
@@ -14,7 +15,7 @@ class ShopUI:
         self._manager._pixelated = True
 
         tilemap = arcade.load_tilemap(SHOP_UI)
-        ui_layer = tilemap.get_tilemap_layer("ui")
+        ui_layer = object_layer(tilemap, "ui")
 
         self._amount_widget = arcade.gui.UIWidget()
         self._box_amount_widget = arcade.gui.UIWidget()

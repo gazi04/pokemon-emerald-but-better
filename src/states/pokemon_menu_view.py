@@ -146,6 +146,8 @@ class PokemonMenuView(GameView):
         """Apply the selected bag item to the current pokemon. `move_index` is
         the chosen move for PP items (None for others). Also the on_select_move
         callback for the move picker."""
+        if self.bag is None:
+            raise RuntimeError("_use_item requires the view to be opened with a bag.")
         pokemon_name = self._get_current_pokemon().name
 
         if self.battle_system:

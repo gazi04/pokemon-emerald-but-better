@@ -66,8 +66,12 @@ class BagSystem:
             new_hp = max_hp
         elif effect.percent:
             new_hp = min(pokemon.hp + int(max_hp * effect.percent / 100), max_hp)
-        else:
+        elif effect.amount is not None:
             new_hp = min(pokemon.hp + effect.amount, max_hp)
+        else:
+            # A heal effect with no full_restore/percent/amount is malformed;
+            # don't consume the item over bad data.
+            return False
 
         self.player_manager.update_pokemon_hp(pokemon_id, new_hp)
         return True
@@ -99,6 +103,9 @@ class BagSystem:
     ) -> bool:
         """Restore PP to a single chosen move (Ether/Leppa). A missing
         move_index means "all moves" (Elixir-style items)."""
+        if effect.amount is None:
+            return False
+
         if move_index is None:
             targets = range(len(pokemon.moves))
         elif 0 <= move_index < len(pokemon.moves):
@@ -153,9 +160,9 @@ class BagSystem:
         if not pokemon:
             return False
 
-        pokemon_profile = self.data_loader.get_pokemon(pokemon_id)
+        pokemon_profile = self.data_loader.require_pokemon(pokemon_id)
         max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
-        item_def = self.data_loader.get_item(item_name)
+        item_def = self.data_loader.require_item(item_name)
 
         return all(
             not (applier := self._effect_appliers.get(effect.type))

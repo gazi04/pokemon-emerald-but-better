@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 from src.ui.components.typewriter_message_box import TypewriterMessageBox
 from src.constants import DIALOG_UI
+from src.tiled import object_layer
 
 
 class DialogUI:
@@ -9,7 +10,7 @@ class DialogUI:
         self._manager = arcade.gui.UIManager()
 
         tilemap = arcade.load_tilemap(DIALOG_UI)
-        ui_layer = tilemap.get_tilemap_layer("ui")
+        ui_layer = object_layer(tilemap, "ui")
 
         self._textbound = {}
 

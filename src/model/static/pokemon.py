@@ -62,8 +62,10 @@ class PokemonMove:
     name: str
     category: str
     type: str
-    power: int
-    accuracy: int
+    # Status moves have no power, and a few moves never miss: both are null in
+    # moves.json, and every consumer already treats them as optional.
+    power: int | None
+    accuracy: int | None
     pp: int
     priority: int
     crit: int

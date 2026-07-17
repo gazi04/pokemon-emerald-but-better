@@ -13,19 +13,14 @@ from typing import Optional
 
 
 class PlayerManager:
-    def __init__(
-        self, save_manager: SaveManager, data_loader: Optional[DataLoader] = None
-    ):
+    def __init__(self, save_manager: SaveManager, data_loader: DataLoader):
         self.save_manager = save_manager
         self.data_loader = data_loader
-        self.player: Optional[PlayerSave] = save_manager.player
+        self.player: PlayerSave = save_manager.player
         self.npc_manager = NPCManager()
 
-        if (
-            hasattr(save_manager.player, "npc_states")
-            and save_manager.player.npc_states
-        ):
-            self.npc_manager.load_from_dict(save_manager.player.npc_states)
+        if self.player.npc_states:
+            self.npc_manager.load_from_dict(self.player.npc_states)
 
     def capture_npc_states(self):
         self.player.npc_states = self.npc_manager.save_to_dict()
@@ -41,16 +36,14 @@ class PlayerManager:
         return False
 
     def heal_team(self):
-        if self.data_loader is None:
-            raise RuntimeError("PlayerManager.heal_team requires data_loader")
         for pokemon in self.player.pokemon:
-            profile = self.data_loader.get_pokemon(pokemon.name)
+            profile = self.data_loader.require_pokemon(pokemon.name)
             max_hp = PokemonStat.max_hp(profile.stats.hp, pokemon.level)
 
             self.update_pokemon_hp(pokemon.name, max_hp)
 
             for move in pokemon.moves:
-                move_profile = self.data_loader.get_move(move.name.lower())
+                move_profile = self.data_loader.require_move(move.name.lower())
                 max_pp = move_profile.pp
 
                 self.update_move_pp(pokemon.name, move.name, max_pp)
@@ -65,11 +58,17 @@ class PlayerManager:
         self.player.update_status(pokemon_name, status)
 
     def update_level(
-        self, pokemon_name: str, new_level: int, exp: int, evolved_name: str = None
+        self,
+        pokemon_name: str,
+        new_level: int,
+        exp: int,
+        evolved_name: Optional[str] = None,
     ):
         self.player.update_level(pokemon_name, new_level, exp, evolved_name)
 
-    def learn_move(self, pokemon_name: str, move_name: str, index: int = None):
+    def learn_move(
+        self, pokemon_name: str, move_name: str, index: Optional[int] = None
+    ):
         move_data = self.data_loader.get_move(move_name)
         if not move_data:
             return
@@ -98,11 +97,14 @@ class PlayerManager:
         if not has_evolved:
             self.update_level(name, battle_pokemon.level, battle_pokemon.exp)
         else:
+            evolution = battle_pokemon.evolution
+            if evolution is None:
+                raise ValueError(f"'{name}' evolved but has no evolution data")
             self.update_level(
                 name,
                 battle_pokemon.level,
                 battle_pokemon.exp,
-                battle_pokemon.evolution.to,
+                evolution.to,
             )
 
     def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
@@ -110,13 +112,15 @@ class PlayerManager:
 
     def update_pokemon_held_item(self, pokemon_id: str, item_id: str | None):
         pokemon = self.get_pokemon(pokemon_id)
+        if pokemon is None:
+            raise KeyError(f"'{pokemon_id}' is not in the player's party")
         pokemon.held_item = item_id
 
     def mark_seen(self, pokemon_name: str):
         self.player.mark_seen(pokemon_name)
 
     def add_item(self, item_id: str, count: int = 1):
-        category = self.data_loader.get_item(item_id).category
+        category = self.data_loader.require_item(item_id).category
 
         self.player.add_item(item_id, category, count)
 
@@ -135,5 +139,5 @@ class PlayerManager:
     def get_seen_pokemon(self) -> list[str]:
         return self.player.seen
 
-    def get_inventory(self) -> list[ItemStack]:
+    def get_inventory(self) -> dict[str, ItemStack]:
         return self.player.items
