@@ -84,7 +84,6 @@ class DialogManager:
         if npc_id not in self.dialogs:
             return "none"
 
-        npc_dialogs = self.dialogs[npc_id]
         npc_state = self.npc_manager.get_state(npc_id)
 
         if npc_state.defeated:

@@ -2,9 +2,6 @@ import random
 from typing import Optional, cast
 from src.model.static.pokemon import PokemonMove, PokemonSpecies, PokemonStat
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
-
-MAX_MOVES = 4
-
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
@@ -12,6 +9,8 @@ from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.static.ability import Ability, AbilityEffect
 from src.model.static.item import ItemSpecies
+
+MAX_MOVES = 4
 
 
 class BattlePokemon:
