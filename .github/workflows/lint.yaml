@@ -28,3 +28,6 @@ jobs:
 
       - name: Run Ruff
         run: uv run ruff check --output-format=github src/
+
+      - name: Type check with pyright
+        run: uv run pyright
