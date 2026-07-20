@@ -53,6 +53,7 @@ class OverworldView(GameView):
         self.encounter_system = None
 
         self.keys = set()
+        self.debug_collisions = False
         # The window exists before any view is constructed, so build the camera
         # eagerly — setup() replaces it per map, but it is never None.
         self.camera = arcade.Camera2D()
@@ -229,8 +230,23 @@ class OverworldView(GameView):
         self.camera.use()
         if self.scene and self.transition.can_render_scene:
             self.scene.draw(pixelated=True)
+            if self.debug_collisions:
+                self._draw_collision_debug()
         self.npcs.draw(pixelated=True)
         self.player_sprite.draw()
+
+    def _draw_collision_debug(self):
+        """Programmer-only overlay: red outline over every collision sprite
+        on the current map. Toggled with F1, see on_key_press."""
+        for sprite in self.scene["collision"]:
+            arcade.draw_lrbt_rectangle_outline(
+                sprite.left,
+                sprite.right,
+                sprite.bottom,
+                sprite.top,
+                arcade.color.RED,
+                2,
+            )
 
     def on_key_press(self, symbol, modifiers):
         self.keys.add(symbol)
@@ -238,8 +254,8 @@ class OverworldView(GameView):
             self.keys.clear()
             self.overlay("menu")
 
-        if self.is_pressed(CONFIG.controls.cancel, symbol):
-            print(f"x {self.player_state.pixel_x}, y {self.player_state.pixel_y}")
+        if symbol == arcade.key.F1:
+            self.debug_collisions = not self.debug_collisions
 
     def on_key_release(self, symbol, modifiers):
         self.keys.discard(symbol)
