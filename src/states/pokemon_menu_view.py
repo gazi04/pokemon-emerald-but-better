@@ -8,6 +8,8 @@ from src.systems.pokemon_menu_system import PokemonMenuSystem
 from src.systems.battle_system import BattleSystem
 from data.config import Config
 from src.states.base_view import GameView
+from src.states.battle_view import BattleView
+from src.states.bag_view import BagView
 
 CONFIG = Config.load()
 
@@ -91,7 +93,8 @@ class PokemonMenuView(GameView):
 
         self.system.confirm_switch(self.system.team_index)
         self.ui.set_values(self.system.team)
-        self.previousView.force_switch()
+        if isinstance(self.previousView, BattleView):
+            self.previousView.force_switch()
         self.window.show_view(self.previousView)
 
     def _handle_tooltip_input(self, key):
@@ -155,12 +158,16 @@ class PokemonMenuView(GameView):
             # current values, apply, then let the battle pull it back.
             self.battle_system.sync_active_to_save()
             self.bag.use_item(self.item, pokemon_name, move_index)
-            battle_view = self.previousView.previousWindow
-            battle_view.on_item_used(self.item)
-            self.window.show_view(battle_view)
+            if isinstance(self.previousView, BagView) and isinstance(
+                self.previousView.previousWindow, BattleView
+            ):
+                battle_view = self.previousView.previousWindow
+                battle_view.on_item_used(self.item)
+                self.window.show_view(battle_view)
         else:
             self.bag.use_item(self.item, pokemon_name, move_index)
-            self.previousView.update_item()
+            if isinstance(self.previousView, BagView):
+                self.previousView.update_item()
             self.window.show_view(self.previousView)
 
     def _get_current_pokemon(self):
@@ -174,5 +181,6 @@ class PokemonMenuView(GameView):
         success = self.system.confirm_switch(self.system.team_index)
         if success:
             self.ui.set_values(self.system.team)
-            self.previousView.switch_turn()
+            if isinstance(self.previousView, BattleView):
+                self.previousView.switch_turn()
             self.window.show_view(self.previousView)

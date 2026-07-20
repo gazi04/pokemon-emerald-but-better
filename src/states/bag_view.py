@@ -7,6 +7,7 @@ from data.config import Config
 from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
 from src.systems.battle_system import BattleSystem
+from src.states.battle_view import BattleView
 from src.constants import MAX_VISIBLE_ITEMS
 from src.enums.item_category import ItemCategory
 from src.states.base_view import GameView
@@ -126,7 +127,7 @@ class BagView(GameView):
                 self.window.show_view(
                     self.previousWindow
                 )  # battle re-registers its box
-                if hasattr(self.previousWindow, "show_messages"):
+                if isinstance(self.previousWindow, BattleView):
                     self.previousWindow.show_messages(
                         ["Your party is full!", "You can't catch any more Pokémon."]
                     )
@@ -139,7 +140,7 @@ class BagView(GameView):
                 result = self.battle_system.attempt_catch(pokeball)
                 self.update_item()
                 self.window.show_view(self.previousWindow)
-                if hasattr(self.previousWindow, "start_catch_attempt"):
+                if isinstance(self.previousWindow, BattleView):
                     self.previousWindow.start_catch_attempt(result)
 
     def change_bag(self):
