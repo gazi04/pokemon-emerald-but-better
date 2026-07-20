@@ -51,7 +51,16 @@ class BagView(GameView):
         self.ui.setup_invetory()
         self.update_item()
 
+    def on_show_view(self):
+        self.ui.manager.enable()
+
+    def on_hide_view(self):
+        self.ui.manager.disable()
+
     def update_item(self):
+        self.bag = self.bagSystem.get_items()
+        self.current_inventory = self.bag.get(BAG_CATEGORIES[self.bagIndex], [])
+
         for i in range(MAX_VISIBLE_ITEMS):
             inventory_index = self.topVisibleIndex + i
             if inventory_index < len(self.current_inventory):
@@ -66,6 +75,10 @@ class BagView(GameView):
             self.currentIndex = 0
             self.ui.set_text("There isn't any items.")
             return
+
+        if self.currentIndex >= len(self.current_inventory):
+            self.currentIndex = len(self.current_inventory) - 1
+            self.topVisibleIndex = min(self.topVisibleIndex, self.currentIndex)
 
         index = self.currentIndex - self.topVisibleIndex
         self.ui.set_y_of_cursor(index)

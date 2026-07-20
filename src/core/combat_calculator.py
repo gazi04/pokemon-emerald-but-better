@@ -119,7 +119,7 @@ def _check_accuracy(
     stage = max(-6, min(6, stage))
 
     if stage < 0:
-        multiplier = 3 / (3 - abs(stage))
+        multiplier = 3 / (3 + abs(stage))
     elif stage > 0:
         multiplier = (3 + stage) / 3
     else:

@@ -156,4 +156,5 @@ class MapLoader:
                 tiles.add((gx, gy))
             return tiles
         except Exception:
+            log.debug("No 'bush' layer on map; using empty bush set")
             return set()
