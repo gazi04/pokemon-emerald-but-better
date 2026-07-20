@@ -83,7 +83,8 @@ def calc(
 
 
 def test_normal_hit_deals_positive_damage():
-    result = calc()
+    with patch("src.core.combat_calculator._roll_critical", return_value=False):
+        result = calc()
     assert result.damage > 0
     assert result.effectiveness == 1.0
     assert not result.is_miss
@@ -203,6 +204,18 @@ def test_miss_returns_zero_damage():
 def test_no_accuracy_move_never_misses():
     result = calc(move=make_move(accuracy=None))
     assert not result.is_miss
+
+
+def test_negative_accuracy_stage_lowers_hit_chance():
+    from src.core.combat_calculator import _check_accuracy
+
+    # accuracy=50, stage=-1 -> fixed multiplier is 3/(3+1)=0.75, so the hit
+    # threshold is 37.5. A roll of 40 must miss. Under the old (inverted)
+    # formula the multiplier was 3/(3-1)=1.5 (threshold 75), which would
+    # have hit on this same roll -- this test pins the direction, not just
+    # the miss/hit outcome.
+    with patch("src.core.combat_calculator.random.randint", return_value=40):
+        assert not _check_accuracy(50, {Stat.ACCURACY: -1}, {})
 
 
 # --- Stat stages ---
