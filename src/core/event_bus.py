@@ -1,5 +1,9 @@
 from typing import Callable, Dict, List, Type, Any
 
+from src.core.logger import get_logger
+
+log = get_logger(__name__)
+
 
 class EventBus:
     def __init__(self):
@@ -22,8 +26,11 @@ class EventBus:
 
     def publish(self, event: Any):
         event_type = type(event)
-        for listener in self._subscribers.get(event_type, []):
-            listener(event)
+        for listener in list(self._subscribers.get(event_type, [])):
+            try:
+                listener(event)
+            except Exception:
+                log.exception("Listener failed for %s", event_type.__name__)
 
 
 global_bus = EventBus()

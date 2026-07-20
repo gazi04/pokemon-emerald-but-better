@@ -27,9 +27,11 @@ class MenuView(GameView):
 
     def on_show_view(self):
         global_bus.subscribe(SaveCompletedEvent, self._on_save_completed)
+        self.ui._manager.enable()
 
     def on_hide_view(self):
         global_bus.unsubscribe(SaveCompletedEvent, self._on_save_completed)
+        self.ui._manager.disable()
 
     def _on_save_completed(self, event: SaveCompletedEvent):
         self._save_feedback = "Game saved!" if event.success else "Save failed!"
