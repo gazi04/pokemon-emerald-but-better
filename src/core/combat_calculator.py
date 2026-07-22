@@ -63,9 +63,9 @@ def calculate_damage(
     # --- Type effectiveness ---
     effectiveness = _type_multiplier(move_data.type, defender_types, type_chart)
     if effectiveness >= 2:
-        messages.append("Its super effective.")
+        messages.append("It's super effective.")
     elif 0 < effectiveness < 1:
-        messages.append("Its not very effective.")
+        messages.append("It's not very effective.")
     elif effectiveness == 0:
         messages.append("No effect.")
 
