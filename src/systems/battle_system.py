@@ -60,6 +60,10 @@ class BattleSystem:
         if player_move_data is None:
             raise ValueError(f"Move data for '{player_move_name}' could not be loaded.")
 
+        if enemy_move_index is None:
+            self.turn_queue = [("player", move_index, None)]
+            return self.execute_next_action()
+
         enemy_move_name = self.enemy_pokemon.moves[enemy_move_index].name
         enemy_move_data = self.data_loader.get_move(enemy_move_name)
         if enemy_move_data is None:
@@ -100,17 +104,18 @@ class BattleSystem:
     def turn_use_item(self, item_index: str) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
-        self.turn_queue = [
-            ("player", -1, item_index),
-            ("enemy", enemy_move_index, None),
-        ]
+        self.turn_queue = [("player", -1, item_index)]
+        if enemy_move_index is not None:
+            self.turn_queue.append(("enemy", enemy_move_index, None))
         return self.execute_next_action()
 
     def switch_turn(self) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
 
-        self.turn_queue = [("enemy", enemy_move_index, None)]
+        self.turn_queue = (
+            [("enemy", enemy_move_index, None)] if enemy_move_index is not None else []
+        )
         return self.execute_next_action()
 
     def switch_pokemon(self) -> list[str]:
@@ -618,8 +623,11 @@ class BattleSystem:
                 ],
             }
         else:
-            enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
-            self.turn_queue = [("enemy", enemy_move_index, -1)]
+            if self.enemy_pokemon.moves:
+                enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
+                self.turn_queue = [("enemy", enemy_move_index, -1)]
+            else:
+                self.turn_queue = []
             self.battle_state = BattleState.CURRENTLY_TURN
             return {
                 "success": False,
