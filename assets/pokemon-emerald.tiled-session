@@ -1,13 +1,13 @@
 {
-    "activeFile": "map/littleroot_town_original.tmx",
+    "activeFile": "map/oldale_town.tmx",
     "expandedProjectPaths": [
-        "ui/sprites",
-        "map/oldale_town",
-        "map/tilesets",
-        "map",
+        "map/little_root_town",
         ".",
+        "ui/sprites",
+        "map",
         "ui",
-        "map/little_root_town"
+        "map/tilesets",
+        "map/oldale_town"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -81,11 +81,11 @@
                 5,
                 6
             ],
-            "scale": 4,
+            "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 312,
-                "y": 216
+                "x": 314.66666666666663,
+                "y": 221.33333333333331
             }
         },
         "map/oldale_town/Interior Tilesets.tsx": {
@@ -110,6 +110,7 @@
         "map/oldale_town/poke_mart.tmx": {
             "expandedObjectLayers": [
                 5,
+                6,
                 4
             ],
             "scale": 3,
@@ -340,20 +341,22 @@
         "map/oldale_town.tmx",
         "map/littleroot_town_original.tmx",
         "map/root101.tmx",
-        "map/Interior Tilesets.tsx"
+        "map/Interior Tilesets.tsx",
+        "map/oldale_town/pokemon_center.tmx",
+        "map/oldale_town/poke_mart.tmx"
     ],
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "map/oldale_town.tmx",
+        "map/oldale_town/poke_mart.tmx",
+        "map/oldale_town/pokemon_center.tmx",
         "map/Interior Tilesets.tsx",
         "map/root101.tmx",
         "map/littleroot_town_original.tmx",
+        "map/oldale_town.tmx",
         "map/tilesets/Game Boy Advance - Pokemon Emerald - Miscellaneous - Pokemon Menu.tsx",
         "map/tilesets/interior_areas.tsx",
         "map/littleroot_town.tmx",
-        "map/oldale_town/poke_mart.tmx",
-        "map/oldale_town/pokemon_center.tmx",
         "map/oldale_town/home1.tmx",
         "map/oldale_town/home2.tmx",
         "ui/second_home_room.tmx"

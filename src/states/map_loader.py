@@ -50,9 +50,12 @@ class MapLoader:
     bush set) from a .tmx path. No view or render state — pure map build, so
     OverworldView keeps only draw + input + lifecycle + nav."""
 
-    def __init__(self, movement_system, player_state):
+    def __init__(self, movement_system, player_state, can_challenge=None):
         self.movement_system = movement_system
         self.player_state = player_state
+        # (npc_id -> bool) predicate deciding which NPCs get trainer sight.
+        # None = no NPC ever challenges (used by tests / headless loads).
+        self.can_challenge = can_challenge
 
     def load(self, map_path: str) -> LoadedMap:
         layer_options = {
@@ -107,7 +110,7 @@ class MapLoader:
                     x=world_x,
                     y=world_y,
                     npc_id=props.get("npc_id", ""),
-                    behavior=make_behavior(props),
+                    behavior=make_behavior(props, self.can_challenge),
                     facing=props.get("facing", "down"),
                 )
                 npcs.append(npc)

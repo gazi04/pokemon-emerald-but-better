@@ -25,6 +25,11 @@ Spawn = Union[str, tuple[float, float], None]
 
 MapHook = Callable[[str, LoadedMap], None]
 
+# Spawn objects mark the tile the player lands on, but the player sprite is
+# anchored slightly lower than a tile's center — this nudge lines the sprite up
+# with the tile so arrivals don't look half-sunk into the floor.
+SPAWN_Y_OFFSET = 8
+
 
 class MapManager:
     def __init__(
@@ -87,7 +92,7 @@ class MapManager:
         position = self._resolve_spawn(loaded, spawn)
         if position is not None:
             self._player_state.pixel_x, self._player_state.pixel_y = position
-            self._player_state.pixel_y += 8
+            self._player_state.pixel_y += SPAWN_Y_OFFSET
 
     def _resolve_spawn(
         self, loaded: LoadedMap, spawn: Spawn

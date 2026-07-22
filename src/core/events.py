@@ -37,6 +37,17 @@ class NpcInteractEvent:
     npc_id: str
 
 
+@dataclass
+class NpcSpottedPlayerEvent:
+    """Fired the moment a trainer NPC sees the player in its line of sight.
+
+    The NPC then walks up to the player on its own; the overworld freezes
+    player input until the resulting dialog/battle is over.
+    """
+
+    npc_id: str
+
+
 # ---------------------------------------------------------------------------
 # Battle Phase
 # ---------------------------------------------------------------------------
