@@ -1,3 +1,4 @@
+import copy
 import random
 from typing import Optional, cast
 from src.model.static.pokemon import PokemonMove, PokemonSpecies, PokemonStat
@@ -161,6 +162,15 @@ class BattlePokemon:
 
     def calculate_stats(self):
         self.stats = self.base_stat.at_level(self.level)
+
+    def copy_for_simulation(self) -> "BattlePokemon":
+        """Cheap clone for AI lookahead — only current_hp, status_effect, and
+        modifiers get mutated during simulation, so a shallow copy plus an
+        isolated modifiers dict is enough. Avoids copy.deepcopy() dragging
+        along the entire species/save-data graph (source, moves, stats...)."""
+        clone = copy.copy(self)
+        clone.modifiers = dict(self.modifiers)
+        return clone
 
     def get_stat(self, stat: Stat) -> int:
         """Return the stage-modified value of a stat (for HP, read self.stats.hp directly)."""

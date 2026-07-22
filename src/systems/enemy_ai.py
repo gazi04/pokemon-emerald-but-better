@@ -1,5 +1,4 @@
 import random
-import copy
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.model.static.pokemon import PokemonMove
 from src.core.combat_calculator import calculate_damage
@@ -211,8 +210,8 @@ class EnemyAI:
             pokemon_move_data = self.data_loader.require_move(p_move.name)
 
             enemy_pokemon_copy, player_pokemon_copy = (
-                copy.deepcopy(enemy),
-                copy.deepcopy(player),
+                enemy.copy_for_simulation(),
+                player.copy_for_simulation(),
             )
             turn_score = self.simulate_turn(
                 enemy_pokemon_copy, ai_move_data, player_pokemon_copy, pokemon_move_data
@@ -240,7 +239,10 @@ class EnemyAI:
 
     def select_move(
         self, enemy_pokemon: BattlePokemon, player_pokemon: BattlePokemon
-    ) -> int:
+    ) -> int | None:
+        if not enemy_pokemon.moves:
+            return None
+
         move_scores = {
             index: self._evaluate_ai_move(
                 enemy_pokemon, player_pokemon, move, self.max_depth
