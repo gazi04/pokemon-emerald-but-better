@@ -8,14 +8,13 @@ from src.core.message_service import MessageService
 from src.model.static.trainer import Trainer
 from src.entities.pokemon_sprites import PokemonSprite
 from src.model.battle.battle_pokemon import BattlePokemon
-from data.config import Config
+from data.config import CONFIG
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
 from src.systems.wild_moveset import select_wild_moves
 from src.states.base_view import GameView
 from src.enums.battle_state import BattleState
 
-CONFIG = Config.load()
 
 
 class BattleView(GameView):

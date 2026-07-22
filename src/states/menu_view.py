@@ -1,5 +1,5 @@
 import arcade
-from data.config import Config
+from data.config import CONFIG
 from src.core.event_bus import global_bus
 from src.core.events import (
     SaveGameRequestEvent,
@@ -9,7 +9,6 @@ from src.states.base_view import GameView
 from src.ui.menu_ui import MenuUi
 from src.constants import FONT
 
-CONFIG = Config.load()
 
 
 class MenuView(GameView):

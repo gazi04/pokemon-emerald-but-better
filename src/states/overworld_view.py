@@ -1,5 +1,5 @@
 import arcade
-from data.config import Config
+from data.config import CONFIG
 from src.constants import FONT, CAMERA_LERP_SPEED
 
 from src.core.data_loader import DataLoader
@@ -22,7 +22,6 @@ from src.world.map_registry import MapRegistry
 from src.world.map_manager import MapManager
 from src.world.transition import parse_transition
 
-CONFIG = Config.load()
 
 # Where the player respawns after whiting out — the Poké Center's named
 # "entrance" spawn point (authored in oldale_town/pokemon_center.tmx).

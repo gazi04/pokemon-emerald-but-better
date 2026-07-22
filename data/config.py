@@ -62,3 +62,6 @@ class Config(BaseModel):
             data = json.load(f)
 
         return cls.model_validate(data)
+
+
+CONFIG = Config.load()

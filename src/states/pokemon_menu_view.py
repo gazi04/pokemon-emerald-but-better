@@ -6,12 +6,11 @@ from src.ui.pokemon_menu_ui import PokemonMenuUi
 from src.systems.bag_system import BagSystem
 from src.systems.pokemon_menu_system import PokemonMenuSystem
 from src.systems.battle_system import BattleSystem
-from data.config import Config
+from data.config import CONFIG
 from src.states.base_view import GameView
 from src.states.battle_view import BattleView
 from src.states.bag_view import BagView
 
-CONFIG = Config.load()
 
 
 class PokemonMenuView(GameView):

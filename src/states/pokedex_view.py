@@ -1,11 +1,10 @@
 import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
-from data.config import Config
+from data.config import CONFIG
 from src.states.base_view import GameView
 from src.ui.pokedex_ui import PokedexUi
 
-CONFIG = Config.load()
 
 
 class PokedexView(GameView):

@@ -3,7 +3,7 @@ from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
-from data.config import Config
+from data.config import CONFIG
 from src.ui.bag_ui import BagUI
 from src.systems.bag_system import BagSystem
 from src.systems.battle_system import BattleSystem
@@ -12,7 +12,6 @@ from src.constants import MAX_VISIBLE_ITEMS
 from src.enums.item_category import ItemCategory
 from src.states.base_view import GameView
 
-CONFIG = Config.load()
 
 BAG_CATEGORIES = [
     ItemCategory.MEDICINE,

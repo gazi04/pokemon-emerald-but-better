@@ -4,9 +4,8 @@ from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
 from src.states.base_view import GameView
-from data.config import Config
+from data.config import CONFIG
 
-CONFIG = Config.load()
 
 
 class DialogView(GameView):

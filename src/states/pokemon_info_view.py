@@ -3,10 +3,9 @@ from src.core.data_loader import DataLoader
 from src.model.save.player import PlayerPokemon
 from src.states.base_view import GameView
 from src.ui.pokemon_information_ui import PokemonInformationUI
-from data.config import Config
+from data.config import CONFIG
 from typing import Callable, Optional
 
-CONFIG = Config.load()
 
 
 class PokemonInfoView(GameView):
