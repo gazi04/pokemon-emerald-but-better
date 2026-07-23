@@ -1,6 +1,7 @@
 import arcade
 import arcade.gui
 from src.constants import BAG_UI, MAX_VISIBLE_ITEMS
+from src.tiled import object_layer
 
 
 class BagUI:
@@ -9,7 +10,7 @@ class BagUI:
         self.manager._pixelated = True
 
         tilemap = arcade.load_tilemap(BAG_UI)
-        ui_layer = tilemap.get_tilemap_layer("ui")
+        ui_layer = object_layer(tilemap, "ui")
 
         for obj in ui_layer.tiled_objects:
             w = obj.size.width
@@ -124,6 +125,8 @@ class BagUI:
         if bag == "items":
             self.bag.texture = self.bagItemTexture
         elif bag == "pokeball":
+            self.bag.texture = self.bagPokeballTexture
+        elif bag == "berry":
             self.bag.texture = self.bagPokeballTexture
 
     def set_y_of_cursor(self, index: int):

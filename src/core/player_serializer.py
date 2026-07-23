@@ -1,7 +1,13 @@
 from typing import Optional
 
-from src.model.save.player import PlayerSave, PlayerPokemon, PlayerPokemonMove, ItemStack
+from src.model.save.player import (
+    PlayerSave,
+    PlayerPokemon,
+    PlayerPokemonMove,
+    ItemStack,
+)
 from src.model.motion.player_motion import PlayerMotion
+from src.enums.item_category import ItemCategory
 
 
 class PlayerSerializer:
@@ -28,18 +34,22 @@ class PlayerSerializer:
                     hp=pokemon["hp"],
                     level=pokemon["level"],
                     exp=pokemon["exp"],
+                    ability=pokemon["ability"],
+                    held_item=pokemon["held_item"],
                     moves=moves,
+                    status_condition=pokemon.get("status_condition"),
                 )
             )
 
-        items = [ItemStack(item["name"], item["count"]) for item in data["items"]]
-        pokeballs = [ItemStack(pb["name"], pb["count"]) for pb in data["pokeballs"]]
+        items = {}
+        for key, item in data["items"].items():
+            items[key] = ItemStack(key, item["count"], ItemCategory(item["category"]))
+
         seen = data.get("seen", [])
 
         return PlayerSave(
             pokemon=pokemons,
             items=items,
-            pokeballs=pokeballs,
             seen=seen,
             money=data.get("money", 0),
             npc_states=data.get("npc_states", []),
@@ -56,16 +66,22 @@ class PlayerSerializer:
                     "hp": pokemon.hp,
                     "level": pokemon.level,
                     "exp": pokemon.exp,
+                    "ability": pokemon.ability,
+                    "held_item": pokemon.held_item,
+                    "status_condition": pokemon.status_condition,
                     "moves": moves,
                 }
             )
 
+        # Mirror deserialize: items is a dict keyed by item id.
+        items = {
+            item_id: {"count": stack.count, "category": stack.category}
+            for item_id, stack in player.items.items()
+        }
+
         data = {
             "pokemons": pokemons,
-            "items": [{"name": i.name, "count": i.count} for i in player.items],
-            "pokeballs": [
-                {"name": pb.name, "count": pb.count} for pb in player.pokeballs
-            ],
+            "items": items,
             "seen": list(player.seen),
             "money": player.money,
             "npc_states": player.npc_states,

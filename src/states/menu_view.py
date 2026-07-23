@@ -1,5 +1,5 @@
 import arcade
-from data.config import Config
+from data.config import CONFIG
 from src.core.event_bus import global_bus
 from src.core.events import (
     SaveGameRequestEvent,
@@ -9,7 +9,6 @@ from src.states.base_view import GameView
 from src.ui.menu_ui import MenuUi
 from src.constants import FONT
 
-CONFIG = Config.load()
 
 
 class MenuView(GameView):
@@ -27,9 +26,11 @@ class MenuView(GameView):
 
     def on_show_view(self):
         global_bus.subscribe(SaveCompletedEvent, self._on_save_completed)
+        self.ui._manager.enable()
 
     def on_hide_view(self):
         global_bus.unsubscribe(SaveCompletedEvent, self._on_save_completed)
+        self.ui._manager.disable()
 
     def _on_save_completed(self, event: SaveCompletedEvent):
         self._save_feedback = "Game saved!" if event.success else "Save failed!"

@@ -150,7 +150,7 @@ class GameDirector:
             message_service=self.message_service,
             is_trainer=True,
             trainer_data=payload["trainer_data"],
-            npc_id=payload.get("npc_id"),
+            npc_id=payload.get("npc_id", ""),
         )
 
     def _build_evolving(self, payload: dict):
@@ -197,7 +197,9 @@ class GameDirector:
         from src.states.pokedex_view import PokedexView
 
         return PokedexView(
-            previous_window=payload.get("previous_view", self._get_or_create_overworld()),
+            previous_window=payload.get(
+                "previous_view", self._get_or_create_overworld()
+            ),
             player_manager=self.player_manager,
             data_loader=self.data_loader,
         )
@@ -206,7 +208,9 @@ class GameDirector:
         from src.states.bag_view import BagView
 
         return BagView(
-            previousWindow=payload.get("previous_view", self._get_or_create_overworld()),
+            previousWindow=payload.get(
+                "previous_view", self._get_or_create_overworld()
+            ),
             player_manager=self.player_manager,
             data_loader=self.data_loader,
             message_service=self.message_service,
@@ -221,7 +225,7 @@ class GameDirector:
             player_manager=self.player_manager,
             data_loader=self.data_loader,
             bag=cast(Any, payload.get("bag")),
-            item_index=payload.get("item_index", 0),
+            item=payload.get("item", ""),
             battle_system=cast(Any, payload.get("battle_system")),
             forced_switch=payload.get("forced_switch", False),
         )
@@ -233,4 +237,6 @@ class GameDirector:
             previous_view=payload.get("previous_view", self._get_or_create_overworld()),
             pokemon=payload.get("pokemon"),
             data_loader=self.data_loader,
+            select_move=payload.get("select_move", False),
+            on_select_move=payload.get("on_select_move"),
         )

@@ -7,7 +7,9 @@ DEFAULT_STATE = "default"
 @dataclass
 class NpcSpecies:
     name: str
-    dialogs: dict[str, list[str]]  # state -> lines, e.g. "first_encounter", "after_battle"
+    dialogs: dict[
+        str, list[str]
+    ]  # state -> lines, e.g. "first_encounter", "after_battle"
     action_after_dialog: str
     team: Trainer
 

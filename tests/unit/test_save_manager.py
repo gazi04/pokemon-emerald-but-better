@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from src.core.save_manager import SaveManager
 from src.core.player_serializer import PlayerSerializer
 from src.model.motion.player_motion import PlayerMotion
 
@@ -31,12 +30,13 @@ def test_parse_player_move_pp(save_manager):
 
 
 def test_parse_player_items(save_manager):
-    assert save_manager.player.items[0].name == "potion"
-    assert save_manager.player.items[0].count == 3
+    # items is now a dict keyed by item id
+    assert save_manager.player.items["potion"].count == 3
 
 
 def test_parse_player_pokeballs(save_manager):
-    assert save_manager.player.pokeballs[0].name == "pokeball"
+    # pokeballs are just items in the "pokeball" category
+    assert save_manager.player.items["pokeball"].count == 5
 
 
 # --- serialize round-trip ---
@@ -154,7 +154,33 @@ def test_flush_save_and_reload_preserves_state(save_manager, tmp_path, monkeypat
     from src.core.save_manager import SaveManager as SM2
 
     sm2 = SM2()
-    assert sm2.player.get_pokemon("mudkip").hp == 30
+    mudkip = sm2.player.get_pokemon("mudkip")
+    assert mudkip is not None
+    assert mudkip.hp == 30
+
+
+def test_flush_save_succeeds_when_backup_copy_fails(save_manager, tmp_path, monkeypatch):
+    """A failing backup copy must not block promoting the new save."""
+    state = PlayerMotion(
+        map_name="oldale_town", direction="down", pixel_x=1.0, pixel_y=2.0
+    )
+    # First flush creates save.json so the backup branch (copy2) is
+    # actually exercised on the second flush below.
+    save_manager.flush_save(state)
+
+    def _raise(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr("src.core.save_manager.shutil.copy2", _raise)
+
+    state2 = PlayerMotion(
+        map_name="petalburg_city", direction="up", pixel_x=3.0, pixel_y=4.0
+    )
+    result = save_manager.flush_save(state2)
+
+    assert result is True
+    data = json.loads((tmp_path / "save.json").read_text())
+    assert data["position"]["map_name"] == "petalburg_city"
 
 
 def test_missing_save_json_falls_back_to_default(save_manager):
@@ -170,6 +196,8 @@ def test_parse_player_multi_pokemon(save_manager):
                 "hp": 50,
                 "level": 10,
                 "exp": 0,
+                "ability": "torrent",
+                "held_item": None,
                 "moves": [{"name": "tackle", "pp": 35}],
             },
             {
@@ -177,11 +205,12 @@ def test_parse_player_multi_pokemon(save_manager):
                 "hp": 45,
                 "level": 8,
                 "exp": 0,
+                "ability": "overgrow",
+                "held_item": None,
                 "moves": [{"name": "growl", "pp": 40}],
             },
         ],
-        "items": [],
-        "pokeballs": [],
+        "items": {},
     }
     profile = PlayerSerializer.deserialize(data)
     assert len(profile.pokemon) == 2

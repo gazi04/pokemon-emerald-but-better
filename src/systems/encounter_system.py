@@ -47,7 +47,7 @@ class EncounterSystem:
             pokemon_list, weights=[p["weight"] for p in pokemon_list]
         )[0]
 
-        pokemon_data = self.data_loader.get_pokemon(pokemon["name"])
+        pokemon_data = self.data_loader.require_pokemon(pokemon["name"])
         pokemon_lvl = random.randint(pokemon["levels"][0], pokemon["levels"][1])
 
         global_bus.publish(

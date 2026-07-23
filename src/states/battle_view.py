@@ -1,18 +1,20 @@
 import arcade
+import random
+from typing import Optional
+
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
 from src.model.static.trainer import Trainer
 from src.entities.pokemon_sprites import PokemonSprite
 from src.model.battle.battle_pokemon import BattlePokemon
-from data.config import Config
+from data.config import CONFIG
 from src.ui.battle_ui_manager import BattleUiManager
 from src.systems.battle_system import BattleSystem
 from src.systems.wild_moveset import select_wild_moves
 from src.states.base_view import GameView
 from src.enums.battle_state import BattleState
 
-CONFIG = Config.load()
 
 
 class BattleView(GameView):
@@ -26,8 +28,8 @@ class BattleView(GameView):
         foe_pokemon_data=None,
         foe_level=None,
         is_trainer=False,
-        trainer_data: Trainer = None,
-        npc_id: str = None,
+        trainer_data: Optional[Trainer] = None,
+        npc_id: Optional[str] = None,
     ):
         super().__init__()
 
@@ -41,14 +43,22 @@ class BattleView(GameView):
 
         self.playerPokemon = self.player_manager.player.pokemon
 
-        player_profile = data_loader.get_pokemon(self.playerPokemon[0].name)
+        lead_pokemon = self.playerPokemon[0]
+        player_profile = data_loader.get_pokemon(lead_pokemon.name)
         if player_profile is None:
             raise ValueError(
-                f"Player pokemon data for '{self.playerPokemon[0].name}' could not be loaded."
+                f"Player pokemon data for '{lead_pokemon.name}' could not be loaded."
             )
 
         self.your_battle = BattlePokemon.from_player(
-            player_profile, self.playerPokemon[0]
+            data_loader.require_ability(lead_pokemon.ability),
+            player_profile,
+            lead_pokemon,
+            held_item=(
+                data_loader.get_item(lead_pokemon.held_item)
+                if lead_pokemon.held_item
+                else None
+            ),
         )
         self.your_sprite = PokemonSprite(player_profile, False)
 
@@ -56,30 +66,44 @@ class BattleView(GameView):
         self.trainer_data = trainer_data
         self.prize_money = 0
 
+        # Move-learning sub-flow state.
+        self.learning_move_mode = False  # move menu is picking a move to forget
+        self._on_learning_done = None  # called once the learn queue empties
+        self._pending_catch_close = False  # party-full message shown; next callback closes battle
+
         if not is_trainer:
-            if foe_pokemon_data is None or foe_pokemon_name is None or foe_level is None:
+            if (
+                foe_pokemon_data is None
+                or foe_pokemon_name is None
+                or foe_level is None
+            ):
                 raise ValueError(
                     f"Enemy pokemon data for '{foe_pokemon_name}' cannot be None."
                 )
+
+            abilities = data_loader.require_ability(
+                random.choice(foe_pokemon_data.abilities)
+            )
 
             self.enemy_battle = BattlePokemon.from_wild(
                 foe_pokemon_data,
                 foe_pokemon_name,
                 foe_level,
                 select_wild_moves(foe_pokemon_data, foe_level, data_loader),
+                abilities,
             )
             self.enemy_sprite = PokemonSprite(foe_pokemon_data, True)
         else:
+            if trainer_data is None:
+                raise ValueError("A trainer battle requires trainer_data.")
             first = trainer_data.party[0]
             first_profile = data_loader.get_pokemon(first.name)
+            ability = data_loader.require_ability(first.ability)
             if first_profile is None:
                 raise ValueError(f"Trainer pokemon '{first.name}' not found in data.")
 
             self.enemy_battle = BattlePokemon.from_wild(
-                first_profile,
-                first.name,
-                first.level,
-                first.moves,
+                first_profile, first.name, first.level, first.moves, ability
             )
             self.enemy_sprite = PokemonSprite(first_profile, True)
 
@@ -88,7 +112,9 @@ class BattleView(GameView):
             ) * 10
             trainer_data.party.pop(0)
 
-        self.player_manager.mark_seen(foe_pokemon_name)
+        # Both branches above set enemy_battle; foe_pokemon_name is None for
+        # trainer battles, which would record None into the Pokédex.
+        self.player_manager.mark_seen(self.enemy_battle.name.lower())
 
         self.battle_system = BattleSystem(
             self.your_battle,
@@ -148,7 +174,7 @@ class BattleView(GameView):
                 "Normal", self.your_battle.moves[0].pp, 35
             )
         if update_texture:
-            texture = self.data_loader.get_pokemon(
+            texture = self.data_loader.require_pokemon(
                 self.your_battle.name.lower()
             ).sprites.back
             self.your_sprite.set_new_texture(texture)
@@ -157,7 +183,7 @@ class BattleView(GameView):
         self.ui.queue_messages(self.battle_system.turn(index))
         self.ui.switch_mode("dialog")
 
-    def on_item_used(self, item_index: int):
+    def on_item_used(self, item_index: str):
         self.ui.queue_messages(self.battle_system.turn_use_item(item_index))
         self.ui.switch_mode("dialog")
 
@@ -184,9 +210,19 @@ class BattleView(GameView):
         self._refresh_active_pokemon_ui()
 
     def what_happend_after_text(self):
-        if self.battle_system.battle_state == BattleState.CAUGHT:
-            self.battle_system.add_caught_pokemon()
+        if self._pending_catch_close:
+            self._pending_catch_close = False
             self.run()
+            return
+
+        if self.battle_system.battle_state == BattleState.CAUGHT:
+            result = self.battle_system.add_caught_pokemon()
+            if result["messages"]:
+                self._pending_catch_close = True
+                self.ui.queue_messages(result["messages"])
+                self.ui.switch_mode("dialog")
+            else:
+                self.run()
             return
 
         if self.battle_system.battle_state == BattleState.CURRENTLY_TURN:
@@ -210,6 +246,8 @@ class BattleView(GameView):
             self._handle_player_fainted()
         elif self.battle_system.battle_state == BattleState.LOST:
             self._end_loss()
+        elif self.battle_system.battle_state == BattleState.LEARNING_MOVE:
+            self._continue_move_learning()
         elif self.battle_system.battle_state == BattleState.END:
             self._handle_battle_finishing()
 
@@ -266,11 +304,15 @@ class BattleView(GameView):
 
     def _trainer_give_exp(self):
         result = self.battle_system.apply_exp_award()
-        self.battle_system.battle_state = BattleState.TRAINER_SENDING
 
         if result.leveled_up:
+            # Show level-up text, then learn moves, then send the next pokemon.
+            self.battle_system.queue_moves_to_learn(result.moves_to_learn)
+            self._on_learning_done = self._trainer_send_next_pokemon
+            self.battle_system.battle_state = BattleState.LEARNING_MOVE
             self._on_level_up(self.your_battle)
         else:
+            self.battle_system.battle_state = BattleState.TRAINER_SENDING
             self._trainer_send_next_pokemon()
 
     def _trainer_send_next_pokemon(self):
@@ -284,19 +326,23 @@ class BattleView(GameView):
             self.battle_system.battle_state = BattleState.END
             return
 
-        self.set_enemy(next_data.name, next_data.level, next_data.moves)
+        self.set_enemy(
+            next_data.name, next_data.level, next_data.moves, next_data.ability
+        )
 
         self.ui.set_enemy_info(next_data.name.upper(), next_data.level)
         self.ui.queue_messages([f"Trainer sent out {next_data.name}!"])
         self.battle_system.battle_state = BattleState.WAITING
 
-    def set_enemy(self, name: str, level: int, moves: list):
+    def set_enemy(self, name: str, level: int, moves: list, ability: str):
         """Swap the active enemy pokemon, keeping sprite, battle model, and
         battle system in sync. Single entry point so callers can't desync them."""
-        profile = self.data_loader.get_pokemon(name)
+        profile = self.data_loader.require_pokemon(name)
 
         self.enemy_sprite.set_new_texture(profile.sprites.front)
-        self.enemy_battle = BattlePokemon.from_wild(profile, name, level, moves)
+        self.enemy_battle = BattlePokemon.from_wild(
+            profile, name, level, moves, self.data_loader.require_ability(ability)
+        )
         self.battle_system.enemy_pokemon = self.enemy_battle
 
     def _handle_battle_finishing(self):
@@ -309,9 +355,60 @@ class BattleView(GameView):
         if result.evolved:
             self._evolution(self.your_battle.name.lower(), result.evolves_to)
         elif result.leveled_up:
+            # Level-up text, then any move learning, then leave the battle.
+            self.battle_system.queue_moves_to_learn(result.moves_to_learn)
+            self._on_learning_done = self.run
+            self.battle_system.battle_state = BattleState.LEARNING_MOVE
             self._on_level_up(self.your_battle)
         else:
             self.run()
+
+    # ------------------------------------------------------------------
+    # Move learning — message-gated sub-flow. LEARNING_MOVE state re-enters
+    # here each time the text box empties until the learn queue is drained.
+    # ------------------------------------------------------------------
+
+    def _continue_move_learning(self):
+        if self.battle_system.current_learning_move() is not None:
+            # A "needs replace" prompt just finished — let the player pick.
+            self._open_forget_selector()
+        else:
+            self._process_next_move_learn()
+
+    def _process_next_move_learn(self):
+        outcome = self.battle_system.next_move_to_learn()
+        if outcome is None:
+            done = self._on_learning_done or self.run
+            self._on_learning_done = None
+            done()
+            return
+
+        self.battle_system.battle_state = BattleState.LEARNING_MOVE
+        self.ui.queue_messages(outcome["messages"])
+        self.ui.switch_mode("dialog")
+
+    def _open_forget_selector(self):
+        """Reuse the move menu to choose which move to forget."""
+        self.learning_move_mode = True
+        self.update_ui_moves()
+        self.ui.menu_panel.selection_index = 0
+        self.ui.switch_mode("moves")
+        self.move_hover(0)
+
+    def _forget_move(self, index: int):
+        self.learning_move_mode = False
+        messages = self.battle_system.replace_learned_move(index)
+        self.update_ui_moves()
+        self.battle_system.battle_state = BattleState.LEARNING_MOVE
+        self.ui.queue_messages(messages)
+        self.ui.switch_mode("dialog")
+
+    def _cancel_learn_move(self):
+        self.learning_move_mode = False
+        messages = self.battle_system.skip_learned_move()
+        self.battle_system.battle_state = BattleState.LEARNING_MOVE
+        self.ui.queue_messages(messages)
+        self.ui.switch_mode("dialog")
 
     def _on_level_up(self, pokemon: BattlePokemon):
         self.ui.set_player_info(
@@ -345,6 +442,8 @@ class BattleView(GameView):
         self.ui.draw_hp_bar(self.your_battle.get_hp_ratio(), "player")
         self.ui.draw_exp_bar(self.your_battle.get_exp_ratio())
         self.ui.draw_hp_bar(self.enemy_battle.get_hp_ratio(), "enemy")
+        self.ui.draw_status(self.your_battle.status_effect, "player")
+        self.ui.draw_status(self.enemy_battle.status_effect, "enemy")
 
     def on_update(self, delta_time):
         self.ui.update(delta_time)
@@ -414,11 +513,17 @@ class BattleView(GameView):
                         arcade.schedule_once(self._reset_to_main_menu, 2)
 
             elif self.ui.active_component == "moves":
-                self.start_turn(self.ui.menu_panel.selection_index)
+                if self.learning_move_mode:
+                    self._forget_move(self.ui.menu_panel.selection_index)
+                else:
+                    self.start_turn(self.ui.menu_panel.selection_index)
 
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
             if self.ui.active_component == "moves":
-                self.ui.switch_mode("main")
+                if self.learning_move_mode:
+                    self._cancel_learn_move()
+                else:
+                    self.ui.switch_mode("main")
 
     def move_hover(self, index):
         if index is not None and index < len(self.your_battle.moves):

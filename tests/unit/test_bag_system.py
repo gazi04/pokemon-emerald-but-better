@@ -1,166 +1,198 @@
+"""Tests for the current BagSystem: heal / cure-status / restore-PP items,
+including PP move-targeting and item eligibility."""
+
 from unittest.mock import MagicMock
 
-import pytest
 
-from src.model.static.item import ItemSpecies, ItemEffect
-from src.model.save.player import ItemStack, PlayerPokemon, PlayerPokemonMove, PlayerSave
 from src.systems.bag_system import BagSystem
+from src.model.static.item import ItemSpecies
+from src.model.static.pokemon import (
+    PokemonMove,
+    PokemonSpecies,
+    SpritePaths,
+    PokemonStat,
+)
+from src.model.save.player import (
+    PlayerSave,
+    PlayerPokemon,
+    PlayerPokemonMove,
+    ItemStack,
+)
+from src.enums.item_category import ItemCategory
 
 
-def make_item_def(effect_amount=20):
-    effect = ItemEffect(type="heal", amount=effect_amount)
-    return ItemSpecies(description="Heals HP", price=300, effects=[effect])
+# --- builders --------------------------------------------------------------
 
 
-def make_save_manager(pokemon_hp, pokemon_level=10, base_hp=50):
-    """Build a mock SaveManager with one Pokémon at the given HP."""
+def _item(**kw) -> ItemSpecies:
+    raw = {
+        "description": "",
+        "price": 0,
+        "category": "medicine",
+        "holdable": False,
+        "battle_condition": None,
+        "battle_attributes": None,
+        "effects": [],
+    }
+    raw.update({k: v for k, v in kw.items() if k != "name"})
+    species = ItemSpecies(raw)
+    species.name = kw.get("name", "Item")
+    return species
+
+
+ITEMS = {
+    "potion": _item(name="Potion", effects=[{"type": "heal", "amount": 20}]),
+    "antidote": _item(
+        name="Antidote", effects=[{"type": "cure_status", "status": "poison"}]
+    ),
+    "full heal": _item(
+        name="Full Heal", effects=[{"type": "cure_status", "status": "all"}]
+    ),
+    "ether": _item(name="Ether", effects=[{"type": "restore_pp", "amount": 10}]),
+}
+
+
+def _species(base_hp=50):
+    return PokemonSpecies(
+        baseExp=62,
+        catch_rate=45,
+        abilities=[],
+        types=["water"],
+        evolution=None,
+        sprites=SpritePaths(back="b", front="f"),
+        stats=PokemonStat(
+            hp=base_hp,
+            attack=50,
+            defence=50,
+            special_attack=50,
+            special_defence=50,
+            speed=50,
+        ),
+        learnset=[],
+    )
+
+
+def _move(pp_max=35):
+    return PokemonMove(
+        name="tackle",
+        category="physical",
+        type="normal",
+        power=40,
+        accuracy=100,
+        pp=pp_max,
+        priority=0,
+        crit=0,
+        multi_hit=None,
+        condition=None,
+        effects=[],
+    )
+
+
+def make_bag(hp=30, level=50, status=None, moves=None):
     pokemon = PlayerPokemon(
         name="mudkip",
-        hp=pokemon_hp,
-        level=pokemon_level,
+        hp=hp,
+        level=level,
         exp=0,
-        moves=[PlayerPokemonMove(name="tackle", pp=35)],
+        ability="torrent",
+        moves=moves or [PlayerPokemonMove("tackle", 5)],
+        held_item=None,
+        status_condition=status,
     )
-    profile = PlayerSave(
+    save = PlayerSave(
         pokemon=[pokemon],
-        items=[ItemStack(name="potion", count=3)],
-        pokeballs=[ItemStack(name="pokeball", count=2)],
+        items={name: ItemStack(name, 3, ItemCategory.MEDICINE) for name in ITEMS},
     )
-    sm = MagicMock()
-    sm.player = profile
-    sm.getPokemon.return_value = pokemon
-    # Route the mutation door to the real PlayerSave so the bag goes through
-    # PlayerManager (the single door) while tests still assert on `profile`.
-    sm.update_pokemon_hp.side_effect = profile.update_hp
-    sm.consume_item.side_effect = profile.consume_item
-    sm.consume_pokeball.side_effect = profile.consume_pokeball
-    return sm
+    pm = MagicMock()
+    pm.player = save
+    pm.update_pokemon_hp.side_effect = save.update_hp
+    pm.update_pokemon_status.side_effect = save.update_status
+    pm.update_move_pp.side_effect = save.update_move_pp
+    pm.consume_item.side_effect = save.consume_item
 
-
-def make_data_loader(base_hp=50):
     dl = MagicMock()
-    dl.get_pokemon.return_value.stats.hp = base_hp
-    dl.get_item.return_value = make_item_def(effect_amount=20)
-    return dl
+    # BagSystem uses both: require_* where a miss is a bug, get_* where it probes.
+    dl.get_item.side_effect = lambda n: ITEMS.get(n)
+    dl.require_item.side_effect = lambda n: ITEMS[n]
+    dl.require_pokemon.return_value = _species()
+    dl.get_move.return_value = _move()  # max pp 35
+
+    return BagSystem(pm, dl), save, pokemon
 
 
-def max_hp(base_hp, level):
-    return ((2 * base_hp * level) // 100) + 5 + level
+# --- heal ------------------------------------------------------------------
 
 
-LEVEL = 50
-BASE_HP = 50
+def test_heal_restores_hp_and_consumes_item():
+    bag, save, mon = make_bag(hp=30)
+    assert bag.use_item("potion", "mudkip") is True
+    assert mon.hp == 50
+    assert save.items["potion"].count == 2
 
 
-def full_hp():
-    return max_hp(BASE_HP, LEVEL)
+def test_heal_caps_at_max_hp():
+    max_hp = PokemonStat.max_hp(50, 50)
+    bag, save, mon = make_bag(hp=max_hp - 5, level=50)
+    bag.use_item("potion", "mudkip")
+    assert mon.hp == max_hp  # +20 clamped to max
 
 
-# --- can_use_item ---
+def test_heal_rejected_at_full_hp_not_consumed():
+    max_hp = PokemonStat.max_hp(50, 50)
+    bag, save, mon = make_bag(hp=max_hp, level=50)
+    assert bag.use_item("potion", "mudkip") is False
+    assert save.items["potion"].count == 3  # untouched
 
 
-def test_can_use_item_true_when_damaged():
-    hp = full_hp() - 30
-    sm = make_save_manager(pokemon_hp=hp, pokemon_level=LEVEL, base_hp=BASE_HP)
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    assert system.can_use_item(0, "mudkip")
+# --- cure status -----------------------------------------------------------
 
 
-def test_can_use_item_false_at_full_hp():
-    sm = make_save_manager(pokemon_hp=full_hp(), pokemon_level=LEVEL, base_hp=BASE_HP)
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    assert not system.can_use_item(0, "mudkip")
+def test_antidote_cures_matching_status():
+    bag, save, mon = make_bag(status="poison")
+    assert bag.use_item("antidote", "mudkip") is True
+    assert mon.status_condition is None
 
 
-def test_can_use_item_false_empty_inventory():
-    sm = make_save_manager(pokemon_hp=full_hp() - 10, pokemon_level=LEVEL)
-    sm.player.items = []
-    dl = make_data_loader()
-    system = BagSystem(sm, dl)
-    assert not system.can_use_item(0, "mudkip")
+def test_antidote_noop_on_wrong_status():
+    bag, save, mon = make_bag(status="burn")
+    assert bag.use_item("antidote", "mudkip") is False
+    assert mon.status_condition == "burn"
+    assert save.items["antidote"].count == 3
 
 
-# --- use_item ---
+def test_full_heal_cures_any_status():
+    bag, save, mon = make_bag(status="paralyzed")
+    assert bag.use_item("full heal", "mudkip") is True
+    assert mon.status_condition is None
 
 
-def test_use_item_increases_hp_by_effect_amount():
-    hp = full_hp() - 30
-    sm = make_save_manager(pokemon_hp=hp, pokemon_level=LEVEL, base_hp=BASE_HP)
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    pokemon = sm.getPokemon.return_value
-    hp_before = pokemon.hp
-    system.use_item(0, "mudkip")
-    assert pokemon.hp == hp_before + 20
+# --- restore PP (move targeting) ------------------------------------------
 
 
-def test_use_item_caps_hp_at_max():
-    hp = full_hp() - 5
-    sm = make_save_manager(pokemon_hp=hp, pokemon_level=LEVEL, base_hp=BASE_HP)
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    pokemon = sm.getPokemon.return_value
-    system.use_item(0, "mudkip")
-    assert pokemon.hp <= full_hp()
+def test_is_pp_item():
+    bag, _, _ = make_bag()
+    assert bag.is_pp_item("ether") is True
+    assert bag.is_pp_item("potion") is False
 
 
-def test_use_item_decrements_count():
-    hp = full_hp() - 20
-    sm = make_save_manager(pokemon_hp=hp, pokemon_level=LEVEL, base_hp=BASE_HP)
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    system.use_item(0, "mudkip")
-    assert sm.player.items[0].count == 2
+def test_ether_restores_only_the_chosen_move():
+    moves = [PlayerPokemonMove("tackle", 5), PlayerPokemonMove("growl", 2)]
+    bag, save, mon = make_bag(moves=moves)
+    assert bag.use_item("ether", "mudkip", move_index=1) is True
+    assert mon.moves[0].pp == 5  # untouched
+    assert mon.moves[1].pp == 2 + 10  # restored
 
 
-def test_use_item_removes_item_when_count_hits_zero():
-    hp = full_hp() - 20
-    sm = make_save_manager(pokemon_hp=hp, pokemon_level=LEVEL, base_hp=BASE_HP)
-    sm.player.items[0].count = 1
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    system.use_item(0, "mudkip")
-    assert len(sm.player.items) == 0
+def test_ether_noop_on_full_move_not_consumed():
+    moves = [PlayerPokemonMove("tackle", 35)]  # already full (max 35)
+    bag, save, mon = make_bag(moves=moves)
+    assert bag.use_item("ether", "mudkip", move_index=0) is False
+    assert save.items["ether"].count == 3
 
 
-def test_can_use_item_false_when_pokemon_fainted():
-    sm = make_save_manager(pokemon_hp=0, pokemon_level=LEVEL, base_hp=BASE_HP)
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    assert not system.can_use_item(0, "mudkip")
-
-
-def test_can_use_item_out_of_bounds_raises():
-    sm = make_save_manager(
-        pokemon_hp=full_hp() - 10, pokemon_level=LEVEL, base_hp=BASE_HP
-    )
-    dl = make_data_loader(base_hp=BASE_HP)
-    system = BagSystem(sm, dl)
-    with pytest.raises(IndexError):
-        system.can_use_item(99, "mudkip")
-
-
-def test_use_item_ignores_unknown_effect_type():
-    # An effect type with no registered applier is skipped: no heal, but the
-    # item is still consumed (matches the pre-dispatch behaviour).
-    hp = full_hp() - 30
-    sm = make_save_manager(pokemon_hp=hp, pokemon_level=LEVEL, base_hp=BASE_HP)
-    dl = make_data_loader(base_hp=BASE_HP)
-    dl.get_item.return_value = ItemSpecies(
-        description="X", price=0, effects=[ItemEffect(type="stat", amount=1)]
-    )
-    system = BagSystem(sm, dl)
-    pokemon = sm.getPokemon.return_value
-    hp_before = pokemon.hp
-    system.use_item(0, "mudkip")
-    assert pokemon.hp == hp_before
-    assert sm.player.items[0].count == 2
-
-
-def test_get_pokeballs_returns_pokeball_list():
-    sm = make_save_manager(pokemon_hp=full_hp(), pokemon_level=LEVEL)
-    dl = make_data_loader()
-    system = BagSystem(sm, dl)
-    assert system.get_pokeballs()[0].name == "pokeball"
+def test_ether_without_move_index_restores_all():
+    moves = [PlayerPokemonMove("tackle", 5), PlayerPokemonMove("growl", 2)]
+    bag, save, mon = make_bag(moves=moves)
+    assert bag.use_item("ether", "mudkip") is True
+    assert mon.moves[0].pp == 15
+    assert mon.moves[1].pp == 12

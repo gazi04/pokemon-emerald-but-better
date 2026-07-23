@@ -306,12 +306,28 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "ui/battleUiDesign.tmx": {
+            "scale": 0.015625,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 16384,
+                "y": 12928
+            }
+        },
         "ui/pokemon_center.tmx": {
             "scale": 2.9667708333333334,
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 239.99157332958816,
                 "y": 159.93820441697974
+            }
+        },
+        "ui/pokemon_info_ui_design.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 404,
+                "y": 162
             }
         },
         "ui/second_home_room.tmx": {
@@ -332,7 +348,7 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "/home/gazi/Documents/projects/pokemon-emerald/assets/map/tilesets",
+    "last.imagePath": "C:/Users/Enes/Documents/Enes/Pokemon-Emerald/assets/sprite/status_effect",
     "map.fixedSize": false,
     "map.height": 20,
     "map.lastUsedFormat": "tmx",
@@ -355,6 +371,8 @@
         "map/littleroot_town_original.tmx",
         "map/littleroot_town.tmx",
         "map/oldale_town/poke_mart.tmx",
+        "map/littleroot_town.tmx",
+        "map/oldale_town/home1.tmx",
         "map/oldale_town/pokemon_center.tmx",
         "map/Interior Tilesets.tsx",
         "map/root101.tmx",
@@ -362,7 +380,10 @@
         "map/tilesets/interior_areas.tsx",
         "map/oldale_town/home1.tmx",
         "map/oldale_town/home2.tmx",
-        "ui/second_home_room.tmx"
+        "ui/second_home_room.tmx",
+        "map/little_root_town/second_home.tmx",
+        "map/little_root_town/home.tmx"
+
     ],
     "resizeMap.removeObjects": false,
     "tileset.lastUsedFormat": "tsx",

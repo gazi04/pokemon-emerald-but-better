@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.model.motion.player_motion import PlayerMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
@@ -12,7 +14,7 @@ class MovementSystem:
     """
 
     def update(
-        self, delta_time: float, player_state: PlayerMotion, intent: dict
+        self, delta_time: float, player_state: PlayerMotion, intent: Optional[dict]
     ) -> list[dict]:
         events = []
 

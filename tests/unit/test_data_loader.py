@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get_pokemon_returns_correct_types(data_loader):
     profile = data_loader.get_pokemon("treecko")
     assert profile is not None

@@ -1,11 +1,10 @@
 import arcade
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
-from data.config import Config
+from data.config import CONFIG
 from src.states.base_view import GameView
 from src.ui.pokedex_ui import PokedexUi
 
-CONFIG = Config.load()
 
 
 class PokedexView(GameView):
@@ -34,12 +33,12 @@ class PokedexView(GameView):
     def on_hide_view(self):
         self.ui._manager.disable()
 
-    def on_key_press(self, key: int, modifiers: int):
-        if self.is_pressed(CONFIG.controls.cancel, key):
+    def on_key_press(self, symbol: int, modifiers: int):
+        if self.is_pressed(CONFIG.controls.cancel, symbol):
             self.window.show_view(self.previous_window)
 
-        elif self.is_pressed(CONFIG.controls.up, key):
+        elif self.is_pressed(CONFIG.controls.up, symbol):
             self.ui.move_up()
 
-        elif self.is_pressed(CONFIG.controls.down, key):
+        elif self.is_pressed(CONFIG.controls.down, symbol):
             self.ui.move_down()

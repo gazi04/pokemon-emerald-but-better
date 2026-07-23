@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="46">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="800" height="600" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="49">
  <tileset firstgid="1" source="sprites/ui.tsx"/>
- <objectgroup id="3" name="background">
+ <objectgroup id="3" name="background" visible="0">
   <object id="14" name="background" gid="5" x="-12" y="13848" width="25656" height="13904"/>
   <object id="41" name="enemyPlatform" gid="11" x="12001" y="9808" width="13472" height="3872"/>
   <object id="42" name="playerPlatform" gid="11" x="688" y="15984" width="13472" height="3872"/>
  </objectgroup>
- <objectgroup id="5" name="moves-button">
+ <objectgroup id="5" name="moves-button" visible="0">
   <object id="25" name="movesBox" gid="10" x="-56" y="19256" width="25648" height="5392"/>
   <object id="26" name="maxPP" x="21430.5" y="15062.5" width="1235" height="1203">
    <text wrap="1">Hello World</text>
@@ -57,5 +57,7 @@
   <object id="40" name="enemy_lvl" x="8358.5" y="2838.5" width="1299" height="851">
    <text wrap="1">Hello World</text>
   </object>
+  <object id="46" name="status_effect_player" gid="33" x="15510" y="12548" width="1800" height="720"/>
+  <object id="48" name="status_effect_enemy" gid="33" x="1308" y="4664" width="1800" height="720"/>
  </objectgroup>
 </map>

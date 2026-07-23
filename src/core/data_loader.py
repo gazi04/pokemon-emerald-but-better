@@ -2,6 +2,7 @@ import json
 from src.model.static.pokemon import PokemonSpecies, PokemonMove
 from src.model.static.item import ItemSpecies
 from src.model.static.npc import NpcSpecies
+from src.model.static.ability import Ability
 from src.core.game_data_parser import GameDataParser
 
 
@@ -19,6 +20,10 @@ class DataLoader:
         self.npc_dialog: dict[str, NpcSpecies] = GameDataParser.parse_npc_dialog(
             self._read("data/npc_dialog.json")
         )
+        self.ability: dict[str, Ability] = GameDataParser.parse_ability(
+            self._read("data/ability.json")
+        )
+
         # Raw dicts cached at boot — read every grass step / damage calc, so no
         # per-call file I/O (mirrors the parsed caches above).
         self.encounters: dict = self._read("data/encounters.json")
@@ -31,8 +36,35 @@ class DataLoader:
     def get_pokemon(self, name: str) -> PokemonSpecies | None:
         return self.pokemons.get(name)
 
+    def get_ability(self, name: str) -> Ability | None:
+        return self.ability.get(name)
+
     def get_move(self, name: str) -> PokemonMove | None:
         return self.moves.get(name)
 
     def get_item(self, name: str) -> ItemSpecies | None:
         return self.items.get(name)
+
+    # require_* variants for callers that treat a miss as a bug (bad name, JSON
+    # drift, wrong casing). They fail at the lookup naming the key, instead of
+    # letting a None escape into an AttributeError further down the call stack.
+    # Use get_* when absence is a legitimate outcome.
+
+    def require_pokemon(self, name: str) -> PokemonSpecies:
+        return self._require(self.pokemons, name, "pokemon")
+
+    def require_ability(self, name: str) -> Ability:
+        return self._require(self.ability, name, "ability")
+
+    def require_move(self, name: str) -> PokemonMove:
+        return self._require(self.moves, name, "move")
+
+    def require_item(self, name: str) -> ItemSpecies:
+        return self._require(self.items, name, "item")
+
+    @staticmethod
+    def _require[T](cache: dict[str, T], name: str, kind: str) -> T:
+        try:
+            return cache[name]
+        except KeyError:
+            raise KeyError(f"Unknown {kind} '{name}'") from None

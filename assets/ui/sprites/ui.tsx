@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="31" columns="0">
+<tileset version="1.10" tiledversion="1.12.1" name="battleUI" tilewidth="240" tileheight="160" tilecount="33" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="box.png" width="120" height="48"/>
@@ -83,9 +83,6 @@
   <image source="pokedex.png" width="240" height="160"/>
  </tile>
  <tile id="27">
- <image source="pokemon_moves.png" width="160" height="139"/>
- </tile>
- <tile id="27">
   <image source="pokemon_profile.png" width="80" height="144"/>
  </tile>
  <tile id="28">
@@ -99,5 +96,8 @@
  </tile>
  <tile id="31">
   <image source="../../sprite/types/normal.png" width="32" height="14"/>
+ </tile>
+ <tile id="32">
+  <image source="../../sprite/status_effect/poison.png" width="20" height="8"/>
  </tile>
 </tileset>

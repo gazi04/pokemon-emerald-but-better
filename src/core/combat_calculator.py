@@ -63,9 +63,9 @@ def calculate_damage(
     # --- Type effectiveness ---
     effectiveness = _type_multiplier(move_data.type, defender_types, type_chart)
     if effectiveness >= 2:
-        messages.append("Its super effective.")
+        messages.append("It's super effective.")
     elif 0 < effectiveness < 1:
-        messages.append("Its not very effective.")
+        messages.append("It's not very effective.")
     elif effectiveness == 0:
         messages.append("No effect.")
 
@@ -119,7 +119,7 @@ def _check_accuracy(
     stage = max(-6, min(6, stage))
 
     if stage < 0:
-        multiplier = 3 / (3 - abs(stage))
+        multiplier = 3 / (3 + abs(stage))
     elif stage > 0:
         multiplier = (3 + stage) / 3
     else:
@@ -150,6 +150,9 @@ def _get_stat(
     raw = getattr(stats, stat, 0)
 
     if stat == Stat.SPEED and status == StatusEffect.PARALYSIS:
+        return round(raw * fraction * 0.5)
+
+    if stat == Stat.ATTACK and status == StatusEffect.BURN:
         return round(raw * fraction * 0.5)
 
     return round(raw * fraction)

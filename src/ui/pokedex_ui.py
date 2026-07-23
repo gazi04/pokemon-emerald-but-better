@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 from src.core.data_loader import DataLoader
 from src.constants import POKEDEX_UI
+from src.tiled import object_layer
 
 
 class PokedexUi:
@@ -29,7 +30,7 @@ class PokedexUi:
 
         tilemap = arcade.load_tilemap(POKEDEX_UI)
 
-        for obj in tilemap.get_tilemap_layer("pokedex").tiled_objects:
+        for obj in object_layer(tilemap, "pokedex").tiled_objects:
             x = obj.coordinates.x
             y = 600 - obj.coordinates.y
             w = obj.size.width
@@ -154,7 +155,7 @@ class PokedexUi:
         is_known = name in self._owned or name in self._seen
 
         if is_known:
-            profile = self.data_loader.get_pokemon(name)
+            profile = self.data_loader.require_pokemon(name)
             texture = arcade.load_texture(profile.sprites.front)
         else:
             texture = arcade.load_texture("assets/sprite/pokemon/question_mark.png")

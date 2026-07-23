@@ -7,7 +7,7 @@ make decisions. One behavior = one responsibility.
 """
 
 import random
-
+from typing import Optional
 from src.constants import DIRECTION_OFFSETS, TILE_SIZE
 from src.core.event_bus import global_bus
 from src.core.events import NpcInteractEvent, NpcSpottedPlayerEvent
@@ -21,7 +21,7 @@ DEFAULT_SIGHT_RANGE = 4
 class Behavior:
     """Base class. Subclasses return an intent dict or None."""
 
-    def decide(self, npc, world, delta_time: float):
+    def decide(self, npc, world, delta_time: float) -> Optional[dict]:
         return None
 
 

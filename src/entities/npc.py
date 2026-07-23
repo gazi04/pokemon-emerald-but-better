@@ -1,11 +1,20 @@
 import arcade
+from typing import Optional
+
 from src.constants import TILE_SIZE
 from src.model.motion.grid_motion import GridMotion
 from src.systems.npc_behaviors import Behavior, IdleBehavior
 
 
 class Npc(arcade.Sprite):
-    def __init__(self, x, y, npc_id, behavior: Behavior = None, facing: str = "right"):
+    def __init__(
+        self,
+        x,
+        y,
+        npc_id,
+        behavior: Optional[Behavior] = None,
+        facing: str = "right",
+    ):
         super().__init__(scale=1.9, center_x=x, center_y=y)
         self.npc_id = npc_id
 

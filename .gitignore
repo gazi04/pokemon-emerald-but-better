@@ -16,4 +16,7 @@ uv.lock
 
 .env
 
+# Log files
+logs/
+
 untitled.tiled-session

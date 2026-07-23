@@ -2,8 +2,6 @@
 Integration test: full save → disk → reload cycle via SaveManager.
 """
 
-import pytest
-
 from src.model.motion.player_motion import PlayerMotion
 
 
@@ -18,7 +16,9 @@ def test_save_load_preserves_hp(save_manager, tmp_path, monkeypatch):
     from src.core.save_manager import SaveManager
 
     reloaded = SaveManager()
-    assert reloaded.player.get_pokemon("mudkip").hp == 15
+    mudkip = reloaded.player.get_pokemon("mudkip")
+    assert mudkip is not None
+    assert mudkip.hp == 15
 
 
 def test_save_load_preserves_level_and_exp(save_manager, tmp_path, monkeypatch):
@@ -31,6 +31,7 @@ def test_save_load_preserves_level_and_exp(save_manager, tmp_path, monkeypatch):
 
     reloaded = SaveManager()
     pokemon = reloaded.player.get_pokemon("mudkip")
+    assert pokemon is not None
     assert pokemon.level == 20
     assert pokemon.exp == 500
 
@@ -45,6 +46,7 @@ def test_save_load_preserves_move_pp(save_manager, tmp_path, monkeypatch):
 
     reloaded = SaveManager()
     pokemon = reloaded.player.get_pokemon("mudkip")
+    assert pokemon is not None
     assert pokemon.moves[0].pp == 10
 
 
@@ -58,9 +60,11 @@ def test_save_load_preserves_position(save_manager, tmp_path, monkeypatch):
     from src.core.save_manager import SaveManager
 
     reloaded = SaveManager()
-    assert reloaded.saved_position["map_name"] == "littleroot_town"
-    assert reloaded.saved_position["direction"] == "up"
-    assert reloaded.saved_position["pixel_x"] == 256.0
+    position = reloaded.saved_position
+    assert position is not None
+    assert position["map_name"] == "littleroot_town"
+    assert position["direction"] == "up"
+    assert position["pixel_x"] == 256.0
 
 
 def test_save_creates_backup_file(save_manager, tmp_path):

@@ -26,12 +26,48 @@
     "team": [
       {
         "name": "zigzagoon",
+<<<<<<< HEAD
         "hp": 10,
         "level": 1,
+=======
+        "hp": 45,
+        "level": 20,
+        "ability": "speed_boost",
+        "held_item": null,
+>>>>>>> e658047d8a69b240761ad782ac07f0ff1eabde52
         "moves": [
           {
-            "name": "tackle",
-            "pp": 25
+            "name": "extreme speed",
+            "pp": 10
+          },
+          {
+            "name": "fake out",
+            "pp": 5
+          },
+          {
+            "name": "double slap",
+            "pp": 10
+          }
+        ]
+      },
+      {
+        "name": "poochyena",
+        "hp": 45,
+        "level": 20,
+        "ability": "intimidate",
+        "held_item": null,
+        "moves": [
+          {
+            "name": "sucker punch",
+            "pp": 10
+          },
+          {
+            "name": "night slash",
+            "pp": 10
+          },
+          {
+            "name": "stone edge",
+            "pp": 5
           }
         ]
       }

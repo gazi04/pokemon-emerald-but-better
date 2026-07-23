@@ -4,8 +4,7 @@ Single responsibility: dialog retrieval and selection logic.
 """
 
 import json
-from pathlib import Path
-from typing import Optional, List
+from typing import List
 from src.systems.npc_manager import NPCManager
 from src.core.logger import get_logger
 
@@ -85,7 +84,6 @@ class DialogManager:
         if npc_id not in self.dialogs:
             return "none"
 
-        npc_dialogs = self.dialogs[npc_id]
         npc_state = self.npc_manager.get_state(npc_id)
 
         if npc_state.defeated:

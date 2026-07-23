@@ -18,6 +18,7 @@ from typing import Optional
 import arcade
 
 from src.core.logger import get_logger
+from src.tiled import find_object_layer
 
 log = get_logger(__name__)
 
@@ -89,7 +90,7 @@ class TransitionLayer:
 
     @staticmethod
     def _build_zones(tile_map: arcade.TileMap, scale: float) -> list[TransitionZone]:
-        layer = tile_map.get_tilemap_layer("transitions")
+        layer = find_object_layer(tile_map, "transitions")
         zones: list[TransitionZone] = []
         if layer is None:
             return zones

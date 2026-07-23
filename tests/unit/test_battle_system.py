@@ -1,7 +1,6 @@
-from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from typing import cast
+from unittest.mock import MagicMock
 
-import pytest
 
 from src.core.player_manager import PlayerManager
 from src.core.event_bus import global_bus
@@ -9,7 +8,13 @@ from src.core.events import HpChangedEvent, PokemonFaintedEvent
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
-from src.model.static.pokemon import PokemonMove, PokemonSpecies, SpritePaths, PokemonStat
+from src.model.static.pokemon import (
+    PokemonEvolution,
+    PokemonMove,
+    PokemonSpecies,
+    SpritePaths,
+    PokemonStat,
+)
 from src.enums.battle_state import BattleState
 from src.enums.status_effect import StatusEffect
 from src.systems.battle_system import BattleSystem
@@ -41,6 +46,7 @@ def make_profile(
         evolution=None,
         sprites=SpritePaths(back="b.png", front="f.png"),
         stats=stats,
+        learnset=[],
     )
 
 
@@ -53,9 +59,11 @@ def make_battle_pokemon(
         hp=999,
         level=level,
         exp=0,
+        ability="",
         moves=[PlayerPokemonMove(name="tackle", pp=35)],
+        held_item=None,
     )
-    battle = BattlePokemon.from_player(profile, pp, is_enemy)
+    battle = BattlePokemon.from_player(None, profile, pp, is_enemy)
     battle.current_hp = battle.max_hp
     return battle
 
@@ -70,6 +78,10 @@ def make_poke_move(
         power=power,
         accuracy=accuracy,
         pp=35,
+        priority=0,
+        crit=0,
+        multi_hit=None,
+        condition=None,
         effects=[],
     )
 
@@ -82,6 +94,7 @@ def make_battle_system(player_speed=50, enemy_speed=50):
     sm.player.items = []
     dl = MagicMock()
     dl.get_move.return_value = make_poke_move()
+    dl.require_move.return_value = make_poke_move()
     dl.types = {}  # empty type chart → multiplier defaults to 1.0
 
     return BattleSystem(your, enemy, sm, dl), your, enemy
@@ -202,21 +215,35 @@ def test_execute_next_action_removes_from_queue():
 def test_execute_next_action_empty_queue_calls_post_turn():
     bs, _, _ = make_battle_system()
     bs.turn_queue = []
-    bs.battle_state = "intro"
-    messages = bs.execute_next_action()
+    bs.battle_state = BattleState.INTRO
+    bs.execute_next_action()
     # post_turn was called — battle_state changes
-    assert bs.battle_state in (BattleState.POST_TURN, BattleState.WAITING, BattleState.END)
+    assert bs.battle_state in (
+        BattleState.POST_TURN,
+        BattleState.WAITING,
+        BattleState.END,
+    )
 
 
 def test_turn_use_item_publishes_hp_changed_event():
     bs, your, _ = make_battle_system()
     item = MagicMock()
     item.name = "potion"
-    bs.player_manager.player.items = [item]
+    # Mirrors the real save shape: items is a dict keyed by item name, and the
+    # bag queues the name (see test_turn_use_item_with_string_item_name...).
+    cast(MagicMock, bs.player_manager).player.items = {"potion": item}
     received = []
     global_bus.subscribe(HpChangedEvent, received.append)
-    bs.turn_use_item(0)
+    bs.turn_use_item("potion")
     assert any(e.target == "player" for e in received)
+
+
+def test_turn_use_item_with_string_item_name_does_not_crash():
+    """Real bag items are queued as their name string, not an int index —
+    item_index < 0 must not be evaluated against a str (was a live TypeError)."""
+    bs, _, _ = make_battle_system()
+    messages = bs.turn_use_item("potion")
+    assert any("potion" in m for m in messages)
 
 
 def test_execute_move_with_zero_pp_no_damage():
@@ -265,18 +292,33 @@ def test_apply_exp_award_real_level_up():
 
 def test_add_caught_pokemon_adds_enemy_to_party():
     bs, _, enemy = make_battle_system()
+    pm = cast(MagicMock, bs.player_manager)
     enemy.current_hp = 7
+    pm.add_pokemon.return_value = True
 
-    bs.add_caught_pokemon()
+    result = bs.add_caught_pokemon()
 
-    bs.player_manager.add_pokemon.assert_called_once()
-    added = bs.player_manager.add_pokemon.call_args[0][0]
+    pm.add_pokemon.assert_called_once()
+    added = pm.add_pokemon.call_args[0][0]
     assert isinstance(added, PlayerPokemon)
     assert added.name == enemy.name.lower()
     assert added.hp == 7
     assert added.level == enemy.level
     assert added.exp == 0
     assert added.moves == enemy.moves
+    assert result == {"success": True, "messages": []}
+
+
+def test_add_caught_pokemon_party_full_returns_failure_message():
+    bs, _, _ = make_battle_system()
+    pm = cast(MagicMock, bs.player_manager)
+    pm.add_pokemon.return_value = False
+
+    result = bs.add_caught_pokemon()
+
+    pm.add_pokemon.assert_called_once()
+    assert result["success"] is False
+    assert result["messages"]
 
 
 # --- save() delegation + persistence (§12 1c) ---
@@ -286,13 +328,14 @@ def test_save_delegates_to_player_manager():
     bs, your, _ = make_battle_system()
     bs.has_evolved = True
     bs.save()
-    bs.player_manager.persist_active_pokemon.assert_called_once_with(your, True)
+    pm = cast(MagicMock, bs.player_manager)
+    pm.persist_active_pokemon.assert_called_once_with(your, True)
 
 
 def _player_manager_with_mock_player():
     sm = MagicMock()
     sm.player.npc_states = None  # skip NpcManager.load_from_dict branch
-    return PlayerManager(sm), sm
+    return PlayerManager(sm, MagicMock()), sm
 
 
 def test_persist_active_pokemon_writes_hp_pp_level():
@@ -303,13 +346,15 @@ def test_persist_active_pokemon_writes_hp_pp_level():
 
     sm.player.update_hp.assert_called_once_with("mudkip", battle.current_hp)
     assert sm.player.update_move_pp.call_count == len(battle.moves)
-    sm.player.update_level.assert_called_once_with("mudkip", battle.level, battle.exp, None)
+    sm.player.update_level.assert_called_once_with(
+        "mudkip", battle.level, battle.exp, None
+    )
 
 
 def test_persist_active_pokemon_passes_evolution_when_evolved():
     pm, sm = _player_manager_with_mock_player()
     battle = make_battle_pokemon("mudkip")
-    battle.evolution = SimpleNamespace(to="marshtomp")
+    battle.evolution = PokemonEvolution(to="marshtomp", levelCap=16)
 
     pm.persist_active_pokemon(battle, has_evolved=True)
 

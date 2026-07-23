@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.model.motion.player_motion import PlayerMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
@@ -21,7 +23,7 @@ class PlayerInput:
         collision_tiles,
         transitions,
         npcs=None,
-    ):
+    ) -> Optional[dict]:
         """
         Reads keyboard/gamepad and requests a state change.
         Returns an intent dictionary or None.

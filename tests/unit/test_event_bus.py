@@ -1,9 +1,5 @@
 from dataclasses import dataclass
 
-import pytest
-
-from src.core.event_bus import EventBus
-
 
 @dataclass
 class FooEvent:
@@ -51,7 +47,9 @@ def test_unsubscribe_stops_delivery(event_bus):
 def test_unsubscribe_unknown_listener_is_safe(event_bus):
     # Unsubscribing a listener that was never registered should not raise.
     event_bus.subscribe(FooEvent, lambda e: None)
-    event_bus.unsubscribe(FooEvent, lambda e: None)  # different lambda, never registered
+    event_bus.unsubscribe(
+        FooEvent, lambda e: None
+    )  # different lambda, never registered
 
 
 def test_publish_with_no_subscribers_is_safe(event_bus):

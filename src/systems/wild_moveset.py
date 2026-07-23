@@ -5,7 +5,8 @@ knows the last MAX_MOVES it would have learned by its level; species with no
 learnset fall back to Tackle so a wild is never moveless.
 """
 
-from src.core.data_loader import DataLoader
+from typing import Optional, Protocol
+
 from src.model.static.pokemon import PokemonSpecies
 from src.model.save.player import PlayerPokemonMove
 
@@ -13,8 +14,25 @@ MAX_MOVES = 4
 DEFAULT_WILD_MOVE = ("tackle", 35)
 
 
+class MoveLike(Protocol):
+    """A move, as far as this module is concerned: it has PP."""
+
+    @property
+    def pp(self) -> int: ...
+
+
+class MoveSource(Protocol):
+    """The only thing this module needs from a DataLoader: name -> move.
+
+    Declared structurally so the real DataLoader satisfies it without importing
+    it here, and callers can pass any equivalent lookup.
+    """
+
+    def get_move(self, name: str) -> Optional[MoveLike]: ...
+
+
 def select_wild_moves(
-    species: PokemonSpecies, level: int, data_loader: DataLoader
+    species: PokemonSpecies, level: int, data_loader: MoveSource
 ) -> list[PlayerPokemonMove]:
     learned = sorted(
         (m for m in species.learnset if m.level <= level),

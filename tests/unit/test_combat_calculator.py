@@ -1,10 +1,8 @@
 import json
 from unittest.mock import patch
 
-import pytest
 
 from src.core.combat_calculator import _get_stat, calculate_damage
-from src.model.battle.combat_result import CombatResult
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.model.static.pokemon import PokemonMove, PokemonStat
@@ -25,7 +23,12 @@ def make_stat(hp=50, attack=50, defence=50, sp_atk=50, sp_def=50, speed=50):
 
 
 def make_move(
-    name="tackle", category="physical", type_="normal", power=40, accuracy=100, pp=35
+    name="tackle",
+    category="physical",
+    type_="normal",
+    power: int | None = 40,
+    accuracy: int | None = 100,
+    pp=35,
 ):
     return PokemonMove(
         name=name,
@@ -34,6 +37,10 @@ def make_move(
         power=power,
         accuracy=accuracy,
         pp=pp,
+        priority=0,
+        crit=0,
+        multi_hit=None,
+        condition=None,
         effects=[],
     )
 
@@ -76,7 +83,8 @@ def calc(
 
 
 def test_normal_hit_deals_positive_damage():
-    result = calc()
+    with patch("src.core.combat_calculator._roll_critical", return_value=False):
+        result = calc()
     assert result.damage > 0
     assert result.effectiveness == 1.0
     assert not result.is_miss
@@ -198,6 +206,18 @@ def test_no_accuracy_move_never_misses():
     assert not result.is_miss
 
 
+def test_negative_accuracy_stage_lowers_hit_chance():
+    from src.core.combat_calculator import _check_accuracy
+
+    # accuracy=50, stage=-1 -> fixed multiplier is 3/(3+1)=0.75, so the hit
+    # threshold is 37.5. A roll of 40 must miss. Under the old (inverted)
+    # formula the multiplier was 3/(3-1)=1.5 (threshold 75), which would
+    # have hit on this same roll -- this test pins the direction, not just
+    # the miss/hit outcome.
+    with patch("src.core.combat_calculator.random.randint", return_value=40):
+        assert not _check_accuracy(50, {Stat.ACCURACY: -1}, {})
+
+
 # --- Stat stages ---
 
 
@@ -219,9 +239,7 @@ def test_negative_stat_stage_decreases_effective_stat():
 
 def test_paralysis_halves_speed():
     normal_speed = _get_stat(Stat.SPEED, make_stat(speed=100), {}, StatusEffect.NONE)
-    para_speed = _get_stat(
-        Stat.SPEED, make_stat(speed=100), {}, StatusEffect.PARALYSIS
-    )
+    para_speed = _get_stat(Stat.SPEED, make_stat(speed=100), {}, StatusEffect.PARALYSIS)
     assert para_speed == normal_speed // 2
 
 
@@ -262,8 +280,8 @@ def test_stab_plus_super_effective_stacks():
     assert stab_se.damage > no_stab.damage
 
 
-def test_burn_status_does_not_affect_attack_currently():
-    # burn reducing attack is not implemented — documents missing feature
+def test_burn_halves_attack():
+    # Burn now halves the physical Attack used in the damage calc.
     normal = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.NONE)
     burned = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.BURN)
-    assert burned == normal
+    assert burned == normal // 2

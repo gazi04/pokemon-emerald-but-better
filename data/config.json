@@ -31,9 +31,6 @@
     "text_speed": "medium",
     "battle_style": "set"
   },
-  "pokecenter_cord": {
-    "currently_no_pokecenter_but_well_have_this_ready": 2
-  },
   "logging": {
     "level": "INFO",
     "console_level": "WARNING",

@@ -1,5 +1,7 @@
 import arcade
 
+from src.tiled import find_object_layer
+
 
 def parse_battle_layout(tilemap_path: str) -> dict:
     """
@@ -14,7 +16,10 @@ def parse_battle_layout(tilemap_path: str) -> dict:
     )
 
     for layer in tilemap.tiled_map.layers:
-        current_layer = tilemap.get_tilemap_layer(layer.name)
+        # Layout data lives in object layers; a tile layer has no tiled_objects.
+        current_layer = find_object_layer(tilemap, layer.name)
+        if current_layer is None:
+            continue
 
         for obj in current_layer.tiled_objects:
             w = int(obj.size.width / 32)

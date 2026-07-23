@@ -22,9 +22,11 @@ def _make_battle_pokemon(
         hp=999,
         level=level,
         exp=0,
+        ability="",
         moves=[PlayerPokemonMove(name=move_name, pp=35)],
+        held_item=None,
     )
-    battle = BattlePokemon.from_player(profile, pp, is_enemy)
+    battle = BattlePokemon.from_player(None, profile, pp, is_enemy)
     battle.current_hp = battle.max_hp
     return battle
 

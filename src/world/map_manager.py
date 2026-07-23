@@ -113,12 +113,14 @@ class MapManager:
 
     def _unload(self) -> None:
         """Drop the active map's assets and fire the persistence/script seam."""
-        if self.loaded is None:
+        if self.loaded is None or self.current_map_id is None:
             return
         if self._on_unload:
             self._on_unload(self.current_map_id, self.loaded)
         try:
             self.loaded.npcs.clear()
         except Exception:
-            log.exception("Error clearing NPCs while unloading '%s'", self.current_map_id)
+            log.exception(
+                "Error clearing NPCs while unloading '%s'", self.current_map_id
+            )
         self.loaded = None

@@ -24,4 +24,5 @@ class BattleState(StrEnum):
     PLAYER_FAINTED = "player fainted"
     CAUGHT = "caught"
     LOST = "lost"
+    LEARNING_MOVE = "learning move"
     END = "end"

@@ -16,11 +16,14 @@ log = get_logger(__name__)
 
 class SaveManager:
     def __init__(self):
-        self.saved_position: Optional[dict] = None
-        self.player: Optional[PlayerSave] = None
-        self.load()
+        self.player, self.saved_position = self._load()
 
-    def load(self):
+    def _load(self) -> tuple[PlayerSave, Optional[dict]]:
+        """Return the loaded player and its saved position, or raise.
+
+        Total by construction: every path either returns a PlayerSave or raises,
+        which is what lets `self.player` be non-Optional for the rest of the app.
+        """
         # Try the live save first, then the backup, then the shipped default.
         # A corrupt/partial save (crash mid-write, bad edit, schema drift) must
         # never brick startup — fall back instead of letting json/KeyError escape.
@@ -32,17 +35,18 @@ class SaveManager:
             try:
                 with open(path, "r") as f:
                     data = json.load(f)
-                self.player = PlayerSerializer.deserialize(data)
-                self.saved_position = data.get("position")
+                player = PlayerSerializer.deserialize(data)
                 if path != SAVE_PATH:
                     log.warning("Loaded save from fallback '%s'", path)
-                return
+                return player, data.get("position")
             except (OSError, json.JSONDecodeError, KeyError, TypeError) as e:
                 last_error = e
                 log.warning("Failed to load save '%s': %s", path, e)
 
         # Even the shipped default failed — unrecoverable install.
-        raise RuntimeError(f"Could not load any save (tried {candidates})") from last_error
+        raise RuntimeError(
+            f"Could not load any save (tried {candidates})"
+        ) from last_error
 
     def flush_save(self, player_state) -> bool:
         try:
@@ -54,7 +58,12 @@ class SaveManager:
                 os.fsync(f.fileno())  # force tmp contents to disk before the rename
 
             if os.path.exists(SAVE_PATH):
-                shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)
+                try:
+                    shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)
+                except Exception as e:
+                    # Backup is best-effort — never let it block promoting a
+                    # good, already-fsynced save.
+                    log.warning("Failed to back up save '%s': %s", SAVE_PATH, e)
 
             os.replace(SAVE_TMP_PATH, SAVE_PATH)
             self.saved_position = data.get("position")

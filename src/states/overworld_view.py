@@ -1,7 +1,6 @@
 import arcade
-from data.config import Config
+from data.config import CONFIG
 from src.constants import FONT, CAMERA_LERP_SPEED, OPPOSITE_DIRECTION
-
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
@@ -23,7 +22,6 @@ from src.world.map_registry import MapRegistry
 from src.world.map_manager import MapManager
 from src.world.transition import parse_transition
 
-CONFIG = Config.load()
 
 # Where the player respawns after whiting out — the Poké Center's named
 # "entrance" spawn point (authored in oldale_town/pokemon_center.tmx).
@@ -45,10 +43,6 @@ class OverworldView(GameView):
         self.data_loader = data_loader
         self.message_service = message_service
 
-        arcade.get_window().ctx.default_texture_filter = (
-            arcade.gl.NEAREST,
-            arcade.gl.NEAREST,
-        )
         arcade.load_font(FONT)
 
         self.player_state = PlayerMotion()
@@ -58,10 +52,14 @@ class OverworldView(GameView):
         self.encounter_system = None
 
         self.keys = set()
-        self.camera = None
         # True while a trainer is walking over to challenge the player; input
         # is frozen so the player can't run off mid-approach.
         self.cutscene = False
+        
+        self.debug_collisions = False
+        # The window exists before any view is constructed, so build the camera
+        # eagerly — setup() replaces it per map, but it is never None.
+        self.camera = arcade.Camera2D()
 
         self.map_manager = MapManager(
             loader=MapLoader(
@@ -265,22 +263,35 @@ class OverworldView(GameView):
         self.camera.use()
         if self.scene and self.transition.can_render_scene:
             self.scene.draw(pixelated=True)
+            if self.debug_collisions:
+                self._draw_collision_debug()
         self.npcs.draw(pixelated=True)
         self.player_sprite.draw()
 
-    def on_key_press(self, key, _):
-        if self.cutscene:
-            return
-        self.keys.add(key)
-        if self.is_pressed(CONFIG.controls.bag, key):
+    def _draw_collision_debug(self):
+        """Programmer-only overlay: red outline over every collision sprite
+        on the current map. Toggled with F1, see on_key_press."""
+        for sprite in self.scene["collision"]:
+            arcade.draw_lrbt_rectangle_outline(
+                sprite.left,
+                sprite.right,
+                sprite.bottom,
+                sprite.top,
+                arcade.color.RED,
+                2,
+            )
+
+    def on_key_press(self, symbol, modifiers):
+        self.keys.add(symbol)
+        if self.is_pressed(CONFIG.controls.bag, symbol):
             self.keys.clear()
             self.overlay("menu")
-            
-        if self.is_pressed(CONFIG.controls.cancel, key):
-            print(f"x {self.player_state.pixel_x}, y {self.player_state.pixel_y}")
 
-    def on_key_release(self, key, _):
-        self.keys.discard(key)
+        if symbol == arcade.key.F1:
+            self.debug_collisions = not self.debug_collisions
+
+    def on_key_release(self, symbol, modifiers):
+        self.keys.discard(symbol)
 
     def _start_battle_transition(self, name, level, data):
         self.transition.start(name, level, data)

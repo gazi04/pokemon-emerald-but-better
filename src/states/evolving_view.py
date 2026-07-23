@@ -5,6 +5,7 @@ import math
 import pytiled_parser
 from src.constants import EVOLVING_UI, EVOLVE_IMAGE_SIZE, TEXT_DELAY
 from src.states.base_view import GameView
+from src.tiled import object_layer
 
 
 class EvolvingView(GameView):
@@ -14,7 +15,7 @@ class EvolvingView(GameView):
         self.overworld = overworldView
 
         tilemap = arcade.load_tilemap(EVOLVING_UI)
-        ui_layer = tilemap.get_tilemap_layer("ui")
+        ui_layer = object_layer(tilemap, "ui")
 
         if not isinstance(ui_layer, pytiled_parser.ObjectLayer):
             raise ValueError(

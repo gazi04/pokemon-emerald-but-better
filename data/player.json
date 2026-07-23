@@ -5,30 +5,35 @@
             "hp": 10,
             "level": 4,
             "exp": 1,
+            "ability": "blaze",
             "moves": [
                 {
                     "name": "tackle",
                     "pp": 25
                 }
-            ]
+            ],
+            "held_item": null
         },
         {
             "name": "mudkip",
             "hp": 10,
             "level": 9,
             "exp": 46,
+            "ability": "blaze",
             "moves": [
                 {
                     "name": "tackle",
                     "pp": 10
                 }
-            ]
+            ],
+            "held_item": null
         },
         {
             "name": "combusken",
             "hp": 33,
             "level": 16,
             "exp": 46,
+            "ability": "blaze",
             "moves": [
                 {
                     "name": "close combat",
@@ -38,22 +43,27 @@
                     "name": "tackle",
                     "pp": 10
                 }
-            ]
+            ],
+            "held_item": null
         }
     ],
-    "items": [
-        {
-            "name": "potion",
-            "count": 2
+    "items": {
+        "potion": {
+            "count": 2,
+            "category": "medicine"
+        },
+        "pokeball": {
+            "count": 95,
+            "category": "pokeball"
         }
+    },
+    "seen": [
+        "combusken",
+        "mudkip",
+        "poochyena",
+        "zigzagoon",
+        "torchic"
     ],
-    "pokeballs": [
-        {
-            "name": "pokeball",
-            "count": 95
-        }
-    ],
-    "seen": ["combusken", "mudkip", "poochyena", "zigzagoon", "torchic"],
     "money": 1000,
     "position": {
         "map_name": "littleroot_town",

@@ -18,6 +18,8 @@ class TrainerPokemon:
 
     name: str
     level: int
+    ability: str
+    held_item: str | None
     moves: list[TrainerPokemonMove]
 
 
@@ -34,7 +36,13 @@ class Trainer:
                 for move in pokemon["moves"]
             ]
             self.party.append(
-                TrainerPokemon(pokemon["name"], pokemon["level"], moves)
+                TrainerPokemon(
+                    pokemon["name"],
+                    pokemon["level"],
+                    pokemon["ability"],
+                    pokemon["held_item"],
+                    moves,
+                )
             )
 
     def clone(self) -> "Trainer":

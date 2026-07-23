@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-import pytest
 
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.systems.pokemon_menu_system import PokemonMenuSystem
@@ -13,7 +12,9 @@ def make_team(names):
             hp=50,
             level=5,
             exp=0,
+            ability="",
             moves=[PlayerPokemonMove(name="tackle", pp=35)],
+            held_item=None,
         )
         for n in names
     ]

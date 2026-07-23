@@ -1,5 +1,6 @@
 """Tests for the map system: MapRegistry, transition parsing, and MapManager
 spawn resolution / lifecycle."""
+
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -16,8 +17,14 @@ from src.world.map_manager import SPAWN_Y_OFFSET, MapManager
 
 def test_registry_path_and_id_round_trip():
     reg = MapRegistry("assets/map")
-    assert reg.path_for("oldale_town/pokemon_center") == "assets/map/oldale_town/pokemon_center.tmx"
-    assert reg.id_from_path("assets/map/oldale_town/pokemon_center.tmx") == "oldale_town/pokemon_center"
+    assert (
+        reg.path_for("oldale_town/pokemon_center")
+        == "assets/map/oldale_town/pokemon_center.tmx"
+    )
+    assert (
+        reg.id_from_path("assets/map/oldale_town/pokemon_center.tmx")
+        == "oldale_town/pokemon_center"
+    )
     # idempotent on an already-clean id
     assert reg.id_from_path("littleroot_town") == "littleroot_town"
 
@@ -71,8 +78,10 @@ def test_layer_finds_rectangle_zone_first():
     z1 = TransitionZone(0, 0, 50, 50, {"target_map": "a"})
     z2 = TransitionZone(50, 50, 100, 100, {"target_map": "b"})
     layer = TransitionLayer([z1, z2], sprites=None)
-    assert layer.find(10, 10)["target_map"] == "a"
-    assert layer.find(75, 75)["target_map"] == "b"
+    first, second = layer.find(10, 10), layer.find(75, 75)
+    assert first is not None and second is not None
+    assert first["target_map"] == "a"
+    assert second["target_map"] == "b"
     assert layer.find(300, 300) is None
     assert len(layer) == 2
 
@@ -86,8 +95,12 @@ def test_layer_empty_returns_none():
 
 def _loaded(spawns):
     return SimpleNamespace(
-        tile_map=None, scene=None, npcs=MagicMock(), npc_controller=None,
-        bush_tiles=set(), spawns=spawns,
+        tile_map=None,
+        scene=None,
+        npcs=MagicMock(),
+        npc_controller=None,
+        bush_tiles=set(),
+        spawns=spawns,
     )
 
 
