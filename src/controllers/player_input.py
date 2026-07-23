@@ -55,6 +55,8 @@ class PlayerInput:
         new_dir = None
         dx = dy = 0
 
+        player_state.is_running = self._is_pressed(controls_config.run, keys)
+
         if self._is_pressed(controls_config.up, keys):
             new_dir, dy = "up", TILE_SIZE
         elif self._is_pressed(controls_config.down, keys):

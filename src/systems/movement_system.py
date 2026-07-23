@@ -6,12 +6,10 @@ from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent
 
 
+WALK_DURATION = 0.25
+RUN_DURATION  = 0.19
+
 class MovementSystem:
-    """
-    Logic layer: Executes movement intent, updating pixel coordinates for the Sprite.
-    Works on any object exposing the GridMotion/PlayerMotion movement fields,
-    so it drives both the player and NPCs.
-    """
 
     def update(
         self, delta_time: float, player_state: PlayerMotion, intent: Optional[dict]
@@ -19,7 +17,7 @@ class MovementSystem:
         events = []
 
         self.begin(player_state, intent)
-
+        
         if self.advance(delta_time, player_state):
             global_bus.publish(
                 PlayerFinishedMoveEvent(
@@ -28,18 +26,15 @@ class MovementSystem:
                     map_name=player_state.map_name,
                 )
             )
-            events.append(
-                {
-                    "type": "finished_moving",
-                    "x": player_state.pixel_x,
-                    "y": player_state.pixel_y,
-                }
-            )
+            events.append({
+                "type": "finished_moving",
+                "x": player_state.pixel_x,
+                "y": player_state.pixel_y,
+            })
 
         return events
 
-    def begin(self, state, intent) -> None:
-        """Start a new step if a 'move' intent is given and we're idle."""
+    def begin(self, state: PlayerMotion, intent: Optional[dict]) -> None:
         if intent and not state.moving and intent.get("type") == "move":
             state.moving = True
             state.move_progress = 0.0
@@ -48,25 +43,17 @@ class MovementSystem:
             state.target_x = intent["target_x"]
             state.target_y = intent["target_y"]
 
-    def advance(self, delta_time: float, state) -> bool:
-        """
-        Progress an in-flight step. Returns True on the frame a step completes.
-        """
+    def advance(self, delta_time: float, state: PlayerMotion) -> bool:
         if not state.moving:
             return False
 
-        duration = state.move_duration if state.move_duration > 0 else 0.25
 
+        duration = RUN_DURATION if state.is_running else WALK_DURATION
         state.move_progress += delta_time / duration
-        if state.move_progress >= 1.0:
-            state.move_progress = 1.0
 
-        state.pixel_x = (
-            state.start_x + (state.target_x - state.start_x) * state.move_progress
-        )
-        state.pixel_y = (
-            state.start_y + (state.target_y - state.start_y) * state.move_progress
-        )
+        progress = min(state.move_progress, 1.0)
+        state.pixel_x = state.start_x + (state.target_x - state.start_x) * progress
+        state.pixel_y = state.start_y + (state.target_y - state.start_y) * progress
 
         if state.move_progress >= 1.0:
             state.pixel_x = state.target_x

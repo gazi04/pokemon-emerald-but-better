@@ -13,3 +13,4 @@ class PlayerMotion(GridMotion):
 
     map_name: str = "littleroot_town"
     move_duration: float = PLAYER_MOVE_DURATION  # override; GridMotion default is 0.2
+    is_running: bool = False
