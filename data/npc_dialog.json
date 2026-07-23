@@ -26,15 +26,10 @@
     "team": [
       {
         "name": "zigzagoon",
-<<<<<<< HEAD
-        "hp": 10,
-        "level": 1,
-=======
         "hp": 45,
         "level": 20,
         "ability": "speed_boost",
         "held_item": null,
->>>>>>> e658047d8a69b240761ad782ac07f0ff1eabde52
         "moves": [
           {
             "name": "extreme speed",
