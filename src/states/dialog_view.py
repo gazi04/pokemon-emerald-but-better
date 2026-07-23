@@ -61,9 +61,15 @@ class DialogView(GameView):
         self.overlay("shop")
 
     def _action_fight(self):
+        # Spend the encounter up front, not on victory — an NPC is fought once
+        # whatever the outcome, so whiting out doesn't hand back a rematch.
+        self.player_manager.npc_manager.mark_fought(self.npc_id)
+
+        # Hand the battle a copy — it drains the party, and the NpcSpecies team
+        # is a shared cached template that must survive for future encounters.
         self.swap(
             "battle_trainer",
-            trainer_data=self.npc.team,
+            trainer_data=self.npc.team.clone(),
             npc_id=self.npc_id,
         )
 

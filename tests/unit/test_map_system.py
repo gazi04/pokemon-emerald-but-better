@@ -9,7 +9,7 @@ import pytest
 from src.world.map_registry import MapRegistry
 from src.world.transition import Transition, parse_transition
 from src.world.transition_layer import TransitionLayer, TransitionZone
-from src.world.map_manager import MapManager
+from src.world.map_manager import SPAWN_Y_OFFSET, MapManager
 
 
 # --- MapRegistry -----------------------------------------------------------
@@ -116,7 +116,7 @@ def _manager(spawns, on_load=None, on_unload=None):
 def test_load_places_player_at_named_spawn():
     mgr, player, loader = _manager({"gate": (100.0, 200.0)})
     mgr.load("oldale_town", "gate")
-    assert (player.pixel_x, player.pixel_y) == (100.0, 200.0)
+    assert (player.pixel_x, player.pixel_y) == (100.0, 200.0 + SPAWN_Y_OFFSET)
     assert mgr.current_map_id == "oldale_town"
     assert player.map_name == "oldale_town"
     loader.load.assert_called_once_with("assets/map/oldale_town.tmx")
@@ -125,19 +125,19 @@ def test_load_places_player_at_named_spawn():
 def test_load_places_player_at_explicit_coords():
     mgr, player, _ = _manager({})
     mgr.load("test", (12.0, 34.0))
-    assert (player.pixel_x, player.pixel_y) == (12.0, 34.0)
+    assert (player.pixel_x, player.pixel_y) == (12.0, 34.0 + SPAWN_Y_OFFSET)
 
 
 def test_unknown_spawn_falls_back_to_default():
     mgr, player, _ = _manager({"default": (5.0, 6.0)})
     mgr.load("test", "does_not_exist")
-    assert (player.pixel_x, player.pixel_y) == (5.0, 6.0)
+    assert (player.pixel_x, player.pixel_y) == (5.0, 6.0 + SPAWN_Y_OFFSET)
 
 
 def test_none_spawn_uses_default_or_leaves_player():
     mgr, player, _ = _manager({"default": (7.0, 8.0)})
     mgr.load("test")  # spawn=None -> default
-    assert (player.pixel_x, player.pixel_y) == (7.0, 8.0)
+    assert (player.pixel_x, player.pixel_y) == (7.0, 8.0 + SPAWN_Y_OFFSET)
 
     mgr2, player2, _ = _manager({})  # no default -> player unchanged
     player2.pixel_x, player2.pixel_y = 99.0, 99.0
@@ -148,13 +148,13 @@ def test_none_spawn_uses_default_or_leaves_player():
 def test_transition_uses_parsed_spawn():
     mgr, player, _ = _manager({"door": (1.0, 2.0)})
     mgr.transition(Transition(target_map="oldale_town", target_spawn="door"))
-    assert (player.pixel_x, player.pixel_y) == (1.0, 2.0)
+    assert (player.pixel_x, player.pixel_y) == (1.0, 2.0 + SPAWN_Y_OFFSET)
 
 
 def test_warp_is_equivalent_to_load():
     mgr, player, _ = _manager({"heal": (3.0, 4.0)})
     mgr.warp("oldale_town/pokemon_center", "heal")
-    assert (player.pixel_x, player.pixel_y) == (3.0, 4.0)
+    assert (player.pixel_x, player.pixel_y) == (3.0, 4.0 + SPAWN_Y_OFFSET)
     assert mgr.current_map_id == "oldale_town/pokemon_center"
 
 
