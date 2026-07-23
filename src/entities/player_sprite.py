@@ -1,119 +1,83 @@
 import arcade
+
 from src.model.motion.player_motion import PlayerMotion
+from .components.animation_manager import AnimationManager
+
+SPRITE_DIR = "assets/sprite/player"
+
+# Art only exists for down/up/left; right is the mirrored left cycle.
+DIRECTIONS = ("down", "up", "left")
+MIRRORED = {"right": "left"}
+
+# Step, idle, step, idle — the classic two-frame overworld walk.
+WALK_SEQUENCE = [0, 2, 1, 2]
+# Contact, passing, contact, other passing — a 3-pose run read as a 4-beat cycle.
+RUN_SEQUENCE = [0, 1, 0, 2]
 
 
 class PlayerSprite(arcade.Sprite):
     def __init__(self):
         super().__init__(scale=1.9)
-        self.idleTextures = {
-            "down": arcade.load_texture(
-                "assets/sprite/player/idle/brendan_idle_down.png"
-            ),
-            "up": arcade.load_texture("assets/sprite/player/idle/brendan_idle_up.png"),
-            "left": arcade.load_texture(
-                "assets/sprite/player/idle/brendan_idle_left.png"
-            ),
-        }
-        self.idleTextures["right"] = self.idleTextures["left"].flip_left_right()
 
-        self.walkTextures = {
-            "down": [
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_down1.png"
-                ),
-                self.idleTextures["down"],
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_down2.png"
-                ),
-                self.idleTextures["down"],
-            ],
-            "up": [
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_up1.png"
-                ),
-                self.idleTextures["up"],
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_up2.png"
-                ),
-                self.idleTextures["up"],
-            ],
-            "left": [
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_left1.png"
-                ),
-                self.idleTextures["left"],
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_left2.png"
-                ),
-                self.idleTextures["left"],
-            ],
-        }
-        
-        self.runningTextures = {
-            "down": [
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_down1.png"
-                ),
-                self.idleTextures["down"],
-                    arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_down2.png"
-                ),
-                self.idleTextures["down"],
-            ],
-            "up": [
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_up1.png"
-                ),
-                self.idleTextures["up"],
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_up2.png"
-                ),
-                self.idleTextures["up"],
-            ],
-            "left": [
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_left1.png"
-                ),
-                self.idleTextures["left"],
-                arcade.load_texture(
-                    "assets/sprite/player/walk_anim/brendan_walk_left2.png"
-                ),
-                self.idleTextures["left"],
-            ],
-        }
+        self.animations = AnimationManager()
+        self._load_animations()
 
-        self.walkTextures["right"] = [
-            tex.flip_left_right() for tex in self.walkTextures["left"]
-        ]
-        
-        self.runningTextures["right"] = [
-            tex.flip_left_right() for tex in self.runningTextures["left"]
-        ]
+        self.texture = self._frame("idle", "down", 0.0)
 
-    def sync_with_state(self, state: PlayerMotion):
+    # ------------------------------------------------------------------
+    # Setup
+    # ------------------------------------------------------------------
+
+    def _load_animations(self) -> None:
+        for direction in DIRECTIONS:
+            idle = arcade.load_texture(
+                f"{SPRITE_DIR}/idle/brendan_idle_{direction}.png"
+            )
+
+            # Walk reuses the idle pose as its in-between, so it ships two
+            # textures and points at idle twice via the sequence.
+            walk = [
+                arcade.load_texture(
+                    f"{SPRITE_DIR}/walk/brendan_walk_{direction}{n}.png"
+                )
+                for n in (1, 2)
+            ]
+            run = [
+                arcade.load_texture(f"{SPRITE_DIR}/run/brendan_run_{direction}{n}.png")
+                for n in (1, 2, 3)
+            ]
+
+            self.animations.add("idle", direction, [idle])
+            self.animations.add("walk", direction, walk + [idle], WALK_SEQUENCE)
+            self.animations.add("run", direction, run, RUN_SEQUENCE)
+
+        for direction, source in MIRRORED.items():
+            for name in ("idle", "walk", "run"):
+                self.animations.add_animation(
+                    name, direction, self.animations.get(name, source).flipped()
+                )
+
+    # ------------------------------------------------------------------
+    # Per-frame
+    # ------------------------------------------------------------------
+
+    def sync_with_state(self, state: PlayerMotion) -> None:
         self.center_x = state.pixel_x
         self.center_y = state.pixel_y
 
-        if state.is_running and state.moving:
-            progress = int(state.move_progress * 4) % 4
-            self.set_running_frame(state.direction, progress)
         if state.moving:
-            progress = int(state.move_progress * 4) % 4
-            self.set_walk_frame(state.direction, progress)
+            name = "run" if state.is_running else "walk"
+            self.texture = self._frame(name, state.direction, state.move_progress)
         else:
-            self.set_idle(state.direction)
+            self.texture = self._frame("idle", state.direction, 0.0)
 
-    def draw(self):
+    def _frame(self, name: str, direction: str, progress: float) -> arcade.Texture:
+        """Current texture for an animation, holding the last good pose if a
+        direction has no art rather than blowing up mid-render."""
+        animation = self.animations.get(name, direction)
+        if animation is None:
+            return self.texture
+        return animation.frame(progress)
+
+    def draw(self) -> None:
         arcade.draw_sprite(self)
-
-    def set_idle(self, direction: str):
-        if direction in self.idleTextures:
-            self.texture = self.idleTextures[direction]
-
-    def set_walk_frame(self, direction: str, progress:int):
-        if direction in self.walkTextures:
-            self.texture = self.walkTextures[direction][progress % 4]
-            
-    def set_running_frame(self, direction: str, progress:int):
-        if direction in self.runningTextures:
-            self.texture = self.runningTextures[direction][progress % 4]

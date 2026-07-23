@@ -48,9 +48,11 @@ class MovementSystem:
             return False
 
         duration = RUN_DURATION if state.is_running else WALK_DURATION
-        state.move_progress += delta_time / duration
+        # Clamp the stored progress, not just the local copy: a huge delta must
+        # not leave a >1 value behind for animations to read.
+        state.move_progress = min(state.move_progress + delta_time / duration, 1.0)
 
-        progress = min(state.move_progress, 1.0)
+        progress = state.move_progress
         state.pixel_x = state.start_x + (state.target_x - state.start_x) * progress
         state.pixel_y = state.start_y + (state.target_y - state.start_y) * progress
 
