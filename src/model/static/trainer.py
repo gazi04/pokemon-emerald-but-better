@@ -36,3 +36,12 @@ class Trainer:
             self.party.append(
                 TrainerPokemon(pokemon["name"], pokemon["level"], moves)
             )
+
+    def clone(self) -> "Trainer":
+        """A battle-safe copy. The battle drains its party as Pokémon faint, so
+        it must never run on the cached species template — otherwise the NPC is
+        left with an empty team on any later encounter. Rosters are read-only
+        during a fight, so a fresh party list (same entries) is enough."""
+        copy = Trainer([])
+        copy.party = list(self.party)
+        return copy

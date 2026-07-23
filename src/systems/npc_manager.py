@@ -37,9 +37,14 @@ class NPCManager:
         state.defeated = True
 
     def can_fight(self, npc_id: str) -> bool:
-        """Check if NPC can be fought (not already defeated)."""
+        """Whether this NPC still has a battle to give.
+
+        One battle per NPC, ever. The encounter is spent the moment it starts
+        (`mark_fought`), so whiting out uses it up just like winning does —
+        a beaten player can't come back for a rematch.
+        """
         state = self.get_state(npc_id)
-        return not state.defeated
+        return not state.has_fought and not state.defeated
 
     def set_flag(self, npc_id: str, flag_name: str, value: bool):
         """Set a custom state flag (e.g., 'gave_item', 'completed_quest')."""
