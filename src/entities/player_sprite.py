@@ -48,15 +48,55 @@ class PlayerSprite(arcade.Sprite):
                 self.idleTextures["left"],
             ],
         }
+        
+        self.runningTextures = {
+            "down": [
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_down1.png"
+                ),
+                self.idleTextures["down"],
+                    arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_down2.png"
+                ),
+                self.idleTextures["down"],
+            ],
+            "up": [
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_up1.png"
+                ),
+                self.idleTextures["up"],
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_up2.png"
+                ),
+                self.idleTextures["up"],
+            ],
+            "left": [
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_left1.png"
+                ),
+                self.idleTextures["left"],
+                arcade.load_texture(
+                    "assets/sprite/player/walk_anim/brendan_walk_left2.png"
+                ),
+                self.idleTextures["left"],
+            ],
+        }
 
         self.walkTextures["right"] = [
             tex.flip_left_right() for tex in self.walkTextures["left"]
+        ]
+        
+        self.runningTextures["right"] = [
+            tex.flip_left_right() for tex in self.runningTextures["left"]
         ]
 
     def sync_with_state(self, state: PlayerMotion):
         self.center_x = state.pixel_x
         self.center_y = state.pixel_y
 
+        if state.is_running and state.moving:
+            progress = int(state.move_progress * 4) % 4
+            self.set_running_frame(state.direction, progress)
         if state.moving:
             progress = int(state.move_progress * 4) % 4
             self.set_walk_frame(state.direction, progress)
@@ -66,10 +106,14 @@ class PlayerSprite(arcade.Sprite):
     def draw(self):
         arcade.draw_sprite(self)
 
-    def set_idle(self, direction):
+    def set_idle(self, direction: str):
         if direction in self.idleTextures:
             self.texture = self.idleTextures[direction]
 
-    def set_walk_frame(self, direction, progress):
+    def set_walk_frame(self, direction: str, progress:int):
         if direction in self.walkTextures:
             self.texture = self.walkTextures[direction][progress % 4]
+            
+    def set_running_frame(self, direction: str, progress:int):
+        if direction in self.runningTextures:
+            self.texture = self.runningTextures[direction][progress % 4]

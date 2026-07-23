@@ -47,7 +47,6 @@ class MovementSystem:
         if not state.moving:
             return False
 
-
         duration = RUN_DURATION if state.is_running else WALK_DURATION
         state.move_progress += delta_time / duration
 
