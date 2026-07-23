@@ -5,7 +5,15 @@ the battle must not drain the cached species roster."""
 from src.model.static.trainer import Trainer
 from src.systems.npc_manager import NPCManager
 
-ROSTER = [{"name": "zigzagoon", "level": 5, "moves": [{"name": "tackle", "pp": 25}]}]
+ROSTER = [
+    {
+        "name": "zigzagoon",
+        "level": 5,
+        "ability": "pickup",
+        "held_item": None,
+        "moves": [{"name": "tackle", "pp": 25}],
+    }
+]
 
 
 # --- defeated state is the once-only switch ---------------------------------

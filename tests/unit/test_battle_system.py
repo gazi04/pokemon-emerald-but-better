@@ -361,3 +361,39 @@ def test_persist_active_pokemon_passes_evolution_when_evolved():
     sm.player.update_level.assert_called_once_with(
         "mudkip", battle.level, battle.exp, "marshtomp"
     )
+
+
+# --- empty enemy moveset (defensive bounds guard) ---
+
+
+def test_select_move_returns_none_for_empty_moveset():
+    from src.systems.enemy_ai import EnemyAI
+
+    _, your, enemy = make_battle_system()
+    enemy.moves = []
+    ai = EnemyAI(1, MagicMock())
+    assert ai.select_move(enemy, your) is None
+
+
+def test_turn_does_not_raise_with_empty_enemy_moveset():
+    bs, _, enemy = make_battle_system()
+    enemy.moves = []
+    messages = bs.turn(0)
+    assert isinstance(messages, list)
+    assert all(action[0] != "enemy" for action in bs.turn_queue)
+
+
+def test_attempt_catch_does_not_raise_with_empty_enemy_moveset():
+    bs, _, enemy = make_battle_system()
+    enemy.moves = []
+    enemy.current_hp = (
+        enemy.max_hp
+    )  # low catch chance -> exercises the break-free branch
+    cast(
+        MagicMock, bs.data_loader
+    ).get_pokemon.return_value = None  # fall back to default catch_rate
+    item_data = MagicMock()
+    item_data.effects = []
+    result = bs.attempt_catch(item_data)
+    assert isinstance(result, dict)
+    assert bs.turn_queue == [] or all(a[0] != "enemy" for a in bs.turn_queue)

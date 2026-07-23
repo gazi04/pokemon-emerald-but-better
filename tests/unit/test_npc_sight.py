@@ -1,6 +1,7 @@
 """Trainer line-of-sight: spotting the player, walking over, and challenging."""
 from types import SimpleNamespace
 
+import arcade
 import pytest
 
 from src.constants import TILE_SIZE
@@ -90,6 +91,7 @@ def test_spotting_publishes_event_and_steps_toward_player(captured):
 
     assert ("spotted", "trainer") in captured
     assert behavior.state == behavior.APPROACH
+    assert intent is not None
     assert intent["type"] == "move"
     assert intent["direction"] == "down"
     assert intent["target_y"] == 100.0 - TILE_SIZE  # y-up: "down" decreases y
@@ -113,6 +115,7 @@ def test_approach_walks_then_challenges_on_arrival(captured):
 
     world = FakeWorld(sight=2)
     first = behavior.decide(npc, world, 0.1)
+    assert first is not None
     assert first["type"] == "move"
 
     npc.motion.pixel_y = first["target_y"]  # controller moved it
@@ -155,7 +158,7 @@ def make_controller(player_x, player_y, walls=()):
         [object()] if (round(point[0]), round(point[1])) in wall_cells else []
     )
     return module.NpcController(
-        npcs=[],
+        npcs=arcade.SpriteList(),
         movement_system=None,
         collision_tiles=None,
         player_state=SimpleNamespace(
@@ -229,4 +232,5 @@ def test_sight_range_zero_opts_out():
 
 def test_sight_range_is_read_from_properties():
     behavior = make_behavior({"sight_range": 7}, can_challenge=lambda _id: True)
+    assert isinstance(behavior, TrainerSightBehavior)
     assert behavior.sight_range == 7
