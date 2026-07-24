@@ -3,7 +3,7 @@ from typing import Optional
 from src.model.motion.player_motion import PlayerMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
-from src.core.events import NpcInteractEvent
+from src.core.events import ItemPickedUpEvent, NpcInteractEvent
 import arcade
 
 
@@ -23,6 +23,7 @@ class PlayerInput:
         collision_tiles,
         transitions,
         npcs=None,
+        items=None,
     ) -> Optional[dict]:
         """
         Reads keyboard/gamepad and requests a state change.
@@ -32,22 +33,32 @@ class PlayerInput:
             return None
 
         interact_pressed = self._is_pressed(controls_config.interact, keys)
-        if (
-            interact_pressed
-            and not self._interact_pressed_last_frame
-            and npcs is not None
-        ):
+        if interact_pressed and not self._interact_pressed_last_frame:
             dx, dy = self._facing_offset(player_state.direction)
-            for step in (1, 2):
-                hit = arcade.get_sprites_at_point(
-                    (
-                        player_state.pixel_x + dx * step,
-                        player_state.pixel_y + dy * step,
-                    ),
-                    npcs,
+
+            if npcs is not None:
+                for step in (1, 2):
+                    hit = arcade.get_sprites_at_point(
+                        (
+                            player_state.pixel_x + dx * step,
+                            player_state.pixel_y + dy * step,
+                        ),
+                        npcs,
+                    )
+                    if hit:
+                        global_bus.publish(NpcInteractEvent(npc_id=hit[0].npc_id))
+                        self._interact_pressed_last_frame = True
+                        return None
+
+            # Ground items sit on the tile you're facing, like the real games.
+            if items is not None:
+                item = items.find(
+                    player_state.pixel_x + dx, player_state.pixel_y + dy
                 )
-                if hit:
-                    global_bus.publish(NpcInteractEvent(npc_id=hit[0].npc_id))
+                if item is not None:
+                    global_bus.publish(
+                        ItemPickedUpEvent(key=item.key, item_id=item.item_id)
+                    )
                     self._interact_pressed_last_frame = True
                     return None
         self._interact_pressed_last_frame = interact_pressed
@@ -81,6 +92,11 @@ class PlayerInput:
             if npcs is not None and arcade.get_sprites_at_point(
                 (target_x, target_y), npcs
             ):
+                return {"type": "turn", "direction": new_dir}
+
+            # Ground items are solid — you stop in front and press interact,
+            # rather than walking over them.
+            if items is not None and items.find(target_x, target_y) is not None:
                 return {"type": "turn", "direction": new_dir}
 
             # Check collisions

@@ -18,6 +18,7 @@ class DialogView(GameView):
         after_text_callback,
         npc_id: str,
         state: str = "default",
+        lines: list[str] | None = None,
     ):
         super().__init__()
 
@@ -26,13 +27,21 @@ class DialogView(GameView):
         self.message_service = message_service
         self.ui = DialogUI()
 
-        self.npc = data_loader.npc_dialog[npc_id]
         self.npc_id = npc_id
-        # The caller may override what happens after the dialog (e.g. a beaten
-        # trainer should just close instead of fighting again).
-        self.action = self.npc.action_after_dialog
         self.dialog_index = 0
-        self.dialog = self.npc.get_dialog(state)
+
+        if lines is not None:
+            # Speaker-less text (an item pickup, a sign) — no NPC to look up,
+            # and nothing to do afterwards but close.
+            self.npc = None
+            self.action = "end"
+            self.dialog = list(lines)
+        else:
+            self.npc = data_loader.npc_dialog[npc_id]
+            # The caller may override what happens after the dialog (e.g. a
+            # beaten trainer should just close instead of fighting again).
+            self.action = self.npc.action_after_dialog
+            self.dialog = self.npc.get_dialog(state)
 
         self._action_handlers = {
             "shop": self._action_shop,

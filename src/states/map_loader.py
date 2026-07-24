@@ -9,6 +9,7 @@ from src.systems.npc_controller import NpcController
 from src.systems.npc_behaviors import make_behavior
 from src.entities.npc import Npc
 from src.world.transition_layer import TransitionLayer
+from src.world.item_layer import ItemLayer
 
 log = get_logger(__name__)
 
@@ -45,6 +46,7 @@ class LoadedMap:
     bush_tiles: set[tuple[int, int]]
     spawns: dict[str, tuple[float, float]]
     transitions: TransitionLayer
+    items: ItemLayer
 
 
 class MapLoader:
@@ -52,15 +54,19 @@ class MapLoader:
     bush set) from a .tmx path. No view or render state — pure map build, so
     OverworldView keeps only draw + input + lifecycle + nav."""
 
-    def __init__(self, movement_system, player_state):
+    def __init__(self, movement_system, player_state, collected_items=None):
         self.movement_system = movement_system
         self.player_state = player_state
+        # Callable returning the set of already-taken item keys, so picked-up
+        # items stay gone when the map is re-entered. None = nothing collected.
+        self.collected_items = collected_items
 
-    def load(self, map_path: str) -> LoadedMap:
+    def load(self, map_path: str, map_id: str = "") -> LoadedMap:
         layer_options = {
             "collision": {"use_spatial_hash": True},
             "bush": {"use_spatial_hash": True},
             "transitions": {"use_spatial_hash": True},
+            "items": {"use_spatial_hash": True},
         }
         tile_map = arcade.tilemap.load_tilemap(
             map_path, scaling=2.0, layer_options=layer_options
@@ -72,9 +78,18 @@ class MapLoader:
         bush_tiles = self._extract_bush_tiles(scene)
         spawns = self._extract_spawns(tile_map)
         transitions = TransitionLayer.from_map(tile_map, scene)
+        collected = self.collected_items() if self.collected_items else set()
+        items = ItemLayer.from_map(scene, map_id or map_path, collected)
 
         return LoadedMap(
-            tile_map, scene, npcs, npc_controller, bush_tiles, spawns, transitions
+            tile_map,
+            scene,
+            npcs,
+            npc_controller,
+            bush_tiles,
+            spawns,
+            transitions,
+            items,
         )
 
     def _extract_spawns(

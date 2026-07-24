@@ -55,7 +55,7 @@ class MapManager:
 
         self._unload()
 
-        loaded = self._loader.load(self._registry.path_for(map_id))
+        loaded = self._loader.load(self._registry.path_for(map_id), map_id)
         self.loaded = loaded
         self.current_map_id = map_id
         self._player_state.map_name = map_id

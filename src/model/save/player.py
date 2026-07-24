@@ -41,6 +41,8 @@ class PlayerSave:
     seen: list[str] = field(default_factory=list)
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)
+    # Keys of overworld items already picked up, so they never respawn.
+    collected_items: list[str] = field(default_factory=list)
 
     def get_pokemon(self, name: str) -> Optional[PlayerPokemon]:
         target = name.lower()

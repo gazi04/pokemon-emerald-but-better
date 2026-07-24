@@ -72,20 +72,20 @@
             "scale": 5.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 264,
-                "y": 200
+                "x": 256,
+                "y": 384
             }
         },
         "map/oldale_town.tmx": {
             "expandedObjectLayers": [
-                5,
-                6
+                6,
+                5
             ],
             "scale": 4,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 312,
-                "y": 216
+                "x": 256.125,
+                "y": 256
             }
         },
         "map/oldale_town/Interior Tilesets.tsx": {
@@ -149,7 +149,7 @@
             "selectedLayer": 1,
             "viewCenter": {
                 "x": 388,
-                "y": 410
+                "y": 522
             }
         },
         "map/rote101.tmx": {
@@ -361,7 +361,7 @@
     "project": "pokemon-emerald.tiled-project",
     "property.type": "string",
     "recentFiles": [
-
+        "map/Interior Tilesets.tsx",
         "ui/sprites/ui.tsx",
         "ui/pokemon_info_ui_design.tmx",
         "ui/battleUiDesign.tmx",
@@ -372,9 +372,7 @@
         "map/oldale_town/home1.tmx",
         "map/oldale_town/home2.tmx",
         "ui/second_home_room.tmx",
-        "map/little_root_town/second_home.tmx",
-        "map/little_root_town/home.tmx"
-
+        "map/little_root_town/second_home.tmx"
     ],
     "resizeMap.removeObjects": false,
     "tileset.lastUsedFormat": "tsx",

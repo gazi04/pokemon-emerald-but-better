@@ -53,6 +53,7 @@ class PlayerSerializer:
             seen=seen,
             money=data.get("money", 0),
             npc_states=data.get("npc_states", []),
+            collected_items=data.get("collected_items", []),
         )
 
     @staticmethod
@@ -85,6 +86,7 @@ class PlayerSerializer:
             "seen": list(player.seen),
             "money": player.money,
             "npc_states": player.npc_states,
+            "collected_items": list(player.collected_items),
         }
         if motion is not None:
             data["position"] = PlayerSerializer.position(motion)
