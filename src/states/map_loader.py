@@ -10,6 +10,7 @@ from src.systems.npc_behaviors import make_behavior
 from src.entities.npc import Npc
 from src.world.transition_layer import TransitionLayer
 from src.world.item_layer import ItemLayer
+from src.world.ledge_layer import LedgeLayer
 
 log = get_logger(__name__)
 
@@ -47,6 +48,7 @@ class LoadedMap:
     spawns: dict[str, tuple[float, float]]
     transitions: TransitionLayer
     items: ItemLayer
+    ledges: LedgeLayer
 
 
 class MapLoader:
@@ -67,6 +69,7 @@ class MapLoader:
             "bush": {"use_spatial_hash": True},
             "transitions": {"use_spatial_hash": True},
             "items": {"use_spatial_hash": True},
+            "ledges": {"use_spatial_hash": True},
         }
         tile_map = arcade.tilemap.load_tilemap(
             map_path, scaling=2.0, layer_options=layer_options
@@ -78,6 +81,7 @@ class MapLoader:
         bush_tiles = self._extract_bush_tiles(scene)
         spawns = self._extract_spawns(tile_map)
         transitions = TransitionLayer.from_map(tile_map, scene)
+        ledges = LedgeLayer.from_map(tile_map, scene)
         collected = self.collected_items() if self.collected_items else set()
         items = ItemLayer.from_map(scene, map_id or map_path, collected)
 
@@ -90,6 +94,7 @@ class MapLoader:
             spawns,
             transitions,
             items,
+            ledges,
         )
 
     def _extract_spawns(

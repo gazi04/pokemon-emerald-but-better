@@ -42,6 +42,9 @@ class MovementSystem:
             state.start_y = state.pixel_y
             state.target_x = intent["target_x"]
             state.target_y = intent["target_y"]
+            # Only the player hops; NPC GridMotion has no such field.
+            if hasattr(state, "is_hopping"):
+                state.is_hopping = bool(intent.get("hop"))
 
     def advance(self, delta_time: float, state: PlayerMotion) -> bool:
         if not state.moving:

@@ -14,3 +14,6 @@ class PlayerMotion(GridMotion):
     map_name: str = "littleroot_town"
     move_duration: float = PLAYER_MOVE_DURATION  # override; GridMotion default is 0.2
     is_running: bool = False
+    # True while hopping a ledge — a two-tile move the sprite renders with an
+    # arc. Logical position still tweens linearly; only the drawn height bobs.
+    is_hopping: bool = False

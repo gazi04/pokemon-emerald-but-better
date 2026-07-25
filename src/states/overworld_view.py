@@ -125,6 +125,7 @@ class OverworldView(GameView):
         self.npc_controller = loaded.npc_controller
         self.transitions = loaded.transitions
         self.items = loaded.items
+        self.ledges = loaded.ledges
         self.camera = arcade.Camera2D()
 
         if self.encounter_system:
@@ -234,6 +235,7 @@ class OverworldView(GameView):
             self.transitions,
             self.npcs,
             self.items,
+            self.ledges,
         )
 
         if intent and intent["type"] == "transition":

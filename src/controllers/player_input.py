@@ -24,6 +24,7 @@ class PlayerInput:
         transitions,
         npcs=None,
         items=None,
+        ledges=None,
     ) -> Optional[dict]:
         """
         Reads keyboard/gamepad and requests a state change.
@@ -99,6 +100,14 @@ class PlayerInput:
             if items is not None and items.find(target_x, target_y) is not None:
                 return {"type": "turn", "direction": new_dir}
 
+            # Ledges: hoppable one way, a wall every other way.
+            if ledges is not None:
+                ledge_dir = ledges.find(target_x, target_y)
+                if ledge_dir is not None:
+                    return self._resolve_ledge(
+                        player_state, new_dir, dx, dy, ledge_dir, collision_tiles
+                    )
+
             # Check collisions
             hit_list = arcade.get_sprites_at_point(
                 (target_x, target_y), collision_tiles
@@ -109,6 +118,31 @@ class PlayerInput:
                 return {"type": "turn", "direction": new_dir}
 
         return None
+
+    def _resolve_ledge(
+        self, player_state, new_dir, dx, dy, ledge_dir, collision_tiles
+    ) -> dict:
+        """Turn a step into a ledge tile into either a hop or a block.
+
+        You may only cross a ledge in its authored direction; approach it from
+        any other side and it's a wall. A valid hop clears the ledge and lands
+        two tiles out — but only if that landing tile is itself free.
+        """
+        if new_dir != ledge_dir:
+            return {"type": "turn", "direction": new_dir}
+
+        landing_x = player_state.pixel_x + dx * 2
+        landing_y = player_state.pixel_y + dy * 2
+
+        if arcade.get_sprites_at_point((landing_x, landing_y), collision_tiles):
+            return {"type": "turn", "direction": new_dir}
+
+        return {
+            "type": "move",
+            "target_x": landing_x,
+            "target_y": landing_y,
+            "hop": True,
+        }
 
     def _facing_offset(self, direction: str) -> tuple[int, int]:
         return {

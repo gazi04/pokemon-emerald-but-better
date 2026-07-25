@@ -56,13 +56,6 @@
  <objectgroup id="7" name="spawns">
   <object id="17" name="entrance" gid="2" x="256" y="192" width="16" height="16"/>
  </objectgroup>
- <objectgroup id="8" name="items">
-  <object id="18" name="potion" gid="2" x="256" y="352.5" width="16" height="16">
-   <properties>
-    <property name="item_id" value="potion"/>
-   </properties>
-  </object>
- </objectgroup>
  <layer id="3" name="collision" width="32" height="48">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

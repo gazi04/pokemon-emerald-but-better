@@ -1,9 +1,14 @@
+import math
+
 import arcade
 
 from src.model.motion.player_motion import PlayerMotion
 from .components.animation_manager import AnimationManager
 
 SPRITE_DIR = "assets/sprite/player"
+
+# Peak height (world px) the sprite rises to at the middle of a ledge hop.
+HOP_HEIGHT = 24.0
 
 # Art only exists for down/up/left; right is the mirrored left cycle.
 DIRECTIONS = ("down", "up", "left")
@@ -66,6 +71,12 @@ class PlayerSprite(arcade.Sprite):
         self.center_y = state.pixel_y
 
         if state.moving:
+            # A ledge hop rises and falls over the move; a half-sine peaks at
+            # mid-hop and returns to zero on landing. Purely visual — logical
+            # position (and the camera that follows it) stays on the ground.
+            if state.is_hopping:
+                self.center_y += math.sin(math.pi * state.move_progress) * HOP_HEIGHT
+
             name = "run" if state.is_running else "walk"
             self.texture = self._frame(name, state.direction, state.move_progress)
         else:

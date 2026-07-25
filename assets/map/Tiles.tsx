@@ -6,4 +6,24 @@
    <property name="pokemon" value="torchic, mudkip"/>
   </properties>
  </tile>
+ <tile id="1415">
+  <properties>
+   <property name="direction" value="down"/>
+  </properties>
+ </tile>
+ <tile id="1502">
+  <properties>
+   <property name="direction" value="down"/>
+  </properties>
+ </tile>
+ <tile id="2293">
+  <properties>
+   <property name="direction" value="down"/>
+  </properties>
+ </tile>
+ <tile id="2294">
+  <properties>
+   <property name="direction" value="down"/>
+  </properties>
+ </tile>
 </tileset>
