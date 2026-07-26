@@ -91,68 +91,73 @@ class BagView(GameView):
 
     def on_key_press(self, symbol: int, modifiers: int):
         if self.is_pressed(CONFIG.controls.up, symbol):
-            if self.currentIndex > 0:
-                self.currentIndex -= 1
-                if self.currentIndex < self.topVisibleIndex:
-                    self.topVisibleIndex -= 1
-                self.update_item()
-
+            self._move_selection(-1)
         elif self.is_pressed(CONFIG.controls.down, symbol):
-            if self.currentIndex < len(self.current_inventory) - 1:
-                self.currentIndex += 1
-                if self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS:
-                    self.topVisibleIndex += 1
-                self.update_item()
-
+            self._move_selection(1)
         elif self.is_pressed(CONFIG.controls.right, symbol):
             self.bagIndex = (self.bagIndex + 1) % len(BAG_CATEGORIES)
             self.change_bag()
-
         elif self.is_pressed(CONFIG.controls.left, symbol):
             self.bagIndex = (self.bagIndex - 1) % len(BAG_CATEGORIES)
             self.change_bag()
-
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
             self.window.show_view(self.previousWindow)
+        elif self.is_pressed(CONFIG.controls.interact, symbol):
+            self._on_interact()
 
-        elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex in (
-            0,
-            2,
-        ):
-            self.overlay(
-                "pokemon_menu",
-                previous_view=self,
-                bag=self.bagSystem,
-                item=self.current_inventory[self.currentIndex].name,
-                battle_system=self.battle_system,
-            )
-            self.update_item()
+    def _move_selection(self, delta: int):
+        new_index = self.currentIndex + delta
+        if not (0 <= new_index < len(self.current_inventory)):
+            return
+
+        self.currentIndex = new_index
+        if delta < 0 and self.currentIndex < self.topVisibleIndex:
+            self.topVisibleIndex -= 1
         elif (
-            self.is_pressed(CONFIG.controls.interact, symbol)
-            and self.bagIndex == 1
-            and self.battle_system
+            delta > 0 and self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS
+        ):
+            self.topVisibleIndex += 1
+        self.update_item()
+
+    def _on_interact(self):
+        if self.bagIndex in (0, 2):
+            self._open_item_menu()
+        elif (
+            self.bagIndex == 1
+            and self.battle_system is not None
             and not self.battle_system.is_trainer
         ):
-            pokemon_team = self.battle_system.player_manager.player.pokemon
-            if len(pokemon_team) >= 6:
-                self.window.show_view(
-                    self.previousWindow
-                )  # battle re-registers its box
-                if isinstance(self.previousWindow, BattleView):
-                    self.previousWindow.show_messages(
-                        ["Your party is full!", "You can't catch any more Pokémon."]
-                    )
-                return
+            self._throw_pokeball(self.battle_system)
 
-            pokeball = self.bagSystem.use_pokeball(
-                self.current_inventory[self.currentIndex].name
-            )
-            if pokeball:
-                result = self.battle_system.attempt_catch(pokeball)
-                self.update_item()
-                self.window.show_view(self.previousWindow)
-                if isinstance(self.previousWindow, BattleView):
-                    self.previousWindow.start_catch_attempt(result)
+    def _open_item_menu(self):
+        self.overlay(
+            "pokemon_menu",
+            previous_view=self,
+            bag=self.bagSystem,
+            item=self.current_inventory[self.currentIndex].name,
+            battle_system=self.battle_system,
+        )
+        self.update_item()
+
+    def _throw_pokeball(self, battle_system: BattleSystem):
+        pokemon_team = battle_system.player_manager.player.pokemon
+        if len(pokemon_team) >= 6:
+            self.window.show_view(self.previousWindow)  # battle re-registers its box
+            if isinstance(self.previousWindow, BattleView):
+                self.previousWindow.show_messages(
+                    ["Your party is full!", "You can't catch any more Pokémon."]
+                )
+            return
+
+        pokeball = self.bagSystem.use_pokeball(
+            self.current_inventory[self.currentIndex].name
+        )
+        if pokeball:
+            result = battle_system.attempt_catch(pokeball)
+            self.update_item()
+            self.window.show_view(self.previousWindow)
+            if isinstance(self.previousWindow, BattleView):
+                self.previousWindow.start_catch_attempt(result)
 
     def change_bag(self):
         self.currentIndex = 0

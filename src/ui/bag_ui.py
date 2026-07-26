@@ -124,9 +124,7 @@ class BagUI:
         self.sectionText.text = bag.upper()
         if bag == "items":
             self.bag.texture = self.bagItemTexture
-        elif bag == "pokeball":
-            self.bag.texture = self.bagPokeballTexture
-        elif bag == "berry":
+        elif bag == "pokeball" or bag == "berry":
             self.bag.texture = self.bagPokeballTexture
 
     def set_y_of_cursor(self, index: int):

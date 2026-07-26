@@ -231,6 +231,55 @@ class BattleUiManager:
         for m in messages:
             self.message_box.queue_message(m)
 
+    # Widgets that sit with the player's Pokémon vs. the enemy's — _shift()
+    # moves the two groups by opposite signs so they slide in/out from
+    # opposite screen edges.
+    _PLAYER_LABEL_WIDGETS = (
+        "player_hp_widget",
+        "player_level_label",
+        "player_name_label",
+    )
+    _ENEMY_LABEL_WIDGETS = (
+        "enemy_hp_widget",
+        "enemy_level_label",
+        "enemy_name_label",
+    )
+
+    def _shift(self, delta: float) -> None:
+        """Move every transition-slide element by `delta` (player-side labels/
+        bars) or `-delta` (enemy-side, and the platforms/sprites on both
+        sides, which slide in from behind their own labels).
+
+        set_transition() calls this once with +800 to push everything to its
+        off-screen start position; _process_transition() calls it every frame
+        with -speed to ease back to center — same math, opposite direction.
+        """
+        for name in self._PLAYER_LABEL_WIDGETS:
+            widget = getattr(self, name, None)
+            if widget:
+                widget.center_x += delta
+        for name in self._ENEMY_LABEL_WIDGETS:
+            widget = getattr(self, name, None)
+            if widget:
+                widget.center_x -= delta
+
+        if "player" in self.hp_bars:
+            self.hp_bars["player"]["x"] += delta
+        if "enemy" in self.hp_bars:
+            self.hp_bars["enemy"]["x"] -= delta
+        if self.exp_bar:
+            self.exp_bar["x"] += delta
+
+        if hasattr(self, "player_platform"):
+            self.player_platform.center_x -= delta
+        if hasattr(self, "enemy_platform"):
+            self.enemy_platform.center_x += delta
+
+        if self.your_pokemon:
+            self.your_pokemon.center_x -= delta
+        if self.enemy_pokemon:
+            self.enemy_pokemon.center_x += delta
+
     def set_transition(
         self, your_pokemon, enemy_pokemon, is_trainer, your_name, enemy_name
     ):
@@ -255,69 +304,13 @@ class BattleUiManager:
             )
 
         self.switch_mode("dialog")
-
-        offset = 800
-        # Initialize offset
-        if hasattr(self, "player_hp_widget"):
-            self.player_hp_widget.center_x += offset
-        if hasattr(self, "player_level_label"):
-            self.player_level_label.center_x += offset
-        if hasattr(self, "player_name_label"):
-            self.player_name_label.center_x += offset
-        if "player" in self.hp_bars:
-            self.hp_bars["player"]["x"] += offset
-        if self.exp_bar:
-            self.exp_bar["x"] += offset
-        if hasattr(self, "player_platform"):
-            self.player_platform.center_x -= offset
-        if self.your_pokemon:
-            self.your_pokemon.center_x -= offset
-
-        if hasattr(self, "enemy_hp_widget"):
-            self.enemy_hp_widget.center_x -= offset
-        if hasattr(self, "enemy_level_label"):
-            self.enemy_level_label.center_x -= offset
-        if hasattr(self, "enemy_name_label"):
-            self.enemy_name_label.center_x -= offset
-        if "enemy" in self.hp_bars:
-            self.hp_bars["enemy"]["x"] -= offset
-        if hasattr(self, "enemy_platform"):
-            self.enemy_platform.center_x += offset
-        if self.enemy_pokemon:
-            self.enemy_pokemon.center_x += offset
+        self._shift(800)
 
     def _process_transition(self):
         if not self.is_sliding:
             return
 
-        speed = 7
-        if hasattr(self, "player_hp_widget"):
-            self.player_hp_widget.center_x -= speed
-        if hasattr(self, "player_level_label"):
-            self.player_level_label.center_x -= speed
-        if hasattr(self, "player_name_label"):
-            self.player_name_label.center_x -= speed
-        if "player" in self.hp_bars:
-            self.hp_bars["player"]["x"] -= speed
-        if self.exp_bar:
-            self.exp_bar["x"] -= speed
-        if hasattr(self, "player_platform"):
-            self.player_platform.center_x += speed
-        if self.your_pokemon:
-            self.your_pokemon.center_x += speed
-
-        if hasattr(self, "enemy_hp_widget"):
-            self.enemy_hp_widget.center_x += speed
-        if hasattr(self, "enemy_level_label"):
-            self.enemy_level_label.center_x += speed
-        if hasattr(self, "enemy_name_label"):
-            self.enemy_name_label.center_x += speed
-        if "enemy" in self.hp_bars:
-            self.hp_bars["enemy"]["x"] += speed
-        if hasattr(self, "enemy_platform"):
-            self.enemy_platform.center_x -= speed
-        if self.enemy_pokemon:
-            self.enemy_pokemon.center_x -= speed
+        self._shift(-7)
 
         if (
             hasattr(self, "player_hp_widget")
