@@ -1,6 +1,6 @@
 import copy
 import random
-from typing import Optional, cast
+from typing import cast
 from src.model.static.pokemon import PokemonMove, PokemonSpecies, PokemonStat
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.enums.stat import Stat
@@ -23,10 +23,10 @@ class BattlePokemon:
         moves: list[PlayerPokemonMove],
         level: int,
         exp: int,
-        ability: Optional[Ability],
-        current_hp: Optional[int],
-        source: Optional[PlayerPokemon],
-        held_item: Optional[ItemSpecies] = None,
+        ability: Ability | None,
+        current_hp: int | None,
+        source: PlayerPokemon | None,
+        held_item: ItemSpecies | None = None,
     ):
         self.is_enemy = is_enemy
         self._apply(
@@ -44,12 +44,12 @@ class BattlePokemon:
     @classmethod
     def from_player(
         cls,
-        ability: Optional[Ability],
+        ability: Ability | None,
         species: PokemonSpecies,
         player_pokemon: PlayerPokemon,
         is_enemy: bool = False,
-        held_item: Optional[ItemSpecies] = None,
-    ) -> "BattlePokemon":
+        held_item: ItemSpecies | None = None,
+    ) -> BattlePokemon:
         return cls(
             species,
             is_enemy,
@@ -70,10 +70,10 @@ class BattlePokemon:
         name: str,
         level: int,
         moves: list,
-        ability: Optional[Ability],
+        ability: Ability | None,
         is_enemy: bool = True,
-        held_item: Optional[ItemSpecies] = None,
-    ) -> "BattlePokemon":
+        held_item: ItemSpecies | None = None,
+    ) -> BattlePokemon:
         return cls(
             species, is_enemy, name, moves, level, 0, ability, None, None, held_item
         )
@@ -85,10 +85,10 @@ class BattlePokemon:
         moves: list[PlayerPokemonMove],
         level: int,
         exp: int,
-        ability: Optional[Ability],
-        current_hp: Optional[int],
-        source: Optional[PlayerPokemon],
-        held_item: Optional[ItemSpecies] = None,
+        ability: Ability | None,
+        current_hp: int | None,
+        source: PlayerPokemon | None,
+        held_item: ItemSpecies | None = None,
     ):
         """Build/rebuild this pokemon's state from resolved values. Shared by
         the constructor and switching_pokemon so both stay in sync."""
@@ -163,7 +163,7 @@ class BattlePokemon:
     def calculate_stats(self):
         self.stats = self.base_stat.at_level(self.level)
 
-    def copy_for_simulation(self) -> "BattlePokemon":
+    def copy_for_simulation(self) -> BattlePokemon:
         """Cheap clone for AI lookahead — only current_hp, status_effect, and
         modifiers get mutated during simulation, so a shallow copy plus an
         isolated modifiers dict is enough. Avoids copy.deepcopy() dragging
@@ -173,7 +173,10 @@ class BattlePokemon:
         return clone
 
     def get_stat(self, stat: Stat) -> int:
-        """Return the stage-modified value of a stat (for HP, read self.stats.hp directly)."""
+        """Return the stage-modified value of a stat.
+
+        For HP, read self.stats.hp directly.
+        """
         base = getattr(self.stats, stat, 0)
         stage = self.modifiers.get(stat, 0)
         if stage > 0:
@@ -202,9 +205,9 @@ class BattlePokemon:
     def switching_pokemon(
         self,
         player_pokemon: PlayerPokemon,
-        ability: Optional[Ability],
+        ability: Ability | None,
         data: PokemonSpecies,
-        held_item: Optional[ItemSpecies] = None,
+        held_item: ItemSpecies | None = None,
     ):
         self._apply(
             data,
@@ -263,7 +266,7 @@ class BattlePokemon:
                     return (pre_messages, False)
 
         if self.moves[move_index].pp <= 0:
-            return (pre_messages + ["But there is no PP left!"], False)
+            return ([*pre_messages, "But there is no PP left!"], False)
 
         # Decrement PP here — move is confirmed to execute
         self.moves[move_index].pp -= 1
@@ -282,7 +285,7 @@ class BattlePokemon:
     # messages instead of accepting a mutable list parameter.
     # ------------------------------------------------------------------
 
-    def execute_effects(self, move: PokemonMove, target: "BattlePokemon") -> list[str]:
+    def execute_effects(self, move: PokemonMove, target: BattlePokemon) -> list[str]:
         """
         Apply stat/status effects from a move.
         Returns UI messages. Mutates self and target's modifiers/status.
@@ -298,7 +301,7 @@ class BattlePokemon:
 
         return messages
 
-    def _apply_stat_effect(self, effect, destination: "BattlePokemon") -> list[str]:
+    def _apply_stat_effect(self, effect, destination: BattlePokemon) -> list[str]:
         messages = []
         stat = effect.stat
         change = effect.change
@@ -322,7 +325,7 @@ class BattlePokemon:
 
         return messages
 
-    def _apply_status_effect(self, effect, destination: "BattlePokemon") -> list[str]:
+    def _apply_status_effect(self, effect, destination: BattlePokemon) -> list[str]:
         message = []
         chance = effect.chance if effect.chance else 100
         if chance >= random.randint(1, 100):
@@ -363,7 +366,7 @@ class BattlePokemon:
 
         return message
 
-    def _apply_protect(self, effect, destination: "BattlePokemon") -> list[str]:
+    def _apply_protect(self, effect, destination: BattlePokemon) -> list[str]:
         destination.is_protected = True
         return [f"{destination.name} protected itself!"]
 
@@ -412,7 +415,7 @@ class BattlePokemon:
         return [e for e in self.ability.effects if e.trigger == trigger]
 
     def _ability_condition_met(
-        self, effect: AbilityEffect, move: Optional[PokemonMove] = None
+        self, effect: AbilityEffect, move: PokemonMove | None = None
     ) -> bool:
         """Gate an ability effect on its `condition` (None == always)."""
         condition = effect.condition
@@ -443,7 +446,7 @@ class BattlePokemon:
 
         return multiplier, messages
 
-    def immunity_to(self, move: PokemonMove) -> Optional[str]:
+    def immunity_to(self, move: PokemonMove) -> str | None:
         """Defender hook. Returns a message if this pokemon's ability makes it
         immune to `move` (e.g. Levitate vs Ground), else None."""
         for effect in self._ability_effects("on_hit"):
@@ -453,7 +456,7 @@ class BattlePokemon:
                 return f"It doesn't affect {self.name}…"
         return None
 
-    def on_hit(self, attacker: "BattlePokemon", move: PokemonMove) -> list[str]:
+    def on_hit(self, attacker: BattlePokemon, move: PokemonMove) -> list[str]:
         messages: list[str] = []
         for effect in self._ability_effects("on_hit"):
             if not self._ability_condition_met(effect, move):
@@ -474,7 +477,7 @@ class BattlePokemon:
         return messages
 
     def _apply_status_effect_ability(
-        self, effect: AbilityEffect, destination: "BattlePokemon"
+        self, effect: AbilityEffect, destination: BattlePokemon
     ):
         status = self._status_from(effect.status)
         if status is None or destination.status_effect != StatusEffect.NONE:
@@ -497,7 +500,8 @@ class BattlePokemon:
 
         return (
             True,
-            f"{destination.name} was {status.value} by {self.name}'s {self.ability_name}!",
+            f"{destination.name} was {status.value} by "
+            f"{self.name}'s {self.ability_name}!",
         )
 
     def _heal_from_ability(self, effect: AbilityEffect) -> list[str]:
@@ -556,7 +560,7 @@ class BattlePokemon:
                 return [f"{self.name} was hurt by its {item.name}!"]
         return []
 
-    def item_on_hit(self, attacker: "BattlePokemon", move: PokemonMove) -> list[str]:
+    def item_on_hit(self, attacker: BattlePokemon, move: PokemonMove) -> list[str]:
         """Rocky Helmet: the holder's item hurts the attacker on a contact hit."""
         item = self.held_item
         if item is None:
@@ -642,7 +646,7 @@ class BattlePokemon:
         self.modifiers[stat] = min(6, current + change)
         return [f"{self.name}'s {stat} rose!"]
 
-    def on_switch_in(self, opponent: "BattlePokemon") -> list[str]:
+    def on_switch_in(self, opponent: BattlePokemon) -> list[str]:
         messages = []
         for effect in self._ability_effects("on_switch_in"):
             if not self._ability_condition_met(effect):
@@ -661,7 +665,7 @@ class BattlePokemon:
 
         return messages
 
-    def on_turn_end(self, opponent: "BattlePokemon") -> list[str]:
+    def on_turn_end(self, opponent: BattlePokemon) -> list[str]:
         messages = []
         for effect in self._ability_effects("on_turn_end"):
             if not self._ability_condition_met(effect):
@@ -688,7 +692,7 @@ class BattlePokemon:
         return messages
 
     @staticmethod
-    def _status_from(value) -> Optional[StatusEffect]:
+    def _status_from(value) -> StatusEffect | None:
         if not value:
             return None
         try:
@@ -754,9 +758,12 @@ class BattlePokemon:
         """Learnset moves whose level was crossed (old, new], not already known."""
         learned: list[str] = []
         for entry in self.learnset:
-            if old_level < entry.level <= new_level and not self.knows_move(entry.move):
-                if entry.move not in learned:
-                    learned.append(entry.move)
+            if (
+                old_level < entry.level <= new_level
+                and not self.knows_move(entry.move)
+                and entry.move not in learned
+            ):
+                learned.append(entry.move)
         return learned
 
     def knows_move(self, name: str) -> bool:

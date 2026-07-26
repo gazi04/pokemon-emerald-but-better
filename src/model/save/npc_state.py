@@ -21,7 +21,7 @@ class NPCState:
         }
 
     @staticmethod
-    def from_dict(data: dict) -> "NPCState":
+    def from_dict(data: dict) -> NPCState:
         return NPCState(
             npc_id=data.get("npc_id", ""),
             has_talked=data.get("has_talked", False),

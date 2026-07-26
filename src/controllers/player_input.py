@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.model.motion.player_motion import PlayerMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
@@ -9,7 +7,8 @@ import arcade
 
 class PlayerInput:
     """
-    Controller layer: Translates hardware input into semantic intents (state change requests).
+    Controller layer: translates hardware input into semantic intents
+    (state change requests).
     """
 
     def __init__(self):
@@ -23,7 +22,7 @@ class PlayerInput:
         collision_tiles,
         transitions,
         npcs=None,
-    ) -> Optional[dict]:
+    ) -> dict | None:
         """
         Reads keyboard/gamepad and requests a state change.
         Returns an intent dictionary or None.
@@ -52,19 +51,10 @@ class PlayerInput:
                     return None
         self._interact_pressed_last_frame = interact_pressed
 
-        new_dir = None
-        dx = dy = 0
-
-        if self._is_pressed(controls_config.up, keys):
-            new_dir, dy = "up", TILE_SIZE
-        elif self._is_pressed(controls_config.down, keys):
-            new_dir, dy = "down", -TILE_SIZE
-        elif self._is_pressed(controls_config.left, keys):
-            new_dir, dx = "left", -TILE_SIZE
-        elif self._is_pressed(controls_config.right, keys):
-            new_dir, dx = "right", TILE_SIZE
+        new_dir = self._pressed_direction(controls_config, keys)
 
         if new_dir:
+            dx, dy = self._facing_offset(new_dir)
             player_state.direction = new_dir
             target_x = player_state.pixel_x + dx
             target_y = player_state.pixel_y + dy
@@ -90,6 +80,14 @@ class PlayerInput:
             else:
                 return {"type": "turn", "direction": new_dir}
 
+        return None
+
+    def _pressed_direction(self, controls_config, keys: set) -> str | None:
+        """First direction key held, in up/down/left/right priority order —
+        matches the priority the old if/elif chain gave simultaneous presses."""
+        for direction in ("up", "down", "left", "right"):
+            if self._is_pressed(getattr(controls_config, direction), keys):
+                return direction
         return None
 
     def _facing_offset(self, direction: str) -> tuple[int, int]:

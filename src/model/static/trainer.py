@@ -45,7 +45,7 @@ class Trainer:
                 )
             )
 
-    def clone(self) -> "Trainer":
+    def clone(self) -> Trainer:
         """A battle-safe copy. The battle drains its party as Pokémon faint, so
         it must never run on the cached species template — otherwise the NPC is
         left with an empty team on any later encounter. Rosters are read-only

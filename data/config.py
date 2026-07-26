@@ -58,7 +58,7 @@ class Config(BaseModel):
 
     @classmethod
     def load(cls):
-        with open("data/config.json", "r", encoding="utf-8") as f:
+        with open("data/config.json", encoding="utf-8") as f:
             data = json.load(f)
 
         return cls.model_validate(data)

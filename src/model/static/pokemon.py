@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional
 
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
@@ -51,10 +50,10 @@ class PokemonStat:
 class PokemonMoveEffect:
     target: str
     type: EffectType
-    stat: Optional[Stat] = None
-    change: Optional[int] = None
-    condition: Optional[StatusEffect] = None
-    chance: Optional[int] = None
+    stat: Stat | None = None
+    change: int | None = None
+    condition: StatusEffect | None = None
+    chance: int | None = None
 
 
 @dataclass
@@ -98,7 +97,7 @@ class PokemonSpecies:
     catch_rate: int
     abilities: list[str]
     types: list[str]
-    evolution: Optional[PokemonEvolution]
+    evolution: PokemonEvolution | None
     sprites: SpritePaths
     stats: PokemonStat
     learnset: list[LearnsetMove] = field(default_factory=list)

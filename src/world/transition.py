@@ -8,14 +8,13 @@ without changing this parser.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class Transition:
     target_map: str
-    target_spawn: Optional[str] = None
-    target_position: Optional[tuple[float, float]] = None
+    target_spawn: str | None = None
+    target_position: tuple[float, float] | None = None
     properties: dict = field(default_factory=dict)
 
     @property
@@ -37,7 +36,7 @@ def parse_transition(properties: dict) -> Transition:
         )
 
     spawn = properties.get("target_spawn")
-    position: Optional[tuple[float, float]] = None
+    position: tuple[float, float] | None = None
     if spawn is None and "x" in properties and "y" in properties:
         position = (float(properties["x"]), float(properties["y"]))
 
@@ -49,7 +48,7 @@ def parse_transition(properties: dict) -> Transition:
     )
 
 
-def _first(properties: dict, keys) -> Optional[str]:
+def _first(properties: dict, keys) -> str | None:
     for key in keys:
         if properties.get(key):
             return properties[key]

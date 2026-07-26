@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.model.save.player import (
     PlayerSave,
     PlayerPokemon,
@@ -56,7 +54,7 @@ class PlayerSerializer:
         )
 
     @staticmethod
-    def serialize(player: PlayerSave, motion: Optional[PlayerMotion] = None) -> dict:
+    def serialize(player: PlayerSave, motion: PlayerMotion | None = None) -> dict:
         pokemons = []
         for pokemon in player.pokemon:
             moves = [{"name": m.name, "pp": m.pp} for m in pokemon.moves]

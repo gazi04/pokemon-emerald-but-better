@@ -1,5 +1,4 @@
 import arcade
-from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.ui.pokemon_menu_ui import PokemonMenuUi
@@ -12,16 +11,15 @@ from src.states.battle_view import BattleView
 from src.states.bag_view import BagView
 
 
-
 class PokemonMenuView(GameView):
     def __init__(
         self,
         previousView: arcade.View,
         player_manager: PlayerManager,
         data_loader: DataLoader,
-        bag: Optional[BagSystem] = None,
+        bag: BagSystem | None = None,
         item: str = "",
-        battle_system: Optional[BattleSystem] = None,
+        battle_system: BattleSystem | None = None,
         forced_switch: bool = False,
     ):
         super().__init__()

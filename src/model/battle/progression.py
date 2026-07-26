@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.model.static.pokemon import PokemonEvolution
 
 
@@ -16,7 +14,7 @@ class Progression:
         level: int,
         exp: int,
         base_exp: int,
-        evolution: Optional[PokemonEvolution],
+        evolution: PokemonEvolution | None,
     ):
         self.level = level
         self.exp = exp

@@ -13,7 +13,6 @@ Two authoring styles are supported:
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 import arcade
 
@@ -43,7 +42,7 @@ class TransitionLayer:
     def __init__(
         self,
         zones: list[TransitionZone],
-        sprites: Optional[arcade.SpriteList] = None,
+        sprites: arcade.SpriteList | None = None,
     ):
         self._zones = zones
         self._sprites = sprites
@@ -51,7 +50,7 @@ class TransitionLayer:
     def __len__(self) -> int:
         return len(self._zones) + (len(self._sprites) if self._sprites else 0)
 
-    def find(self, x: float, y: float) -> Optional[dict]:
+    def find(self, x: float, y: float) -> dict | None:
         """Return the transition properties at a world point, or None.
 
         Rectangle zones are checked first; legacy gid doors fall back to the
@@ -78,7 +77,7 @@ class TransitionLayer:
         tile_map: arcade.TileMap,
         scene: arcade.Scene,
         scale: float = MAP_SCALE,
-    ) -> "TransitionLayer":
+    ) -> TransitionLayer:
         zones = cls._build_zones(tile_map, scale)
         sprites = cls._legacy_sprites(scene)
         log.debug(
@@ -114,7 +113,7 @@ class TransitionLayer:
         return zones
 
     @staticmethod
-    def _legacy_sprites(scene: arcade.Scene) -> Optional[arcade.SpriteList]:
+    def _legacy_sprites(scene: arcade.Scene) -> arcade.SpriteList | None:
         try:
             return scene["transitions"]
         except KeyError:

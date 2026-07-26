@@ -7,7 +7,6 @@ make decisions. One behavior = one responsibility.
 """
 
 import random
-from typing import Optional
 from src.constants import DIRECTION_OFFSETS, TILE_SIZE
 from src.core.event_bus import global_bus
 from src.core.events import NpcInteractEvent, NpcSpottedPlayerEvent
@@ -21,7 +20,7 @@ DEFAULT_SIGHT_RANGE = 4
 class Behavior:
     """Base class. Subclasses return an intent dict or None."""
 
-    def decide(self, npc, world, delta_time: float) -> Optional[dict]:
+    def decide(self, npc, world, delta_time: float) -> dict | None:
         return None
 
 
@@ -101,7 +100,9 @@ class TrainerSightBehavior(Behavior):
 
     PATROL, APPROACH, DONE = "patrol", "approach", "done"
 
-    def __init__(self, inner: Behavior, can_challenge, sight_range: int = DEFAULT_SIGHT_RANGE):
+    def __init__(
+        self, inner: Behavior, can_challenge, sight_range: int = DEFAULT_SIGHT_RANGE
+    ):
         self.inner = inner
         self.can_challenge = can_challenge
         self.sight_range = sight_range

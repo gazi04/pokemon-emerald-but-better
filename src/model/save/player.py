@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional
 from src.enums.item_category import ItemCategory
 
 
@@ -42,7 +41,7 @@ class PlayerSave:
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)
 
-    def get_pokemon(self, name: str) -> Optional[PlayerPokemon]:
+    def get_pokemon(self, name: str) -> PlayerPokemon | None:
         target = name.lower()
         for pokemon in self.pokemon:
             if pokemon.name.lower() == target:
@@ -72,7 +71,7 @@ class PlayerSave:
         pokemon_name: str,
         new_level: int,
         exp: int,
-        evolved_name: Optional[str] = None,
+        evolved_name: str | None = None,
     ):
         pokemon = self.get_pokemon(pokemon_name)
         if not pokemon:

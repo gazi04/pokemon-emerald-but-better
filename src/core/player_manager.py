@@ -9,7 +9,6 @@ from src.model.save.player import (
 from src.model.static.pokemon import PokemonStat
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.systems.npc_manager import NPCManager
-from typing import Optional
 
 
 class PlayerManager:
@@ -62,20 +61,18 @@ class PlayerManager:
         pokemon_name: str,
         new_level: int,
         exp: int,
-        evolved_name: Optional[str] = None,
+        evolved_name: str | None = None,
     ):
         self.player.update_level(pokemon_name, new_level, exp, evolved_name)
 
-    def learn_move(
-        self, pokemon_name: str, move_name: str, index: Optional[int] = None
-    ):
+    def learn_move(self, pokemon_name: str, move_name: str, index: int | None = None):
         move_data = self.data_loader.get_move(move_name)
         if not move_data:
             return
 
         move = PlayerPokemonMove(move_name, move_data.pp)
 
-        if index:
+        if index is not None:
             self.player.replace_move(pokemon_name, move, index)
         else:
             self.player.learn_move(pokemon_name, move)
@@ -130,7 +127,7 @@ class PlayerManager:
     def get_money(self) -> int:
         return self.player.money
 
-    def get_pokemon(self, name: str) -> Optional[PlayerPokemon]:
+    def get_pokemon(self, name: str) -> PlayerPokemon | None:
         return self.player.get_pokemon(name)
 
     def get_pokemon_team(self) -> list[PlayerPokemon]:

@@ -202,7 +202,7 @@ class BagSystem:
     def get_items(self) -> dict[str, list[ItemStack]]:
         result: dict[str, list[ItemStack]] = {}
 
-        for item_id, stack in self._items.items():
+        for stack in self._items.values():
             if stack.count <= 0:
                 continue
 

@@ -1,6 +1,5 @@
 import arcade
 import random
-from typing import Optional
 
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
@@ -16,7 +15,6 @@ from src.states.base_view import GameView
 from src.enums.battle_state import BattleState
 
 
-
 class BattleView(GameView):
     def __init__(
         self,
@@ -28,8 +26,8 @@ class BattleView(GameView):
         foe_pokemon_data=None,
         foe_level=None,
         is_trainer=False,
-        trainer_data: Optional[Trainer] = None,
-        npc_id: Optional[str] = None,
+        trainer_data: Trainer | None = None,
+        npc_id: str | None = None,
     ):
         super().__init__()
 
@@ -69,7 +67,9 @@ class BattleView(GameView):
         # Move-learning sub-flow state.
         self.learning_move_mode = False  # move menu is picking a move to forget
         self._on_learning_done = None  # called once the learn queue empties
-        self._pending_catch_close = False  # party-full message shown; next callback closes battle
+        self._pending_catch_close = (
+            False  # party-full message shown; next callback closes battle
+        )
 
         if not is_trainer:
             if (
@@ -429,7 +429,7 @@ class BattleView(GameView):
         # Ask the Director to swap to the Evolution view
         self.swap("evolving", pokemon=base_pokemon, evolved_pokemon=to)
 
-    def _reset_to_main_menu(self, dt):
+    def _reset_to_main_menu(self, _dt):
         self.ui.switch_mode("main")
         self.ui.message_box.reset_prompt(f"What will {self.your_battle.name} do?")
 
@@ -449,81 +449,85 @@ class BattleView(GameView):
         self.ui.update(delta_time)
 
     def on_key_press(self, symbol: int, modifiers: int):
-        if self.ui.active_component == "main":
-            current_list = self.ui.menu_panel.main_buttons
-            num_buttons = len(current_list)
-        elif self.ui.active_component == "moves":
-            current_list = self.ui.menu_panel.move_buttons
-            num_buttons = len(self.your_battle.moves)
-        else:
+        num_buttons = self._active_menu_size()
+        if num_buttons is None:
             return
 
         if self.is_pressed(CONFIG.controls.up, symbol):
-            if num_buttons > 2:
-                self.ui.menu_panel.selection_index = (
-                    self.ui.menu_panel.selection_index - 2
-                ) % num_buttons
-            if self.ui.active_component == "moves":
-                self.move_hover(self.ui.menu_panel.selection_index)
-
+            self._move_menu_cursor(-2, num_buttons, guarded=True)
         elif self.is_pressed(CONFIG.controls.down, symbol):
-            if num_buttons > 2:
-                self.ui.menu_panel.selection_index = (
-                    self.ui.menu_panel.selection_index + 2
-                ) % num_buttons
-            if self.ui.active_component == "moves":
-                self.move_hover(self.ui.menu_panel.selection_index)
-
+            self._move_menu_cursor(2, num_buttons, guarded=True)
         elif self.is_pressed(CONFIG.controls.left, symbol):
-            self.ui.menu_panel.selection_index = (
-                self.ui.menu_panel.selection_index - 1
-            ) % num_buttons
-            if self.ui.active_component == "moves":
-                self.move_hover(self.ui.menu_panel.selection_index)
-
+            self._move_menu_cursor(-1, num_buttons, guarded=False)
         elif self.is_pressed(CONFIG.controls.right, symbol):
-            self.ui.menu_panel.selection_index = (
-                self.ui.menu_panel.selection_index + 1
-            ) % num_buttons
-            if self.ui.active_component == "moves":
-                self.move_hover(self.ui.menu_panel.selection_index)
-
+            self._move_menu_cursor(1, num_buttons, guarded=False)
         elif self.is_pressed(CONFIG.controls.interact, symbol):
-            if self.ui.active_component == "main":
-                if self.ui.menu_panel.selection_index == 0:
-                    self.ui.switch_mode("moves")
-                elif self.ui.menu_panel.selection_index == 1:
-                    # Ask the Director to overlay the Bag
-                    self.overlay(
-                        "bag", previous_view=self, battle_system=self.battle_system
-                    )
-                elif self.ui.menu_panel.selection_index == 2:
-                    # Ask the Director to overlay the Pokémon menu
-                    self.overlay(
-                        "pokemon_menu",
-                        previous_view=self,
-                        battle_system=self.battle_system,
-                    )
-                elif self.ui.menu_panel.selection_index == 3:
-                    if not self.is_trainer:
-                        self.run()
-                    else:
-                        self.ui.queue_messages(["You cant run away from trainers!"])
-                        self.ui.switch_mode("dialog")
-                        arcade.schedule_once(self._reset_to_main_menu, 2)
-
-            elif self.ui.active_component == "moves":
-                if self.learning_move_mode:
-                    self._forget_move(self.ui.menu_panel.selection_index)
-                else:
-                    self.start_turn(self.ui.menu_panel.selection_index)
-
+            self._handle_menu_interact()
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
-            if self.ui.active_component == "moves":
-                if self.learning_move_mode:
-                    self._cancel_learn_move()
-                else:
-                    self.ui.switch_mode("main")
+            self._handle_menu_cancel()
+
+    def _active_menu_size(self) -> int | None:
+        """Number of buttons in the currently-active menu panel, or None if no
+        menu is active (key presses are then ignored)."""
+        if self.ui.active_component == "main":
+            return len(self.ui.menu_panel.main_buttons)
+        if self.ui.active_component == "moves":
+            return len(self.your_battle.moves)
+        return None
+
+    def _move_menu_cursor(self, delta: int, num_buttons: int, guarded: bool):
+        """Shift selection_index by `delta` and wrap. Up/down are `guarded`:
+        they only move when there's a second row (num_buttons > 2); left/right
+        always move."""
+        if not (guarded and num_buttons <= 2):
+            self.ui.menu_panel.selection_index = (
+                self.ui.menu_panel.selection_index + delta
+            ) % num_buttons
+        if self.ui.active_component == "moves":
+            self.move_hover(self.ui.menu_panel.selection_index)
+
+    def _handle_menu_interact(self):
+        if self.ui.active_component == "main":
+            self._handle_main_menu_select()
+        elif self.ui.active_component == "moves":
+            self._handle_moves_menu_select()
+
+    def _handle_main_menu_select(self):
+        index = self.ui.menu_panel.selection_index
+        if index == 0:
+            self.ui.switch_mode("moves")
+        elif index == 1:
+            # Ask the Director to overlay the Bag
+            self.overlay("bag", previous_view=self, battle_system=self.battle_system)
+        elif index == 2:
+            # Ask the Director to overlay the Pokémon menu
+            self.overlay(
+                "pokemon_menu", previous_view=self, battle_system=self.battle_system
+            )
+        elif index == 3:
+            self._attempt_run()
+
+    def _attempt_run(self):
+        if not self.is_trainer:
+            self.run()
+        else:
+            self.ui.queue_messages(["You cant run away from trainers!"])
+            self.ui.switch_mode("dialog")
+            arcade.schedule_once(self._reset_to_main_menu, 2)
+
+    def _handle_moves_menu_select(self):
+        if self.learning_move_mode:
+            self._forget_move(self.ui.menu_panel.selection_index)
+        else:
+            self.start_turn(self.ui.menu_panel.selection_index)
+
+    def _handle_menu_cancel(self):
+        if self.ui.active_component != "moves":
+            return
+        if self.learning_move_mode:
+            self._cancel_learn_move()
+        else:
+            self.ui.switch_mode("main")
 
     def move_hover(self, index):
         if index is not None and index < len(self.your_battle.moves):

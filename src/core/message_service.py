@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Callable, Optional, Protocol
+from typing import Protocol
+from collections.abc import Callable
 
 from src.core.events import TextMessageEvent
 from src.core.logger import get_logger
@@ -28,9 +29,7 @@ class MessageService:
     def set_box(self, box: MessageBox | None) -> None:
         self._box = box
 
-    def show(
-        self, messages: str | list[str], callback: Optional[Callable] = None
-    ) -> None:
+    def show(self, messages: str | list[str], callback: Callable | None = None) -> None:
         if self._box is None:
             log.warning("show() with no active box; dropped: %s", messages)
             return

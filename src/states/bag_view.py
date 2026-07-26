@@ -1,5 +1,4 @@
 import arcade
-from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
@@ -28,7 +27,7 @@ class BagView(GameView):
         player_manager: PlayerManager,
         data_loader: DataLoader,
         message_service: MessageService,
-        battle_system: Optional[BattleSystem] = None,
+        battle_system: BattleSystem | None = None,
     ):
         super().__init__()
 

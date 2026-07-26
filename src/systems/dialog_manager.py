@@ -4,7 +4,6 @@ Single responsibility: dialog retrieval and selection logic.
 """
 
 import json
-from typing import List
 from src.systems.npc_manager import NPCManager
 from src.core.logger import get_logger
 
@@ -34,13 +33,13 @@ class DialogManager:
     def _load_dialogs(self, path: str):
         """Load dialog data from JSON file."""
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 self.dialogs = json.load(f)
         except FileNotFoundError:
             log.warning("Dialog file not found at %s", path)
             self.dialogs = {}
 
-    def get_dialog_lines(self, npc_id: str) -> List[str]:
+    def get_dialog_lines(self, npc_id: str) -> list[str]:
         """
         Get dialog lines for NPC based on their current state.
         Returns appropriate dialog based on interaction history.
@@ -70,7 +69,7 @@ class DialogManager:
             return npc_dialogs["default"]
 
         # Last resort: return first available dialog
-        for dialog_type, lines in npc_dialogs.items():
+        for lines in npc_dialogs.values():
             if isinstance(lines, list) and lines:
                 return lines
 
