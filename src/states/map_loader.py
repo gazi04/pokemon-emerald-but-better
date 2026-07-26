@@ -158,6 +158,6 @@ class MapLoader:
                 gy = round(sprite.center_y / TILE_SIZE)
                 tiles.add((gx, gy))
             return tiles
-        except Exception:
+        except KeyError:
             log.debug("No 'bush' layer on map; using empty bush set")
             return set()
