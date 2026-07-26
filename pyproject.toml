@@ -28,6 +28,12 @@ dev = [
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
+typeCheckingMode = "standard"
+# scripts/ holds one-time migration tools nothing imports.
+exclude = ["scripts", "**/.venv", "**/__pycache__"]
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "SIM", "UP", "PERF", "RUF"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
