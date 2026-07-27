@@ -195,7 +195,7 @@ class EnemyAI:
     def _evaluate_ai_move(
         self, enemy: BattlePokemon, player: BattlePokemon, ai_move, depth: int
     ) -> float:
-        """Returns the absolute worst-case score the player can force upon this AI move choice."""
+        """Worst-case score the player can force upon this AI move choice."""
         if ai_move.pp == 0:
             return -float("inf")
 

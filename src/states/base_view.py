@@ -13,7 +13,7 @@ class GameView(arcade.View):
 
     # input -------------------------------------------------------
     def is_pressed(self, config_key: str, symbol: int) -> bool:
-        """config_key is a resolved CONFIG.controls value, e.g. CONFIG.controls.interact."""
+        """config_key is a resolved CONFIG.controls value, e.g. controls.interact."""
         return getattr(arcade.key, config_key, None) == symbol
 
     # lifecycle (safe defaults; custom-render views override) -----

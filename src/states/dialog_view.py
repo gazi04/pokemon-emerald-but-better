@@ -7,7 +7,6 @@ from src.states.base_view import GameView
 from data.config import CONFIG
 
 
-
 class DialogView(GameView):
     def __init__(
         self,
@@ -46,7 +45,10 @@ class DialogView(GameView):
         self.message_service.set_box(self.ui.message_box)
 
     def on_key_press(self, symbol: int, modifiers: int):
-        if self.is_pressed(CONFIG.controls.cancel, symbol) and self.ui.is_text_finished():
+        if (
+            self.is_pressed(CONFIG.controls.cancel, symbol)
+            and self.ui.is_text_finished()
+        ):
             if self.dialog_index < len(self.dialog) - 1:
                 self.dialog_index += 1
                 self.ui.queue_messages(self.dialog[self.dialog_index])

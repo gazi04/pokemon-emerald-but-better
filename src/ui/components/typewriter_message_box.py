@@ -48,7 +48,7 @@ class TypewriterMessageBox:
             self._next_message()
 
     def set_callback(self, callback):
-        """Persistent callback — fires after every queue-drain (e.g. battle turn flow)."""
+        """Persistent callback — fires after every queue-drain (e.g. battle flow)."""
         self.after_text_callback = callback
 
     def set_on_complete(self, callback) -> None:
