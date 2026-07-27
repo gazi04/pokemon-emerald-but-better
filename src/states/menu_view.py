@@ -10,7 +10,6 @@ from src.ui.menu_ui import MenuUi
 from src.constants import FONT
 
 
-
 class MenuView(GameView):
     def __init__(self, overworld: arcade.View):
         super().__init__()

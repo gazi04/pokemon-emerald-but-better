@@ -55,7 +55,7 @@ class OverworldView(GameView):
         # True while a trainer is walking over to challenge the player; input
         # is frozen so the player can't run off mid-approach.
         self.cutscene = False
-        
+
         self.debug_collisions = False
         # The window exists before any view is constructed, so build the camera
         # eagerly — setup() replaces it per map, but it is never None.

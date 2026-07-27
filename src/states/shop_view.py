@@ -6,7 +6,6 @@ from src.states.base_view import GameView
 from src.ui.shop_ui import ShopUI
 
 
-
 class ShopView(GameView):
     def __init__(
         self,
