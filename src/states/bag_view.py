@@ -134,17 +134,6 @@ class BagView(GameView):
             and self.battle_system
             and not self.battle_system.is_trainer
         ):
-            pokemon_team = self.battle_system.player_manager.player.pokemon
-            if len(pokemon_team) >= 6:
-                self.window.show_view(
-                    self.previousWindow
-                )  # battle re-registers its box
-                if isinstance(self.previousWindow, BattleView):
-                    self.previousWindow.show_messages(
-                        ["Your party is full!", "You can't catch any more Pokémon."]
-                    )
-                return
-
             pokeball = self.bagSystem.use_pokeball(
                 self.current_inventory[self.currentIndex].name
             )

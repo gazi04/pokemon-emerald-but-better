@@ -17,7 +17,6 @@ class PlayerManager:
         self.save_manager = save_manager
         self.data_loader = data_loader
         self.player: PlayerSave = save_manager.player
-        print(self.player.boxs)
         self.npc_manager = NPCManager()
 
         if self.player.npc_states:

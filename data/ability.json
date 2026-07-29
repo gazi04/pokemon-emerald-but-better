@@ -178,5 +178,10 @@
                 "chance": 0.33
             }
         ]
+    },
+    "run_away":{
+        "name": "Run away",
+        "description": "",
+        "effects": []
     }
 }

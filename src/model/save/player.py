@@ -110,12 +110,12 @@ class PlayerSave:
 
         pokemon.moves[index] = move
 
-    def add_pokemon_team(self, pokemon: PlayerPokemon) :
+    def add_pokemon_team(self, pokemon: PlayerPokemon):
+        self.mark_seen(pokemon.name)
         if len(self.pokemon) >= 6:
             self.add_pokemon_box(pokemon)
             return
         self.pokemon.append(pokemon)
-        self.mark_seen(pokemon.name)
     
     def add_pokemon_box(self, pokemon: PlayerPokemon):
         for box in self.boxs:
@@ -123,6 +123,8 @@ class PlayerSave:
                 continue
             
             box.pokemons.append(pokemon)
+            
+        print(self.boxs)
 
     def mark_seen(self, name: str):
         if name not in self.seen:
