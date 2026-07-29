@@ -574,7 +574,7 @@ class BattleSystem:
         on failure (party already has 6) it explains the Pokemon was lost.
         """
         enemy = self.enemy_pokemon
-        added = self.player_manager.add_pokemon(
+        self.player_manager.add_pokemon(
             PlayerPokemon(
                 name=enemy.name.lower(),
                 hp=enemy.current_hp,
@@ -585,15 +585,7 @@ class BattleSystem:
                 held_item=None,
             )
         )
-        if added:
-            return {"success": True, "messages": []}
-        return {
-            "success": False,
-            "messages": [
-                "Your party is full!",
-                f"{enemy.name} could not be added to your team.",
-            ],
-        }
+        return {"success": True, "messages": []}
 
     def attempt_catch(self, item_data: ItemSpecies) -> dict:
         ball_modifier = 1

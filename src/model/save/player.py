@@ -35,8 +35,14 @@ class ItemStack:
 
 
 @dataclass
+class Box:
+    name: str
+    pokemons: list[PlayerPokemon]
+
+@dataclass
 class PlayerSave:
     pokemon: list[PlayerPokemon]
+    boxs: list[Box]
     items: dict[str, ItemStack]
     seen: list[str] = field(default_factory=list)
     money: int = 0
@@ -104,12 +110,19 @@ class PlayerSave:
 
         pokemon.moves[index] = move
 
-    def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
+    def add_pokemon_team(self, pokemon: PlayerPokemon) :
         if len(self.pokemon) >= 6:
-            return False
+            self.add_pokemon_box(pokemon)
+            return
         self.pokemon.append(pokemon)
         self.mark_seen(pokemon.name)
-        return True
+    
+    def add_pokemon_box(self, pokemon: PlayerPokemon):
+        for box in self.boxs:
+            if len(box.pokemons) == 30:
+                continue
+            
+            box.pokemons.append(pokemon)
 
     def mark_seen(self, name: str):
         if name not in self.seen:

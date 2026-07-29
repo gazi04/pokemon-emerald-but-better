@@ -1,74 +1,84 @@
 {
-    "pokemons": [
+  "pokemons": [
+    {
+      "name": "combusken",
+      "hp": 20,
+      "level": 18,
+      "exp": 5830,
+      "ability": "blaze",
+      "held_item": null,
+      "moves": [
         {
-            "name": "zigzagoon",
-            "hp": 10,
-            "level": 4,
-            "exp": 1,
-            "ability": "blaze",
-            "moves": [
-                {
-                    "name": "tackle",
-                    "pp": 25
-                }
-            ],
-            "held_item": null
+          "name": "close combat",
+          "pp": 1
         },
         {
-            "name": "mudkip",
-            "hp": 10,
-            "level": 9,
-            "exp": 46,
-            "ability": "blaze",
-            "moves": [
-                {
-                    "name": "tackle",
-                    "pp": 10
-                }
-            ],
-            "held_item": null
+          "name": "will-o-wisp",
+          "pp": 10
         },
         {
-            "name": "combusken",
-            "hp": 33,
-            "level": 16,
-            "exp": 46,
-            "ability": "blaze",
-            "moves": [
-                {
-                    "name": "close combat",
-                    "pp": 1
-                },
-                {
-                    "name": "tackle",
-                    "pp": 10
-                }
-            ],
-            "held_item": null
+          "name": "blaze kick",
+          "pp": 10
+        },
+        {
+          "name": "protect",
+          "pp": 10
         }
-    ],
-    "items": {
-        "potion": {
-            "count": 2,
-            "category": "medicine"
-        },
-        "pokeball": {
-            "count": 95,
-            "category": "pokeball"
-        }
-    },
-    "seen": [
-        "combusken",
-        "mudkip",
-        "poochyena",
-        "zigzagoon",
-        "torchic"
-    ],
-    "money": 1000,
-    "position": {
-        "map_name": "littleroot_town",
-        "direction": "left",
-        "pixel_x": 3183.0,
-        "pixel_y": 624.0
+      ]
     }
+  ],
+  "box": [
+    {
+      "box_name": "Box 1",
+      "pokemons": [
+        {
+          "name": "mudkip",
+          "hp": 37,
+          "level": 15,
+          "exp": 46,
+          "ability": "blaze",
+          "held_item": null,
+          "moves": [
+            {
+              "name": "fake out",
+              "pp": 10
+            },
+            {
+              "name": "will-o-wisp",
+              "pp": 10
+            },
+            {
+              "name": "protect",
+              "pp": 10
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "items": {
+    "potion": {
+      "count": 3,
+      "category": "medicine"
+    },
+    "pokeball": {
+      "count": 99,
+      "category": "pokeball"
+    },
+    "sitrus berry": {
+      "count": 99,
+      "category": "berry"
+    },
+    "ether": {
+      "count": 99,
+      "category": "medicine"
+    }
+  },
+  "battle_items": [],
+  "position": {
+    "map_name": "littleroot_town_original",
+    "direction": "down",
+    "pixel_x": 368,
+    "pixel_y": 846
+  }
 }

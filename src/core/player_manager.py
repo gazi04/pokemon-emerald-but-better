@@ -17,6 +17,7 @@ class PlayerManager:
         self.save_manager = save_manager
         self.data_loader = data_loader
         self.player: PlayerSave = save_manager.player
+        print(self.player.boxs)
         self.npc_manager = NPCManager()
 
         if self.player.npc_states:
@@ -107,8 +108,8 @@ class PlayerManager:
                 evolution.to,
             )
 
-    def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
-        return self.player.add_pokemon(pokemon)
+    def add_pokemon(self, pokemon: PlayerPokemon):
+        self.player.add_pokemon_team(pokemon)
 
     def update_pokemon_held_item(self, pokemon_id: str, item_id: str | None):
         pokemon = self.get_pokemon(pokemon_id)
