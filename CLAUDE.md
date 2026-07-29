@@ -43,8 +43,8 @@ Unpatched crit rolls cause intermittent failures like `assert 6 < 6`.
 | `event_bus.py` | Tiny pub/sub (`global_bus` singleton). All cross-layer communication goes through it. |
 | `events.py` | All event dataclasses in one place. Three groups: Overworld, Battle, Navigation (`SwapViewEvent`, `CloseViewEvent`, `OverlayViewEvent`), Save/Load. |
 | `save_manager.py` | Owns in-memory `PlayerProfile`. Reads `data/save.json` (falls back to `data/player.json`). `flush_save()` writes atomically via a `.tmp` then `os.replace`. |
-| `data_loader.py` | Parses `data/pokemon.json`, `data/moves.json`, `data/items.json` into typed model objects at startup. |
-| `game_context.py` | Legacy singleton `saveManager`/`dataLoader` — being phased out; prefer injected instances. |
+| `data_loader.py` | Parses `data/pokemon.json`, `data/moves.json`, `data/items.json` into typed model objects at startup. `get_*(name)` returns `None` when absence is a legitimate outcome; `require_*(name)` raises a named `KeyError` when a miss means bad data. |
+| `player_manager.py` | Owns the live `PlayerSave` (money, party, inventory, seen, NPC state). Wraps `SaveManager`; needs a `DataLoader`. |
 | `combat_calculator.py` | Pure damage calc (`calculate_damage`). No mutation, no arcade. Uses `random` for crit/accuracy — patch in tests. Returns `CombatResult`. |
 | `catch_calculator.py` | Pure capture-rate calc. |
 
