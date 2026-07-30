@@ -154,7 +154,12 @@ class PokemonMenuView(GameView):
             # Sync live battle HP/status to the save so the item works on
             # current values, apply, then let the battle pull it back.
             self.battle_system.sync_active_to_save()
-            self.bag.use_item(self.item, pokemon_name, move_index)
+
+            # A rejected item (full HP, wrong status, full PP) is not consumed,
+            # so it must not cost the turn either.
+            if not self.bag.use_item(self.item, pokemon_name, move_index):
+                return
+
             if isinstance(self.previous_view, BagView) and isinstance(
                 self.previous_view.previous_view, BattleView
             ):
@@ -162,7 +167,9 @@ class PokemonMenuView(GameView):
                 battle_view.on_item_used(self.item)
                 self.window.show_view(battle_view)
         else:
-            self.bag.use_item(self.item, pokemon_name, move_index)
+            if not self.bag.use_item(self.item, pokemon_name, move_index):
+                return
+
             if isinstance(self.previous_view, BagView):
                 self.previous_view.update_item()
             self.window.show_view(self.previous_view)

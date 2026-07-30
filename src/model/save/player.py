@@ -109,8 +109,13 @@ class PlayerSave:
         return True
 
     def mark_seen(self, name: str):
-        if name not in self.seen:
-            self.seen.append(name)
+        """Record a species as seen. Normalized to lowercase because the Pokédex
+        matches these entries against DataLoader keys, which are lowercase ids —
+        a capitalized entry renders blank while still counting toward the total.
+        """
+        key = name.lower()
+        if key not in self.seen:
+            self.seen.append(key)
 
     def add_item(self, item_id: str, category: str, count: int):
         item = self.items.get(item_id)

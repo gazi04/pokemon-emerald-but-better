@@ -42,7 +42,13 @@ class EncounterSystem:
         if random.random() >= table.get("encounter_rate", ENCOUNTER_RATE):
             return
 
-        pokemon_list = table["grass"]
+        # A water/fishing-only table, or an empty grass list, is a legitimate
+        # authoring outcome — bail like the missing-table guard above rather than
+        # raising KeyError here or IndexError inside random.choices.
+        pokemon_list = table.get("grass")
+        if not pokemon_list:
+            return
+
         pokemon = random.choices(
             pokemon_list, weights=[p["weight"] for p in pokemon_list]
         )[0]

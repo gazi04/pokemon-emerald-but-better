@@ -356,16 +356,11 @@ class BattleSystem:
         self.your_pokemon.sync_to_source()
 
     def _apply_item_to_pokemon(self, item_index: str | int) -> list[str]:
+        hp_before = self.your_pokemon.current_hp
         self.your_pokemon.sync_from_source()
 
-        global_bus.publish(
-            HpChangedEvent(
-                target="player",
-                old_hp=self.your_pokemon.current_hp,
-                new_hp=self.your_pokemon.current_hp,
-                max_hp=self.your_pokemon.max_hp,
-            )
-        )
+        if self.your_pokemon.current_hp != hp_before:
+            self._publish_hp_change("player", hp_before, self.your_pokemon)
 
         return [f"{self.your_pokemon.name} used {item_index}!"]
 

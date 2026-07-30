@@ -112,8 +112,8 @@ class BattleView(GameView):
             self.prize_money = trainer_data.prize_money()
             trainer_data.party.pop(0)
 
-        # Both branches above set enemy_battle; foe_pokemon_name is None for
-        # trainer battles, which would record None into the Pokédex.
+        # Marks the wild foe or the trainer's lead — whichever starts on the
+        # field. Every later trainer switch-in is marked by set_enemy().
         self.player_manager.mark_seen(self.enemy_battle.name.lower())
 
         self.battle_system = BattleSystem(
@@ -335,8 +335,9 @@ class BattleView(GameView):
         self.battle_system.battle_state = BattleState.WAITING
 
     def set_enemy(self, name: str, level: int, moves: list, ability: str):
-        """Swap the active enemy pokemon, keeping sprite, battle model, and
-        battle system in sync. Single entry point so callers can't desync them."""
+        """Swap the active enemy pokemon, keeping sprite, battle model, battle
+        system, and Pokédex in sync. Single entry point so callers can't desync
+        them."""
         profile = self.data_loader.require_pokemon(name)
 
         self.enemy_sprite.set_new_texture(profile.sprites.front)
@@ -344,6 +345,7 @@ class BattleView(GameView):
             profile, name, level, moves, self.data_loader.require_ability(ability)
         )
         self.battle_system.enemy_pokemon = self.enemy_battle
+        self.player_manager.mark_seen(name.lower())
 
     def _handle_battle_finishing(self):
         if self.battle_system.exp <= 0:
