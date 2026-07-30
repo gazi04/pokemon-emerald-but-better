@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+PRIZE_MONEY_PER_LEVEL = 10
+
 
 @dataclass
 class TrainerPokemonMove:
@@ -44,6 +46,13 @@ class Trainer:
                     moves,
                 )
             )
+
+    def prize_money(self) -> int:
+        """Reward for beating this trainer — the summed levels of the whole
+        roster. Read this before the battle starts: `party` is drained as
+        Pokémon faint, so a later call sees only what is left.
+        """
+        return sum(pokemon.level for pokemon in self.party) * PRIZE_MONEY_PER_LEVEL
 
     def clone(self) -> Trainer:
         """A battle-safe copy. The battle drains its party as Pokémon faint, so

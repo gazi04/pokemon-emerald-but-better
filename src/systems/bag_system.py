@@ -20,12 +20,6 @@ class BagSystem:
             EffectType.RESTORE_PP: self._apply_restore_pp,
         }
 
-        self._effect_eligibility = {
-            EffectType.HEAL: self._heal_eligible,
-            EffectType.CURE_STATUS: self._cure_status_eligible,
-            EffectType.RESTORE_PP: self._restore_pp_eligible,
-        }
-
     # ── Eligibility checks ────────────────────────────────────────────────────
 
     def _heal_eligible(

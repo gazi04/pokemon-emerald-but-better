@@ -23,7 +23,7 @@ BAG_CATEGORIES = [
 class BagView(GameView):
     def __init__(
         self,
-        previousWindow: arcade.View,
+        previous_view: arcade.View,
         player_manager: PlayerManager,
         data_loader: DataLoader,
         message_service: MessageService,
@@ -38,7 +38,7 @@ class BagView(GameView):
         self.ui = BagUI()
         self.bagSystem = BagSystem(player_manager, data_loader)
         self.battle_system = battle_system
-        self.previousWindow = previousWindow
+        self.previous_view = previous_view
 
         self.bag = self.bagSystem.get_items()
         self.current_inventory = self.bag.get(ItemCategory.MEDICINE, [])
@@ -101,7 +101,7 @@ class BagView(GameView):
             self.bagIndex = (self.bagIndex - 1) % len(BAG_CATEGORIES)
             self.change_bag()
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
-            self.window.show_view(self.previousWindow)
+            self.window.show_view(self.previous_view)
         elif self.is_pressed(CONFIG.controls.interact, symbol):
             self._on_interact()
 
@@ -142,9 +142,9 @@ class BagView(GameView):
     def _throw_pokeball(self, battle_system: BattleSystem):
         pokemon_team = battle_system.player_manager.player.pokemon
         if len(pokemon_team) >= 6:
-            self.window.show_view(self.previousWindow)  # battle re-registers its box
-            if isinstance(self.previousWindow, BattleView):
-                self.previousWindow.show_messages(
+            self.window.show_view(self.previous_view)  # battle re-registers its box
+            if isinstance(self.previous_view, BattleView):
+                self.previous_view.show_messages(
                     ["Your party is full!", "You can't catch any more Pokémon."]
                 )
             return
@@ -155,9 +155,9 @@ class BagView(GameView):
         if pokeball:
             result = battle_system.attempt_catch(pokeball)
             self.update_item()
-            self.window.show_view(self.previousWindow)
-            if isinstance(self.previousWindow, BattleView):
-                self.previousWindow.start_catch_attempt(result)
+            self.window.show_view(self.previous_view)
+            if isinstance(self.previous_view, BattleView):
+                self.previous_view.start_catch_attempt(result)
 
     def change_bag(self):
         self.currentIndex = 0

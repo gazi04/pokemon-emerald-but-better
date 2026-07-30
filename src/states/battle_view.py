@@ -107,9 +107,9 @@ class BattleView(GameView):
             )
             self.enemy_sprite = PokemonSprite(first_profile, True)
 
-            self.prize_money = (
-                first.level + sum(p.level for p in trainer_data.party)
-            ) * 10
+            # Read the prize before the pop below — it sums the whole roster,
+            # and the battle drains `party` as Pokémon faint.
+            self.prize_money = trainer_data.prize_money()
             trainer_data.party.pop(0)
 
         # Both branches above set enemy_battle; foe_pokemon_name is None for

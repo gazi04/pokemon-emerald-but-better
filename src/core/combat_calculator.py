@@ -136,23 +136,10 @@ def _roll_critical(crit_modifier: int) -> bool:
 
 def _get_stat(
     stat: Stat, stats: PokemonStat, modifiers: dict, status: StatusEffect
-) -> float:
-    """Apply stat stage modifier and status penalties, return effective stat value."""
-    stage = modifiers.get(stat, 0)
+) -> int:
+    """Effective stat value after stage and status modifiers.
 
-    if stage > 0:
-        fraction = (2 + stage) / 2
-    elif stage < 0:
-        fraction = 2 / (2 + abs(stage))
-    else:
-        fraction = 1.0
-
-    raw = getattr(stats, stat, 0)
-
-    if stat == Stat.SPEED and status == StatusEffect.PARALYSIS:
-        return round(raw * fraction * 0.5)
-
-    if stat == Stat.ATTACK and status == StatusEffect.BURN:
-        return round(raw * fraction * 0.5)
-
-    return round(raw * fraction)
+    Thin wrapper over PokemonStat.effective — the formula lives on the stat model
+    so BattlePokemon.get_stat and this module cannot drift apart.
+    """
+    return stats.effective(stat, modifiers, status)

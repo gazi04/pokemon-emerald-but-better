@@ -175,24 +175,10 @@ class BattlePokemon:
     def get_stat(self, stat: Stat) -> int:
         """Return the stage-modified value of a stat.
 
-        For HP, read self.stats.hp directly.
+        For HP, read self.stats.hp directly. The formula itself lives on
+        PokemonStat so it is shared with the damage calculator.
         """
-        base = getattr(self.stats, stat, 0)
-        stage = self.modifiers.get(stat, 0)
-        if stage > 0:
-            fraction = (2 + stage) / 2
-        elif stage < 0:
-            fraction = 2 / (2 + abs(stage))
-        else:
-            fraction = 1.0
-
-        if stat == Stat.SPEED and self.status_effect == StatusEffect.PARALYSIS:
-            fraction *= 0.5
-
-        if stat == Stat.ATTACK and self.status_effect == StatusEffect.BURN:
-            fraction *= 0.5
-
-        return round(base * fraction)
+        return self.stats.effective(stat, self.modifiers, self.status_effect)
 
     # ------------------------------------------------------------------
     # HP mutation — the only mutator that touches another pokemon

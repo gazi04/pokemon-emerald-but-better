@@ -14,7 +14,7 @@ from src.states.bag_view import BagView
 class PokemonMenuView(GameView):
     def __init__(
         self,
-        previousView: arcade.View,
+        previous_view: arcade.View,
         player_manager: PlayerManager,
         data_loader: DataLoader,
         bag: BagSystem | None = None,
@@ -24,7 +24,7 @@ class PokemonMenuView(GameView):
     ):
         super().__init__()
 
-        self.previousView = previousView
+        self.previous_view = previous_view
         self.bag = bag
         self.battle_system = battle_system
         self.item = item
@@ -63,7 +63,7 @@ class PokemonMenuView(GameView):
             if self.system.is_moving_pokemon:
                 self.system.cancel_moving()
             else:
-                self.window.show_view(self.previousView)
+                self.window.show_view(self.previous_view)
             return
 
         if self.is_pressed(CONFIG.controls.interact, key):
@@ -90,9 +90,9 @@ class PokemonMenuView(GameView):
 
         self.system.confirm_switch(self.system.team_index)
         self.ui.set_values(self.system.team)
-        if isinstance(self.previousView, BattleView):
-            self.previousView.force_switch()
-        self.window.show_view(self.previousView)
+        if isinstance(self.previous_view, BattleView):
+            self.previous_view.force_switch()
+        self.window.show_view(self.previous_view)
 
     def _handle_tooltip_input(self, key):
         if self.is_pressed(CONFIG.controls.cancel, key):
@@ -116,7 +116,7 @@ class PokemonMenuView(GameView):
             if self.bag:
                 self._get_current_pokemon().held_item = self.item
 
-                self.window.show_view(self.previousView)
+                self.window.show_view(self.previous_view)
 
         elif index == 1:
             if self.bag:
@@ -155,17 +155,17 @@ class PokemonMenuView(GameView):
             # current values, apply, then let the battle pull it back.
             self.battle_system.sync_active_to_save()
             self.bag.use_item(self.item, pokemon_name, move_index)
-            if isinstance(self.previousView, BagView) and isinstance(
-                self.previousView.previousWindow, BattleView
+            if isinstance(self.previous_view, BagView) and isinstance(
+                self.previous_view.previous_view, BattleView
             ):
-                battle_view = self.previousView.previousWindow
+                battle_view = self.previous_view.previous_view
                 battle_view.on_item_used(self.item)
                 self.window.show_view(battle_view)
         else:
             self.bag.use_item(self.item, pokemon_name, move_index)
-            if isinstance(self.previousView, BagView):
-                self.previousView.update_item()
-            self.window.show_view(self.previousView)
+            if isinstance(self.previous_view, BagView):
+                self.previous_view.update_item()
+            self.window.show_view(self.previous_view)
 
     def _get_current_pokemon(self):
         return self.system.team[self.system.team_index]
@@ -178,6 +178,6 @@ class PokemonMenuView(GameView):
         success = self.system.confirm_switch(self.system.team_index)
         if success:
             self.ui.set_values(self.system.team)
-            if isinstance(self.previousView, BattleView):
-                self.previousView.switch_turn()
-            self.window.show_view(self.previousView)
+            if isinstance(self.previous_view, BattleView):
+                self.previous_view.switch_turn()
+            self.window.show_view(self.previous_view)

@@ -34,6 +34,33 @@ class PokemonStat:
     def max_hp(base_hp: int, level: int) -> int:
         return PokemonStat.scaled(base_hp, level, is_hp=True)
 
+    @staticmethod
+    def stage_multiplier(stage: int) -> float:
+        """The Gen III stat-stage fraction: (2+s)/2 up, 2/(2+|s|) down."""
+        if stage > 0:
+            return (2 + stage) / 2
+        if stage < 0:
+            return 2 / (2 + abs(stage))
+        return 1.0
+
+    def effective(self, stat: Stat, modifiers: dict, status: StatusEffect) -> int:
+        """The one canonical stage- and status-modified stat value.
+
+        Treat self as a *leveled* stat block. Paralysis halves speed and burn
+        halves attack, per Gen III. Both the battle model (BattlePokemon.get_stat)
+        and the damage formula (combat_calculator) route through here, so the
+        two can never drift apart.
+        """
+        fraction = PokemonStat.stage_multiplier(modifiers.get(stat, 0))
+
+        if stat == Stat.SPEED and status == StatusEffect.PARALYSIS:
+            fraction *= 0.5
+
+        if stat == Stat.ATTACK and status == StatusEffect.BURN:
+            fraction *= 0.5
+
+        return round(getattr(self, stat, 0) * fraction)
+
     def at_level(self, level: int) -> PokemonStat:
         """Treat self as a species base stat; return the leveled stat block."""
         return PokemonStat(

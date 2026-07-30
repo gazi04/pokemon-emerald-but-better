@@ -208,9 +208,7 @@ class GameDirector:
         from src.states.bag_view import BagView
 
         return BagView(
-            previousWindow=payload.get(
-                "previous_view", self._get_or_create_overworld()
-            ),
+            previous_view=payload.get("previous_view", self._get_or_create_overworld()),
             player_manager=self.player_manager,
             data_loader=self.data_loader,
             message_service=self.message_service,
@@ -221,7 +219,7 @@ class GameDirector:
         from src.states.pokemon_menu_view import PokemonMenuView
 
         return PokemonMenuView(
-            previousView=payload.get("previous_view", self._get_or_create_overworld()),
+            previous_view=payload.get("previous_view", self._get_or_create_overworld()),
             player_manager=self.player_manager,
             data_loader=self.data_loader,
             bag=cast(Any, payload.get("bag")),
