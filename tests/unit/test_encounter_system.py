@@ -10,11 +10,14 @@ FAKE_ENC = {
 }
 
 
-def make_system(bush_tiles=None, map_name="littleroot_town"):
+def make_system(bush_tiles=None, map_name="littleroot_town", encounters=None):
     player_state = PlayerMotion(map_name=map_name)
     dl = MagicMock()
     dl.require_pokemon.return_value = MagicMock()
-    dl.encounters = FAKE_ENC  # cached table on the DataLoader
+    # Cached table on the DataLoader. NOTE: this stub cannot catch a mismatch
+    # between these keys and real map ids — that is what
+    # tests/unit/test_encounter_data.py asserts against the real data files.
+    dl.encounters = FAKE_ENC if encounters is None else encounters
     tiles = bush_tiles or {(5, 5)}
     system = EncounterSystem(tiles, player_state, dl)
     return system, player_state, dl
@@ -28,7 +31,7 @@ def fire_move_event(gx, gy, map_name="littleroot_town"):
 
 
 def test_encounter_triggered_on_bush_tile():
-    system, player_state, dl = make_system(bush_tiles={(5, 5)})
+    system, _player_state, _dl = make_system(bush_tiles={(5, 5)})
     received = []
     global_bus.subscribe(BattleEncounterTriggeredEvent, received.append)
 
@@ -114,13 +117,49 @@ def test_encounter_event_has_pokemon_data():
 
 
 def test_no_encounter_on_map_without_data():
-    # Map missing from the encounter table → guarded, no crash, no encounter.
+    # A genuinely unknown map is guarded here: no crash, no encounter. This is
+    # correct for a map that has no table by design — it is NOT cover for a real
+    # map whose id fails to match its key (the Route 101 bug), which this stubbed
+    # test cannot see and test_encounter_data.py exists to catch.
     system, _, _ = make_system(bush_tiles={(5, 5)}, map_name="unknown_map")
     received = []
     global_bus.subscribe(BattleEncounterTriggeredEvent, received.append)
 
     with patch("src.systems.encounter_system.random.random", return_value=0.0):
         system._on_player_moved(fire_move_event(5, 5, map_name="unknown_map"))
+
+    assert received == []
+
+
+def test_no_encounter_when_table_has_no_grass_key():
+    """A water/fishing-only table must not raise KeyError."""
+    system, _, _ = make_system(
+        bush_tiles={(5, 5)},
+        encounters={
+            "littleroot_town": {"encounter_rate": 1.0, "surf": [{"name": "x"}]}
+        },
+    )
+    received = []
+    global_bus.subscribe(BattleEncounterTriggeredEvent, received.append)
+
+    with patch("src.systems.encounter_system.random.random", return_value=0.0):
+        system._on_player_moved(fire_move_event(5, 5))
+
+    assert received == []
+
+
+def test_no_encounter_when_grass_list_is_empty():
+    """An empty grass list passes the table truthiness guard, then would raise
+    IndexError inside random.choices."""
+    system, _, _ = make_system(
+        bush_tiles={(5, 5)},
+        encounters={"littleroot_town": {"encounter_rate": 1.0, "grass": []}},
+    )
+    received = []
+    global_bus.subscribe(BattleEncounterTriggeredEvent, received.append)
+
+    with patch("src.systems.encounter_system.random.random", return_value=0.0):
+        system._on_player_moved(fire_move_event(5, 5))
 
     assert received == []
 

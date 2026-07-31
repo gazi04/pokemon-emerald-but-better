@@ -1,5 +1,8 @@
 """Trainer line-of-sight: spotting the player, walking over, and challenging."""
+
 from types import SimpleNamespace
+from typing import cast
+from unittest.mock import MagicMock
 
 import arcade
 import pytest
@@ -161,9 +164,7 @@ def make_controller(player_x, player_y, walls=()):
         npcs=arcade.SpriteList(),
         movement_system=None,
         collision_tiles=None,
-        player_state=SimpleNamespace(
-            pixel_x=player_x, pixel_y=player_y, moving=False
-        ),
+        player_state=SimpleNamespace(pixel_x=player_x, pixel_y=player_y, moving=False),
         map_width=1000,
         map_height=1000,
     )
@@ -234,3 +235,158 @@ def test_sight_range_is_read_from_properties():
     behavior = make_behavior({"sight_range": 7}, can_challenge=lambda _id: True)
     assert isinstance(behavior, TrainerSightBehavior)
     assert behavior.sight_range == 7
+
+
+# --- can_walk ----------------------------------------------------------------
+
+
+def make_walkable_controller(player_x=1000.0, player_y=1000.0, npcs=(), wall_cells=()):
+    """NpcController with stubbed collision lookup — mirrors make_controller
+    but exposes npcs/player position for can_walk's own checks."""
+    from src.systems import npc_controller as module
+
+    cells = set(wall_cells)
+    module.arcade.get_sprites_at_point = lambda point, _tiles: (
+        [object()] if (round(point[0]), round(point[1])) in cells else []
+    )
+    return module.NpcController(
+        npcs=cast(arcade.SpriteList, list(npcs)),
+        movement_system=None,
+        collision_tiles=None,
+        player_state=SimpleNamespace(pixel_x=player_x, pixel_y=player_y, moving=False),
+        map_width=1000,
+        map_height=1000,
+    )
+
+
+def test_can_walk_out_of_bounds_returns_false():
+    controller = make_walkable_controller()
+    assert controller.can_walk(-1, 50, asking=None) is False
+    assert controller.can_walk(50, -1, asking=None) is False
+    assert controller.can_walk(2000, 50, asking=None) is False
+    assert controller.can_walk(50, 2000, asking=None) is False
+
+
+def test_can_walk_blocked_by_static_collision():
+    controller = make_walkable_controller(wall_cells=[(16, 16)])
+    assert controller.can_walk(16, 16, asking=None) is False
+
+
+def test_can_walk_blocked_by_player_position():
+    controller = make_walkable_controller(player_x=16.0, player_y=16.0)
+    assert controller.can_walk(16, 16, asking=None) is False
+
+
+def test_can_walk_blocked_by_other_npc():
+    other = SimpleNamespace(
+        motion=SimpleNamespace(pixel_x=16.0, pixel_y=16.0, moving=False)
+    )
+    controller = make_walkable_controller(npcs=[other])
+    assert controller.can_walk(16, 16, asking=None) is False
+
+
+def test_can_walk_ignores_the_asking_npc_itself():
+    asking = SimpleNamespace(
+        motion=SimpleNamespace(pixel_x=16.0, pixel_y=16.0, moving=False)
+    )
+    controller = make_walkable_controller(npcs=[asking])
+    assert controller.can_walk(16, 16, asking=asking) is True
+
+
+def test_can_walk_open_cell_returns_true():
+    controller = make_walkable_controller()
+    assert controller.can_walk(500, 500, asking=None) is True
+
+
+# --- _apply_intent -------------------------------------------------------------
+
+
+def test_apply_intent_none_is_noop():
+    controller = make_walkable_controller()
+    npc = SimpleNamespace(
+        motion=SimpleNamespace(direction="down"), set_idle=MagicMock()
+    )
+    controller._apply_intent(npc, None)
+    npc.set_idle.assert_not_called()
+
+
+def test_apply_intent_turn_updates_direction_and_idle_texture():
+    controller = make_walkable_controller()
+    npc = SimpleNamespace(
+        motion=SimpleNamespace(direction="down"), set_idle=MagicMock()
+    )
+    controller._apply_intent(npc, {"type": "turn", "direction": "left"})
+    assert npc.motion.direction == "left"
+    npc.set_idle.assert_called_once_with("left")
+
+
+def test_apply_intent_move_begins_movement_via_movement_system():
+    controller = make_walkable_controller()
+    controller.movement_system = MagicMock()
+    npc = SimpleNamespace(motion=SimpleNamespace(direction="down"))
+    intent = {"type": "move", "direction": "up", "target_y": 50.0}
+
+    controller._apply_intent(npc, intent)
+
+    assert npc.motion.direction == "up"
+    controller.movement_system.begin.assert_called_once_with(npc.motion, intent)
+
+
+def test_apply_intent_move_keeps_current_direction_if_absent():
+    controller = make_walkable_controller()
+    controller.movement_system = MagicMock()
+    npc = SimpleNamespace(motion=SimpleNamespace(direction="down"))
+
+    controller._apply_intent(npc, {"type": "move", "target_y": 50.0})
+
+    assert npc.motion.direction == "down"
+
+
+# --- update ----------------------------------------------------------------------
+
+
+def make_fake_npc(moving=False, direction="down"):
+    return SimpleNamespace(
+        motion=SimpleNamespace(moving=moving, direction=direction),
+        behavior=MagicMock(),
+        sync_sprite=MagicMock(),
+        update_animation=MagicMock(),
+        set_idle=MagicMock(),
+    )
+
+
+def test_update_asks_behavior_only_when_not_moving():
+    npc = make_fake_npc(moving=False)
+    npc.behavior.decide.return_value = None
+    controller = make_walkable_controller(npcs=[npc])
+    controller.movement_system = MagicMock()
+
+    controller.update(0.1)
+
+    npc.behavior.decide.assert_called_once_with(npc, controller, 0.1)
+    controller.movement_system.advance.assert_called_once_with(0.1, npc.motion)
+    npc.sync_sprite.assert_called_once()
+    npc.update_animation.assert_called_once()
+
+
+def test_update_skips_behavior_while_already_moving():
+    npc = make_fake_npc(moving=True)
+    controller = make_walkable_controller(npcs=[npc])
+    controller.movement_system = MagicMock()
+
+    controller.update(0.1)
+
+    npc.behavior.decide.assert_not_called()
+    controller.movement_system.advance.assert_called_once_with(0.1, npc.motion)
+
+
+def test_update_applies_decided_intent():
+    npc = make_fake_npc(moving=False)
+    npc.behavior.decide.return_value = {"type": "turn", "direction": "up"}
+    controller = make_walkable_controller(npcs=[npc])
+    controller.movement_system = MagicMock()
+
+    controller.update(0.1)
+
+    assert npc.motion.direction == "up"
+    npc.set_idle.assert_called_once_with("up")

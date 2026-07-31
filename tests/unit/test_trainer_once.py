@@ -72,3 +72,40 @@ def test_clone_does_not_drain_original():
 def test_clone_shares_no_party_list_identity():
     team = Trainer(ROSTER)
     assert team.clone().party is not team.party
+
+
+# --- prize money -------------------------------------------------------------
+
+
+TWO_MON_ROSTER = [
+    *ROSTER,
+    {
+        "name": "poochyena",
+        "level": 7,
+        "ability": "run_away",
+        "held_item": None,
+        "moves": [{"name": "tackle", "pp": 25}],
+    },
+]
+
+
+def test_prize_money_sums_every_party_level_once():
+    """Regression: the old inline calculation in BattleView added the lead's
+    level a second time, because it summed `party` before popping the lead."""
+    assert Trainer(TWO_MON_ROSTER).prize_money() == (5 + 7) * 10
+
+
+def test_prize_money_single_pokemon():
+    assert Trainer(ROSTER).prize_money() == 5 * 10
+
+
+def test_prize_money_empty_party():
+    assert Trainer([]).prize_money() == 0
+
+
+def test_prize_money_must_be_read_before_the_party_drains():
+    """Documents the ordering constraint BattleView relies on."""
+    team = Trainer(TWO_MON_ROSTER)
+    full = team.prize_money()
+    team.party.pop(0)
+    assert team.prize_money() < full

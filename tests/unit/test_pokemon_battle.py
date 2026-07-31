@@ -1,3 +1,5 @@
+import pytest
+
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.enums.effect_type import EffectType
 from src.enums.stat import Stat
@@ -134,13 +136,62 @@ def test_take_damage_does_not_go_negative():
     assert pb.current_hp >= 0
 
 
+# --- get_stat: the shared stage formula, read through the battle model ---
+
+
+def _leveled_attack(level=10, base_attack=60):
+    """What PokemonStat.at_level produces for attack — the unmodified baseline
+    get_stat starts from."""
+    return PokemonStat.scaled(base_attack, level)
+
+
+def test_get_stat_unmodified_returns_leveled_stat():
+    pb = make_battle(level=10)
+    assert pb.get_stat(Stat.ATTACK) == _leveled_attack()
+
+
+@pytest.mark.parametrize(
+    "stage,factor",
+    [(1, 1.5), (3, 2.5), (6, 4.0), (-1, 2 / 3), (-3, 0.4), (-6, 0.25)],
+)
+def test_get_stat_applies_exact_stage_multiplier(stage, factor):
+    """Pins the magnitude, not just the direction — the battle model shares this
+    formula with combat_calculator via PokemonStat.effective."""
+    pb = make_battle(level=10)
+    pb.modifiers[Stat.ATTACK] = stage
+    assert pb.get_stat(Stat.ATTACK) == round(_leveled_attack() * factor)
+
+
+def test_get_stat_paralysis_halves_speed():
+    pb = make_battle(level=10)
+    normal = pb.get_stat(Stat.SPEED)
+    pb.status_effect = StatusEffect.PARALYSIS
+    assert pb.get_stat(Stat.SPEED) == round(normal * 0.5)
+
+
+def test_get_stat_burn_halves_attack():
+    pb = make_battle(level=10)
+    normal = pb.get_stat(Stat.ATTACK)
+    pb.status_effect = StatusEffect.BURN
+    assert pb.get_stat(Stat.ATTACK) == round(normal * 0.5)
+
+
+def test_get_stat_burn_does_not_touch_speed():
+    pb = make_battle(level=10)
+    normal = pb.get_stat(Stat.SPEED)
+    pb.status_effect = StatusEffect.BURN
+    assert pb.get_stat(Stat.SPEED) == normal
+
+
 # --- execute_effects: stat stages ---
 
 
 def test_execute_effects_stat_boost_increases_modifier():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
-    effect = PokemonMoveEffect(target="self", type=EffectType.STAT, stat=Stat.ATTACK, change=1)
+    effect = PokemonMoveEffect(
+        target="self", type=EffectType.STAT, stat=Stat.ATTACK, change=1
+    )
     move = make_move(effects=[effect])
     attacker.execute_effects(move, defender)
     assert attacker.modifiers[Stat.ATTACK] == 1
@@ -160,7 +211,9 @@ def test_execute_effects_stat_drop_on_opponent():
 def test_stat_stage_capped_at_plus_six():
     pb = make_battle()
     pb.modifiers[Stat.ATTACK] = 6
-    effect = PokemonMoveEffect(target="self", type=EffectType.STAT, stat=Stat.ATTACK, change=1)
+    effect = PokemonMoveEffect(
+        target="self", type=EffectType.STAT, stat=Stat.ATTACK, change=1
+    )
     move = make_move(effects=[effect])
     messages = pb.execute_effects(move, make_battle())
     assert pb.modifiers[Stat.ATTACK] == 6
@@ -171,7 +224,9 @@ def test_stat_stage_capped_at_minus_six():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
     defender.modifiers[Stat.ATTACK] = -6
-    effect = PokemonMoveEffect(target="opponent", type=EffectType.STAT, stat=Stat.ATTACK, change=-1)
+    effect = PokemonMoveEffect(
+        target="opponent", type=EffectType.STAT, stat=Stat.ATTACK, change=-1
+    )
     move = make_move(effects=[effect])
     messages = attacker.execute_effects(move, defender)
     assert defender.modifiers[Stat.ATTACK] == -6
@@ -185,7 +240,10 @@ def test_execute_effects_applies_poison():
     attacker = make_battle()
     defender = make_battle(is_enemy=True)
     effect = PokemonMoveEffect(
-        target="opponent", type=EffectType.STATUS_CONDITION, condition=StatusEffect.POISON, chance=100
+        target="opponent",
+        type=EffectType.STATUS_CONDITION,
+        condition=StatusEffect.POISON,
+        chance=100,
     )
     move = make_move(effects=[effect])
     attacker.execute_effects(move, defender)
@@ -254,7 +312,10 @@ def test_status_does_not_overwrite_existing():
     defender = make_battle(is_enemy=True)
     defender.status_effect = StatusEffect.PARALYSIS
     effect = PokemonMoveEffect(
-        target="opponent", type=EffectType.STATUS_CONDITION, condition=StatusEffect.POISON, chance=100
+        target="opponent",
+        type=EffectType.STATUS_CONDITION,
+        condition=StatusEffect.POISON,
+        chance=100,
     )
     attacker.execute_effects(make_move(effects=[effect]), defender)
     assert defender.status_effect == StatusEffect.PARALYSIS

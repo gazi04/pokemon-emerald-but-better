@@ -1,3 +1,5 @@
+import pytest
+
 import json
 from unittest.mock import patch
 
@@ -235,6 +237,19 @@ def test_negative_stat_stage_decreases_effective_stat():
         Stat.ATTACK, make_stat(attack=50), {Stat.ATTACK: -3}, StatusEffect.NONE
     )
     assert low < base
+
+
+# Exact Gen III values, not just direction. The directional assertions above pass
+# even when the fraction is wrong by a constant factor — a sabotaged multiplier
+# still makes `high > low` — so they cannot protect the shared formula.
+@pytest.mark.parametrize(
+    "stage,expected",
+    [(0, 50), (1, 75), (3, 125), (6, 200), (-1, 33), (-3, 20), (-6, 12)],
+)
+def test_stat_stage_exact_multiplier(stage, expected):
+    mods = {Stat.ATTACK: stage} if stage else {}
+    actual = _get_stat(Stat.ATTACK, make_stat(attack=50), mods, StatusEffect.NONE)
+    assert actual == expected
 
 
 def test_paralysis_halves_speed():

@@ -103,3 +103,13 @@ def reset_global_bus():
     global_bus._subscribers.clear()
     yield
     global_bus._subscribers.clear()
+
+
+@pytest.fixture(scope="session")
+def arcade_window():
+    """Offscreen arcade.Window for tests that instantiate Views/GameDirector."""
+    import arcade
+
+    window = arcade.Window(width=200, height=200, title="test", visible=False)
+    yield window
+    window.close()
