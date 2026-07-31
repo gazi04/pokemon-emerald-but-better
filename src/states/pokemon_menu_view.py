@@ -164,7 +164,7 @@ class PokemonMenuView(GameView):
                 self.previous_view.previous_view, BattleView
             ):
                 battle_view = self.previous_view.previous_view
-                battle_view.on_item_used(self.item)
+                battle_view.on_item_used(self.item, pokemon_name)
                 self.window.show_view(battle_view)
         else:
             if not self.bag.use_item(self.item, pokemon_name, move_index):

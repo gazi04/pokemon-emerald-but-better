@@ -183,8 +183,12 @@ class BattleView(GameView):
         self.ui.queue_messages(self.battle_system.turn(index))
         self.ui.switch_mode("dialog")
 
-    def on_item_used(self, item_index: str):
-        self.ui.queue_messages(self.battle_system.turn_use_item(item_index))
+    def on_item_used(self, item_index: str, target_name: str | None = None):
+        """`target_name` is the party member the item was used on — the battle
+        model and HP bar only exist for the active one."""
+        self.ui.queue_messages(
+            self.battle_system.turn_use_item(item_index, target_name)
+        )
         self.ui.switch_mode("dialog")
 
     def on_show_view(self):

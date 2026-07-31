@@ -50,6 +50,9 @@ class BattleSystem:
         self.trainer_party = trainer_data.party if trainer_data else []
         self.next_trainer_pokemon: TrainerPokemon | None = None
 
+        # Party member the queued item was used on; None = the active pokemon.
+        self._item_target_name: str | None = None
+
     def turn(self, move_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
@@ -100,8 +103,14 @@ class BattleSystem:
             player_priority == enemy_priority and player_speed >= enemy_speed
         )
 
-    def turn_use_item(self, item_index: str) -> list[str]:
+    def turn_use_item(
+        self, item_index: str, target_name: str | None = None
+    ) -> list[str]:
+        """Spend the turn on an item. `target_name` is the party member it was
+        used on; None means the active pokemon.
+        """
         self.battle_state = BattleState.CURRENTLY_TURN
+        self._item_target_name = target_name
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
         self.turn_queue = [("player", -1, item_index)]
         if enemy_move_index is not None:
@@ -356,6 +365,17 @@ class BattleSystem:
         self.your_pokemon.sync_to_source()
 
     def _apply_item_to_pokemon(self, item_index: str | int) -> list[str]:
+        """Reflect a bag item's effect on the battle model.
+
+        The bag has already written the save for the targeted party member. Only
+        the *active* pokemon has a battle model and an HP bar, so a benched target
+        gets the message and nothing else.
+        """
+        target_name = self._item_target_name
+
+        if target_name and target_name.lower() != self.your_pokemon.name.lower():
+            return [f"{target_name.capitalize()} used {item_index}!"]
+
         hp_before = self.your_pokemon.current_hp
         self.your_pokemon.sync_from_source()
 
