@@ -10,6 +10,11 @@ wheels/
 # Ruff generated files
 .ruff_cache
 
+# Coverage / profiler output
+.coverage
+scalene-profile.html
+scalene-profile.json
+
 # Virtual environments
 .venv
 uv.lock
