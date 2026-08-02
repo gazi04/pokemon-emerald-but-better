@@ -1,13 +1,13 @@
 {
-    "activeFile": "map/root101.tmx",
+    "activeFile": "map/littleroot_town.tmx",
     "expandedProjectPaths": [
         "map",
-        "ui/sprites",
         "map/little_root_town",
         "map/oldale_town",
-        ".",
+        "map/tilesets",
         "ui",
-        "map/tilesets"
+        "ui/sprites",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -357,7 +357,6 @@
     "openFiles": [
         "map/oldale_town.tmx",
         "map/littleroot_town_original.tmx",
-        "map/root101.tmx",
         "map/littleroot_town.tmx"
     ],
     "project": "pokemon-emerald.tiled-project",
