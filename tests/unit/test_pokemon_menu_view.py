@@ -5,9 +5,10 @@
 tests/unit/test_battle_view.py.
 """
 
-from typing import cast
+from typing import Any, cast
 from unittest.mock import MagicMock
 
+import arcade
 import pytest
 
 from src.states.pokemon_menu_view import PokemonMenuView
@@ -109,3 +110,224 @@ def test_use_item_without_a_bag_raises():
     view.bag = None
     with pytest.raises(RuntimeError):
         view._use_item()
+
+
+# --- _do_forced_switch -------------------------------------------------------
+
+
+def make_forced_switch_view(hp=20, team_index=1, monkeypatch=None) -> Any:
+    view: Any = PokemonMenuView.__new__(PokemonMenuView)
+    view.system = MagicMock()
+    selected = MagicMock(hp=hp)
+    team = [MagicMock(hp=20), MagicMock(hp=20)]
+    team[team_index] = selected
+    view.system.team = team
+    view.system.team_index = team_index
+    view.ui = MagicMock()
+    view.window = MagicMock()
+    view.previous_view = MagicMock()
+    if monkeypatch is not None:
+        monkeypatch.setattr("src.states.pokemon_menu_view.BattleView", MagicMock)
+    return view
+
+
+def test_forced_switch_rejects_fainted_pokemon():
+    view = make_forced_switch_view(hp=0, team_index=1)
+
+    view._do_forced_switch()
+
+    view.system.confirm_switch.assert_not_called()
+
+
+def test_forced_switch_rejects_the_already_active_pokemon():
+    view = make_forced_switch_view(hp=20, team_index=0)
+
+    view._do_forced_switch()
+
+    view.system.confirm_switch.assert_not_called()
+
+
+def test_forced_switch_confirms_and_returns_to_battle_view(monkeypatch):
+    view = make_forced_switch_view(hp=20, team_index=1, monkeypatch=monkeypatch)
+    battle_view = view.previous_view = MagicMock()
+
+    view._do_forced_switch()
+
+    view.system.confirm_switch.assert_called_once_with(1)
+    battle_view.force_switch.assert_called_once()
+    view.window.show_view.assert_called_once_with(battle_view)
+
+
+def test_forced_switch_outside_battle_skips_force_switch_call():
+    view = make_forced_switch_view(hp=20, team_index=1)
+    view.previous_view = MagicMock()  # not a BattleView instance
+
+    view._do_forced_switch()
+
+    view.system.confirm_switch.assert_called_once_with(1)
+    view.window.show_view.assert_called_once_with(view.previous_view)
+
+
+# --- _tooltip_action ----------------------------------------------------------
+
+
+def make_tooltip_view(bag, battle_system=None, monkeypatch=None) -> Any:
+    view: Any = PokemonMenuView.__new__(PokemonMenuView)
+    view.bag = bag
+    view.item = "potion"
+    view.battle_system = battle_system
+    view.system = MagicMock()
+    mon = MagicMock()
+    mon.name = "mudkip"
+    view.system.team = [mon]
+    view.system.team_index = 0
+    view.system.tooltip_index = 0
+    view.ui = MagicMock()
+    view.window = MagicMock()
+    view.previous_view = MagicMock()
+    view.overlay = MagicMock()
+    view._use_item = MagicMock()
+    view._move_pokemon = MagicMock()
+    return view
+
+
+def test_tooltip_index2_gives_item_to_current_pokemon():
+    view = make_tooltip_view(bag=MagicMock())
+    view.system.tooltip_index = 2
+
+    view._tooltip_action()
+
+    assert view._get_current_pokemon().held_item == "potion"
+    view.window.show_view.assert_called_once_with(view.previous_view)
+
+
+def test_tooltip_index2_without_bag_does_nothing():
+    view = make_tooltip_view(bag=None)
+    view.system.tooltip_index = 2
+
+    view._tooltip_action()
+
+    view.window.show_view.assert_not_called()
+
+
+def test_tooltip_index1_with_pp_item_opens_move_picker():
+    bag = MagicMock()
+    bag.is_pp_item.return_value = True
+    view = make_tooltip_view(bag=bag)
+    view.system.tooltip_index = 1
+
+    view._tooltip_action()
+
+    view.overlay.assert_called_once()
+    assert view.overlay.call_args.args[0] == "pokemon_information"
+    assert view.overlay.call_args.kwargs["select_move"] is True
+    view._use_item.assert_not_called()
+
+
+def test_tooltip_index1_with_non_pp_item_uses_it_directly():
+    bag = MagicMock()
+    bag.is_pp_item.return_value = False
+    view = make_tooltip_view(bag=bag)
+    view.system.tooltip_index = 1
+
+    view._tooltip_action()
+
+    view._use_item.assert_called_once()
+    view.overlay.assert_not_called()
+
+
+def test_tooltip_index1_without_bag_and_multiple_pokemon_moves(monkeypatch):
+    view = make_tooltip_view(bag=None)
+    view.system.tooltip_index = 1
+    view.system.team = [MagicMock(), MagicMock()]
+
+    view._tooltip_action()
+
+    view._move_pokemon.assert_called_once()
+
+
+def test_tooltip_index1_without_bag_and_single_pokemon_does_nothing():
+    view = make_tooltip_view(bag=None)
+    view.system.tooltip_index = 1
+    view.system.team = [MagicMock()]
+
+    view._tooltip_action()
+
+    view._move_pokemon.assert_not_called()
+
+
+def test_tooltip_index0_always_opens_pokemon_information():
+    view = make_tooltip_view(bag=None)
+    view.system.tooltip_index = 0
+
+    view._tooltip_action()
+
+    view.overlay.assert_called_once_with(
+        "pokemon_information",
+        previous_view=view,
+        pokemon=view._get_current_pokemon(),
+    )
+
+
+# --- _handle_menu_input -------------------------------------------------------
+
+
+def make_menu_input_view() -> Any:
+    view: Any = PokemonMenuView.__new__(PokemonMenuView)
+    view.forced_switch = False
+    view.system = MagicMock()
+    view.system.is_moving_pokemon = False
+    view.system.team_index = 0
+    view.battle_system = None
+    view.window = MagicMock()
+    view.previous_view = MagicMock()
+    view.ui = MagicMock()
+    view._do_forced_switch = MagicMock()
+    return view
+
+
+def test_cancel_blocked_during_forced_switch():
+    view = make_menu_input_view()
+    view.forced_switch = True
+
+    view._handle_menu_input(arcade.key.X)
+
+    view.window.show_view.assert_not_called()
+
+
+def test_cancel_while_moving_pokemon_cancels_the_move():
+    view = make_menu_input_view()
+    view.system.is_moving_pokemon = True
+
+    view._handle_menu_input(arcade.key.X)
+
+    view.system.cancel_moving.assert_called_once()
+    view.window.show_view.assert_not_called()
+
+
+def test_cancel_normally_returns_to_previous_view():
+    view = make_menu_input_view()
+
+    view._handle_menu_input(arcade.key.X)
+
+    view.window.show_view.assert_called_once_with(view.previous_view)
+
+
+def test_interact_during_forced_switch_calls_do_forced_switch():
+    view = make_menu_input_view()
+    view.forced_switch = True
+
+    view._handle_menu_input(arcade.key.Z)
+
+    view._do_forced_switch.assert_called_once()
+
+
+def test_up_down_move_team_index():
+    view = make_menu_input_view()
+
+    view._handle_menu_input(arcade.key.DOWN)
+    view.system.move_team_index.assert_called_once_with(1)
+
+    view.system.move_team_index.reset_mock()
+    view._handle_menu_input(arcade.key.UP)
+    view.system.move_team_index.assert_called_once_with(-1)
