@@ -37,7 +37,7 @@ select = ["E", "F", "B", "SIM", "UP", "PERF", "RUF"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--tb=short --cov=src --cov-fail-under=55"
+addopts = "--tb=short --cov=src --cov-fail-under=62"
 
 [tool.coverage.run]
 source = ["src"]
