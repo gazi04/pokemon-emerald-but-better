@@ -141,6 +141,10 @@ class BattleView(GameView):
             self.enemy_battle.name,
         )
 
+        # Entry abilities (weather setters like Drought/Drizzle) announce right
+        # after the intro slide so their weather is up before the first turn.
+        self.ui.queue_messages(self.battle_system.start_battle())
+
     def update_ui_moves(self):
         moves = self.your_battle.moves
         for i, button in enumerate(self.ui.menu_panel.move_buttons):

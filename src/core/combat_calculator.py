@@ -18,10 +18,15 @@ def calculate_damage(
     defender_modifiers: dict,
     crit_modifier: int,
     type_chart: dict,
+    weather_multiplier: float = 1.0,
 ) -> CombatResult:
     """
     Pure damage calculation. All inputs are plain data — no BattlePokemon
     references. Returns a CombatResult; never mutates anything.
+
+    `weather_multiplier` is the already-resolved weather scaling for this move's
+    type (e.g. 1.5 for Water in rain); the caller owns the weather rules so this
+    module stays decoupled from WeatherState.
     """
     messages = []
 
@@ -84,6 +89,7 @@ def calculate_damage(
         * stab
         * effectiveness
         * crit_multiplier
+        * weather_multiplier
     )
 
     return CombatResult(

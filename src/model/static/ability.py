@@ -3,10 +3,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class AbilityEffect:
-    trigger: (
-        str  # "on_attack" | "on_hit" | "on_turn_end" | "on_switch_in" | "on_weather"
-    )
-    type: str  # "stat_boost" | "status" | "damage" | "immunity" | "heal"
+    trigger: str  # on_attack | on_hit | on_turn_end | on_switch_in | weather
+    type: str  # stat_boost | status | damage | immunity | heal | weather | speed
     target: str  # "self" | "enemy"
     move_type: str | None = None  # only apply if the move matches this type
     stat: str | None = None
@@ -16,6 +14,7 @@ class AbilityEffect:
     )
     chance: float | None = None  # 0.0 - 1.0, None means always
     status: str | None = None  # status to inflict for type=="status" (e.g. "paralyzed")
+    weather: str | None = None  # weather this effect summons or keys off of
 
 
 @dataclass

@@ -11,3 +11,4 @@ class EffectType(StrEnum):
     CATCH = "catch"
     RECOIL_TO_ATTACKER = "recoil_to_attacker"
     RECOIL_TO_SELF = "recoil_to_self"
+    WEATHER = "weather"

@@ -10,6 +10,8 @@ from src.core.events import HpChangedEvent, PokemonFaintedEvent
 from src.enums.battle_state import BattleState
 from src.enums.stat import Stat
 from src.enums.effect_type import EffectType
+from src.enums.weather import Weather
+from src.model.battle.weather_state import WeatherState
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.save.player import PlayerPokemon
 from src.model.static.item import ItemSpecies
@@ -38,6 +40,9 @@ class BattleSystem:
         self.exp = 0
         self.has_evolved = False
 
+        # Battle-wide weather (clear until a move or ability summons it).
+        self.weather = WeatherState()
+
         self._last_player_move = ""
 
         # Move-learning queue for the active pokemon after a level-up.
@@ -52,6 +57,31 @@ class BattleSystem:
 
         # Party member the queued item was used on; None = the active pokemon.
         self._item_target_name: str | None = None
+
+    def start_battle(self) -> list[str]:
+        """Fire the active Pokémon's entry effects (currently weather-setting
+        abilities like Drought/Drizzle). The slower Pokémon activates last, so
+        its weather wins — matching the games. Called once by the view on intro.
+        """
+        messages: list[str] = []
+        by_speed = sorted(
+            (self.enemy_pokemon, self.your_pokemon),
+            key=lambda p: p.get_stat(Stat.SPEED),
+            reverse=True,
+        )
+        for pokemon in by_speed:
+            summoned = pokemon.weather_on_switch_in()
+            if summoned:
+                messages.append(
+                    f"{pokemon.name}'s {pokemon.ability_name} kicked in!"
+                )
+                messages.extend(self.weather.set(Weather(summoned)))
+        return messages
+
+    def _weather_speed(self, pokemon: BattlePokemon) -> int:
+        """Speed for turn order, including Swift Swim / Chlorophyll in weather."""
+        base = pokemon.get_stat(Stat.SPEED)
+        return round(base * pokemon.weather_speed_multiplier(self.weather.kind))
 
     def turn(self, move_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
@@ -75,9 +105,9 @@ class BattleSystem:
         enemy_priority = enemy_move_data.priority
 
         if self._player_moves_first(
-            self.your_pokemon.get_stat(Stat.SPEED),
+            self._weather_speed(self.your_pokemon),
             player_priority,
-            self.enemy_pokemon.get_stat(Stat.SPEED),
+            self._weather_speed(self.enemy_pokemon),
             enemy_priority,
         ):
             self.turn_queue = [
@@ -303,6 +333,7 @@ class BattleSystem:
             defender_modifiers=defender.modifiers,
             crit_modifier=attacker.modifiers.get(Stat.CRITS, 0) + move_data.crit,
             type_chart=self.data_loader.types,
+            weather_multiplier=self.weather.damage_multiplier(move_data.type),
         )
 
         messages.extend(result.messages)
@@ -323,6 +354,9 @@ class BattleSystem:
         effect_messages = attacker.execute_effects(move_data, defender)
         messages.extend(effect_messages)
 
+        # Weather-summoning moves (Rain Dance, Sunny Day, Sandstorm, Hail).
+        messages.extend(self._apply_move_weather(move_data))
+
         # Ability + held-item on-hit reactions (Static, Rocky Helmet), and the
         # attacker's own Life Orb recoil — only when a hit actually landed.
         messages.extend(defender.on_hit(attacker, move_data))
@@ -341,6 +375,14 @@ class BattleSystem:
 
         self._last_player_move = move_data.name
 
+        return messages
+
+    def _apply_move_weather(self, move_data: PokemonMove) -> list[str]:
+        """Summon weather from a move's `weather` effect, if it has one."""
+        messages: list[str] = []
+        for effect in move_data.effects:
+            if effect.type == EffectType.WEATHER and effect.weather:
+                messages.extend(self.weather.set(Weather(effect.weather)))
         return messages
 
     def _check_move_condition(
@@ -402,6 +444,11 @@ class BattleSystem:
         messages.extend(self.your_pokemon.consume_berry_on_hp())
         messages.extend(self.enemy_pokemon.consume_berry_on_hp())
 
+        # Weather: heal abilities, sandstorm/hail chip, then the duration tick.
+        # Runs before the HP-change publishes below so the bars reflect it, and
+        # before the faint checks so weather can KO.
+        messages.extend(self._apply_weather_end_of_turn())
+
         if self.your_pokemon.current_hp != hp_before_yours:
             self._publish_hp_change("player", hp_before_yours, self.your_pokemon)
         if self.enemy_pokemon.current_hp != hp_before_enemy:
@@ -418,6 +465,33 @@ class BattleSystem:
             BattleState.POST_TURN if len(messages) > 0 else BattleState.WAITING
         )
         return messages
+
+    def _apply_weather_end_of_turn(self) -> list[str]:
+        """Weather's per-turn effects on both active Pokémon, then its countdown.
+
+        Heal abilities (Rain Dish/Ice Body) first, then sandstorm/hail chip on
+        anything not immune. HP changes are published by post_turn's net-change
+        check, so this only mutates and messages.
+        """
+        if not self.weather.is_active:
+            return []
+
+        messages: list[str] = []
+        for pokemon in (self.your_pokemon, self.enemy_pokemon):
+            if pokemon.current_hp <= 0:
+                continue
+
+            messages.extend(pokemon.weather_heal(self.weather.kind))
+
+            takes_chip = self.weather.damages(
+                pokemon.types
+            ) and not pokemon.absorbs_weather(self.weather.kind)
+            if takes_chip:
+                pokemon.take_damage(self.weather.residual_damage(pokemon.max_hp))
+                messages.append(self.weather.residual_message(pokemon.name))
+
+        messages.extend(self.weather.tick())
+        return [m for m in messages if m]
 
     def pokemon_death(self, died_pokemon: BattlePokemon) -> list[str]:
         messages = []

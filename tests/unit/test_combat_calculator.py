@@ -58,6 +58,7 @@ def calc(
     def_mods=None,
     atk_status=StatusEffect.NONE,
     crit_modifier=0,
+    weather_multiplier=1.0,
 ):
     move = move or make_move()
     atk_stat = atk_stat or make_stat()
@@ -78,7 +79,22 @@ def calc(
         defender_modifiers=def_mods,
         crit_modifier=crit_modifier,
         type_chart=TYPES,
+        weather_multiplier=weather_multiplier,
     )
+
+
+def test_weather_multiplier_scales_damage():
+    with patch("src.core.combat_calculator._roll_critical", return_value=False):
+        base = calc().damage
+        boosted = calc(weather_multiplier=1.5).damage
+        damped = calc(weather_multiplier=0.5).damage
+    assert boosted == round(base * 1.5)
+    assert damped == round(base * 0.5)
+
+
+def test_weather_multiplier_defaults_to_no_change():
+    with patch("src.core.combat_calculator._roll_critical", return_value=False):
+        assert calc().damage == calc(weather_multiplier=1.0).damage
 
 
 # --- Basic hit ---

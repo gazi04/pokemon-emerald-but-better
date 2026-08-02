@@ -632,6 +632,47 @@ class BattlePokemon:
         self.modifiers[stat] = min(6, current + change)
         return [f"{self.name}'s {stat} rose!"]
 
+    # ------------------------------------------------------------------
+    # Weather-linked abilities. Weather itself is owned by BattleSystem; these
+    # only read what this pokemon's ability wants, so the system can apply it.
+    # ------------------------------------------------------------------
+
+    def weather_on_switch_in(self) -> str | None:
+        """The weather this pokemon's ability summons on entry (Drought → sun),
+        or None. Returned as the raw string; BattleSystem maps it to Weather."""
+        for effect in self._ability_effects("on_switch_in"):
+            if effect.type == "weather" and effect.weather:
+                return effect.weather
+        return None
+
+    def weather_speed_multiplier(self, weather: str) -> float:
+        """Swift Swim / Chlorophyll: a speed multiplier while their weather is up."""
+        for effect in self._ability_effects("weather"):
+            if effect.type == "speed" and effect.weather == weather:
+                return 1 + (effect.change or 0) / 100
+        return 1.0
+
+    def weather_heal(self, weather: str) -> list[str]:
+        """Rain Dish / Ice Body: heal a little at end of turn in their weather."""
+        for effect in self._ability_effects("weather"):
+            if (
+                effect.type == "heal"
+                and effect.weather == weather
+                and self.current_hp < self.max_hp
+            ):
+                healed = max(1, int(self.max_hp * (effect.change or 0) / 100))
+                self.current_hp = min(self.max_hp, self.current_hp + healed)
+                return [f"{self.name} restored HP with {self.ability_name}!"]
+        return []
+
+    def absorbs_weather(self, weather: str) -> bool:
+        """Whether this pokemon's ability makes it immune to `weather`'s chip —
+        e.g. Ice Body thrives in hail, so it heals instead of taking damage."""
+        return any(
+            effect.type == "heal" and effect.weather == weather
+            for effect in self._ability_effects("weather")
+        )
+
     def on_switch_in(self, opponent: BattlePokemon) -> list[str]:
         messages = []
         for effect in self._ability_effects("on_switch_in"):
