@@ -10,7 +10,7 @@ It knows nothing about rendering or input; OverworldView wires the returned
 LoadedMap into the scene. That keeps the map system decoupled and testable.
 """
 
-from typing import Callable, Optional, Union
+from collections.abc import Callable
 
 from src.core.logger import get_logger
 from src.states.map_loader import MapLoader, LoadedMap
@@ -21,9 +21,14 @@ log = get_logger(__name__)
 
 # A spawn target: a named spawn point, an explicit (x, y) world position, or
 # None (use the map's "default" spawn).
-Spawn = Union[str, tuple[float, float], None]
+Spawn = str | tuple[float, float] | None
 
 MapHook = Callable[[str, LoadedMap], None]
+
+# Spawn objects mark the tile the player lands on, but the player sprite is
+# anchored slightly lower than a tile's center — this nudge lines the sprite up
+# with the tile so arrivals don't look half-sunk into the floor.
+SPAWN_Y_OFFSET = 8
 
 
 class MapManager:
@@ -32,8 +37,8 @@ class MapManager:
         loader: MapLoader,
         registry: MapRegistry,
         player_state,
-        on_load: Optional[MapHook] = None,
-        on_unload: Optional[MapHook] = None,
+        on_load: MapHook | None = None,
+        on_unload: MapHook | None = None,
     ):
         self._loader = loader
         self._registry = registry
@@ -41,8 +46,8 @@ class MapManager:
         self._on_load = on_load
         self._on_unload = on_unload
 
-        self.current_map_id: Optional[str] = None
-        self.loaded: Optional[LoadedMap] = None
+        self.current_map_id: str | None = None
+        self.loaded: LoadedMap | None = None
 
     # ------------------------------------------------------------------
     # Core lifecycle
@@ -87,10 +92,11 @@ class MapManager:
         position = self._resolve_spawn(loaded, spawn)
         if position is not None:
             self._player_state.pixel_x, self._player_state.pixel_y = position
+            self._player_state.pixel_y += SPAWN_Y_OFFSET
 
     def _resolve_spawn(
         self, loaded: LoadedMap, spawn: Spawn
-    ) -> Optional[tuple[float, float]]:
+    ) -> tuple[float, float] | None:
         if spawn is None:
             return loaded.spawns.get("default")
         if isinstance(spawn, str):

@@ -27,6 +27,27 @@ class ShopUI:
         self._item_labels = []
         self._cursor_index = 0
 
+        self._build_widget_boxes(ui_layer)
+        self._build_text_widgets(ui_layer)
+
+        self._build_item_labels()
+
+        self._cursor = arcade.Text(
+            "▶",
+            x=0,
+            y=0,
+            color=TEXT_COLOR,
+            font_size=FONT_SIZE,
+            font_name=FONT,
+        )
+
+        self._option_labels = []
+        self._build_option_labels(["BUY", "EXIT"])
+        self.show_options()
+
+    # ── Builders ──────────────────────────────────────────────────────────────
+
+    def _build_widget_boxes(self, ui_layer):
         for obj in ui_layer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
@@ -62,6 +83,7 @@ class ShopUI:
             elif obj.name == "item":
                 self._item_size = {"x": x, "y": y, "w": w, "h": h}
 
+    def _build_text_widgets(self, ui_layer):
         for obj in ui_layer.tiled_objects:
             w = obj.size.width
             h = obj.size.height
@@ -90,23 +112,6 @@ class ShopUI:
                     multiline=True,
                 )
                 self._shop_widget.add(self._text)
-
-        self._build_item_labels()
-
-        self._cursor = arcade.Text(
-            "▶",
-            x=0,
-            y=0,
-            color=TEXT_COLOR,
-            font_size=FONT_SIZE,
-            font_name=FONT,
-        )
-
-        self._option_labels = []
-        self._build_option_labels(["BUY", "EXIT"])
-        self.show_options()
-
-    # ── Builders ──────────────────────────────────────────────────────────────
 
     def _build_item_labels(self):
         for i, item in enumerate(self._item_names):
@@ -193,10 +198,7 @@ class ShopUI:
         self._update_cursor(index, use_options=True)
 
     def _update_cursor(self, index: int, use_options: bool = False):
-        if use_options:
-            label = self._option_labels[index]
-        else:
-            label = self._item_labels[index]
+        label = self._option_labels[index] if use_options else self._item_labels[index]
 
         self._cursor.x = label.rect.left - 20
         self._cursor.y = label.rect.center_y - 10

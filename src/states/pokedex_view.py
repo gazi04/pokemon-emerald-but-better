@@ -6,7 +6,6 @@ from src.states.base_view import GameView
 from src.ui.pokedex_ui import PokedexUi
 
 
-
 class PokedexView(GameView):
     """Full-screen Pokédex view — shows all known Pokémon with seen/owned status."""
 

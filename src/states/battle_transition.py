@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.constants import FLICKER_INTERVAL
 
 
@@ -16,14 +14,14 @@ class BattleTransition:
         self.max_time = max_time
         self.flicker_interval = flicker_interval
         self._timer = 0.0
-        self._pending: Optional[tuple] = None
+        self._pending: tuple | None = None
 
     def start(self, name, level, data) -> None:
         self.active = True
         self._timer = 0.0
         self._pending = (name, level, data)
 
-    def update(self, delta_time: float) -> Optional[tuple]:
+    def update(self, delta_time: float) -> tuple | None:
         self._timer += delta_time
         self.can_render_scene = int(self._timer / self.flicker_interval) % 2 == 0
 

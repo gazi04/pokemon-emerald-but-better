@@ -19,7 +19,7 @@
     "effects": [
       {
         "type": "catch",
-        "catchRate": 1
+        "catch_rate": 1
       }
     ],
     "category": "pokeball",

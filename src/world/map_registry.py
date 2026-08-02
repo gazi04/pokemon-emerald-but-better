@@ -7,8 +7,6 @@ friendly names — fly destinations, story spots — onto real ids without any
 caller knowing the difference.
 """
 
-from typing import Optional
-
 from src.core.logger import get_logger
 
 log = get_logger(__name__)
@@ -18,7 +16,7 @@ class MapRegistry:
     def __init__(
         self,
         maps_dir: str = "assets/map",
-        aliases: Optional[dict[str, str]] = None,
+        aliases: dict[str, str] | None = None,
     ):
         self._maps_dir = maps_dir.replace("\\", "/").rstrip("/")
         self._aliases = aliases or {}

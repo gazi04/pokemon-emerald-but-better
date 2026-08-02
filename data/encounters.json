@@ -7,7 +7,7 @@
     ]
   },
 
-  "route_102": {
+  "route102": {
     "encounter_rate": 0.20,
     "grass": [
       { "name": "zigzagoon", "levels": [4, 6], "weight": 1 },

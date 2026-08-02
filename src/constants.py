@@ -16,3 +16,12 @@ POKEMON_INFORMATION_UI = "assets/ui/pokemon_info_ui_design.tmx"
 POKEDEX_UI = "assets/ui/pokedex.tmx"
 SHOP_UI = "assets/ui/shop_ui_design.tmx"
 FONT = "assets/fonts/pokemon-emerald.otf"
+
+# One tile step per facing direction. Arcade is y-up: "up" increases y.
+DIRECTION_OFFSETS = {
+    "up": (0, TILE_SIZE),
+    "down": (0, -TILE_SIZE),
+    "left": (-TILE_SIZE, 0),
+    "right": (TILE_SIZE, 0),
+}
+OPPOSITE_DIRECTION = {"up": "down", "down": "up", "left": "right", "right": "left"}

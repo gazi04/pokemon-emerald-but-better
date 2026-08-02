@@ -115,6 +115,6 @@
  <objectgroup id="5" name="spawns">
   <object id="33" name="entrance_from_bottom" gid="524290" x="240" y="384" width="16" height="16"/>
   <object id="35" name="pokecenter_door" gid="524290" x="176" y="336" width="16" height="16"/>
-  <object id="36" name="pokemark_door" gid="524290" x="304" y="224" width="16" height="16"/>
+  <object id="36" name="pokemark_door" gid="2148007938" x="304" y="224" width="16" height="16"/>
  </objectgroup>
 </map>

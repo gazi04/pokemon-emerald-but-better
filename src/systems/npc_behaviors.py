@@ -7,24 +7,20 @@ make decisions. One behavior = one responsibility.
 """
 
 import random
-from typing import Optional
+from src.constants import DIRECTION_OFFSETS, TILE_SIZE
+from src.core.event_bus import global_bus
+from src.core.events import NpcInteractEvent, NpcSpottedPlayerEvent
 
-from src.constants import TILE_SIZE
-
-# Arcade is y-up: "up" increases y.
-_OFFSETS = {
-    "up": (0, TILE_SIZE),
-    "down": (0, -TILE_SIZE),
-    "left": (-TILE_SIZE, 0),
-    "right": (TILE_SIZE, 0),
-}
+_OFFSETS = DIRECTION_OFFSETS
 _DIRECTIONS = list(_OFFSETS.keys())
+
+DEFAULT_SIGHT_RANGE = 4
 
 
 class Behavior:
     """Base class. Subclasses return an intent dict or None."""
 
-    def decide(self, npc, world, delta_time: float) -> Optional[dict]:
+    def decide(self, npc, world, delta_time: float) -> dict | None:
         return None
 
 
@@ -89,17 +85,98 @@ class WanderBehavior(Behavior):
         }
 
 
-def make_behavior(properties: dict) -> Behavior:
-    """Build a behavior from TMX object properties."""
+class TrainerSightBehavior(Behavior):
+    """Wraps another behavior with trainer line-of-sight.
+
+    While unspotted the NPC just runs `inner` (idle/wander/look around). The
+    moment the player steps into its facing line it locks on: publishes
+    NpcSpottedPlayerEvent (the overworld freezes player input), walks up to the
+    player, then publishes NpcInteractEvent — which runs the NPC's normal
+    dialog and, since it is a trainer, the battle after it.
+
+    `can_challenge(npc_id)` is asked *every* frame before any raycast, so an
+    NPC with no team never looks, and a defeated one stops challenging.
+    """
+
+    PATROL, APPROACH, DONE = "patrol", "approach", "done"
+
+    def __init__(
+        self, inner: Behavior, can_challenge, sight_range: int = DEFAULT_SIGHT_RANGE
+    ):
+        self.inner = inner
+        self.can_challenge = can_challenge
+        self.sight_range = sight_range
+        self.state = self.PATROL
+
+    def decide(self, npc, world, delta_time: float):
+        if self.state == self.DONE:
+            return None
+
+        if self.state == self.APPROACH:
+            return self._approach(npc, world)
+
+        # Cheap gate first: no team (or already beaten) means never look.
+        if not self.can_challenge(npc.npc_id):
+            return self.inner.decide(npc, world, delta_time)
+
+        if world.line_of_sight(npc, self.sight_range) is None:
+            return self.inner.decide(npc, world, delta_time)
+
+        self.state = self.APPROACH
+        global_bus.publish(NpcSpottedPlayerEvent(npc_id=npc.npc_id))
+        return self._approach(npc, world)
+
+    def _approach(self, npc, world):
+        """Step toward the player until adjacent, then start the dialog."""
+        distance = world.line_of_sight(npc, self.sight_range)
+        if distance is not None and distance <= 1:
+            return self._challenge(npc)
+
+        direction = npc.motion.direction
+        dx, dy = _OFFSETS[direction]
+        target_x = npc.motion.pixel_x + dx
+        target_y = npc.motion.pixel_y + dy
+
+        # Something got in the way (or the player slipped out of the line) —
+        # challenge from where we stand rather than walking forever.
+        if not world.can_walk(target_x, target_y, npc):
+            return self._challenge(npc)
+
+        return {
+            "type": "move",
+            "direction": direction,
+            "target_x": target_x,
+            "target_y": target_y,
+        }
+
+    def _challenge(self, npc):
+        self.state = self.DONE
+        global_bus.publish(NpcInteractEvent(npc_id=npc.npc_id))
+        return None
+
+
+def make_behavior(properties: dict, can_challenge=None) -> Behavior:
+    """Build a behavior from TMX object properties.
+
+    Pass `can_challenge` (npc_id -> bool) to give the NPC trainer sight. Set
+    `sight_range` to 0 on the Tiled object to opt a trainer out of spotting.
+    """
     kind = (properties.get("behavior") or "idle").lower()
 
     if kind == "wander":
-        return WanderBehavior(
+        behavior = WanderBehavior(
             radius_tiles=int(properties.get("wander_radius", 2)),
             cooldown=float(properties.get("move_cooldown", 1.5)),
         )
-    if kind == "look_around":
-        return LookAroundBehavior(
+    elif kind == "look_around":
+        behavior = LookAroundBehavior(
             cooldown=float(properties.get("move_cooldown", 2.0)),
         )
-    return IdleBehavior()
+    else:
+        behavior = IdleBehavior()
+
+    sight_range = int(properties.get("sight_range", DEFAULT_SIGHT_RANGE))
+    if can_challenge is not None and sight_range > 0:
+        behavior = TrainerSightBehavior(behavior, can_challenge, sight_range)
+
+    return behavior

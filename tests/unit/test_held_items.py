@@ -98,7 +98,9 @@ def _mon(item: str | None = None, frac=1.0, src_item=None):
     pp = PlayerPokemon(
         "mon", 999, 50, 0, "x", [PlayerPokemonMove("tackle", 35)], src_item
     )
-    b = BattlePokemon.from_player(None, sp, pp, False, held_item=ITEMS.get(item) if item else None)
+    b = BattlePokemon.from_player(
+        None, sp, pp, False, held_item=ITEMS.get(item) if item else None
+    )
     b.current_hp = int(b.max_hp * frac)
     return b, pp
 

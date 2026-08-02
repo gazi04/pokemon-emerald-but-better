@@ -56,12 +56,17 @@ class MapLoader:
     bush set) from a .tmx path. No view or render state — pure map build, so
     OverworldView keeps only draw + input + lifecycle + nav."""
 
-    def __init__(self, movement_system, player_state, collected_items=None):
+    def __init__(self, movement_system, player_state, collected_items=None, can_challenge=None):
         self.movement_system = movement_system
         self.player_state = player_state
+        
         # Callable returning the set of already-taken item keys, so picked-up
         # items stay gone when the map is re-entered. None = nothing collected.
         self.collected_items = collected_items
+        
+        # (npc_id -> bool) predicate deciding which NPCs get trainer sight.
+        # None = no NPC ever challenges (used by tests / headless loads).
+        self.can_challenge = can_challenge
 
     def load(self, map_path: str, map_id: str = "") -> LoadedMap:
         layer_options = {
@@ -131,7 +136,7 @@ class MapLoader:
                     x=world_x,
                     y=world_y,
                     npc_id=props.get("npc_id", ""),
-                    behavior=make_behavior(props),
+                    behavior=make_behavior(props, self.can_challenge),
                     facing=str(props.get("facing", "down")),
                 )
                 npcs.append(npc)
@@ -175,6 +180,6 @@ class MapLoader:
                 gy = round(sprite.center_y / TILE_SIZE)
                 tiles.add((gx, gy))
             return tiles
-        except Exception:
+        except KeyError:
             log.debug("No 'bush' layer on map; using empty bush set")
             return set()

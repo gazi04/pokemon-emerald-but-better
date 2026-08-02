@@ -34,149 +34,7 @@ class PokemonMenuUi:
         self._tooltip.visible = False
         self._tooltip_buttons = []
 
-        for obj in ui_layer.tiled_objects:
-            w = obj.size.width
-            h = obj.size.height
-            x = obj.coordinates.x
-            y = 600 - obj.coordinates.y
-
-            if obj.name == "background":
-                self._manager.add(
-                    arcade.gui.UIImage(
-                        texture=arcade.load_texture(
-                            "assets/ui/sprites/pokemonMenuBg.png"
-                        ),
-                        x=x,
-                        y=y,
-                        width=w,
-                        height=h,
-                    )
-                )
-            elif obj.name == "tooltip":
-                self._tooltip.add(
-                    arcade.gui.UIImage(
-                        texture=arcade.load_texture("assets/ui/sprites/box2.png"),
-                        x=0,
-                        y=0,
-                        width=w,
-                        height=h,
-                    )
-                )
-            elif obj.name == "pokemon1":
-                slot = int(obj.name[-1]) - 1
-                button = arcade.gui.UIImage(
-                    texture=self._lead_texture, x=x, y=y, width=w, height=h
-                )
-                self._pokemon_uis[slot]["profile"] = button
-                self._manager.add(button)
-            elif "pokemon" in obj.name and "pokemonSprite" not in obj.name:
-                slot = int(obj.name[-1]) - 1
-                button = arcade.gui.UIImage(
-                    texture=self._profile_texture, x=x, y=y, width=w, height=h
-                )
-                self._pokemon_uis[slot]["profile"] = button
-                self._manager.add(button)
-
-            elif "pokeball" in obj.name:
-                slot = int(obj.name[-1]) - 1
-                image = arcade.gui.UIImage(
-                    texture=arcade.load_texture(
-                        "assets/ui/sprites/pokeballProfile.png"
-                    ),
-                    x=x,
-                    y=y,
-                    width=w,
-                    height=h,
-                )
-                self._pokemon_uis[slot]["pokeball"] = image
-                self._manager.add(image)
-            elif "pokemonSprite" in obj.name:
-                slot = int(obj.name[-1]) - 1
-                image = arcade.gui.UIImage(
-                    texture=arcade.load_texture(
-                        "assets/sprite/pokemon/question_mark.png"
-                    ),
-                    x=x,
-                    y=y,
-                    width=w,
-                    height=h,
-                )
-                self._pokemon_uis[slot]["pokemon"] = image
-                self._manager.add(image)
-            elif "hpText" in obj.name:
-                slot = int(obj.name[-1]) - 1
-                text = arcade.gui.UILabel(
-                    text="50/50",
-                    text_color=arcade.color.WHITE,
-                    font_name="Pokemon Emerald",
-                    font_size=15,
-                    align="right",
-                    x=x,
-                    y=y - h,
-                    width=w,
-                    height=h,
-                )
-                self._pokemon_uis[slot]["hp_text"] = text
-                self._manager.add(text)
-            elif "levelText" in obj.name:
-                slot = int(obj.name[-1]) - 1
-                text = arcade.gui.UILabel(
-                    text="Lv99",
-                    text_color=arcade.color.WHITE,
-                    font_name="Pokemon Emerald",
-                    font_size=15,
-                    x=x,
-                    y=y - h,
-                    width=w,
-                    height=h,
-                )
-                self._pokemon_uis[slot]["level_text"] = text
-                self._manager.add(text)
-            elif "nameText" in obj.name:
-                slot = int(obj.name[-1]) - 1
-                text = arcade.gui.UILabel(
-                    text="Unknown",
-                    text_color=arcade.color.WHITE,
-                    font_name="Pokemon Emerald",
-                    font_size=15,
-                    x=x,
-                    y=y - h,
-                    width=w,
-                    height=h,
-                )
-                self._pokemon_uis[slot]["name_text"] = text
-                self._manager.add(text)
-            elif "hpBar" in obj.name:
-                slot = int(obj.name[-1]) - 1
-                self._pokemon_uis[slot]["hp_bar"] = {
-                    "x": x,
-                    "y": y - h,
-                    "w": w,
-                    "h": h,
-                }
-            elif obj.name == "box":
-                self._manager.add(
-                    arcade.gui.UIImage(
-                        texture=arcade.load_texture("assets/ui/sprites/box.png"),
-                        x=x,
-                        y=y,
-                        width=w,
-                        height=h,
-                    )
-                )
-            elif obj.name == "text":
-                self._manager.add(
-                    arcade.gui.UILabel(
-                        text="Choose Pokemon",
-                        text_color=arcade.color.BLACK,
-                        font_name="Pokemon Emerald",
-                        font_size=25,
-                        x=x,
-                        y=y - h,
-                        width=w,
-                        height=h,
-                    )
-                )
+        self._build_ui_layer(ui_layer)
 
         self._manager.add(self._tooltip)
 
@@ -188,6 +46,172 @@ class PokemonMenuUi:
             font_size=12,
             anchor_y="center",
             font_name="Pokemon Emerald",
+        )
+
+    @staticmethod
+    def _slot_index(obj_name: str) -> int:
+        """Party-slot object names end in a 1-based digit ('pokemon3',
+        'hpText3', ...) — every per-slot widget is keyed by that index."""
+        return int(obj_name[-1]) - 1
+
+    def _build_ui_layer(self, ui_layer):
+        for obj in ui_layer.tiled_objects:
+            w = obj.size.width
+            h = obj.size.height
+            x = obj.coordinates.x
+            y = 600 - obj.coordinates.y
+
+            if obj.name == "background":
+                self._add_background(x, y, w, h)
+            elif obj.name == "tooltip":
+                self._add_tooltip_box(w, h)
+            elif "pokemon" in obj.name and "pokemonSprite" not in obj.name:
+                self._add_profile_button(obj.name, x, y, w, h)
+            elif "pokeball" in obj.name:
+                self._add_pokeball(obj.name, x, y, w, h)
+            elif "pokemonSprite" in obj.name:
+                self._add_pokemon_sprite(obj.name, x, y, w, h)
+            elif "hpText" in obj.name:
+                self._add_hp_text(obj.name, x, y, w, h)
+            elif "levelText" in obj.name:
+                self._add_level_text(obj.name, x, y, w, h)
+            elif "nameText" in obj.name:
+                self._add_name_text(obj.name, x, y, w, h)
+            elif "hpBar" in obj.name:
+                self._add_hp_bar_bounds(obj.name, x, y, w, h)
+            elif obj.name == "box":
+                self._add_box(x, y, w, h)
+            elif obj.name == "text":
+                self._add_choose_text(x, y, w, h)
+
+    def _add_background(self, x, y, w, h):
+        self._manager.add(
+            arcade.gui.UIImage(
+                texture=arcade.load_texture("assets/ui/sprites/pokemonMenuBg.png"),
+                x=x,
+                y=y,
+                width=w,
+                height=h,
+            )
+        )
+
+    def _add_tooltip_box(self, w, h):
+        self._tooltip.add(
+            arcade.gui.UIImage(
+                texture=arcade.load_texture("assets/ui/sprites/box2.png"),
+                x=0,
+                y=0,
+                width=w,
+                height=h,
+            )
+        )
+
+    def _add_profile_button(self, obj_name, x, y, w, h):
+        """'pokemon1' (the lead slot) gets the lead texture; every other slot
+        gets the plain profile texture — same widget otherwise."""
+        slot = self._slot_index(obj_name)
+        texture = self._lead_texture if slot == 0 else self._profile_texture
+        button = arcade.gui.UIImage(texture=texture, x=x, y=y, width=w, height=h)
+        self._pokemon_uis[slot]["profile"] = button
+        self._manager.add(button)
+
+    def _add_pokeball(self, obj_name, x, y, w, h):
+        slot = self._slot_index(obj_name)
+        image = arcade.gui.UIImage(
+            texture=arcade.load_texture("assets/ui/sprites/pokeballProfile.png"),
+            x=x,
+            y=y,
+            width=w,
+            height=h,
+        )
+        self._pokemon_uis[slot]["pokeball"] = image
+        self._manager.add(image)
+
+    def _add_pokemon_sprite(self, obj_name, x, y, w, h):
+        slot = self._slot_index(obj_name)
+        image = arcade.gui.UIImage(
+            texture=arcade.load_texture("assets/sprite/pokemon/question_mark.png"),
+            x=x,
+            y=y,
+            width=w,
+            height=h,
+        )
+        self._pokemon_uis[slot]["pokemon"] = image
+        self._manager.add(image)
+
+    def _add_hp_text(self, obj_name, x, y, w, h):
+        slot = self._slot_index(obj_name)
+        text = arcade.gui.UILabel(
+            text="50/50",
+            text_color=arcade.color.WHITE,
+            font_name="Pokemon Emerald",
+            font_size=15,
+            align="right",
+            x=x,
+            y=y - h,
+            width=w,
+            height=h,
+        )
+        self._pokemon_uis[slot]["hp_text"] = text
+        self._manager.add(text)
+
+    def _add_level_text(self, obj_name, x, y, w, h):
+        slot = self._slot_index(obj_name)
+        text = arcade.gui.UILabel(
+            text="Lv99",
+            text_color=arcade.color.WHITE,
+            font_name="Pokemon Emerald",
+            font_size=15,
+            x=x,
+            y=y - h,
+            width=w,
+            height=h,
+        )
+        self._pokemon_uis[slot]["level_text"] = text
+        self._manager.add(text)
+
+    def _add_name_text(self, obj_name, x, y, w, h):
+        slot = self._slot_index(obj_name)
+        text = arcade.gui.UILabel(
+            text="Unknown",
+            text_color=arcade.color.WHITE,
+            font_name="Pokemon Emerald",
+            font_size=15,
+            x=x,
+            y=y - h,
+            width=w,
+            height=h,
+        )
+        self._pokemon_uis[slot]["name_text"] = text
+        self._manager.add(text)
+
+    def _add_hp_bar_bounds(self, obj_name, x, y, w, h):
+        slot = self._slot_index(obj_name)
+        self._pokemon_uis[slot]["hp_bar"] = {"x": x, "y": y - h, "w": w, "h": h}
+
+    def _add_box(self, x, y, w, h):
+        self._manager.add(
+            arcade.gui.UIImage(
+                texture=arcade.load_texture("assets/ui/sprites/box.png"),
+                x=x,
+                y=y,
+                width=w,
+                height=h,
+            )
+        )
+
+    def _add_choose_text(self, x, y, w, h):
+        self._manager.add(
+            arcade.gui.UILabel(
+                text="Choose Pokemon",
+                text_color=arcade.color.BLACK,
+                font_name="Pokemon Emerald",
+                font_size=25,
+                x=x,
+                y=y - h,
+                width=w,
+                height=h,
+            )
         )
 
     def setup_tooltip(self, options: list[str]):

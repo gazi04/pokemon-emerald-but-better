@@ -1,7 +1,6 @@
 import arcade
 from data.config import CONFIG
-from src.constants import FONT, CAMERA_LERP_SPEED
-
+from src.constants import FONT, CAMERA_LERP_SPEED, OPPOSITE_DIRECTION
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
@@ -15,6 +14,7 @@ from src.core.events import (
     BattleEncounterTriggeredEvent,
     ItemPickedUpEvent,
     NpcInteractEvent,
+    NpcSpottedPlayerEvent,
 )
 from src.states.base_view import GameView
 from src.states.map_loader import MapLoader
@@ -53,6 +53,10 @@ class OverworldView(GameView):
         self.encounter_system = None
 
         self.keys = set()
+        # True while a trainer is walking over to challenge the player; input
+        # is frozen so the player can't run off mid-approach.
+        self.cutscene = False
+
         self.debug_collisions = False
         # The window exists before any view is constructed, so build the camera
         # eagerly — setup() replaces it per map, but it is never None.
@@ -63,6 +67,7 @@ class OverworldView(GameView):
                 self.movement_system,
                 self.player_state,
                 self.player_manager.collected_item_keys,
+                self._can_challenge
             ),
             registry=MapRegistry(CONFIG.game.maps_dir),
             player_state=self.player_state,
@@ -87,14 +92,18 @@ class OverworldView(GameView):
     # ------------------------------------------------------------------
 
     def _subscribe(self):
-        global_bus.subscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+        global_bus.subscribe(BattleEncounterTriggeredEvent,
+                             self._on_battle_triggered)
         global_bus.subscribe(NpcInteractEvent, self._on_npc_interaction)
         global_bus.subscribe(ItemPickedUpEvent, self._on_item_picked_up)
+        global_bus.subscribe(NpcSpottedPlayerEvent, self._on_npc_spotted)
 
     def _unsubscribe(self):
-        global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
+        global_bus.unsubscribe(
+            BattleEncounterTriggeredEvent, self._on_battle_triggered)
         global_bus.unsubscribe(NpcInteractEvent, self._on_npc_interaction)
         global_bus.unsubscribe(ItemPickedUpEvent, self._on_item_picked_up)
+        global_bus.unsubscribe(NpcSpottedPlayerEvent, self._on_npc_spotted)
         if self.encounter_system:
             self.encounter_system.cleanup()
 
@@ -103,6 +112,8 @@ class OverworldView(GameView):
         # registered, so a stray bark can't queue into a dead box.
         self.message_service.set_box(None)
         self._subscribe()
+        # Whatever the trainer's approach led to (dialog, battle) is over.
+        self.cutscene = False
         if self.encounter_system:
             self.encounter_system.resubscribe()
 
@@ -114,7 +125,8 @@ class OverworldView(GameView):
     # ------------------------------------------------------------------
 
     def setup(self, map_ref=None, spawn=None):
-        loaded = self.map_manager.load(map_ref or CONFIG.game.starting_map, spawn)
+        loaded = self.map_manager.load(
+            map_ref or CONFIG.game.starting_map, spawn)
         self._apply_loaded(loaded)
 
     def _apply_loaded(self, loaded) -> None:
@@ -160,6 +172,26 @@ class OverworldView(GameView):
         self._start_battle_transition(
             event.pokemon_name, event.pokemon_level, event.pokemon_data
         )
+
+    def _can_challenge(self, npc_id: str) -> bool:
+        """Whether this NPC may spot and challenge the player: it must be a
+        battle NPC with an actual team, and not already beaten."""
+        npc = self.data_loader.npc_dialog.get(npc_id)
+        if npc is None or npc.action_after_dialog != "fight" or not npc.team.party:
+            return False
+        return self.player_manager.npc_manager.can_fight(npc_id)
+
+    def _on_npc_spotted(self, event: NpcSpottedPlayerEvent):
+        """A trainer locked on. Freeze the player and turn them to face it
+        while it walks over; the NPC fires NpcInteractEvent when it arrives."""
+        self.cutscene = True
+        self.keys.clear()
+
+        npc = next((n for n in self.npcs if n.npc_id == event.npc_id), None)
+        if npc:
+            facing = OPPOSITE_DIRECTION.get(npc.motion.direction)
+            if facing:
+                self.player_state.direction = facing
 
     def _on_npc_interaction(self, event: NpcInteractEvent):
         npc_id = event.npc_id
@@ -227,19 +259,24 @@ class OverworldView(GameView):
             CAMERA_LERP_SPEED,
         )
 
-        intent = self.player_input.process_input(
-            self.player_state,
-            self.keys,
-            CONFIG.controls,
-            self.scene["collision"],
-            self.transitions,
-            self.npcs,
-            self.items,
-            self.ledges,
-        )
+        # While a trainer walks over, the player takes no input — but any step
+        # already in flight still finishes.
+        intent = None
+        if not self.cutscene:
+            intent = self.player_input.process_input(
+                self.player_state,
+                self.keys,
+                CONFIG.controls,
+                self.scene["collision"],
+                self.transitions,
+                self.npcs,
+                self.items,
+                self.ledges,
+            )
 
         if intent and intent["type"] == "transition":
-            loaded = self.map_manager.transition(parse_transition(intent["properties"]))
+            loaded = self.map_manager.transition(
+                parse_transition(intent["properties"]))
             self._apply_loaded(loaded)
             intent = None
 

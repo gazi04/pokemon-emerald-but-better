@@ -23,11 +23,10 @@ jobs:
         run: uv sync
 
       - name: Format with Ruff
-        continue-on-error: true
-        run: uv run ruff format --check src/
+        run: uv run ruff format --check .
 
       - name: Run Ruff
-        run: uv run ruff check --output-format=github src/
+        run: uv run ruff check --output-format=github .
 
       - name: Type check with pyright
         run: uv run pyright

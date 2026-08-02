@@ -15,7 +15,6 @@ from src.model.save.player import PlayerPokemon
 from src.model.static.item import ItemSpecies
 from src.model.static.trainer import Trainer, TrainerPokemon
 from src.model.static.pokemon import PokemonMove
-from typing import Optional
 from src.systems.enemy_ai import EnemyAI
 
 
@@ -27,7 +26,7 @@ class BattleSystem:
         player_manager: PlayerManager,
         data_loader: DataLoader,
         is_trainer=False,
-        trainer_data: Optional[Trainer] = None,
+        trainer_data: Trainer | None = None,
     ):
         self.your_pokemon = your_pokemon
         self.enemy_pokemon = enemy_pokemon
@@ -43,13 +42,16 @@ class BattleSystem:
 
         # Move-learning queue for the active pokemon after a level-up.
         self._learn_queue: list[str] = []
-        self._pending_learn: Optional[str] = None
+        self._pending_learn: str | None = None
 
         self.ai = EnemyAI(1, data_loader)
 
         self.is_trainer = is_trainer
         self.trainer_party = trainer_data.party if trainer_data else []
-        self.next_trainer_pokemon: Optional[TrainerPokemon] = None
+        self.next_trainer_pokemon: TrainerPokemon | None = None
+
+        # Party member the queued item was used on; None = the active pokemon.
+        self._item_target_name: str | None = None
 
     def turn(self, move_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
@@ -101,8 +103,14 @@ class BattleSystem:
             player_priority == enemy_priority and player_speed >= enemy_speed
         )
 
-    def turn_use_item(self, item_index: str) -> list[str]:
+    def turn_use_item(
+        self, item_index: str, target_name: str | None = None
+    ) -> list[str]:
+        """Spend the turn on an item. `target_name` is the party member it was
+        used on; None means the active pokemon.
+        """
         self.battle_state = BattleState.CURRENTLY_TURN
+        self._item_target_name = target_name
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
         self.turn_queue = [("player", -1, item_index)]
         if enemy_move_index is not None:
@@ -120,7 +128,9 @@ class BattleSystem:
 
     def switch_pokemon(self) -> list[str]:
         if self.player_manager.player is None:
-            raise RuntimeError("BattleSystem.switch_pokemon requires a loaded player save")
+            raise RuntimeError(
+                "BattleSystem.switch_pokemon requires a loaded player save"
+            )
         pokemon = self.player_manager.player.pokemon[0]
 
         pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
@@ -129,7 +139,9 @@ class BattleSystem:
 
         ability = self.data_loader.get_ability(pokemon.ability)
         if ability is None:
-            raise ValueError(f"Ability data for '{pokemon.ability}' could not be loaded.")
+            raise ValueError(
+                f"Ability data for '{pokemon.ability}' could not be loaded."
+            )
 
         if pokemon.hp <= 0:
             return [f"{pokemon.name} is unable to battle!"]
@@ -339,13 +351,11 @@ class BattleSystem:
         if not condition:
             return None
 
-        if condition == "first_turn_only":
-            if not attacker.is_first_turn:
-                return f"But {move_data.name} failed!"
+        if condition == "first_turn_only" and not attacker.is_first_turn:
+            return f"But {move_data.name} failed!"
 
-        if condition == "not_consecutive":
-            if self._last_player_move == move_data.name:
-                return f"But {move_data.name} failed!"
+        if condition == "not_consecutive" and self._last_player_move == move_data.name:
+            return f"But {move_data.name} failed!"
 
         return None
 
@@ -355,16 +365,22 @@ class BattleSystem:
         self.your_pokemon.sync_to_source()
 
     def _apply_item_to_pokemon(self, item_index: str | int) -> list[str]:
+        """Reflect a bag item's effect on the battle model.
+
+        The bag has already written the save for the targeted party member. Only
+        the *active* pokemon has a battle model and an HP bar, so a benched target
+        gets the message and nothing else.
+        """
+        target_name = self._item_target_name
+
+        if target_name and target_name.lower() != self.your_pokemon.name.lower():
+            return [f"{target_name.capitalize()} used {item_index}!"]
+
+        hp_before = self.your_pokemon.current_hp
         self.your_pokemon.sync_from_source()
 
-        global_bus.publish(
-            HpChangedEvent(
-                target="player",
-                old_hp=self.your_pokemon.current_hp,
-                new_hp=self.your_pokemon.current_hp,
-                max_hp=self.your_pokemon.max_hp,
-            )
-        )
+        if self.your_pokemon.current_hp != hp_before:
+            self._publish_hp_change("player", hp_before, self.your_pokemon)
 
         return [f"{self.your_pokemon.name} used {item_index}!"]
 
@@ -443,7 +459,9 @@ class BattleSystem:
     def has_usable_pokemon(self) -> bool:
         """True if the player still has at least one Pokémon that can fight."""
         if self.player_manager.player is None:
-            raise RuntimeError("BattleSystem.has_usable_pokemon requires a loaded player save")
+            raise RuntimeError(
+                "BattleSystem.has_usable_pokemon requires a loaded player save"
+            )
         return any(p.hp > 0 for p in self.player_manager.player.pokemon)
 
     def complete_forced_switch(self) -> list[str]:
@@ -466,7 +484,9 @@ class BattleSystem:
 
         ability = self.data_loader.get_ability(pokemon.ability)
         if ability is None:
-            raise ValueError(f"Ability data for '{pokemon.ability}' could not be loaded.")
+            raise ValueError(
+                f"Ability data for '{pokemon.ability}' could not be loaded."
+            )
 
         held_item = (
             self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
@@ -498,11 +518,11 @@ class BattleSystem:
     def has_pending_learn(self) -> bool:
         return bool(self._learn_queue) or self._pending_learn is not None
 
-    def current_learning_move(self) -> Optional[str]:
+    def current_learning_move(self) -> str | None:
         """The move awaiting a forget-a-move choice, or None."""
         return self._pending_learn
 
-    def next_move_to_learn(self) -> Optional[dict]:
+    def next_move_to_learn(self) -> dict | None:
         """Advance the learn queue.
         Returns None when done, {"type": "learned", ...} when a free slot let the
         move be learned outright, or {"type": "needs_replace", ...} when the

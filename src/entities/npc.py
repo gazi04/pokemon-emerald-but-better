@@ -1,5 +1,4 @@
 import arcade
-from typing import Optional
 
 from src.constants import TILE_SIZE
 from src.model.motion.grid_motion import GridMotion
@@ -12,7 +11,7 @@ class Npc(arcade.Sprite):
         x,
         y,
         npc_id,
-        behavior: Optional[Behavior] = None,
+        behavior: Behavior | None = None,
         facing: str = "right",
     ):
         super().__init__(scale=1.9, center_x=x, center_y=y)

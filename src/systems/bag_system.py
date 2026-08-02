@@ -20,12 +20,6 @@ class BagSystem:
             EffectType.RESTORE_PP: self._apply_restore_pp,
         }
 
-        self._effect_eligibility = {
-            EffectType.HEAL: self._heal_eligible,
-            EffectType.CURE_STATUS: self._cure_status_eligible,
-            EffectType.RESTORE_PP: self._restore_pp_eligible,
-        }
-
     # ── Eligibility checks ────────────────────────────────────────────────────
 
     def _heal_eligible(
@@ -202,7 +196,7 @@ class BagSystem:
     def get_items(self) -> dict[str, list[ItemStack]]:
         result: dict[str, list[ItemStack]] = {}
 
-        for item_id, stack in self._items.items():
+        for stack in self._items.values():
             if stack.count <= 0:
                 continue
 

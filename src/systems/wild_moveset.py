@@ -5,7 +5,7 @@ knows the last MAX_MOVES it would have learned by its level; species with no
 learnset fall back to Tackle so a wild is never moveless.
 """
 
-from typing import Optional, Protocol
+from typing import Protocol
 
 from src.model.static.pokemon import PokemonSpecies
 from src.model.save.player import PlayerPokemonMove
@@ -28,7 +28,7 @@ class MoveSource(Protocol):
     it here, and callers can pass any equivalent lookup.
     """
 
-    def get_move(self, name: str) -> Optional[MoveLike]: ...
+    def get_move(self, name: str) -> MoveLike | None: ...
 
 
 def select_wild_moves(

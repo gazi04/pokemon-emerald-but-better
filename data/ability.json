@@ -179,9 +179,54 @@
             }
         ]
     },
-    "run_away":{
-        "name": "Run away",
-        "description": "",
+    "pick_up": {
+        "name": "Pick Up",
+        "description": "May find an item after battle.",
+        "effects": []
+    },
+    "synchronize": {
+        "name": "Synchronize",
+        "description": "Passes a status condition to the pokemon that inflicted it.",
+        "effects": []
+    },
+    "swift_swim": {
+        "name": "Swift Swim",
+        "description": "Raises Speed in rain.",
+        "effects": []
+    },
+    "guts": {
+        "name": "Guts",
+        "description": "Boosts Attack if afflicted by a status condition.",
+        "effects": []
+    },
+    "run_away": {
+        "name": "Run Away",
+        "description": "Ensures escape from wild pokemon.",
+        "effects": []
+    },
+    "effect_spore": {
+        "name": "Effect Spore",
+        "description": "May inflict a status condition on the attacker on contact.",
+        "effects": []
+    },
+    "chlorophyll": {
+        "name": "Chlorophyll",
+        "description": "Raises Speed in harsh sunlight.",
+        "effects": []
+    },
+    "keen_eye": {
+        "name": "Keen Eye",
+        "description": "Prevents accuracy from being lowered.",
+        "effects": []
+    },
+    "inner_focus": {
+        "name": "Inner Focus",
+        "description": "Prevents flinching.",
+        "effects": []
+    },
+    "shield_dust": {
+        "name": "Shield Dust",
+        "description": "Blocks additional effects of moves that hit this pokemon.",
         "effects": []
     }
 }

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional
 from src.enums.item_category import ItemCategory
 
 
@@ -50,7 +49,7 @@ class PlayerSave:
     # Keys of overworld items already picked up, so they never respawn.
     collected_items: list[str] = field(default_factory=list)
 
-    def get_pokemon(self, name: str) -> Optional[PlayerPokemon]:
+    def get_pokemon(self, name: str) -> PlayerPokemon | None:
         target = name.lower()
         for pokemon in self.pokemon:
             if pokemon.name.lower() == target:
@@ -80,7 +79,7 @@ class PlayerSave:
         pokemon_name: str,
         new_level: int,
         exp: int,
-        evolved_name: Optional[str] = None,
+        evolved_name: str | None = None,
     ):
         pokemon = self.get_pokemon(pokemon_name)
         if not pokemon:
@@ -127,8 +126,13 @@ class PlayerSave:
         print(self.boxs)
 
     def mark_seen(self, name: str):
-        if name not in self.seen:
-            self.seen.append(name)
+        """Record a species as seen. Normalized to lowercase because the Pokédex
+        matches these entries against DataLoader keys, which are lowercase ids —
+        a capitalized entry renders blank while still counting toward the total.
+        """
+        key = name.lower()
+        if key not in self.seen:
+            self.seen.append(key)
 
     def add_item(self, item_id: str, category: str, count: int):
         item = self.items.get(item_id)

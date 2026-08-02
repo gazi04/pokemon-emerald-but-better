@@ -5,7 +5,7 @@ bounds, other NPCs, the player).
 """
 
 import arcade
-from src.constants import TILE_SIZE
+from src.constants import DIRECTION_OFFSETS, TILE_SIZE
 
 # Two positions count as the same tile if closer than half a tile.
 _SAME_CELL = TILE_SIZE * 0.5
@@ -75,6 +75,31 @@ class NpcController:
                 return False
 
         return True
+
+    def line_of_sight(self, npc, max_tiles: int) -> int | None:
+        """Distance in tiles to the player if they stand directly in front of
+        `npc`, within `max_tiles` and unobstructed. None otherwise.
+
+        Walks the straight line the NPC is facing, one tile at a time, and
+        stops at the first wall — so a trainer can't see through a building.
+        """
+        offset = DIRECTION_OFFSETS.get(npc.motion.direction)
+        if not offset:
+            return None
+
+        dx, dy = offset
+        px, py = self._effective_pos(self.player_state)
+
+        for step in range(1, max_tiles + 1):
+            x = npc.motion.pixel_x + dx * step
+            y = npc.motion.pixel_y + dy * step
+
+            if self._same_cell(x, y, px, py):
+                return step
+            if arcade.get_sprites_at_point((x, y), self.collision_tiles):
+                return None
+
+        return None
 
     @staticmethod
     def _effective_pos(motion):

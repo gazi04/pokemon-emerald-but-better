@@ -1,5 +1,4 @@
 import arcade
-from typing import Optional
 from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from src.core.message_service import MessageService
@@ -24,11 +23,11 @@ BAG_CATEGORIES = [
 class BagView(GameView):
     def __init__(
         self,
-        previousWindow: arcade.View,
+        previous_view: arcade.View,
         player_manager: PlayerManager,
         data_loader: DataLoader,
         message_service: MessageService,
-        battle_system: Optional[BattleSystem] = None,
+        battle_system: BattleSystem | None = None,
     ):
         super().__init__()
 
@@ -39,7 +38,7 @@ class BagView(GameView):
         self.ui = BagUI()
         self.bagSystem = BagSystem(player_manager, data_loader)
         self.battle_system = battle_system
-        self.previousWindow = previousWindow
+        self.previous_view = previous_view
 
         self.bag = self.bagSystem.get_items()
         self.current_inventory = self.bag.get(ItemCategory.MEDICINE, [])
@@ -58,7 +57,8 @@ class BagView(GameView):
 
     def update_item(self):
         self.bag = self.bagSystem.get_items()
-        self.current_inventory = self.bag.get(BAG_CATEGORIES[self.bagIndex], [])
+        self.current_inventory = self.bag.get(
+            BAG_CATEGORIES[self.bagIndex], [])
 
         for i in range(MAX_VISIBLE_ITEMS):
             inventory_index = self.topVisibleIndex + i
@@ -92,57 +92,64 @@ class BagView(GameView):
 
     def on_key_press(self, symbol: int, modifiers: int):
         if self.is_pressed(CONFIG.controls.up, symbol):
-            if self.currentIndex > 0:
-                self.currentIndex -= 1
-                if self.currentIndex < self.topVisibleIndex:
-                    self.topVisibleIndex -= 1
-                self.update_item()
-
+            self._move_selection(-1)
         elif self.is_pressed(CONFIG.controls.down, symbol):
-            if self.currentIndex < len(self.current_inventory) - 1:
-                self.currentIndex += 1
-                if self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS:
-                    self.topVisibleIndex += 1
-                self.update_item()
-
+            self._move_selection(1)
         elif self.is_pressed(CONFIG.controls.right, symbol):
             self.bagIndex = (self.bagIndex + 1) % len(BAG_CATEGORIES)
             self.change_bag()
-
         elif self.is_pressed(CONFIG.controls.left, symbol):
             self.bagIndex = (self.bagIndex - 1) % len(BAG_CATEGORIES)
             self.change_bag()
-
         elif self.is_pressed(CONFIG.controls.cancel, symbol):
-            self.window.show_view(self.previousWindow)
+            self.window.show_view(self.previous_view)
+        elif self.is_pressed(CONFIG.controls.interact, symbol):
+            self._on_interact()
 
-        elif self.is_pressed(CONFIG.controls.interact, symbol) and self.bagIndex in (
-            0,
-            2,
-        ):
-            self.overlay(
-                "pokemon_menu",
-                previous_view=self,
-                bag=self.bagSystem,
-                item=self.current_inventory[self.currentIndex].name,
-                battle_system=self.battle_system,
-            )
-            self.update_item()
+    def _move_selection(self, delta: int):
+        new_index = self.currentIndex + delta
+        if not (0 <= new_index < len(self.current_inventory)):
+            return
+
+        self.currentIndex = new_index
+        if delta < 0 and self.currentIndex < self.topVisibleIndex:
+            self.topVisibleIndex -= 1
         elif (
-            self.is_pressed(CONFIG.controls.interact, symbol)
-            and self.bagIndex == 1
-            and self.battle_system
+            delta > 0 and self.currentIndex >= self.topVisibleIndex + MAX_VISIBLE_ITEMS
+        ):
+            self.topVisibleIndex += 1
+        self.update_item()
+
+    def _on_interact(self):
+        if self.bagIndex in (0, 2):
+            self._open_item_menu()
+        elif (
+            self.bagIndex == 1
+            and self.battle_system is not None
             and not self.battle_system.is_trainer
         ):
-            pokeball = self.bagSystem.use_pokeball(
-                self.current_inventory[self.currentIndex].name
-            )
-            if pokeball:
-                result = self.battle_system.attempt_catch(pokeball)
-                self.update_item()
-                self.window.show_view(self.previousWindow)
-                if isinstance(self.previousWindow, BattleView):
-                    self.previousWindow.start_catch_attempt(result)
+            self._throw_pokeball(self.battle_system)
+
+    def _open_item_menu(self):
+        self.overlay(
+            "pokemon_menu",
+            previous_view=self,
+            bag=self.bagSystem,
+            item=self.current_inventory[self.currentIndex].name,
+            battle_system=self.battle_system,
+        )
+        self.update_item()
+
+    def _throw_pokeball(self, battle_system: BattleSystem):
+        pokeball = self.bagSystem.use_pokeball(
+            self.current_inventory[self.currentIndex].name
+        )
+        if pokeball:
+            result = battle_system.attempt_catch(pokeball)
+            self.update_item()
+            self.window.show_view(self.previous_view)
+            if isinstance(self.previous_view, BattleView):
+                self.previous_view.start_catch_attempt(result)
 
     def change_bag(self):
         self.currentIndex = 0

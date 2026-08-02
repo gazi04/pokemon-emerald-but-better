@@ -107,8 +107,8 @@ class EvolvingView(GameView):
     def transition(self, pokemon_name):
         self.targetText = f"What? {pokemon_name} is evolving!"
         self.currentText = ""
-        arcade.schedule_once(lambda dt: setattr(self, "fadeOutBackground", True), 0.7)
-        arcade.schedule_once(lambda dt: setattr(self, "is_evolving", True), 2.7)
+        arcade.schedule_once(lambda _dt: setattr(self, "fadeOutBackground", True), 0.7)
+        arcade.schedule_once(lambda _dt: setattr(self, "is_evolving", True), 2.7)
 
     def on_draw(self):
         self.clear()
@@ -153,12 +153,12 @@ class EvolvingView(GameView):
             if self.pulse_speed > 25:
                 self.finish_evolution()
 
-        if len(self.currentText) < len(self.targetText):
-            if self.textDelayTimer > TEXT_DELAY:
-                self.currentText += self.targetText[len(self.currentText)]
-                self.dialogText.text = self.currentText
-                self.manager.trigger_render()
-                self.textDelayTimer = 0
+        text_left = len(self.currentText) < len(self.targetText)
+        if text_left and self.textDelayTimer > TEXT_DELAY:
+            self.currentText += self.targetText[len(self.currentText)]
+            self.dialogText.text = self.currentText
+            self.manager.trigger_render()
+            self.textDelayTimer = 0
 
     def finish_evolution(self):
         self.is_evolving = False
@@ -174,6 +174,6 @@ class EvolvingView(GameView):
 
         arcade.schedule_once(self.end, 1.5)
 
-    def end(self, dt):
+    def end(self, _dt):
         # Tell the Director we are done — it returns to the Overworld
         self.close()

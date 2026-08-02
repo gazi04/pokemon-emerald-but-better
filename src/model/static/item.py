@@ -43,7 +43,6 @@ class BattleCondition:
 
 @dataclass
 class BattleAttributes:
-    # {"stat": "attack", "multiplier": 1.5}
     stat_multiplier: dict | None = None
     damage_multiplier: float | None = None
     restriction: str | None = None  # "lock_move"

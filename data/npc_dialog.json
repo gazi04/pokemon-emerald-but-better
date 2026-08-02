@@ -16,16 +16,11 @@
     },
     "action_after_dialog": "heal"
   },
-  "npc_battle": {
+  "timmy": {
     "dialog": {
       "first_encounter": [
-        "Dear, oh dear, what was it?",
-        "The hunt, the blood, or the horrible dream?",
-        "Oh, it doesn't matter.",
-        "It always comes down to the hunters' helper to clean up after these sorts of messes.",
-        "Tonight... Gehrman joins the hunt."
-      ],
-      "after_victory": ["The night, and the dream, were long..."]
+        "Lets fight!"
+      ]
     },
     "action_after_dialog": "fight",
     "team": [

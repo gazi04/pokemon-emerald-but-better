@@ -4,8 +4,7 @@ from src.model.save.player import PlayerPokemon
 from src.states.base_view import GameView
 from src.ui.pokemon_information_ui import PokemonInformationUI
 from data.config import CONFIG
-from typing import Callable, Optional
-
+from collections.abc import Callable
 
 
 class PokemonInfoView(GameView):
@@ -13,9 +12,9 @@ class PokemonInfoView(GameView):
         self,
         previous_view: arcade.View,
         data_loader: DataLoader,
-        pokemon: Optional[PlayerPokemon] = None,
+        pokemon: PlayerPokemon | None = None,
         select_move: bool = False,
-        on_select_move: Optional[Callable[[int], None]] = None,
+        on_select_move: Callable[[int], None] | None = None,
     ):
         super().__init__(background_color=(0, 104, 96))
         self.previous_view = previous_view
@@ -51,7 +50,8 @@ class PokemonInfoView(GameView):
         ):
             self.ui.next_move()
         elif (
-            self.is_pressed(CONFIG.controls.up, symbol) and self.ui.get_current_tab() == 2
+            self.is_pressed(CONFIG.controls.up, symbol)
+            and self.ui.get_current_tab() == 2
         ):
             self.ui.prev_move()
 
@@ -60,6 +60,5 @@ class PokemonInfoView(GameView):
             self.ui.next_move()
         elif self.is_pressed(CONFIG.controls.up, key):
             self.ui.prev_move()
-        elif self.is_pressed(CONFIG.controls.interact, key):
-            if self.on_select_move:
-                self.on_select_move(self.ui.current_move())
+        elif self.is_pressed(CONFIG.controls.interact, key) and self.on_select_move:
+            self.on_select_move(self.ui.current_move())

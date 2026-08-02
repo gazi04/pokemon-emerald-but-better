@@ -2,14 +2,17 @@
 spawn resolution / lifecycle."""
 
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from typing import cast
+from unittest.mock import MagicMock, Mock
 
+import arcade
 import pytest
+from pytiled_parser import ObjectLayer
 
 from src.world.map_registry import MapRegistry
 from src.world.transition import Transition, parse_transition
 from src.world.transition_layer import TransitionLayer, TransitionZone
-from src.world.map_manager import MapManager
+from src.world.map_manager import SPAWN_Y_OFFSET, MapManager
 
 
 # --- MapRegistry -----------------------------------------------------------
@@ -90,6 +93,85 @@ def test_layer_empty_returns_none():
     assert TransitionLayer([], sprites=None).find(5, 5) is None
 
 
+# --- TransitionLayer construction (_build_zones / from_map / legacy sprites) --
+
+
+def make_tile_map(layer=None, height=10, tile_height=16):
+    tile_map = MagicMock()
+    tile_map.get_tilemap_layer.return_value = layer
+    tile_map.height = height
+    tile_map.tile_height = tile_height
+    return tile_map
+
+
+def make_object_layer(objects):
+    layer = Mock(spec=ObjectLayer)
+    layer.tiled_objects = objects
+    return layer
+
+
+def make_rect_object(x, y, width, height, properties=None, gid=None):
+    return SimpleNamespace(
+        coordinates=SimpleNamespace(x=x, y=y),
+        size=SimpleNamespace(width=width, height=height),
+        properties=properties or {},
+        gid=gid,
+    )
+
+
+def test_build_zones_converts_tiled_rect_to_world_coords():
+    obj = make_rect_object(0, 0, 32, 32, properties={"target_map": "oldale_town"})
+    tile_map = make_tile_map(make_object_layer([obj]), height=10, tile_height=16)
+
+    zones = TransitionLayer._build_zones(tile_map, scale=2.0)
+
+    assert len(zones) == 1
+    zone = zones[0]
+    # map_height_px = 10*16=160; top-left origin, y-down -> arcade y-up, scaled 2x.
+    assert (zone.left, zone.right) == (0.0, 64.0)
+    assert (zone.bottom, zone.top) == (256.0, 320.0)
+    assert zone.properties == {"target_map": "oldale_town"}
+
+
+def test_build_zones_skips_gid_objects():
+    obj = make_rect_object(0, 0, 32, 32, gid=5)
+    tile_map = make_tile_map(make_object_layer([obj]))
+    assert TransitionLayer._build_zones(tile_map, scale=2.0) == []
+
+
+def test_build_zones_skips_zero_size_objects():
+    obj = make_rect_object(0, 0, 0, 0)
+    tile_map = make_tile_map(make_object_layer([obj]))
+    assert TransitionLayer._build_zones(tile_map, scale=2.0) == []
+
+
+def test_build_zones_returns_empty_when_no_transitions_layer():
+    tile_map = make_tile_map(layer=None)
+    assert TransitionLayer._build_zones(tile_map, scale=2.0) == []
+
+
+def test_legacy_sprites_returns_scene_layer_when_present():
+    sprites = ["fake_sprite_list"]
+    scene = {"transitions": sprites}
+    assert TransitionLayer._legacy_sprites(cast(arcade.Scene, scene)) == sprites
+
+
+def test_legacy_sprites_returns_none_when_absent():
+    assert TransitionLayer._legacy_sprites(cast(arcade.Scene, {})) is None
+
+
+def test_from_map_builds_zones_and_legacy_sprites():
+    obj = make_rect_object(0, 0, 32, 32, properties={"target_map": "a"})
+    tile_map = make_tile_map(make_object_layer([obj]))
+    scene = cast(arcade.Scene, {"transitions": ["door_sprite"]})
+
+    layer = TransitionLayer.from_map(tile_map, scene, scale=2.0)
+
+    assert len(layer._zones) == 1
+    assert layer._sprites == ["door_sprite"]
+    assert len(layer) == 2
+
+
 # --- MapManager ------------------------------------------------------------
 
 
@@ -116,7 +198,7 @@ def _manager(spawns, on_load=None, on_unload=None):
 def test_load_places_player_at_named_spawn():
     mgr, player, loader = _manager({"gate": (100.0, 200.0)})
     mgr.load("oldale_town", "gate")
-    assert (player.pixel_x, player.pixel_y) == (100.0, 200.0)
+    assert (player.pixel_x, player.pixel_y) == (100.0, 200.0 + SPAWN_Y_OFFSET)
     assert mgr.current_map_id == "oldale_town"
     assert player.map_name == "oldale_town"
     # The id travels with the path so per-map state (collected items) can be
@@ -127,19 +209,19 @@ def test_load_places_player_at_named_spawn():
 def test_load_places_player_at_explicit_coords():
     mgr, player, _ = _manager({})
     mgr.load("test", (12.0, 34.0))
-    assert (player.pixel_x, player.pixel_y) == (12.0, 34.0)
+    assert (player.pixel_x, player.pixel_y) == (12.0, 34.0 + SPAWN_Y_OFFSET)
 
 
 def test_unknown_spawn_falls_back_to_default():
     mgr, player, _ = _manager({"default": (5.0, 6.0)})
     mgr.load("test", "does_not_exist")
-    assert (player.pixel_x, player.pixel_y) == (5.0, 6.0)
+    assert (player.pixel_x, player.pixel_y) == (5.0, 6.0 + SPAWN_Y_OFFSET)
 
 
 def test_none_spawn_uses_default_or_leaves_player():
     mgr, player, _ = _manager({"default": (7.0, 8.0)})
     mgr.load("test")  # spawn=None -> default
-    assert (player.pixel_x, player.pixel_y) == (7.0, 8.0)
+    assert (player.pixel_x, player.pixel_y) == (7.0, 8.0 + SPAWN_Y_OFFSET)
 
     mgr2, player2, _ = _manager({})  # no default -> player unchanged
     player2.pixel_x, player2.pixel_y = 99.0, 99.0
@@ -150,19 +232,19 @@ def test_none_spawn_uses_default_or_leaves_player():
 def test_transition_uses_parsed_spawn():
     mgr, player, _ = _manager({"door": (1.0, 2.0)})
     mgr.transition(Transition(target_map="oldale_town", target_spawn="door"))
-    assert (player.pixel_x, player.pixel_y) == (1.0, 2.0)
+    assert (player.pixel_x, player.pixel_y) == (1.0, 2.0 + SPAWN_Y_OFFSET)
 
 
 def test_warp_is_equivalent_to_load():
     mgr, player, _ = _manager({"heal": (3.0, 4.0)})
     mgr.warp("oldale_town/pokemon_center", "heal")
-    assert (player.pixel_x, player.pixel_y) == (3.0, 4.0)
+    assert (player.pixel_x, player.pixel_y) == (3.0, 4.0 + SPAWN_Y_OFFSET)
     assert mgr.current_map_id == "oldale_town/pokemon_center"
 
 
 def test_hooks_and_unload_fire():
     loads, unloads = [], []
-    mgr, player, _ = _manager(
+    mgr, _player, _ = _manager(
         {"default": (0.0, 0.0)},
         on_load=lambda mid, loaded: loads.append(mid),
         on_unload=lambda mid, loaded: unloads.append(mid),

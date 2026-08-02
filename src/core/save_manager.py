@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-from typing import Optional
 from src.model.save.player import PlayerSave
 from src.core.player_serializer import PlayerSerializer
 from src.core.logger import get_logger
@@ -18,7 +17,7 @@ class SaveManager:
     def __init__(self):
         self.player, self.saved_position = self._load()
 
-    def _load(self) -> tuple[PlayerSave, Optional[dict]]:
+    def _load(self) -> tuple[PlayerSave, dict | None]:
         """Return the loaded player and its saved position, or raise.
 
         Total by construction: every path either returns a PlayerSave or raises,
@@ -30,10 +29,10 @@ class SaveManager:
         candidates = [p for p in (SAVE_PATH, SAVE_BAK_PATH) if os.path.exists(p)]
         candidates.append(DEFAULT_PATH)
 
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         for path in candidates:
             try:
-                with open(path, "r") as f:
+                with open(path) as f:
                     data = json.load(f)
                 player = PlayerSerializer.deserialize(data)
                 if path != SAVE_PATH:

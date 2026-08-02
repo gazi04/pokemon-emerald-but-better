@@ -159,7 +159,9 @@ def test_flush_save_and_reload_preserves_state(save_manager, tmp_path, monkeypat
     assert mudkip.hp == 30
 
 
-def test_flush_save_succeeds_when_backup_copy_fails(save_manager, tmp_path, monkeypatch):
+def test_flush_save_succeeds_when_backup_copy_fails(
+    save_manager, tmp_path, monkeypatch
+):
     """A failing backup copy must not block promoting the new save."""
     state = PlayerMotion(
         map_name="oldale_town", direction="down", pixel_x=1.0, pixel_y=2.0
