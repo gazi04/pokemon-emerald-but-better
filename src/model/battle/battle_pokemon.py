@@ -280,6 +280,9 @@ class BattlePokemon:
         Called by BattleSystem after damage is applied.
         """
         messages = []
+        
+        if self._ability_blocks_move_effect():
+            return []
 
         for effect in move.effects:
             destination = self if effect.target == "self" else target
@@ -294,7 +297,7 @@ class BattlePokemon:
         stat = effect.stat
         change = effect.change
         current_stage = destination.modifiers[stat]
-        
+
         if self._ability_blocks_stat_drop(stat, change):
             return []
 
@@ -428,6 +431,9 @@ class BattlePokemon:
             return move is not None and move.category == "physical"
         if condition == "ground_type" and move:
             return move is not None and move.type == "ground"
+        if condition == "has_status_effect":
+            return self.status_effect != None
+
         return False
 
     def ability_attack_multiplier(self, move: PokemonMove) -> tuple[float, list[str]]:
@@ -458,6 +464,12 @@ class BattlePokemon:
                 return f"It doesn't affect {self.name}…"
         return None
 
+    def _ability_blocks_move_effect(self):
+        return any(
+            effect.type == "immunity_move_effects"
+            for effect in self._ability_effects("on_hit")
+        )
+
     def _has_status_immunity(self, status: StatusEffect) -> bool:
         """Returns True if this pokemon's ability makes it immune to the given status condition.
         e.g. Limber prevents paralysis, Immunity prevents poison, Water Veil prevents burn."""
@@ -465,7 +477,7 @@ class BattlePokemon:
             effect.type == "immunity_status_effect" and effect.status == status
             for effect in self._ability_effects("on_hit")
         )
-        
+
     def _ability_blocks_stat_drop(self, stat: Stat, change: int) -> bool:
         """
         Returns True if this pokemon's ability prevents a stat from being lowered.

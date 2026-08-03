@@ -84,7 +84,7 @@
         "target": "enemy",
         "move_type": null,
         "condition": "contact",
-        "status": "poisoned",
+        "status": "poison",
         "chance": 0.3
       }
     ]
@@ -210,7 +210,15 @@
   "guts": {
     "name": "Guts",
     "description": "Boosts Attack if afflicted by a status condition.",
-    "effects": []
+    "effects": [
+      {
+        "trigger": "on_attack",
+        "type": "damage_boost",
+        "target": "self",
+        "change": 100,
+        "condition": "has_status_effect"
+      }
+    ]
   },
   "run_away": {
     "name": "Run Away",
@@ -220,7 +228,32 @@
   "effect_spore": {
     "name": "Effect Spore",
     "description": "May inflict a status condition on the attacker on contact.",
-    "effects": []
+    "effects": [
+      {
+        "trigger": "on_hit",
+        "type": "status",
+        "target": "enemy",
+        "condition": "contact",
+        "status": "poison",
+        "chance": 0.1
+      },
+      {
+        "trigger": "on_hit",
+        "type": "status",
+        "target": "enemy",
+        "condition": "contact",
+        "status": "sleep",
+        "chance": 0.1
+      },
+      {
+        "trigger": "on_hit",
+        "type": "status",
+        "target": "enemy",
+        "condition": "contact",
+        "status": "paralyzed",
+        "chance": 0.1
+      }
+    ]
   },
   "chlorophyll": {
     "name": "Chlorophyll",
@@ -267,7 +300,13 @@
   "shield_dust": {
     "name": "Shield Dust",
     "description": "Blocks additional effects of moves that hit this pokemon.",
-    "effects": []
+    "effects": [
+      {
+        "trigger": "on_hit",
+        "type": "immunity_move_effects",
+        "target": "self"
+      }
+    ]
   },
   "drought": {
     "name": "Drought",
