@@ -170,9 +170,10 @@ def test_interact_pokeball_tab_outside_battle_does_nothing(data_loader):
     view._throw_pokeball.assert_not_called()
 
 
-def test_throw_pokeball_full_party_shows_message_on_battle_view(
-    data_loader, monkeypatch
-):
+def test_throw_pokeball_full_party_still_attempts_catch(data_loader, monkeypatch):
+    # PC boxes: a full party no longer blocks a throw — the ball is still used
+    # and a successful catch overflows to a box, so the catch is attempted and
+    # its result is forwarded to the BattleView.
     monkeypatch.setattr(bag_view_module, "BattleView", MagicMock)
     view = make_view(data_loader, inventory=potions(1))
     battle_system = MagicMock()
@@ -181,8 +182,8 @@ def test_throw_pokeball_full_party_shows_message_on_battle_view(
 
     view._throw_pokeball(battle_system)
 
-    view.previous_view.show_messages.assert_called_once()
-    battle_system.attempt_catch.assert_not_called()
+    battle_system.attempt_catch.assert_called_once()
+    view.previous_view.start_catch_attempt.assert_called_once()
 
 
 def test_throw_pokeball_full_party_outside_battle_view_no_message(data_loader):

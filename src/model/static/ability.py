@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Any
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 
@@ -11,9 +10,9 @@ class AbilityEffect:
     move_type: str | None = None  # only apply if the move matches this type
     stat: Stat | None = None
     change: int | None = None
-    condition: str | None = None  # trigger gate, e.g. "low_hp" | "contact" | "ground_type"
+    condition: str | None = None  # trigger gate, e.g. low_hp | contact | ground_type
     chance: float | None = None  # 0.0 - 1.0, None means always
-    status: StatusEffect | None = None  # status to inflict for type=="status" (e.g. "paralyzed")
+    status: StatusEffect | None = None  # status to inflict for type=="status"
     weather: str | None = None  # weather this effect summons or keys off of
     
     def __init__(self, data: dict):
@@ -37,4 +36,4 @@ class Ability:
     def __init__(self, data: dict):
         self.name = data["name"]
         self.description = data["description"]
-        self.effects = [AbilityEffect(**e) for e in data.get("effects", [])]
+        self.effects = [AbilityEffect(e) for e in data.get("effects", [])]

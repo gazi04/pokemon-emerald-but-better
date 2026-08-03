@@ -213,6 +213,7 @@ def test_parse_player_multi_pokemon(save_manager):
             },
         ],
         "items": {},
+        "box": [],
     }
     profile = PlayerSerializer.deserialize(data)
     assert len(profile.pokemon) == 2

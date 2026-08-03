@@ -104,6 +104,7 @@ def make_bag(hp=30, level=50, status=None, moves=None):
     )
     save = PlayerSave(
         pokemon=[pokemon],
+        boxs=[],
         items={name: ItemStack(name, 3, ItemCategory.MEDICINE) for name in ITEMS},
     )
     pm = MagicMock()
@@ -219,7 +220,7 @@ def _bag_for(held_item=None, item_stacks=None):
         moves=[PlayerPokemonMove("tackle", 5)],
         held_item=held_item,
     )
-    save = PlayerSave(pokemon=[pokemon], items=item_stacks or {})
+    save = PlayerSave(pokemon=[pokemon], boxs=[], items=item_stacks or {})
 
     pm = MagicMock()
     pm.player = save
