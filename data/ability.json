@@ -243,12 +243,26 @@
   "keen_eye": {
     "name": "Keen Eye",
     "description": "Prevents accuracy from being lowered.",
-    "effects": []
+    "effects": [
+      {
+        "trigger": "on_hit",
+        "type": "immunity_stat",
+        "target": "self",
+        "stat": "accuracy"
+      }
+    ]
   },
   "inner_focus": {
     "name": "Inner Focus",
     "description": "Prevents flinching.",
-    "effects": []
+    "effects": [
+      {
+        "trigger": "on_hit",
+        "type": "immunity_status_effect",
+        "target": "self",
+        "status": "flinch"
+      }
+    ]
   },
   "shield_dust": {
     "name": "Shield Dust",
