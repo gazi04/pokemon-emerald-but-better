@@ -373,6 +373,8 @@ class BattleView(GameView):
         else:
             self.run()
 
+    def _end
+
     # ------------------------------------------------------------------
     # Move learning — message-gated sub-flow. LEARNING_MOVE state re-enters
     # here each time the text box empties until the learn queue is drained.

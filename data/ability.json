@@ -187,7 +187,12 @@
   "synchronize": {
     "name": "Synchronize",
     "description": "Passes a status condition to the pokemon that inflicted it.",
-    "effects": []
+    "effects": [
+      {
+        "trigger": "on_hit",
+        "type": "passes_status_effect"
+      }
+    ]
   },
   "swift_swim": {
     "name": "Swift Swim",

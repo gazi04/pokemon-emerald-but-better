@@ -208,6 +208,34 @@ class BattlePokemon:
             held_item,
         )
 
+    def apply_status_effect(self, status: StatusEffect) -> bool:
+        if status is None or self.status_effect != StatusEffect.NONE:
+            return False
+
+        if self._has_status_immunity(status):
+            return False
+
+        if status == StatusEffect.BURN and "fire" in self.types:
+            return False
+        if status == StatusEffect.POISON and (
+            "poison" in self.types or "steel" in self.types
+        ):
+            return False
+        if status == StatusEffect.PARALYSIS and (
+            "ground" in self.types or "electric" in self.types
+        ):
+            return False
+        if status == StatusEffect.FREEZE and (
+            "fire" in self.types or "ice" in self.types
+        ):
+            return False
+
+        self.status_effect = status
+        if status == StatusEffect.SLEEP:
+            self.sleep_counter = random.randint(2, 5)
+
+        return True
+
     # ------------------------------------------------------------------
     # Move gating — status and PP checks
     # Returns (messages, can_move) so BattleSystem decides what to do
@@ -280,7 +308,7 @@ class BattlePokemon:
         Called by BattleSystem after damage is applied.
         """
         messages = []
-        
+
         if self._ability_blocks_move_effect():
             return []
 
@@ -323,8 +351,8 @@ class BattlePokemon:
         return messages
 
     def _apply_status_effect(self, effect, destination: BattlePokemon) -> list[str]:
-        message = []
         chance = effect.chance if effect.chance else 100
+
         if chance >= random.randint(1, 100):
             if self._has_status_immunity(effect.condition):
                 return []
@@ -332,43 +360,23 @@ class BattlePokemon:
             if effect.condition == StatusEffect.CONFUSION:
                 if destination.confusion_counter == 0:
                     destination.confusion_counter = random.randint(2, 5)
-                    message.append(f"{destination.name} became confused!")
+                    return [f"{destination.name} became confused!"]
                 else:
-                    message.append(f"{destination.name} is already confused.")
-                return message
+                    return [f"{destination.name} is already confused."]
 
             if effect.condition == StatusEffect.FLINCH:
                 destination.flinched = True
                 return []
 
             if destination.status_effect == StatusEffect.NONE:
-                if (
-                    effect.condition == StatusEffect.BURN
-                    and "fire" in destination.types
-                ):
-                    return []
-                if effect.condition == StatusEffect.POISON and (
-                    "poison" in destination.types or "steel" in destination.types
-                ):
-                    return []
-                if effect.condition == StatusEffect.FREEZE and (
-                    "fire" in destination.types or "ice" in destination.types
-                ):
-                    return []
-                if effect.condition == StatusEffect.PARALYSIS and (
-                    "ground" in destination.types or "electric" in destination.types
-                ):
+                if not destination.apply_status_effect(effect.condition):
                     return []
 
-                message.append(f"{destination.name} was {effect.condition}.")
-
-                destination.status_effect = effect.condition
-                if destination.status_effect == StatusEffect.SLEEP:
-                    destination.sleep_counter = random.randint(2, 5)
+                return [f"{destination.name} was {effect.condition}."]
             else:
-                message.append(f"{destination.name} already has a condition.")
+                return [f"{destination.name} already has a condition."]
 
-        return message
+        return []
 
     def _apply_protect(self, effect, destination: BattlePokemon) -> list[str]:
         destination.is_protected = True
@@ -507,6 +515,10 @@ class BattlePokemon:
 
             elif effect.type == "absorb":
                 messages.extend(self._heal_from_ability(effect))
+                
+            elif effect.type == "passes_status_effect" and self.status_effect != StatusEffect.NONE:
+                attacker.apply_status_effect(self.status_effect)
+                self.status_effect = StatusEffect.NONE
 
         return messages
 
@@ -514,30 +526,11 @@ class BattlePokemon:
         self, effect: AbilityEffect, destination: BattlePokemon
     ):
         status = self._status_from(effect.status)
-        if status is None or destination.status_effect != StatusEffect.NONE:
+        if status == None:
             return (False, "")
 
-        if self._has_status_immunity(status):
+        if not destination.apply_status_effect(status):
             return (False, "")
-
-        if effect.condition == StatusEffect.BURN and "fire" in destination.types:
-            return (False, "")
-        if effect.condition == StatusEffect.POISON and (
-            "poison" in destination.types or "steel" in destination.types
-        ):
-            return (False, "")
-        if effect.condition == StatusEffect.PARALYSIS and (
-            "ground" in destination.types or "electric" in destination.types
-        ):
-            return (False, "")
-        if effect.condition == StatusEffect.FREEZE and (
-            "fire" in destination.types or "ice" in destination.types
-        ):
-            return (False, "")
-
-        destination.status_effect = status
-        if status == StatusEffect.SLEEP:
-            destination.sleep_counter = random.randint(2, 5)
 
         return (
             True,
