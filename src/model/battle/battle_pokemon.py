@@ -9,7 +9,7 @@ from src.enums.effect_type import EffectType
 from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.static.ability import Ability, AbilityEffect
-from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger, AbilityTarget
+from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger
 from src.model.static.item import ItemSpecies
 
 MAX_MOVES = 4

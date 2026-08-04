@@ -28,7 +28,3 @@ class AbilityCondition(StrEnum):
     CONTACT = "contact"
     LOW_HP = "low_hp"
     GROUND_TYPE = "ground_type"
-    
-class AbilityTarget(StrEnum):
-    SELF = "self"
-    ENEMY = "enemy"

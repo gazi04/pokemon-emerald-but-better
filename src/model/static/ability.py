@@ -2,13 +2,13 @@ from dataclasses import dataclass, field
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.weather import Weather
-from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger, AbilityTarget
+from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger
 
 @dataclass
 class AbilityEffect:
     trigger: AbilityTrigger  # on_attack | on_hit | on_turn_end | on_switch_in | weather
     type: AbilityTypes  # stat_boost | status | damage | immunity | heal | weather | speed
-    target: AbilityTarget  # "self" | "enemy"
+    target: str  # "self" | "enemy"
     move_type: str | None = None  # only apply if the move matches this type
     stat: Stat | None = None
     change: int | None = None
