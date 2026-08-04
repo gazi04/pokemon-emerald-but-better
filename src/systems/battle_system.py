@@ -727,6 +727,18 @@ class BattleSystem:
         # Persistence is owned by the PlayerManager Facade, not combat code.
         self.player_manager.persist_active_pokemon(self.your_pokemon, self.has_evolved)
 
+    def can_run(self) -> bool:
+        if self.is_trainer:
+            return False
+        
+        if self.your_pokemon.ability_name.lower() == "tun away":
+            return True
+        
+        if self.your_pokemon.level < self.enemy_pokemon.level:
+            return False
+        
+        return True
+
     def _publish_hp_change(self, target: str, hp_before: int, pokemon: BattlePokemon):
         global_bus.publish(
             HpChangedEvent(

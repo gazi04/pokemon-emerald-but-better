@@ -518,10 +518,10 @@ class BattleView(GameView):
             self._attempt_run()
 
     def _attempt_run(self):
-        if not self.is_trainer:
+        if not self.battle_system.can_run():
             self.run()
         else:
-            self.ui.queue_messages(["You cant run away from trainers!"])
+            self.ui.queue_messages(["You cant run away!"])
             self.ui.switch_mode("dialog")
             arcade.schedule_once(self._reset_to_main_menu, 2)
 
@@ -551,7 +551,7 @@ class BattleView(GameView):
                     move.pp,
                 )
 
-    def run(self):
+    def run(self):        
         self.battle_system.save()
 
         if self.is_trainer:
