@@ -97,9 +97,7 @@
         "trigger": "on_hit",
         "type": "immunity",
         "target": "self",
-        "move_type": "ground",
-        "condition": null,
-        "chance": null
+        "move_type": "ground"
       }
     ]
   },
@@ -112,9 +110,7 @@
         "type": "heal",
         "target": "self",
         "move_type": "water",
-        "change": 25,
-        "condition": null,
-        "chance": null
+        "change": 25
       }
     ]
   },
@@ -127,9 +123,7 @@
         "type": "heal",
         "target": "self",
         "move_type": "electric",
-        "change": 25,
-        "condition": null,
-        "chance": null
+        "change": 25
       }
     ]
   },
@@ -143,9 +137,7 @@
         "target": "enemy",
         "move_type": null,
         "stat": "attack",
-        "change": -1,
-        "condition": null,
-        "chance": null
+        "change": -1
       }
     ]
   },
@@ -159,9 +151,7 @@
         "target": "self",
         "move_type": null,
         "stat": "speed",
-        "change": 1,
-        "condition": null,
-        "chance": null
+        "change": 1
       }
     ]
   },
@@ -173,8 +163,6 @@
         "trigger": "on_turn_end",
         "type": "cure_status",
         "target": "self",
-        "move_type": null,
-        "condition": "any_status",
         "chance": 0.33
       }
     ]
@@ -202,12 +190,7 @@
         "trigger": "weather",
         "type": "speed",
         "target": "self",
-        "move_type": null,
-        "stat": null,
         "change": 100,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "rain"
       }
     ]
@@ -268,12 +251,7 @@
         "trigger": "weather",
         "type": "speed",
         "target": "self",
-        "move_type": null,
-        "stat": null,
         "change": 100,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "sun"
       }
     ]
@@ -321,12 +299,6 @@
         "trigger": "on_switch_in",
         "type": "weather",
         "target": "self",
-        "move_type": null,
-        "stat": null,
-        "change": null,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "sun"
       }
     ]
@@ -339,12 +311,6 @@
         "trigger": "on_switch_in",
         "type": "weather",
         "target": "self",
-        "move_type": null,
-        "stat": null,
-        "change": null,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "rain"
       }
     ]
@@ -357,12 +323,6 @@
         "trigger": "on_switch_in",
         "type": "weather",
         "target": "self",
-        "move_type": null,
-        "stat": null,
-        "change": null,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "sandstorm"
       }
     ]
@@ -375,12 +335,6 @@
         "trigger": "on_switch_in",
         "type": "weather",
         "target": "self",
-        "move_type": null,
-        "stat": null,
-        "change": null,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "hail"
       }
     ]
@@ -393,12 +347,7 @@
         "trigger": "weather",
         "type": "heal",
         "target": "self",
-        "move_type": null,
-        "stat": null,
         "change": 6,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "rain"
       }
     ]
@@ -411,12 +360,7 @@
         "trigger": "weather",
         "type": "heal",
         "target": "self",
-        "move_type": null,
-        "stat": null,
         "change": 6,
-        "condition": null,
-        "chance": null,
-        "status": null,
         "weather": "hail"
       }
     ]

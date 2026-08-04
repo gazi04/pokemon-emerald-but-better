@@ -1,19 +1,21 @@
 from dataclasses import dataclass, field
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
+from src.enums.weather import Weather
+from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger, AbilityTarget
 
 @dataclass
 class AbilityEffect:
-    trigger: str  # on_attack | on_hit | on_turn_end | on_switch_in | weather
-    type: str  # stat_boost | status | damage | immunity | heal | weather | speed
-    target: str  # "self" | "enemy"
+    trigger: AbilityTrigger  # on_attack | on_hit | on_turn_end | on_switch_in | weather
+    type: AbilityTypes  # stat_boost | status | damage | immunity | heal | weather | speed
+    target: AbilityTarget  # "self" | "enemy"
     move_type: str | None = None  # only apply if the move matches this type
     stat: Stat | None = None
     change: int | None = None
-    condition: str | None = None  # trigger gate, e.g. low_hp | contact | ground_type
+    condition: AbilityCondition | None = None  # trigger gate, e.g. low_hp | contact | ground_type
     chance: float | None = None  # 0.0 - 1.0, None means always
     status: StatusEffect | None = None  # status to inflict for type=="status"
-    weather: str | None = None  # weather this effect summons or keys off of
+    weather: Weather | None = None  # weather this effect summons or keys off of
     
     def __init__(self, data: dict):
         self.trigger = data["trigger"]

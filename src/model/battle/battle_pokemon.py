@@ -9,6 +9,7 @@ from src.enums.effect_type import EffectType
 from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.static.ability import Ability, AbilityEffect
+from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger, AbilityTarget
 from src.model.static.item import ItemSpecies
 
 MAX_MOVES = 4
@@ -433,13 +434,13 @@ class BattlePokemon:
         condition = effect.condition
         if not condition:
             return True
-        if condition == "low_hp":
+        if condition == AbilityCondition.LOW_HP:
             return self.current_hp <= self.max_hp / 3
-        if condition == "contact" and move:
+        if condition == AbilityCondition.CONTACT:
             return move is not None and move.category == "physical"
-        if condition == "ground_type" and move:
+        if condition == AbilityCondition.GROUND_TYPE:
             return move is not None and move.type == "ground"
-        if condition == "has_status_effect":
+        if condition == AbilityCondition.HAS_STATUS_EFFECT:
             return self.status_effect != None
 
         return False
@@ -449,7 +450,7 @@ class BattlePokemon:
         any UI messages — e.g. Blaze powering up the attack at low HP."""
         multiplier = 1.0
         messages: list[str] = []
-        for effect in self._ability_effects("on_attack"):
+        for effect in self._ability_effects(AbilityTrigger.ON_ATTACK):
             if effect.type != "damage_boost":
                 continue
             if not self._ability_condition_met(effect, move):
@@ -465,8 +466,8 @@ class BattlePokemon:
     def immunity_to(self, move: PokemonMove) -> str | None:
         """Defender hook. Returns a message if this pokemon's ability makes it
         immune to `move` (e.g. Levitate vs Ground), else None."""
-        for effect in self._ability_effects("on_hit"):
-            if effect.type in ["immunity", "absorb"] and self._ability_condition_met(
+        for effect in self._ability_effects(AbilityTrigger.ON_HIT):
+            if effect.type in [AbilityTypes.IMMUNITY, AbilityTypes.ABSORB] and self._ability_condition_met(
                 effect, move
             ):
                 return f"It doesn't affect {self.name}…"
@@ -474,16 +475,16 @@ class BattlePokemon:
 
     def _ability_blocks_move_effect(self):
         return any(
-            effect.type == "immunity_move_effects"
-            for effect in self._ability_effects("on_hit")
+            effect.type == AbilityTypes.IMMUNITY_MOVE_EFFECTS
+            for effect in self._ability_effects(AbilityTrigger.ON_HIT)
         )
 
     def _has_status_immunity(self, status: StatusEffect) -> bool:
         """Returns True if this pokemon's ability makes it immune to the given status condition.
         e.g. Limber prevents paralysis, Immunity prevents poison, Water Veil prevents burn."""
         return any(
-            effect.type == "immunity_status_effect" and effect.status == status
-            for effect in self._ability_effects("on_hit")
+            effect.type == AbilityTypes.IMMUNITY_STATUS_EFFECT and effect.status == status
+            for effect in self._ability_effects(AbilityTrigger.ON_HIT)
         )
 
     def _ability_blocks_stat_drop(self, stat: Stat, change: int) -> bool:
@@ -493,30 +494,30 @@ class BattlePokemon:
         Only applies when change is negative (a drop); boosts are never blocked.
         """
         return change < 0 and any(
-            effect.type == "immunity_stat_drop" and effect.stat == stat
-            for effect in self._ability_effects("on_stat_change")
+            effect.type == AbilityTypes.STAT_CHANGE and effect.stat == stat
+            for effect in self._ability_effects(AbilityTrigger.ON_STAT_CHANGE)
         )
 
     def on_hit(self, attacker: BattlePokemon, move: PokemonMove) -> list[str]:
         messages: list[str] = []
-        for effect in self._ability_effects("on_hit"):
+        for effect in self._ability_effects(AbilityTrigger.ON_HIT):
             if not self._ability_condition_met(effect, move):
                 continue
             chance = effect.chance if effect.chance is not None else 1.0
             if random.random() >= chance:
                 continue
 
-            if effect.type == "status":
+            if effect.type == AbilityTypes.STATUS:
                 victim = attacker if effect.target == "enemy" else self
                 applied, message = self._apply_status_effect_ability(
                     effect, victim)
                 if applied:
                     messages.append(message)
 
-            elif effect.type == "absorb":
+            elif effect.type == AbilityTypes.ABSORB:
                 messages.extend(self._heal_from_ability(effect))
                 
-            elif effect.type == "passes_status_effect" and self.status_effect != StatusEffect.NONE:
+            elif effect.type == AbilityTypes.PASSES_STATUS_EFFECT and self.status_effect != StatusEffect.NONE:
                 attacker.apply_status_effect(self.status_effect)
                 self.status_effect = StatusEffect.NONE
 
