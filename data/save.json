@@ -5,7 +5,7 @@
       "hp": 60,
       "level": 18,
       "exp": 5830,
-      "ability": "blaze",
+      "ability": "pick_up",
       "held_item": null,
       "moves": [
         {

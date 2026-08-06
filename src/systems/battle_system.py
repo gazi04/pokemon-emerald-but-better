@@ -18,6 +18,7 @@ from src.model.static.item import ItemSpecies
 from src.model.static.trainer import Trainer, TrainerPokemon
 from src.model.static.pokemon import PokemonMove
 from src.systems.enemy_ai import EnemyAI
+from src.constants import CHANCE_TO_GET_ITEM, ITEMS_FROM_PICK_UP
 
 
 class BattleSystem:
@@ -76,6 +77,19 @@ class BattleSystem:
                     f"{pokemon.name}'s {pokemon.ability_name} kicked in!"
                 )
                 messages.extend(self.weather.set(Weather(summoned)))
+        return messages
+
+    def battle_ended(self) -> list[str]:
+        messages = []
+        
+        if self.your_pokemon.ability.name.lower() == "pick up":
+            if random.random() <= CHANCE_TO_GET_ITEM:
+                item = random.choice(ITEMS_FROM_PICK_UP)
+                
+                if item:
+                    self.player_manager.add_item(item)
+                    messages.append(f"Your got {item.upper()}!!!")
+        
         return messages
 
     def _weather_speed(self, pokemon: BattlePokemon) -> int:

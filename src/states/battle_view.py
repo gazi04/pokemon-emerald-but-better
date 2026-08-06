@@ -124,6 +124,7 @@ class BattleView(GameView):
             is_trainer,
             trainer_data,
         )
+        self._battle_ended_processed = False
 
         self.ui.set_enemy_info(
             self.enemy_battle.name.upper(),
@@ -356,6 +357,14 @@ class BattleView(GameView):
         self.player_manager.mark_seen(name.lower())
 
     def _handle_battle_finishing(self):
+        if not self._battle_ended_processed:
+            messages = self.battle_system.battle_ended()
+            self._battle_ended_processed = True  
+            
+            if messages:
+                self.ui.queue_messages(messages)
+                return
+        
         if self.battle_system.exp <= 0:
             self.run()
             return
