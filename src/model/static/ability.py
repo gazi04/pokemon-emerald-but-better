@@ -8,7 +8,7 @@ from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger
 class AbilityEffect:
     trigger: AbilityTrigger  # on_attack | on_hit | on_turn_end | on_switch_in | weather
     type: AbilityTypes  # stat_boost | status | damage | immunity | heal | weather | speed
-    target: str  # "self" | "enemy"
+    target: str | None = None  # "self" | "enemy"
     move_type: str | None = None  # only apply if the move matches this type
     stat: Stat | None = None
     change: int | None = None
@@ -20,7 +20,7 @@ class AbilityEffect:
     def __init__(self, data: dict):
         self.trigger = data["trigger"]
         self.type = data["type"]
-        self.target = data["target"]
+        self.target = data.get("target")
         self.move_type = data.get("move_type")
         self.stat = data.get("stat")
         self.change = data.get("change")
