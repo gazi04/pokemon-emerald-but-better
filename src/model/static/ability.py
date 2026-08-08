@@ -4,19 +4,20 @@ from src.enums.status_effect import StatusEffect
 from src.enums.weather import Weather
 from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger
 
+
 @dataclass
 class AbilityEffect:
-    trigger: AbilityTrigger  
-    type: AbilityTypes  
+    trigger: AbilityTrigger
+    type: AbilityTypes
     target: str | None = None  # "self" | "enemy"
     move_type: str | None = None  # only apply if the move matches this type
     stat: Stat | None = None
     change: int | None = None
-    condition: AbilityCondition | None = None  
+    condition: AbilityCondition | None = None
     chance: float | None = None  # 0.0 - 1.0, None means always
-    status: StatusEffect | None = None  
-    weather: Weather | None = None  
-    
+    status: StatusEffect | None = None
+    weather: Weather | None = None
+
     def __init__(self, data: dict):
         self.trigger = data["trigger"]
         self.type = data["type"]
@@ -28,6 +29,7 @@ class AbilityEffect:
         self.chance = data.get("chance")
         self.status = data.get("status")
         self.weather = data.get("weather")
+
 
 @dataclass
 class Ability:

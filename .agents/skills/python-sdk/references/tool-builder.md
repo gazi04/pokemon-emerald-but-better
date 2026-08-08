@@ -27,10 +27,7 @@ enabled = boolean("Whether feature is enabled")
 ```python
 from inferencesh import enum_of
 
-priority = enum_of(
-    ["low", "medium", "high", "critical"],
-    "Task priority level"
-)
+priority = enum_of(["low", "medium", "high", "critical"], "Task priority level")
 ```
 
 ### Array Type
@@ -43,11 +40,7 @@ tags = array(string("Tag name"), "List of tags")
 
 # Array of objects
 items = array(
-    obj({
-        "name": string("Item name"),
-        "qty": integer("Quantity")
-    }),
-    "List of items"
+    obj({"name": string("Item name"), "qty": integer("Quantity")}), "List of items"
 )
 ```
 
@@ -56,12 +49,15 @@ items = array(
 ```python
 from inferencesh import obj, string, integer, optional
 
-address = obj({
-    "street": string("Street address"),
-    "city": string("City name"),
-    "state": string("State code"),
-    "zip": optional(string("ZIP code"))
-}, "Mailing address")
+address = obj(
+    {
+        "street": string("Street address"),
+        "city": string("City name"),
+        "state": string("State code"),
+        "zip": optional(string("ZIP code")),
+    },
+    "Mailing address",
+)
 ```
 
 ### Optional Parameters
@@ -125,13 +121,8 @@ translate = (
     .describe("Translate text between languages")
     .param("text", string("Text to translate"))
     .param("target_lang", string("Target language code"))
-    .setup({
-        "model": "advanced",
-        "preserve_formatting": True
-    })
-    .input({
-        "source_lang": "auto"
-    })
+    .setup({"model": "advanced", "preserve_formatting": True})
+    .input({"source_lang": "auto"})
     .build()
 )
 ```
@@ -221,14 +212,11 @@ from inferencesh import internal_tools
 
 config = (
     internal_tools()
-    .plan()                    # Task planning
-    .memory()                  # Information storage
-    .web_search(True)         # Web search capability
-    .code_execution(True)     # Run code
-    .image_generation({
-        "enabled": True,
-        "app_ref": "infsh/flux@latest"
-    })
+    .plan()  # Task planning
+    .memory()  # Information storage
+    .web_search(True)  # Web search capability
+    .code_execution(True)  # Run code
+    .image_generation({"enabled": True, "app_ref": "infsh/flux@latest"})
     .build()
 )
 ```
@@ -252,16 +240,14 @@ def handle_tool(call):
     if call.name == "greet":
         result = f"Hello, {call.args['name']}!"
     elif call.name == "calculate":
-        result = eval(call.args['expression'])
+        result = eval(call.args["expression"])
     else:
         result = {"error": f"Unknown tool: {call.name}"}
 
     agent.submit_tool_result(call.id, result)
 
-response = agent.send_message(
-    "Greet John",
-    on_tool_call=handle_tool
-)
+
+response = agent.send_message("Greet John", on_tool_call=handle_tool)
 ```
 
 ### With Approval
@@ -271,12 +257,10 @@ def handle_tool(call):
     if call.requires_approval:
         print(f"Tool: {call.name}")
         print(f"Args: {call.args}")
-        approved = input("Approve? (y/n): ").lower() == 'y'
+        approved = input("Approve? (y/n): ").lower() == "y"
 
         if not approved:
-            agent.submit_tool_result(call.id, {
-                "error": "Denied by user"
-            })
+            agent.submit_tool_result(call.id, {"error": "Denied by user"})
             return
 
     result = execute_tool(call.name, call.args)
@@ -291,23 +275,36 @@ Return structured data for UI widgets:
 def handle_tool(call):
     if call.name == "confirm_order":
         # Return widget data
-        agent.submit_tool_result(call.id, {
-            "action": {"type": "confirm"},
-            "form_data": {
-                "order_id": "12345",
-                "items": ["Widget A", "Widget B"],
-                "total": 99.99
-            }
-        })
+        agent.submit_tool_result(
+            call.id,
+            {
+                "action": {"type": "confirm"},
+                "form_data": {
+                    "order_id": "12345",
+                    "items": ["Widget A", "Widget B"],
+                    "total": 99.99,
+                },
+            },
+        )
 ```
 
 ## Complete Example
 
 ```python
 from inferencesh import (
-    inference, tool, app_tool, webhook_tool,
-    string, number, integer, boolean, enum_of,
-    array, obj, optional, internal_tools
+    inference,
+    tool,
+    app_tool,
+    webhook_tool,
+    string,
+    number,
+    integer,
+    boolean,
+    enum_of,
+    array,
+    obj,
+    optional,
+    internal_tools,
 )
 
 client = inference(api_key="inf_...")
@@ -342,21 +339,19 @@ slack = (
 )
 
 # Built-in tools
-internals = (
-    internal_tools()
-    .web_search(True)
-    .code_execution(True)
-    .build()
-)
+internals = internal_tools().web_search(True).code_execution(True).build()
 
 # Create agent with all tools
-agent = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "system_prompt": "You are a helpful assistant with various capabilities.",
-    "tools": [calculator, image_gen, slack],
-    "internal_tools": internals,
-    "temperature": 0.7
-})
+agent = client.agent(
+    {
+        "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
+        "system_prompt": "You are a helpful assistant with various capabilities.",
+        "tools": [calculator, image_gen, slack],
+        "internal_tools": internals,
+        "temperature": 0.7,
+    }
+)
+
 
 # Handle tool calls
 def handle_tool(call):
@@ -367,15 +362,15 @@ def handle_tool(call):
         except Exception as e:
             agent.submit_tool_result(call.id, {"error": str(e)})
     elif call.requires_approval:
-        approved = input(f"Allow {call.name}? (y/n): ").lower() == 'y'
+        approved = input(f"Allow {call.name}? (y/n): ").lower() == "y"
         if approved:
             # Let the app/webhook tool execute
             pass
         else:
             agent.submit_tool_result(call.id, {"error": "Denied"})
 
+
 response = agent.send_message(
-    "Calculate 15% tip on $85, then notify Slack",
-    on_tool_call=handle_tool
+    "Calculate 15% tip on $85, then notify Slack", on_tool_call=handle_tool
 )
 ```

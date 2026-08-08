@@ -8,14 +8,15 @@ Asynchronous programming with the Python SDK.
 from inferencesh import async_inference
 import asyncio
 
+
 async def main():
     client = async_inference(api_key="inf_...")
 
-    result = await client.run({
-        "app": "infsh/flux-1-dev",
-        "input": {"prompt": "A sunset"}
-    })
+    result = await client.run(
+        {"app": "infsh/flux-1-dev", "input": {"prompt": "A sunset"}}
+    )
     print(result["output"])
+
 
 asyncio.run(main())
 ```
@@ -32,22 +33,19 @@ async def parallel_requests():
         "A mountain landscape",
         "An ocean sunset",
         "A forest path",
-        "A city skyline"
+        "A city skyline",
     ]
 
     # Create all tasks
     tasks = [
-        client.run({
-            "app": "infsh/flux-1-dev",
-            "input": {"prompt": p}
-        })
-        for p in prompts
+        client.run({"app": "infsh/flux-1-dev", "input": {"prompt": p}}) for p in prompts
     ]
 
     # Run in parallel
     results = await asyncio.gather(*tasks)
 
     return results
+
 
 results = asyncio.run(parallel_requests())
 ```
@@ -63,13 +61,11 @@ async def controlled_concurrency(items, max_concurrent=5):
 
     async def process_one(item):
         async with semaphore:
-            return await client.run({
-                "app": "processor",
-                "input": {"data": item}
-            })
+            return await client.run({"app": "processor", "input": {"data": item}})
 
     tasks = [process_one(item) for item in items]
     return await asyncio.gather(*tasks)
+
 
 # Process 100 items, max 5 at a time
 results = asyncio.run(controlled_concurrency(range(100), max_concurrent=5))
@@ -81,14 +77,14 @@ results = asyncio.run(controlled_concurrency(range(100), max_concurrent=5))
 async def stream_task():
     client = async_inference(api_key="inf_...")
 
-    async for update in client.run({
-        "app": "google/veo-3-1-fast",
-        "input": {"prompt": "Ocean waves"}
-    }, stream=True):
+    async for update in client.run(
+        {"app": "google/veo-3-1-fast", "input": {"prompt": "Ocean waves"}}, stream=True
+    ):
         print(f"Status: {update['status']}")
 
         if update.get("status") == "completed":
             return update.get("output")
+
 
 result = asyncio.run(stream_task())
 ```
@@ -109,10 +105,8 @@ async def agent_conversation():
         if msg.get("content"):
             print(msg["content"], end="", flush=True)
 
-    response = await agent.send_message(
-        "Tell me a story",
-        on_message=on_message
-    )
+    response = await agent.send_message("Tell me a story", on_message=on_message)
+
 
 asyncio.run(agent_conversation())
 ```
@@ -138,24 +132,17 @@ async def producer_consumer():
             if item is None:
                 break
 
-            result = await client.run({
-                "app": "processor",
-                "input": {"data": item}
-            })
+            result = await client.run({"app": "processor", "input": {"data": item}})
             results.append((item, result))
             print(f"Consumer {consumer_id} processed {item}")
 
     items = list(range(20))
 
     # Start producer and consumers
-    await asyncio.gather(
-        producer(items),
-        consumer(1),
-        consumer(2),
-        consumer(3)
-    )
+    await asyncio.gather(producer(items), consumer(1), consumer(2), consumer(3))
 
     return results
+
 
 results = asyncio.run(producer_consumer())
 ```
@@ -168,16 +155,14 @@ async def with_timeout():
 
     try:
         result = await asyncio.wait_for(
-            client.run({
-                "app": "slow-app",
-                "input": {"data": "..."}
-            }),
-            timeout=30.0  # 30 seconds
+            client.run({"app": "slow-app", "input": {"data": "..."}}),
+            timeout=30.0,  # 30 seconds
         )
         return result
     except asyncio.TimeoutError:
         print("Request timed out")
         return None
+
 
 result = asyncio.run(with_timeout())
 ```
@@ -193,17 +178,18 @@ async def retry_with_backoff(client, config, max_retries=3):
             if attempt == max_retries - 1:
                 raise
 
-            wait = (2 ** attempt) + random.random()
+            wait = (2**attempt) + random.random()
             print(f"Attempt {attempt + 1} failed, retrying in {wait:.1f}s...")
             await asyncio.sleep(wait)
+
 
 async def main():
     client = async_inference(api_key="inf_...")
 
-    result = await retry_with_backoff(client, {
-        "app": "my-app",
-        "input": {"data": "..."}
-    })
+    result = await retry_with_backoff(
+        client, {"app": "my-app", "input": {"data": "..."}}
+    )
+
 
 asyncio.run(main())
 ```
@@ -213,16 +199,14 @@ asyncio.run(main())
 ```python
 from tqdm.asyncio import tqdm
 
+
 async def batch_with_progress(items):
     client = async_inference(api_key="inf_...")
     semaphore = asyncio.Semaphore(10)
 
     async def process_one(item):
         async with semaphore:
-            return await client.run({
-                "app": "processor",
-                "input": {"data": item}
-            })
+            return await client.run({"app": "processor", "input": {"data": item}})
 
     tasks = [process_one(item) for item in items]
 
@@ -232,6 +216,7 @@ async def batch_with_progress(items):
         results.append(result)
 
     return results
+
 
 results = asyncio.run(batch_with_progress(range(100)))
 ```
@@ -252,13 +237,12 @@ class AsyncInferenceSession:
         # Cleanup if needed
         pass
 
+
 async def main():
     async with AsyncInferenceSession("inf_...") as client:
-        result = await client.run({
-            "app": "my-app",
-            "input": {"data": "..."}
-        })
+        result = await client.run({"app": "my-app", "input": {"data": "..."}})
         print(result)
+
 
 asyncio.run(main())
 ```
@@ -271,10 +255,7 @@ async def process_with_errors(items):
 
     async def safe_process(item):
         try:
-            result = await client.run({
-                "app": "processor",
-                "input": {"data": item}
-            })
+            result = await client.run({"app": "processor", "input": {"data": item}})
             return {"success": True, "item": item, "result": result}
         except Exception as e:
             return {"success": False, "item": item, "error": str(e)}
@@ -289,6 +270,7 @@ async def process_with_errors(items):
 
     return successes, failures
 
+
 asyncio.run(process_with_errors(range(50)))
 ```
 
@@ -302,34 +284,31 @@ async def stream_results(items):
     pending = set()
 
     for item in items:
-        task = asyncio.create_task(client.run({
-            "app": "processor",
-            "input": {"data": item}
-        }))
+        task = asyncio.create_task(
+            client.run({"app": "processor", "input": {"data": item}})
+        )
         task.item = item
         pending.add(task)
 
         # Limit pending tasks
         if len(pending) >= 10:
             done, pending = await asyncio.wait(
-                pending,
-                return_when=asyncio.FIRST_COMPLETED
+                pending, return_when=asyncio.FIRST_COMPLETED
             )
             for task in done:
                 yield task.item, await task
 
     # Wait for remaining
     while pending:
-        done, pending = await asyncio.wait(
-            pending,
-            return_when=asyncio.FIRST_COMPLETED
-        )
+        done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
         for task in done:
             yield task.item, await task
+
 
 async def main():
     async for item, result in stream_results(range(100)):
         print(f"Completed: {item}")
+
 
 asyncio.run(main())
 ```
@@ -345,12 +324,10 @@ from inferencesh import async_inference
 app = FastAPI()
 client = async_inference(api_key="inf_...")
 
+
 @app.post("/generate")
 async def generate(prompt: str):
-    result = await client.run({
-        "app": "infsh/flux-1-dev",
-        "input": {"prompt": prompt}
-    })
+    result = await client.run({"app": "infsh/flux-1-dev", "input": {"prompt": prompt}})
     return {"image": result["output"]["url"]}
 ```
 
@@ -362,14 +339,15 @@ from inferencesh import async_inference
 
 client = async_inference(api_key="inf_...")
 
+
 async def handle_generate(request):
     data = await request.json()
-    result = await client.run({
-        "app": "infsh/flux-1-dev",
-        "input": {"prompt": data["prompt"]}
-    })
+    result = await client.run(
+        {"app": "infsh/flux-1-dev", "input": {"prompt": data["prompt"]}}
+    )
     return web.json_response({"image": result["output"]["url"]})
 
+
 app = web.Application()
-app.router.add_post('/generate', handle_generate)
+app.router.add_post("/generate", handle_generate)
 ```

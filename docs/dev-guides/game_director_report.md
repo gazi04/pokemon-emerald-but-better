@@ -95,7 +95,7 @@ The `payload: dict` is the **only** thing a publisher must get right. Keys are r
 ```python
 window = arcade.Window(...)
 director = GameDirector(window)
-director.start()      # builds + shows the Overworld
+director.start()  # builds + shows the Overworld
 arcade.run()
 ```
 
@@ -118,9 +118,12 @@ self.close()
    ```python
    def _build_my_screen(self, payload: dict):
        from src.states.my_view import MyView
-       return MyView(previous_view=payload.get("previous_view", self._get_or_create_overworld()),
-                     player_manager=self.player_manager,
-                     data_loader=self.data_loader)
+
+       return MyView(
+           previous_view=payload.get("previous_view", self._get_or_create_overworld()),
+           player_manager=self.player_manager,
+           data_loader=self.data_loader,
+       )
    ```
 3. Register it in the right dict in `__init__`:
    - full-screen/disposable → `_transient_builders`

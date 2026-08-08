@@ -99,8 +99,7 @@ class BattlePokemon:
         self.ability = ability
         self.held_item = held_item
         self._load_species(data)
-        self.progression = Progression(
-            level, exp, self.base_exp, self.evolution)
+        self.progression = Progression(level, exp, self.base_exp, self.evolution)
         self.calculate_stats()
 
         self.max_hp = self.stats.hp
@@ -273,8 +272,7 @@ class BattlePokemon:
         if self.confusion_counter > 0:
             self.confusion_counter -= 1
             if self.confusion_counter == 0:
-                pre_messages.append(
-                    f"{self.name} snapped out of its confusion!")
+                pre_messages.append(f"{self.name} snapped out of its confusion!")
             else:
                 pre_messages.append(f"{self.name} is confused!")
                 if random.random() < 1 / 3:
@@ -331,8 +329,7 @@ class BattlePokemon:
             return []
 
         if change > 0 and current_stage == 6:
-            messages.append(
-                f"{destination.name}'s {stat} won't go any higher!")
+            messages.append(f"{destination.name}'s {stat} won't go any higher!")
             return messages
         if change < 0 and current_stage == -6:
             messages.append(f"{destination.name}'s {stat} won't go any lower!")
@@ -341,12 +338,10 @@ class BattlePokemon:
         destination.modifiers[stat] = max(-6, min(6, current_stage + change))
 
         if change > 0:
-            adj = "sharply " if change == 2 else (
-                "drastically " if change >= 3 else "")
+            adj = "sharply " if change == 2 else ("drastically " if change >= 3 else "")
             messages.append(f"{destination.name}'s {stat} {adj}rose!")
         elif change < 0:
-            adj = "harshly " if change == - \
-                2 else ("severely " if change <= -3 else "")
+            adj = "harshly " if change == -2 else ("severely " if change <= -3 else "")
             messages.append(f"{destination.name}'s {stat} {adj}fell!")
 
         return messages
@@ -458,8 +453,7 @@ class BattlePokemon:
             if move.type != effect.move_type:
                 continue
             multiplier *= 1 + (effect.change or 0) / 100
-            messages.append(
-                f"{self.name}'s {self.ability_name} powered up the move!")
+            messages.append(f"{self.name}'s {self.ability_name} powered up the move!")
 
         return multiplier, messages
 
@@ -467,9 +461,10 @@ class BattlePokemon:
         """Defender hook. Returns a message if this pokemon's ability makes it
         immune to `move` (e.g. Levitate vs Ground), else None."""
         for effect in self._ability_effects(AbilityTrigger.ON_HIT):
-            if effect.type in [AbilityTypes.IMMUNITY, AbilityTypes.ABSORB] \
-                and self._ability_condition_met(effect, move):
-                    
+            if effect.type in [
+                AbilityTypes.IMMUNITY,
+                AbilityTypes.ABSORB,
+            ] and self._ability_condition_met(effect, move):
                 return f"It doesn't affect {self.name}…"
         return None
 
@@ -485,7 +480,7 @@ class BattlePokemon:
         e.g. Limber prevents paralysis, Immunity prevents poison.
         """
         return any(
-            effect.type == AbilityTypes.IMMUNITY_STATUS_EFFECT \
+            effect.type == AbilityTypes.IMMUNITY_STATUS_EFFECT
             and effect.status == status
             for effect in self._ability_effects(AbilityTrigger.ON_HIT)
         )
@@ -493,7 +488,7 @@ class BattlePokemon:
     def _ability_blocks_stat_drop(self, stat: Stat, change: int) -> bool:
         """
         Returns True if this pokemon's ability prevents a stat from being lowered.
-        e.g. Clear Body / White Smoke block any move or 
+        e.g. Clear Body / White Smoke block any move or
         ability that would reduce a stat stage.
         Only applies when change is negative (a drop); boosts are never blocked.
         """
@@ -513,17 +508,17 @@ class BattlePokemon:
 
             if effect.type == AbilityTypes.STATUS:
                 victim = attacker if effect.target == "enemy" else self
-                applied, message = self._apply_status_effect_ability(
-                    effect, victim)
+                applied, message = self._apply_status_effect_ability(effect, victim)
                 if applied:
                     messages.append(message)
 
             elif effect.type == AbilityTypes.ABSORB:
                 messages.extend(self._heal_from_ability(effect))
-                
-            elif effect.type == AbilityTypes.PASSES_STATUS_EFFECT \
-                and self.status_effect != StatusEffect.NONE:
-                    
+
+            elif (
+                effect.type == AbilityTypes.PASSES_STATUS_EFFECT
+                and self.status_effect != StatusEffect.NONE
+            ):
                 attacker.apply_status_effect(self.status_effect)
                 self.status_effect = StatusEffect.NONE
 
@@ -597,8 +592,7 @@ class BattlePokemon:
             return []
         for effect in item.effects:
             if effect.type == EffectType.RECOIL_TO_SELF and effect.percent:
-                self.take_damage(
-                    max(1, int(self.max_hp * effect.percent / 100)))
+                self.take_damage(max(1, int(self.max_hp * effect.percent / 100)))
                 return [f"{self.name} was hurt by its {item.name}!"]
         return []
 
@@ -659,8 +653,7 @@ class BattlePokemon:
                 messages.append(f"{self.name} restored its HP.")
             elif effect.type == EffectType.STAT and effect.stat:
                 messages.extend(
-                    self._raise_stat_from_item(
-                        Stat(effect.stat), effect.change or 1)
+                    self._raise_stat_from_item(Stat(effect.stat), effect.change or 1)
                 )
         self._consume_item()
         return messages
@@ -739,13 +732,11 @@ class BattlePokemon:
             if effect.type == "stat_change":
                 target = opponent if effect.target == "enemy" else self
                 messages.extend(self._apply_stat_effect(effect, target))
-                messages.append(
-                    f"{self.name}'s {self.ability_name} took effect!")
+                messages.append(f"{self.name}'s {self.ability_name} took effect!")
 
             elif effect.type == "status":
                 target = opponent if effect.target == "enemy" else self
-                applied, message = self._apply_status_effect_ability(
-                    effect, target)
+                applied, message = self._apply_status_effect_ability(effect, target)
                 if applied:
                     messages.append(message)
 
@@ -832,8 +823,7 @@ class BattlePokemon:
             stats_after=self.stats.copy(),
             evolved=self.progression.can_evolve(),
             evolves_to=self.progression.evolves_to,
-            moves_to_learn=self._moves_learned_between(
-                level_before, self.level),
+            moves_to_learn=self._moves_learned_between(level_before, self.level),
         )
 
     # ------------------------------------------------------------------

@@ -33,20 +33,27 @@ The first four caches are keyed by the **lowercase name** that is the JSON top-l
 ```python
 class DataLoader:
     def __init__(self):
-        self.pokemons   = GameDataParser.parse_pokemons(self._read("data/pokemon.json"))
-        self.moves      = GameDataParser.parse_moves(self._read("data/moves.json"))
-        self.items      = GameDataParser.parse_items(self._read("data/items.json"))
-        self.npc_dialog = GameDataParser.parse_npc_dialog(self._read("data/npc_dialog.json"))
-        self.encounters = self._read("data/encounters.json")   # raw dict, per-map
-        self.types      = self._read("data/types.json")        # raw type chart
+        self.pokemons = GameDataParser.parse_pokemons(self._read("data/pokemon.json"))
+        self.moves = GameDataParser.parse_moves(self._read("data/moves.json"))
+        self.items = GameDataParser.parse_items(self._read("data/items.json"))
+        self.npc_dialog = GameDataParser.parse_npc_dialog(
+            self._read("data/npc_dialog.json")
+        )
+        self.encounters = self._read("data/encounters.json")  # raw dict, per-map
+        self.types = self._read("data/types.json")  # raw type chart
 
     def _read(self, path: str) -> dict:
         with open(path) as f:
             return json.load(f)
 
-    def get_pokemon(self, name): return self.pokemons.get(name)   # -> PokemonSpecies | None
-    def get_move(self, name):    return self.moves.get(name)      # -> PokemonMove | None
-    def get_item(self, name):    return self.items.get(name)      # -> ItemSpecies | None
+    def get_pokemon(self, name):
+        return self.pokemons.get(name)  # -> PokemonSpecies | None
+
+    def get_move(self, name):
+        return self.moves.get(name)  # -> PokemonMove | None
+
+    def get_item(self, name):
+        return self.items.get(name)  # -> ItemSpecies | None
 ```
 - **Eager, all-at-once load.** Everything is parsed in `__init__`. If a file is missing or malformed, construction throws immediately (fail-fast at boot, not mid-battle).
 - **`.get()` getters return `None`** on a miss — callers must null-check (most do; e.g. `battle_view._refresh_active_pokemon_ui` guards `get_move(...)`).
@@ -139,17 +146,18 @@ class MyView(GameView):
 
 ### Look something up
 ```python
-species = self.data_loader.get_pokemon(name)     # PokemonSpecies | None
-if species is None:                              # always null-check
+species = self.data_loader.get_pokemon(name)  # PokemonSpecies | None
+if species is None:  # always null-check
     ...
 move = self.data_loader.get_move("tackle")
 item = self.data_loader.get_item("potion")
-npc  = self.data_loader.npc_dialog.get(npc_id)   # dict access, no getter
+npc = self.data_loader.npc_dialog.get(npc_id)  # dict access, no getter
 ```
 
 ### Reuse the stat math (don't re-derive it)
 ```python
 from src.model.static.pokemon import PokemonStat
+
 max_hp = PokemonStat.max_hp(species.stats.hp, level)
 ```
 

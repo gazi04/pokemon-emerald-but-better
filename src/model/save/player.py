@@ -38,6 +38,7 @@ class Box:
     name: str
     pokemons: list[PlayerPokemon]
 
+
 @dataclass
 class PlayerSave:
     pokemon: list[PlayerPokemon]
@@ -115,14 +116,14 @@ class PlayerSave:
             self.add_pokemon_box(pokemon)
             return
         self.pokemon.append(pokemon)
-    
+
     def add_pokemon_box(self, pokemon: PlayerPokemon):
         for box in self.boxs:
             if len(box.pokemons) == 30:
                 continue
-            
+
             box.pokemons.append(pokemon)
-            
+
         print(self.boxs)
 
     def mark_seen(self, name: str):

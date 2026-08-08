@@ -131,7 +131,7 @@ Nothing else changes. These layers keep working exactly as before on every map:
 Everything relocation-related funnels through one method:
 
 ```python
-map_manager.warp(map_id, spawn)   # spawn = a name, an (x, y), or None
+map_manager.warp(map_id, spawn)  # spawn = a name, an (x, y), or None
 ```
 
 So future features are just callers of `warp()`:

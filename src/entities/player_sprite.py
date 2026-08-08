@@ -61,10 +61,8 @@ class PlayerSprite(arcade.Sprite):
                 animation = self.animations.get(name, source)
                 if animation is None:
                     continue
-                
-                self.animations.add_animation(
-                    name, direction, animation.flipped()
-                )
+
+                self.animations.add_animation(name, direction, animation.flipped())
 
     # ------------------------------------------------------------------
     # Per-frame

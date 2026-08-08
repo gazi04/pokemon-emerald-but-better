@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+
 class AbilityTypes(StrEnum):
     STATUS = "status"
     SPEED = "speed"
@@ -15,6 +16,7 @@ class AbilityTypes(StrEnum):
     ABSORB = "absorb"
     PASSES_STATUS_EFFECT = "passes_status_effect"
 
+
 class AbilityTrigger(StrEnum):
     ON_HIT = "on_hit"
     ON_ATTACK = "on_attack"
@@ -22,7 +24,8 @@ class AbilityTrigger(StrEnum):
     ON_TURN_END = "on_turn_end"
     WEATHER = "weather"
     ON_STAT_CHANGE = "on_stat_change"
-    
+
+
 class AbilityCondition(StrEnum):
     HAS_STATUS_EFFECT = "has_status_effect"
     CONTACT = "contact"

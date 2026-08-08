@@ -52,7 +52,16 @@ def _system(your, enemy):
 
 def _weather_move(weather):
     return PokemonMove(
-        "rain dance", "status", "water", None, None, 5, 0, 0, None, None,
+        "rain dance",
+        "status",
+        "water",
+        None,
+        None,
+        5,
+        0,
+        0,
+        None,
+        None,
         [PokemonMoveEffect(target="self", type=EffectType.WEATHER, weather=weather)],
     )
 
@@ -62,8 +71,12 @@ def _drought():
         "name": "Drought",
         "description": "",
         "effects": [
-            {"trigger": "on_switch_in", "type": "weather", "target": "self",
-             "weather": "sun"}
+            {
+                "trigger": "on_switch_in",
+                "type": "weather",
+                "target": "self",
+                "weather": "sun",
+            }
         ],
     }
 
@@ -73,8 +86,13 @@ def _swift_swim():
         "name": "Swift Swim",
         "description": "",
         "effects": [
-            {"trigger": "weather", "type": "speed", "target": "self",
-             "weather": "rain", "change": 100}
+            {
+                "trigger": "weather",
+                "type": "speed",
+                "target": "self",
+                "weather": "rain",
+                "change": 100,
+            }
         ],
     }
 
@@ -84,8 +102,13 @@ def _ice_body():
         "name": "Ice Body",
         "description": "",
         "effects": [
-            {"trigger": "weather", "type": "heal", "target": "self",
-             "weather": "hail", "change": 6}
+            {
+                "trigger": "weather",
+                "type": "heal",
+                "target": "self",
+                "weather": "hail",
+                "change": 6,
+            }
         ],
     }
 
@@ -116,9 +139,16 @@ def test_slower_weather_ability_wins():
     # Both set weather; the slower one activates last and overrides.
     fast = _mon(_drought(), speed=200)  # sun
     slow_rain = {
-        "name": "Drizzle", "description": "",
-        "effects": [{"trigger": "on_switch_in", "type": "weather",
-                     "target": "self", "weather": "rain"}],
+        "name": "Drizzle",
+        "description": "",
+        "effects": [
+            {
+                "trigger": "on_switch_in",
+                "type": "weather",
+                "target": "self",
+                "weather": "rain",
+            }
+        ],
     }
     slow = _mon(slow_rain, speed=1, is_enemy=True)
     system = _system(slow, fast)

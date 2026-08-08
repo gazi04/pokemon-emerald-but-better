@@ -28,14 +28,16 @@ writer = (
 )
 
 # Orchestrator agent
-orchestrator = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "system_prompt": """You are an orchestrator that:
+orchestrator = client.agent(
+    {
+        "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
+        "system_prompt": """You are an orchestrator that:
 1. Uses the research tool to gather information
 2. Uses the write tool to create content
 Coordinate between agents to produce high-quality output.""",
-    "tools": [researcher, writer]
-})
+        "tools": [researcher, writer],
+    }
+)
 
 response = orchestrator.send_message("Create a blog post about AI agents")
 ```
@@ -58,16 +60,20 @@ search = (
 )
 
 # RAG agent
-rag_agent = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "system_prompt": """You help users with current information.
+rag_agent = client.agent(
+    {
+        "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
+        "system_prompt": """You help users with current information.
 When asked about recent events or facts you're unsure about,
 use the search tool to find accurate, up-to-date information.
 Always cite your sources.""",
-    "tools": [search]
-})
+        "tools": [search],
+    }
+)
 
-response = rag_agent.send_message("What are the latest developments in quantum computing?")
+response = rag_agent.send_message(
+    "What are the latest developments in quantum computing?"
+)
 ```
 
 ## Code Execution Pattern
@@ -79,19 +85,17 @@ from inferencesh import inference, internal_tools
 
 client = inference(api_key="inf_...")
 
-config = (
-    internal_tools()
-    .code_execution(True)
-    .build()
-)
+config = internal_tools().code_execution(True).build()
 
-coder = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "system_prompt": """You are a Python coding assistant.
+coder = client.agent(
+    {
+        "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
+        "system_prompt": """You are a Python coding assistant.
 Write code to solve problems and execute it to verify it works.
 Explain your approach and show the output.""",
-    "internal_tools": config
-})
+        "internal_tools": config,
+    }
+)
 
 response = coder.send_message("Calculate the first 20 Fibonacci numbers")
 ```
@@ -114,31 +118,29 @@ delete_file = (
     .build()
 )
 
+
 def handle_tool(call):
     if call.requires_approval:
         print(f"\n⚠️  Agent wants to: {call.name}")
         print(f"   Arguments: {call.args}")
         confirm = input("Allow? (y/n): ")
 
-        if confirm.lower() == 'y':
+        if confirm.lower() == "y":
             result = execute_operation(call.name, call.args)
             agent.submit_tool_result(call.id, result)
         else:
-            agent.submit_tool_result(call.id, {
-                "error": "Operation denied by user"
-            })
+            agent.submit_tool_result(call.id, {"error": "Operation denied by user"})
     else:
         result = execute_operation(call.name, call.args)
         agent.submit_tool_result(call.id, result)
 
-agent = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "tools": [delete_file]
-})
+
+agent = client.agent(
+    {"core_app": {"ref": "infsh/claude-sonnet-4@latest"}, "tools": [delete_file]}
+)
 
 response = agent.send_message(
-    "Clean up temporary files in /tmp/myapp",
-    on_tool_call=handle_tool
+    "Clean up temporary files in /tmp/myapp", on_tool_call=handle_tool
 )
 ```
 
@@ -152,21 +154,24 @@ from inferencesh import inference
 
 client = inference(api_key="inf_...")
 
+
 def save_chat(agent, filepath):
     chat = agent.get_chat()
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         json.dump(chat, f)
+
 
 def load_chat(agent, filepath):
     try:
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             chat = json.load(f)
             # Restore conversation by replaying messages
-            for msg in chat['messages']:
-                if msg['role'] == 'user':
-                    agent.send_message(msg['content'])
+            for msg in chat["messages"]:
+                if msg["role"] == "user":
+                    agent.send_message(msg["content"])
     except FileNotFoundError:
         pass
+
 
 agent = client.agent("my-org/assistant@latest")
 
@@ -191,10 +196,12 @@ import sys
 client = inference(api_key="inf_...")
 agent = client.agent("my-org/assistant@latest")
 
+
 def stream_handler(msg):
     if msg.get("content"):
         sys.stdout.write(msg["content"])
         sys.stdout.flush()
+
 
 def tool_handler(call):
     print(f"\n🔧 Using tool: {call.name}")
@@ -203,10 +210,11 @@ def tool_handler(call):
     agent.submit_tool_result(call.id, result)
     print("✅ Tool completed")
 
+
 response = agent.send_message(
     "Generate a report on market trends",
     on_message=stream_handler,
-    on_tool_call=tool_handler
+    on_tool_call=tool_handler,
 )
 
 print("\n\n📊 Report complete!")
@@ -222,6 +230,7 @@ import time
 
 client = inference(api_key="inf_...")
 
+
 def robust_run(config, max_retries=3):
     for attempt in range(max_retries):
         try:
@@ -231,16 +240,16 @@ def robust_run(config, max_retries=3):
             raise
         except RuntimeError as e:
             if attempt < max_retries - 1:
-                wait = 2 ** attempt
+                wait = 2**attempt
                 print(f"Error: {e}. Retrying in {wait}s...")
                 time.sleep(wait)
             else:
                 raise
 
-result = robust_run({
-    "app": "infsh/flux-1-dev",
-    "input": {"prompt": "A serene landscape"}
-})
+
+result = robust_run(
+    {"app": "infsh/flux-1-dev", "input": {"prompt": "A serene landscape"}}
+)
 ```
 
 ## Batch Processing Pattern
@@ -251,14 +260,14 @@ Process multiple items efficiently:
 from inferencesh import async_inference
 import asyncio
 
+
 async def process_batch(items):
     client = async_inference(api_key="inf_...")
 
     async def process_one(item):
-        result = await client.run({
-            "app": "infsh/flux-1-dev",
-            "input": {"prompt": item}
-        })
+        result = await client.run(
+            {"app": "infsh/flux-1-dev", "input": {"prompt": item}}
+        )
         return result
 
     # Process in parallel with concurrency limit
@@ -268,17 +277,11 @@ async def process_batch(items):
         async with semaphore:
             return await process_one(item)
 
-    results = await asyncio.gather(*[
-        bounded_process(item) for item in items
-    ])
+    results = await asyncio.gather(*[bounded_process(item) for item in items])
     return results
 
-prompts = [
-    "A mountain sunrise",
-    "A city at night",
-    "An ocean sunset",
-    "A forest path"
-]
+
+prompts = ["A mountain sunrise", "A city at night", "An ocean sunset", "A forest path"]
 
 results = asyncio.run(process_batch(prompts))
 ```

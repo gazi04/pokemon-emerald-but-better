@@ -57,11 +57,7 @@ class MapLoader:
     OverworldView keeps only draw + input + lifecycle + nav."""
 
     def __init__(
-        self,
-        movement_system,
-        player_state,
-        collected_items=None,
-        can_challenge=None
+        self, movement_system, player_state, collected_items=None, can_challenge=None
     ):
         self.movement_system = movement_system
         self.player_state = player_state

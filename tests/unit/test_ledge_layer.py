@@ -95,8 +95,6 @@ def test_tile_without_a_direction_property_is_not_a_ledge(window):
 def test_rectangle_zone_wins_over_a_sprite_at_the_same_point(window):
     sprites = arcade.SpriteList(use_spatial_hash=True)
     sprites.append(_sprite(48, 48, "down"))
-    layer = LedgeLayer(
-        zones=[LedgeZone(32, 32, 64, 64, "left")], sprites=sprites
-    )
+    layer = LedgeLayer(zones=[LedgeZone(32, 32, 64, 64, "left")], sprites=sprites)
 
     assert layer.find(48, 48) == "left"  # object-layer override

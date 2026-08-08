@@ -10,7 +10,6 @@ RUN_DURATION = 0.19
 
 
 class MovementSystem:
-
     def update(
         self, delta_time: float, state: GridMotion, intent: dict | None
     ) -> list[dict]:
@@ -28,11 +27,13 @@ class MovementSystem:
                     )
                 )
 
-            events.append({
-                "type": "finished_moving",
-                "x": state.pixel_x,
-                "y": state.pixel_y,
-            })
+            events.append(
+                {
+                    "type": "finished_moving",
+                    "x": state.pixel_x,
+                    "y": state.pixel_y,
+                }
+            )
 
         return events
 
@@ -59,14 +60,11 @@ class MovementSystem:
 
         # Clamp the stored progress, not just the local copy: a huge delta must
         # not leave a >1 value behind for animations to read.
-        state.move_progress = min(
-            state.move_progress + delta_time / duration, 1.0)
+        state.move_progress = min(state.move_progress + delta_time / duration, 1.0)
 
         progress = state.move_progress
-        state.pixel_x = state.start_x + \
-            (state.target_x - state.start_x) * progress
-        state.pixel_y = state.start_y + \
-            (state.target_y - state.start_y) * progress
+        state.pixel_x = state.start_x + (state.target_x - state.start_x) * progress
+        state.pixel_y = state.start_y + (state.target_y - state.start_y) * progress
 
         if state.move_progress >= 1.0:
             state.pixel_x = state.target_x

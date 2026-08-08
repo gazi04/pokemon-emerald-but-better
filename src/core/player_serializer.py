@@ -3,7 +3,7 @@ from src.model.save.player import (
     PlayerPokemon,
     PlayerPokemonMove,
     ItemStack,
-    Box
+    Box,
 )
 from src.model.motion.player_motion import PlayerMotion
 from src.enums.item_category import ItemCategory
@@ -42,15 +42,14 @@ class PlayerSerializer:
 
         items = {}
         for key, item in data["items"].items():
-            items[key] = ItemStack(
-                key, item["count"], ItemCategory(item["category"]))
+            items[key] = ItemStack(key, item["count"], ItemCategory(item["category"]))
 
         boxs = []
         for item in data["box"]:
             _pokemons = []
             for pokemon in item["pokemons"]:
                 moves = [
-                    PlayerPokemonMove(name=m["name"], pp=m["pp"]) 
+                    PlayerPokemonMove(name=m["name"], pp=m["pp"])
                     for m in pokemon["moves"]
                 ]
 
@@ -63,8 +62,7 @@ class PlayerSerializer:
                         ability=pokemon["ability"],
                         held_item=pokemon["held_item"],
                         moves=moves,
-                        status_condition=pokemon.get(
-                            "status_condition"),
+                        status_condition=pokemon.get("status_condition"),
                     )
                 )
 
@@ -123,7 +121,7 @@ class PlayerSerializer:
                         "moves": moves,
                     }
                 )
-            
+
             boxs.append({"box_name": box.name, "pokemons": _pokemons})
 
         data = {

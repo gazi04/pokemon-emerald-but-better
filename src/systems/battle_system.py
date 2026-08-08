@@ -73,9 +73,7 @@ class BattleSystem:
         for pokemon in by_speed:
             summoned = pokemon.weather_on_switch_in()
             if summoned:
-                messages.append(
-                    f"{pokemon.name}'s {pokemon.ability_name} kicked in!"
-                )
+                messages.append(f"{pokemon.name}'s {pokemon.ability_name} kicked in!")
                 messages.extend(self.weather.set(Weather(summoned)))
         return messages
 
@@ -85,9 +83,10 @@ class BattleSystem:
         if self.your_pokemon.ability is None:
             return []
 
-        if self.your_pokemon.ability.name.lower() == "pick up" \
-                and random.random() <= CHANCE_TO_GET_ITEM:
-
+        if (
+            self.your_pokemon.ability.name.lower() == "pick up"
+            and random.random() <= CHANCE_TO_GET_ITEM
+        ):
             item = random.choice(ITEMS_FROM_PICK_UP)
 
             if item:
@@ -103,14 +102,12 @@ class BattleSystem:
 
     def turn(self, move_index: int) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
-        enemy_move_index = self.ai.select_move(
-            self.enemy_pokemon, self.your_pokemon)
+        enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
 
         player_move_name = self.your_pokemon.moves[move_index].name
         player_move_data = self.data_loader.get_move(player_move_name)
         if player_move_data is None:
-            raise ValueError(
-                f"Move data for '{player_move_name}' could not be loaded.")
+            raise ValueError(f"Move data for '{player_move_name}' could not be loaded.")
 
         if enemy_move_index is None:
             self.turn_queue = [("player", move_index, None)]
@@ -119,8 +116,7 @@ class BattleSystem:
         enemy_move_name = self.enemy_pokemon.moves[enemy_move_index].name
         enemy_move_data = self.data_loader.get_move(enemy_move_name)
         if enemy_move_data is None:
-            raise ValueError(
-                f"Move data for '{enemy_move_name}' could not be loaded.")
+            raise ValueError(f"Move data for '{enemy_move_name}' could not be loaded.")
 
         player_priority = player_move_data.priority
         enemy_priority = enemy_move_data.priority
@@ -162,8 +158,7 @@ class BattleSystem:
         """
         self.battle_state = BattleState.CURRENTLY_TURN
         self._item_target_name = target_name
-        enemy_move_index = self.ai.select_move(
-            self.enemy_pokemon, self.your_pokemon)
+        enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
         self.turn_queue = [("player", -1, item_index)]
         if enemy_move_index is not None:
             self.turn_queue.append(("enemy", enemy_move_index, None))
@@ -171,12 +166,10 @@ class BattleSystem:
 
     def switch_turn(self) -> list[str]:
         self.battle_state = BattleState.CURRENTLY_TURN
-        enemy_move_index = self.ai.select_move(
-            self.enemy_pokemon, self.your_pokemon)
+        enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
 
         self.turn_queue = (
-            [("enemy", enemy_move_index, None)
-             ] if enemy_move_index is not None else []
+            [("enemy", enemy_move_index, None)] if enemy_move_index is not None else []
         )
         return self.execute_next_action()
 
@@ -189,8 +182,7 @@ class BattleSystem:
 
         pokemon_profile = self.data_loader.get_pokemon(pokemon.name)
         if pokemon_profile is None:
-            raise ValueError(
-                f"Pokemon data for '{pokemon.name}' could not be loaded.")
+            raise ValueError(f"Pokemon data for '{pokemon.name}' could not be loaded.")
 
         ability = self.data_loader.get_ability(pokemon.ability)
         if ability is None:
@@ -204,8 +196,7 @@ class BattleSystem:
         messages = [f"Go {pokemon.name}!"]
 
         held_item = (
-            self.data_loader.get_item(
-                pokemon.held_item) if pokemon.held_item else None
+            self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
         )
         self.your_pokemon.switching_pokemon(
             pokemon, ability, pokemon_profile, held_item
@@ -256,8 +247,7 @@ class BattleSystem:
         move_name = attacker.moves[move_index].name
         move_data = self.data_loader.get_move(move_name)
         if move_data is None:
-            raise ValueError(
-                f"Move data for '{move_name}' could not be loaded.")
+            raise ValueError(f"Move data for '{move_name}' could not be loaded.")
 
         if move_data.multi_hit:
             return self._execute_move_multiple_times(
@@ -275,11 +265,9 @@ class BattleSystem:
         move_name = attacker.moves[move_index].name
         move_data = self.data_loader.get_move(move_name)
         if move_data is None:
-            raise ValueError(
-                f"Move data for '{move_name}' could not be loaded.")
+            raise ValueError(f"Move data for '{move_name}' could not be loaded.")
         if move_data.multi_hit is None:
-            raise ValueError(
-                f"Move '{move_name}' has no multi_hit range defined.")
+            raise ValueError(f"Move '{move_name}' has no multi_hit range defined.")
         min_hits, max_hits = move_data.multi_hit
         times = random.randint(min_hits, max_hits)
 
@@ -315,8 +303,7 @@ class BattleSystem:
         move_name = attacker.moves[move_index].name
         move_data = self.data_loader.get_move(move_name)
         if move_data is None:
-            raise ValueError(
-                f"Move data for '{move_name}' could not be loaded.")
+            raise ValueError(f"Move data for '{move_name}' could not be loaded.")
         messages = []
 
         if announce:
@@ -361,8 +348,7 @@ class BattleSystem:
             defender_stats=defender.stats,
             defender_types=defender.types,
             defender_modifiers=defender.modifiers,
-            crit_modifier=attacker.modifiers.get(
-                Stat.CRITS, 0) + move_data.crit,
+            crit_modifier=attacker.modifiers.get(Stat.CRITS, 0) + move_data.crit,
             type_chart=self.data_loader.types,
             weather_multiplier=self.weather.damage_multiplier(move_data.type),
         )
@@ -481,11 +467,9 @@ class BattleSystem:
         messages.extend(self._apply_weather_end_of_turn())
 
         if self.your_pokemon.current_hp != hp_before_yours:
-            self._publish_hp_change(
-                "player", hp_before_yours, self.your_pokemon)
+            self._publish_hp_change("player", hp_before_yours, self.your_pokemon)
         if self.enemy_pokemon.current_hp != hp_before_enemy:
-            self._publish_hp_change(
-                "enemy", hp_before_enemy, self.enemy_pokemon)
+            self._publish_hp_change("enemy", hp_before_enemy, self.enemy_pokemon)
 
         if self.your_pokemon.current_hp <= 0:
             messages.extend(self.pokemon_death(self.your_pokemon))
@@ -520,8 +504,7 @@ class BattleSystem:
                 pokemon.types
             ) and not pokemon.absorbs_weather(self.weather.kind)
             if takes_chip:
-                pokemon.take_damage(
-                    self.weather.residual_damage(pokemon.max_hp))
+                pokemon.take_damage(self.weather.residual_damage(pokemon.max_hp))
                 messages.append(self.weather.residual_message(pokemon.name))
 
         messages.extend(self.weather.tick())
@@ -588,8 +571,7 @@ class BattleSystem:
 
         profile = self.data_loader.get_pokemon(pokemon.name)
         if profile is None:
-            raise ValueError(
-                f"Pokemon data for '{pokemon.name}' could not be loaded.")
+            raise ValueError(f"Pokemon data for '{pokemon.name}' could not be loaded.")
 
         ability = self.data_loader.get_ability(pokemon.ability)
         if ability is None:
@@ -598,11 +580,9 @@ class BattleSystem:
             )
 
         held_item = (
-            self.data_loader.get_item(
-                pokemon.held_item) if pokemon.held_item else None
+            self.data_loader.get_item(pokemon.held_item) if pokemon.held_item else None
         )
-        self.your_pokemon.switching_pokemon(
-            pokemon, ability, profile, held_item)
+        self.your_pokemon.switching_pokemon(pokemon, ability, profile, held_item)
 
         messages.extend(self.your_pokemon.on_switch_in(self.enemy_pokemon))
         messages.append(f"Go {pokemon.name}!")
@@ -678,8 +658,7 @@ class BattleSystem:
         self._pending_learn = None
         move = self.data_loader.get_move(name)
         display = (move.name if move else name).capitalize()
-        forgotten = self.your_pokemon.replace_move(
-            index, name, move.pp if move else 0)
+        forgotten = self.your_pokemon.replace_move(index, name, move.pp if move else 0)
         return [
             f"{self.your_pokemon.name} forgot {forgotten.capitalize()}...",
             f"...and learned {display}!",
@@ -748,8 +727,7 @@ class BattleSystem:
             }
         else:
             if self.enemy_pokemon.moves:
-                enemy_move_index = random.randint(
-                    0, len(self.enemy_pokemon.moves) - 1)
+                enemy_move_index = random.randint(0, len(self.enemy_pokemon.moves) - 1)
                 self.turn_queue = [("enemy", enemy_move_index, -1)]
             else:
                 self.turn_queue = []
@@ -764,8 +742,7 @@ class BattleSystem:
 
     def save(self):
         # Persistence is owned by the PlayerManager Facade, not combat code.
-        self.player_manager.persist_active_pokemon(
-            self.your_pokemon, self.has_evolved)
+        self.player_manager.persist_active_pokemon(self.your_pokemon, self.has_evolved)
 
     def can_run(self) -> bool:
         if self.is_trainer:

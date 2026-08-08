@@ -12,12 +12,9 @@ from inferencesh import inference
 client = inference(api_key="inf_...")
 
 # File path is auto-uploaded
-result = client.run({
-    "app": "image-processor",
-    "input": {
-        "image": "/path/to/image.png"
-    }
-})
+result = client.run(
+    {"app": "image-processor", "input": {"image": "/path/to/image.png"}}
+)
 ```
 
 ## Manual File Upload
@@ -28,10 +25,7 @@ result = client.run({
 file = client.upload_file("/path/to/image.png")
 print(file["uri"])  # inf://files/abc123
 
-result = client.run({
-    "app": "image-processor",
-    "input": {"image": file["uri"]}
-})
+result = client.run({"app": "image-processor", "input": {"image": file["uri"]}})
 ```
 
 ### Upload Options
@@ -42,11 +36,11 @@ from inferencesh import UploadFileOptions
 file = client.upload_file(
     "/path/to/document.pdf",
     UploadFileOptions(
-        filename="custom_name.pdf",      # Custom filename
-        content_type="application/pdf",   # MIME type
-        path="/documents/reports",        # Storage path
-        public=True                       # Publicly accessible
-    )
+        filename="custom_name.pdf",  # Custom filename
+        content_type="application/pdf",  # MIME type
+        path="/documents/reports",  # Storage path
+        public=True,  # Publicly accessible
+    ),
 )
 ```
 
@@ -55,10 +49,7 @@ file = client.upload_file(
 ### File Path
 
 ```python
-result = client.run({
-    "app": "processor",
-    "input": {"file": "/path/to/file.png"}
-})
+result = client.run({"app": "processor", "input": {"file": "/path/to/file.png"}})
 ```
 
 ### Data URI (Base64)
@@ -69,10 +60,9 @@ import base64
 with open("image.png", "rb") as f:
     b64 = base64.b64encode(f.read()).decode()
 
-result = client.run({
-    "app": "processor",
-    "input": {"image": f"data:image/png;base64,{b64}"}
-})
+result = client.run(
+    {"app": "processor", "input": {"image": f"data:image/png;base64,{b64}"}}
+)
 ```
 
 ### Bytes
@@ -81,20 +71,18 @@ result = client.run({
 with open("image.png", "rb") as f:
     data = f.read()
 
-file = client.upload_file(data, UploadFileOptions(
-    filename="image.png",
-    content_type="image/png"
-))
+file = client.upload_file(
+    data, UploadFileOptions(filename="image.png", content_type="image/png")
+)
 ```
 
 ### File Object
 
 ```python
 with open("image.png", "rb") as f:
-    file = client.upload_file(f, UploadFileOptions(
-        filename="image.png",
-        content_type="image/png"
-    ))
+    file = client.upload_file(
+        f, UploadFileOptions(filename="image.png", content_type="image/png")
+    )
 ```
 
 ## Working with URLs
@@ -102,12 +90,9 @@ with open("image.png", "rb") as f:
 Use remote URLs directly (no upload needed):
 
 ```python
-result = client.run({
-    "app": "image-processor",
-    "input": {
-        "image": "https://example.com/image.png"
-    }
-})
+result = client.run(
+    {"app": "image-processor", "input": {"image": "https://example.com/image.png"}}
+)
 ```
 
 ## Multiple Files
@@ -119,10 +104,7 @@ for path in ["/path/to/file1.png", "/path/to/file2.png"]:
     file = client.upload_file(path)
     files.append(file["uri"])
 
-result = client.run({
-    "app": "multi-file-processor",
-    "input": {"images": files}
-})
+result = client.run({"app": "multi-file-processor", "input": {"images": files}})
 ```
 
 ## File Info
@@ -141,10 +123,7 @@ print(f"Type: {file['content_type']}")
 ```python
 import requests
 
-result = client.run({
-    "app": "infsh/flux-1-dev",
-    "input": {"prompt": "A sunset"}
-})
+result = client.run({"app": "infsh/flux-1-dev", "input": {"prompt": "A sunset"}})
 
 # Result contains URL to generated file
 image_url = result["output"]["image"]
@@ -162,6 +141,7 @@ from inferencesh import async_inference
 import asyncio
 import aiohttp
 
+
 async def process_files():
     client = async_inference(api_key="inf_...")
 
@@ -169,10 +149,9 @@ async def process_files():
     file = await client.upload_file("/path/to/image.png")
 
     # Process
-    result = await client.run({
-        "app": "image-processor",
-        "input": {"image": file["uri"]}
-    })
+    result = await client.run(
+        {"app": "image-processor", "input": {"image": file["uri"]}}
+    )
 
     # Download result
     async with aiohttp.ClientSession() as session:
@@ -180,6 +159,7 @@ async def process_files():
             data = await resp.read()
             with open("output.png", "wb") as f:
                 f.write(data)
+
 
 asyncio.run(process_files())
 ```
@@ -191,23 +171,16 @@ agent = client.agent("my-org/assistant@latest")
 
 # From bytes
 with open("image.png", "rb") as f:
-    response = agent.send_message(
-        "What's in this image?",
-        files=[f.read()]
-    )
+    response = agent.send_message("What's in this image?", files=[f.read()])
 
 # From base64
 response = agent.send_message(
-    "Analyze this document",
-    files=["data:application/pdf;base64,JVBERi0xLj..."]
+    "Analyze this document", files=["data:application/pdf;base64,JVBERi0xLj..."]
 )
 
 # Multiple files
 with open("img1.png", "rb") as f1, open("img2.png", "rb") as f2:
-    response = agent.send_message(
-        "Compare these images",
-        files=[f1.read(), f2.read()]
-    )
+    response = agent.send_message("Compare these images", files=[f1.read(), f2.read()])
 ```
 
 ## Large File Handling
@@ -215,19 +188,17 @@ with open("img1.png", "rb") as f1, open("img2.png", "rb") as f2:
 For large files, use chunked upload:
 
 ```python
-def upload_large_file(client, filepath, chunk_size=5*1024*1024):
+def upload_large_file(client, filepath, chunk_size=5 * 1024 * 1024):
     """Upload large file in chunks (5MB default)."""
     import os
 
     file_size = os.path.getsize(filepath)
     filename = os.path.basename(filepath)
 
-    with open(filepath, 'rb') as f:
+    with open(filepath, "rb") as f:
         # Initialize multipart upload
         upload = client.create_multipart_upload(
-            filename=filename,
-            content_type="application/octet-stream",
-            size=file_size
+            filename=filename, content_type="application/octet-stream", size=file_size
         )
 
         parts = []
@@ -239,18 +210,13 @@ def upload_large_file(client, filepath, chunk_size=5*1024*1024):
                 break
 
             part = client.upload_part(
-                upload_id=upload["id"],
-                part_number=part_number,
-                data=chunk
+                upload_id=upload["id"], part_number=part_number, data=chunk
             )
             parts.append(part)
             part_number += 1
 
         # Complete upload
-        file = client.complete_multipart_upload(
-            upload_id=upload["id"],
-            parts=parts
-        )
+        file = client.complete_multipart_upload(upload_id=upload["id"], parts=parts)
 
         return file
 ```
@@ -260,14 +226,13 @@ def upload_large_file(client, filepath, chunk_size=5*1024*1024):
 ```python
 import mimetypes
 
+
 def upload_with_auto_type(client, filepath):
     content_type, _ = mimetypes.guess_type(filepath)
 
     return client.upload_file(
         filepath,
-        UploadFileOptions(
-            content_type=content_type or "application/octet-stream"
-        )
+        UploadFileOptions(content_type=content_type or "application/octet-stream"),
     )
 ```
 
@@ -283,10 +248,7 @@ with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
     tmp_path = tmp.name
 
 try:
-    result = client.run({
-        "app": "image-processor",
-        "input": {"image": tmp_path}
-    })
+    result = client.run({"app": "image-processor", "input": {"image": tmp_path}})
 finally:
     os.unlink(tmp_path)  # Clean up
 ```

@@ -37,7 +37,7 @@ class FakeScene:
 
 def make_item(key="m:potion", item_id="potion", x=0.0, y=0.0):
     # type: ignore
-    return OverworldItem(key=key, item_id=item_id, sprite=FakeSprite(x, y)) # type: ignore
+    return OverworldItem(key=key, item_id=item_id, sprite=FakeSprite(x, y))  # type: ignore
 
 
 # --- finding ----------------------------------------------------------------
@@ -97,10 +97,8 @@ def test_collect_is_idempotent():
 
 
 def test_from_map_reads_item_id_from_properties():
-    sprite = FakeSprite(
-        10.0, 20.0, {"item_id": "potion", "name": "porch_potion"})
-    layer = ItemLayer.from_map(
-        FakeScene({"items": [sprite]}), "littleroot")  # type: ignore
+    sprite = FakeSprite(10.0, 20.0, {"item_id": "potion", "name": "porch_potion"})
+    layer = ItemLayer.from_map(FakeScene({"items": [sprite]}), "littleroot")  # type: ignore
 
     item = layer.find(10.0, 20.0)
     if item is None:
@@ -111,8 +109,7 @@ def test_from_map_reads_item_id_from_properties():
 
 
 def test_from_map_skips_already_collected_items():
-    sprite = FakeSprite(
-        10.0, 20.0, {"item_id": "potion", "name": "porch_potion"})
+    sprite = FakeSprite(10.0, 20.0, {"item_id": "potion", "name": "porch_potion"})
     layer = ItemLayer.from_map(
         FakeScene({"items": [sprite]}),  # type: ignore
         "littleroot",
@@ -136,7 +133,7 @@ def test_from_map_without_items_layer_is_empty():
 def test_key_falls_back_to_position_when_unnamed():
     sprite = FakeSprite(64.0, 96.0, {"item_id": "potion"})
     layer = ItemLayer.from_map(FakeScene({"items": [sprite]}), "littleroot")  # type: ignore
-    
+
     item = layer.find(64.0, 96.0)
     if item is None:
         pytest.fail("Couldnt find the item")
@@ -147,11 +144,11 @@ def test_key_falls_back_to_position_when_unnamed():
 def test_keys_are_scoped_per_map():
     def build(map_id):
         sprite = FakeSprite(0.0, 0.0, {"item_id": "potion", "name": "ball"})
-        return ItemLayer.from_map(FakeScene({"items": [sprite]}), map_id) # type: ignore
-    
+        return ItemLayer.from_map(FakeScene({"items": [sprite]}), map_id)  # type: ignore
+
     item1 = build("littleroot").find(0.0, 0.0)
     item2 = build("oldale").find(0.0, 0.0)
-    
+
     if item1 is None or item2 is None:
         pytest.fail("Couldnt find the item")
 

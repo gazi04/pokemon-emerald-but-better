@@ -94,8 +94,12 @@ NPCState       (npc_state.py)  per-NPC flags, to_dict/from_dict round-trip
 ### How it's built — two intent-named constructors over one private `__init__`
 
 ```python
-BattlePokemon.from_player(species, player_pokemon, is_enemy=False)   # battle_pokemon.py:27
-BattlePokemon.from_wild(species, name, level, moves, is_enemy=True)  # battle_pokemon.py:45
+BattlePokemon.from_player(
+    species, player_pokemon, is_enemy=False
+)  # battle_pokemon.py:27
+BattlePokemon.from_wild(
+    species, name, level, moves, is_enemy=True
+)  # battle_pokemon.py:45
 ```
 
 Both funnel into `_apply(...)` (`battle_pokemon.py:56`), the single build path. `switching_pokemon` (`:152`) reuses `_apply` too, so the object is never built two different ways. This replaced an overloaded 7-param constructor with two mutually-exclusive modes.
@@ -291,9 +295,9 @@ Both replaced stringly-keyed dicts (`result["isLeveledUp"]`) — no silent typo'
 ### 12.2 Building a battle pokémon
 
 ```python
-species = data_loader.get_pokemon(player_pokemon.name)   # Layer 1
-mine  = BattlePokemon.from_player(species, player_pokemon)          # owned mon
-foe   = BattlePokemon.from_wild(species, name, level, moves)        # wild/trainer mon
+species = data_loader.get_pokemon(player_pokemon.name)  # Layer 1
+mine = BattlePokemon.from_player(species, player_pokemon)  # owned mon
+foe = BattlePokemon.from_wild(species, name, level, moves)  # wild/trainer mon
 ```
 
 Never call `BattlePokemon(...)` directly — use the classmethods (they name the intent and fill the right fields).
@@ -307,7 +311,7 @@ player_manager.consume_pokeball("pokeball")
 player_manager.add_money(500)
 
 # BAD — never write PlayerSave fields straight from a system
-save_manager.player.pokemon[0].hp = new_hp     # bypasses the door → desync risk
+save_manager.player.pokemon[0].hp = new_hp  # bypasses the door → desync risk
 ```
 
 ### 12.4 Swapping the enemy mid-battle — one call

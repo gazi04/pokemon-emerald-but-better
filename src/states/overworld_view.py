@@ -67,7 +67,7 @@ class OverworldView(GameView):
                 self.movement_system,
                 self.player_state,
                 self.player_manager.collected_item_keys,
-                self._can_challenge
+                self._can_challenge,
             ),
             registry=MapRegistry(CONFIG.game.maps_dir),
             player_state=self.player_state,
@@ -92,15 +92,13 @@ class OverworldView(GameView):
     # ------------------------------------------------------------------
 
     def _subscribe(self):
-        global_bus.subscribe(BattleEncounterTriggeredEvent,
-                             self._on_battle_triggered)
+        global_bus.subscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
         global_bus.subscribe(NpcInteractEvent, self._on_npc_interaction)
         global_bus.subscribe(ItemPickedUpEvent, self._on_item_picked_up)
         global_bus.subscribe(NpcSpottedPlayerEvent, self._on_npc_spotted)
 
     def _unsubscribe(self):
-        global_bus.unsubscribe(
-            BattleEncounterTriggeredEvent, self._on_battle_triggered)
+        global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
         global_bus.unsubscribe(NpcInteractEvent, self._on_npc_interaction)
         global_bus.unsubscribe(ItemPickedUpEvent, self._on_item_picked_up)
         global_bus.unsubscribe(NpcSpottedPlayerEvent, self._on_npc_spotted)
@@ -125,8 +123,7 @@ class OverworldView(GameView):
     # ------------------------------------------------------------------
 
     def setup(self, map_ref=None, spawn=None):
-        loaded = self.map_manager.load(
-            map_ref or CONFIG.game.starting_map, spawn)
+        loaded = self.map_manager.load(map_ref or CONFIG.game.starting_map, spawn)
         self._apply_loaded(loaded)
 
     def _apply_loaded(self, loaded) -> None:
@@ -275,8 +272,7 @@ class OverworldView(GameView):
             )
 
         if intent and intent["type"] == "transition":
-            loaded = self.map_manager.transition(
-                parse_transition(intent["properties"]))
+            loaded = self.map_manager.transition(parse_transition(intent["properties"]))
             self._apply_loaded(loaded)
             intent = None
 

@@ -52,9 +52,7 @@ class PlayerInput:
 
             # Ground items sit on the tile you're facing, like the real games.
             if items is not None:
-                item = items.find(
-                    player_state.pixel_x + dx, player_state.pixel_y + dy
-                )
+                item = items.find(player_state.pixel_x + dx, player_state.pixel_y + dy)
                 if item is not None:
                     global_bus.publish(
                         ItemPickedUpEvent(key=item.key, item_id=item.item_id)
@@ -133,7 +131,7 @@ class PlayerInput:
             "target_y": landing_y,
             "hop": True,
         }
-        
+
     def _pressed_direction(self, controls_config, keys: set) -> str | None:
         """First direction key held, in up/down/left/right priority order —
         matches the priority the old if/elif chain gave simultaneous presses."""

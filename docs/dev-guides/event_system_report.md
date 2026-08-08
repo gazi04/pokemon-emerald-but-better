@@ -28,7 +28,7 @@ class EventBus:
 
     def subscribe(self, event_type: Type, listener: Callable[[Any], None]):
         self._subscribers.setdefault(event_type, [])
-        if listener not in self._subscribers[event_type]:   # dedupe
+        if listener not in self._subscribers[event_type]:  # dedupe
             self._subscribers[event_type].append(listener)
 
     def unsubscribe(self, event_type: Type, listener):
@@ -36,11 +36,12 @@ class EventBus:
             try:
                 self._subscribers[event_type].remove(listener)
             except ValueError:
-                pass   # not subscribed — ignore
+                pass  # not subscribed — ignore
 
     def publish(self, event: Any):
         for listener in self._subscribers.get(type(event), []):
             listener(event)
+
 
 global_bus = EventBus()
 ```
@@ -73,6 +74,7 @@ An event is a plain data carrier:
 @dataclass
 class BattleEncounterTriggeredEvent:
     """Fired by EncounterSystem when a wild battle should start."""
+
     pokemon_name: str
     pokemon_data: PokemonSpecies
     pokemon_level: int
@@ -103,8 +105,8 @@ Two connection hubs dominate:
 **The `GameDirector` is the navigation hub.** In its `__init__` it subscribes to all three nav events plus save:
 
 ```python
-global_bus.subscribe(SwapViewEvent,    self._on_swap_view)
-global_bus.subscribe(CloseViewEvent,   self._on_close_view)
+global_bus.subscribe(SwapViewEvent, self._on_swap_view)
+global_bus.subscribe(CloseViewEvent, self._on_close_view)
 global_bus.subscribe(OverlayViewEvent, self._on_overlay_view)
 global_bus.subscribe(SaveGameRequestEvent, self._on_save_request)
 ```
@@ -134,8 +136,10 @@ Most views don't call `global_bus.publish(...)` directly. The `GameView` base cl
 def overlay(self, target, **payload):
     global_bus.publish(OverlayViewEvent(target=target, payload=payload))
 
+
 def swap(self, target, **payload):
     global_bus.publish(SwapViewEvent(target=target, payload=payload))
+
 
 def close(self):
     global_bus.publish(CloseViewEvent())
@@ -154,6 +158,7 @@ Add a `@dataclass` to `events.py`, in the right phase group, with a docstring sa
 @dataclass
 class ItemPickedUpEvent:
     """Fired by the overworld when the player walks onto a ground item."""
+
     item_id: str
     quantity: int
 ```
@@ -177,8 +182,10 @@ In the consumer, register a callback that takes the event as its one argument:
 def on_show_view(self):
     global_bus.subscribe(ItemPickedUpEvent, self._on_item_picked_up)
 
+
 def on_hide_view(self):
     global_bus.unsubscribe(ItemPickedUpEvent, self._on_item_picked_up)
+
 
 def _on_item_picked_up(self, event: ItemPickedUpEvent):
     self.show_toast(f"Got {event.quantity}× {event.item_id}")

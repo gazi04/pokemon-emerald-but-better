@@ -57,8 +57,7 @@ class BagView(GameView):
 
     def update_item(self):
         self.bag = self.bagSystem.get_items()
-        self.current_inventory = self.bag.get(
-            BAG_CATEGORIES[self.bagIndex], [])
+        self.current_inventory = self.bag.get(BAG_CATEGORIES[self.bagIndex], [])
 
         for i in range(MAX_VISIBLE_ITEMS):
             inventory_index = self.topVisibleIndex + i
