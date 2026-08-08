@@ -441,7 +441,7 @@ class BattlePokemon:
         if condition == AbilityCondition.GROUND_TYPE:
             return move is not None and move.type == "ground"
         if condition == AbilityCondition.HAS_STATUS_EFFECT:
-            return self.status_effect != None
+            return self.status_effect is not None
 
         return False
 
@@ -467,9 +467,9 @@ class BattlePokemon:
         """Defender hook. Returns a message if this pokemon's ability makes it
         immune to `move` (e.g. Levitate vs Ground), else None."""
         for effect in self._ability_effects(AbilityTrigger.ON_HIT):
-            if effect.type in [AbilityTypes.IMMUNITY, AbilityTypes.ABSORB] and self._ability_condition_met(
-                effect, move
-            ):
+            if effect.type in [AbilityTypes.IMMUNITY, AbilityTypes.ABSORB] \
+                and self._ability_condition_met(effect, move):
+                    
                 return f"It doesn't affect {self.name}…"
         return None
 
@@ -480,17 +480,21 @@ class BattlePokemon:
         )
 
     def _has_status_immunity(self, status: StatusEffect) -> bool:
-        """Returns True if this pokemon's ability makes it immune to the given status condition.
-        e.g. Limber prevents paralysis, Immunity prevents poison, Water Veil prevents burn."""
+        """
+        Returns True if this pokemon's ability makes it immune to the status condition.
+        e.g. Limber prevents paralysis, Immunity prevents poison.
+        """
         return any(
-            effect.type == AbilityTypes.IMMUNITY_STATUS_EFFECT and effect.status == status
+            effect.type == AbilityTypes.IMMUNITY_STATUS_EFFECT \
+            and effect.status == status
             for effect in self._ability_effects(AbilityTrigger.ON_HIT)
         )
 
     def _ability_blocks_stat_drop(self, stat: Stat, change: int) -> bool:
         """
         Returns True if this pokemon's ability prevents a stat from being lowered.
-        e.g. Clear Body / White Smoke block any move or ability that would reduce a stat stage.
+        e.g. Clear Body / White Smoke block any move or 
+        ability that would reduce a stat stage.
         Only applies when change is negative (a drop); boosts are never blocked.
         """
         return change < 0 and any(
@@ -517,7 +521,9 @@ class BattlePokemon:
             elif effect.type == AbilityTypes.ABSORB:
                 messages.extend(self._heal_from_ability(effect))
                 
-            elif effect.type == AbilityTypes.PASSES_STATUS_EFFECT and self.status_effect != StatusEffect.NONE:
+            elif effect.type == AbilityTypes.PASSES_STATUS_EFFECT \
+                and self.status_effect != StatusEffect.NONE:
+                    
                 attacker.apply_status_effect(self.status_effect)
                 self.status_effect = StatusEffect.NONE
 
@@ -527,7 +533,7 @@ class BattlePokemon:
         self, effect: AbilityEffect, destination: BattlePokemon
     ):
         status = self._status_from(effect.status)
-        if status == None:
+        if status is None:
             return (False, "")
 
         if not destination.apply_status_effect(status):

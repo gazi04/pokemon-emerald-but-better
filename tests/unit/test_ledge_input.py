@@ -77,6 +77,8 @@ def decide(collision, key, ledge_direction, px=100.0, py=100.0):
 
 def test_hop_down_over_a_down_ledge(window, collision):
     intent = decide(collision, "DOWN", ledge_direction="down")
+    if intent is None:
+        pytest.fail("The intent cant be None")
 
     assert intent["type"] == "move"
     assert intent["hop"] is True
@@ -86,6 +88,8 @@ def test_hop_down_over_a_down_ledge(window, collision):
 
 def test_hop_left_over_a_left_ledge(window, collision):
     intent = decide(collision, "LEFT", ledge_direction="left")
+    if intent is None:
+        pytest.fail("The intent cant be None")
 
     assert intent["hop"] is True
     assert intent["target_x"] == 100.0 - 2 * TILE_SIZE
@@ -120,6 +124,9 @@ def test_wall_on_the_ledge_tile_itself_does_not_block_the_hop(window, collision)
     # (two tiles out) needs to be free.
     wall_at(collision, 100.0, 100.0 - TILE_SIZE)  # one tile down: the ledge tile
     intent = decide(collision, "DOWN", ledge_direction="down")
+
+    if intent is None:
+        pytest.fail("The intent cant be None")
 
     assert intent["type"] == "move"
     assert intent["hop"] is True

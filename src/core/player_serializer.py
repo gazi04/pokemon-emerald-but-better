@@ -50,7 +50,8 @@ class PlayerSerializer:
             _pokemons = []
             for pokemon in item["pokemons"]:
                 moves = [
-                    PlayerPokemonMove(name=m["name"], pp=m["pp"]) for m in pokemon["moves"]
+                    PlayerPokemonMove(name=m["name"], pp=m["pp"]) 
+                    for m in pokemon["moves"]
                 ]
 
                 _pokemons.append(

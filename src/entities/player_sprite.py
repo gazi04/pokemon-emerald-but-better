@@ -53,13 +53,17 @@ class PlayerSprite(arcade.Sprite):
             ]
 
             self.animations.add("idle", direction, [idle])
-            self.animations.add("walk", direction, walk + [idle], WALK_SEQUENCE)
+            self.animations.add("walk", direction, [*walk, idle], WALK_SEQUENCE)
             self.animations.add("run", direction, run, RUN_SEQUENCE)
 
         for direction, source in MIRRORED.items():
             for name in ("idle", "walk", "run"):
+                animation = self.animations.get(name, source)
+                if animation is None:
+                    continue
+                
                 self.animations.add_animation(
-                    name, direction, self.animations.get(name, source).flipped()
+                    name, direction, animation.flipped()
                 )
 
     # ------------------------------------------------------------------

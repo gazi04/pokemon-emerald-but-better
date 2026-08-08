@@ -2,6 +2,7 @@
 cycle per unit of progress (one cycle per tile stepped)."""
 
 from src.entities.components.animation_manager import Animation, AnimationManager
+import pytest
 
 
 class FakeTexture:
@@ -61,8 +62,13 @@ def test_flipped_mirrors_frames_and_keeps_timing():
 
 def test_add_and_get_round_trip():
     manager = AnimationManager()
-    manager.add("walk", "down", [A, B])
-    assert manager.get("walk", "down").frame(0.0) is A
+    manager.add("walk", "down", [A, B])  # type: ignore
+    animation = manager.get("walk", "down")
+
+    if animation is None:
+        pytest.fail("The variable animation is None.")
+
+    assert animation.frame(0.0) is A
 
 
 def test_get_returns_none_for_unknown_animation():
@@ -71,10 +77,17 @@ def test_get_returns_none_for_unknown_animation():
 
 def test_animations_are_keyed_by_name_and_direction():
     manager = AnimationManager()
-    manager.add("walk", "down", [A])
-    manager.add("walk", "up", [B])
-    manager.add("run", "down", [C])
+    manager.add("walk", "down", [A])  # type: ignore
+    manager.add("walk", "up", [B])  # type: ignore
+    manager.add("run", "down", [C])  # type: ignore
 
-    assert manager.get("walk", "down").frame(0.0) is A
-    assert manager.get("walk", "up").frame(0.0) is B
-    assert manager.get("run", "down").frame(0.0) is C
+    animation1 = manager.get("walk", "down")
+    animation2 = manager.get("walk", "up")
+    animation3 = manager.get("run", "down")
+
+    if animation1 is None or animation2 is None or animation3 is None:
+        pytest.fail("The variable animations is None.")
+
+    assert animation1.frame(0.0) is A
+    assert animation2.frame(0.0) is B
+    assert animation3.frame(0.0) is C

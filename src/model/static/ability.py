@@ -6,16 +6,16 @@ from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger
 
 @dataclass
 class AbilityEffect:
-    trigger: AbilityTrigger  # on_attack | on_hit | on_turn_end | on_switch_in | weather
-    type: AbilityTypes  # stat_boost | status | damage | immunity | heal | weather | speed
+    trigger: AbilityTrigger  
+    type: AbilityTypes  
     target: str | None = None  # "self" | "enemy"
     move_type: str | None = None  # only apply if the move matches this type
     stat: Stat | None = None
     change: int | None = None
-    condition: AbilityCondition | None = None  # trigger gate, e.g. low_hp | contact | ground_type
+    condition: AbilityCondition | None = None  
     chance: float | None = None  # 0.0 - 1.0, None means always
-    status: StatusEffect | None = None  # status to inflict for type=="status"
-    weather: Weather | None = None  # weather this effect summons or keys off of
+    status: StatusEffect | None = None  
+    weather: Weather | None = None  
     
     def __init__(self, data: dict):
         self.trigger = data["trigger"]

@@ -56,14 +56,20 @@ class MapLoader:
     bush set) from a .tmx path. No view or render state — pure map build, so
     OverworldView keeps only draw + input + lifecycle + nav."""
 
-    def __init__(self, movement_system, player_state, collected_items=None, can_challenge=None):
+    def __init__(
+        self,
+        movement_system,
+        player_state,
+        collected_items=None,
+        can_challenge=None
+    ):
         self.movement_system = movement_system
         self.player_state = player_state
-        
+
         # Callable returning the set of already-taken item keys, so picked-up
         # items stay gone when the map is re-entered. None = nothing collected.
         self.collected_items = collected_items
-        
+
         # (npc_id -> bool) predicate deciding which NPCs get trainer sight.
         # None = no NPC ever challenges (used by tests / headless loads).
         self.can_challenge = can_challenge

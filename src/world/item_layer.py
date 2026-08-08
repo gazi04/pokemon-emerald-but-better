@@ -9,7 +9,7 @@ Collected items are remembered by key so they never respawn.
 """
 
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 import arcade
 
@@ -34,7 +34,7 @@ class OverworldItem:
 class ItemLayer:
     """The uncollected items on the current map."""
 
-    def __init__(self, items: Optional[Iterable[OverworldItem]] = None):
+    def __init__(self, items: Iterable[OverworldItem] | None = None):
         self._items: list[OverworldItem] = list(items or [])
 
     def __len__(self) -> int:
@@ -43,14 +43,14 @@ class ItemLayer:
     def __iter__(self):
         return iter(self._items)
 
-    def find(self, x: float, y: float) -> Optional[OverworldItem]:
+    def find(self, x: float, y: float) -> OverworldItem | None:
         """The item whose tile contains (x, y), if any."""
         for item in self._items:
             if item.sprite.collides_with_point((x, y)):
                 return item
         return None
 
-    def find_by_key(self, key: str) -> Optional[OverworldItem]:
+    def find_by_key(self, key: str) -> OverworldItem | None:
         """The uncollected item with this key, if it's still on the map."""
         for item in self._items:
             if item.key == key:
@@ -72,8 +72,8 @@ class ItemLayer:
         cls,
         scene: arcade.Scene,
         map_id: str,
-        collected: Optional[set[str]] = None,
-    ) -> "ItemLayer":
+        collected: set[str] | None = None,
+    ) -> ItemLayer:
         """Build from the scene's `items` sprite list.
 
         Arcade already turned the layer's tile objects into positioned sprites

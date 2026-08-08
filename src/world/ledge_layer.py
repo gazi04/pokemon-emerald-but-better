@@ -21,7 +21,6 @@ rectangle objects are checked first.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 import arcade
 
@@ -53,7 +52,7 @@ class LedgeLayer:
     def __init__(
         self,
         zones: list[LedgeZone],
-        sprites: Optional[arcade.SpriteList] = None,
+        sprites: arcade.SpriteList | None = None,
     ):
         self._zones = zones
         self._sprites = sprites
@@ -61,7 +60,7 @@ class LedgeLayer:
     def __len__(self) -> int:
         return len(self._zones) + (len(self._sprites) if self._sprites else 0)
 
-    def find(self, x: float, y: float) -> Optional[str]:
+    def find(self, x: float, y: float) -> str | None:
         """The hop direction of the ledge at a world point, or None.
 
         Rectangle zones first, then the legacy gid sprite hit-test.
@@ -87,7 +86,7 @@ class LedgeLayer:
         tile_map: arcade.TileMap,
         scene: arcade.Scene,
         scale: float = MAP_SCALE,
-    ) -> "LedgeLayer":
+    ) -> LedgeLayer:
         zones = cls._build_zones(tile_map, scale)
         sprites = cls._sprite_ledges(scene)
         log.debug(
@@ -129,7 +128,7 @@ class LedgeLayer:
         return zones
 
     @staticmethod
-    def _sprite_ledges(scene: arcade.Scene) -> Optional[arcade.SpriteList]:
+    def _sprite_ledges(scene: arcade.Scene) -> arcade.SpriteList | None:
         """The `ledges` sprite list — a painted tile layer or gid objects.
 
         Both carry each tile's `direction` from the tileset definition, read at
@@ -141,7 +140,7 @@ class LedgeLayer:
             return None
 
 
-def _normalize_direction(value) -> Optional[str]:
+def _normalize_direction(value) -> str | None:
     """Coerce a Tiled property to a valid hop direction, or None."""
     if value is None:
         return None

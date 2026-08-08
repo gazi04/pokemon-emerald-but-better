@@ -78,6 +78,9 @@ class DialogView(GameView):
 
         # Hand the battle a copy — it drains the party, and the NpcSpecies team
         # is a shared cached template that must survive for future encounters.
+        if self.npc is None or self.npc.team is None:
+            return
+        
         self.swap(
             "battle_trainer",
             trainer_data=self.npc.team.clone(),

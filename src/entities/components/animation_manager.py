@@ -19,7 +19,7 @@ class Animation:
         index = int(progress * self.fps) % len(self.sequence)
         return self.frames[self.sequence[index]]
 
-    def flipped(self) -> "Animation":
+    def flipped(self) -> Animation:
         """The same cycle mirrored — left-facing art reused for right."""
         return Animation(
             [tex.flip_left_right() for tex in self.frames], self.sequence, self.fps
