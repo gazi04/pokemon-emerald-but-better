@@ -180,6 +180,7 @@ class GameDirector:
             payload.get("after_text_callback"),
             payload.get("npc_id", ""),
             state=payload.get("state", "default"),
+            lines=payload.get("lines"),
         )
 
     def _build_shop(self, payload: dict):

@@ -120,3 +120,42 @@ def test_zero_distance_intent_does_not_crash():
     system.update(0.1, state, None)
     assert state.pixel_x == 0.0
     assert state.pixel_y == 0.0
+
+
+# --- ledge hop --------------------------------------------------------------
+
+
+def test_hop_intent_sets_is_hopping():
+    system = MovementSystem()
+    state = make_state(px=0.0, py=0.0)
+
+    intent = make_intent(0, 2 * TILE_SIZE)
+    intent["hop"] = True
+    system.update(0.0, state, intent)
+
+    assert state.moving
+    assert state.is_hopping
+
+
+def test_plain_move_clears_is_hopping():
+    system = MovementSystem()
+    state = make_state(px=0.0, py=0.0)
+    state.is_hopping = True  # leftover from a previous hop
+
+    system.update(0.0, state, make_intent(TILE_SIZE, 0))
+
+    assert not state.is_hopping
+
+
+def test_hop_lands_two_tiles_away():
+    system = MovementSystem()
+    state = make_state(px=0.0, py=2 * TILE_SIZE)
+
+    intent = make_intent(0, 0)  # hop straight down two tiles
+    intent["hop"] = True
+    system.update(0.0, state, intent)
+    system.update(1.0, state, None)
+
+    assert not state.moving
+    assert state.pixel_y == 0.0
+    assert state.grid_y == 0

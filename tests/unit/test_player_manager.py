@@ -134,7 +134,9 @@ def test_add_pokemon_delegates_to_save(player_manager):
     new_pokemon = PlayerPokemon(
         name="torchic", hp=20, level=5, exp=0, ability="blaze", moves=[], held_item=None
     )
-    assert player_manager.add_pokemon(new_pokemon) is True
+    # add_pokemon delegates to the save; with room in the party the new mon is
+    # added there (a full party would overflow to a PC box instead).
+    player_manager.add_pokemon(new_pokemon)
     assert player_manager.get_pokemon("torchic") is not None
 
 

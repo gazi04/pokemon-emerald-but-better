@@ -12,6 +12,7 @@ from src.entities.player_sprite import PlayerSprite
 from src.core.event_bus import global_bus
 from src.core.events import (
     BattleEncounterTriggeredEvent,
+    ItemPickedUpEvent,
     NpcInteractEvent,
     NpcSpottedPlayerEvent,
 )
@@ -63,7 +64,10 @@ class OverworldView(GameView):
 
         self.map_manager = MapManager(
             loader=MapLoader(
-                self.movement_system, self.player_state, self._can_challenge
+                self.movement_system,
+                self.player_state,
+                self.player_manager.collected_item_keys,
+                self._can_challenge,
             ),
             registry=MapRegistry(CONFIG.game.maps_dir),
             player_state=self.player_state,
@@ -90,11 +94,13 @@ class OverworldView(GameView):
     def _subscribe(self):
         global_bus.subscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
         global_bus.subscribe(NpcInteractEvent, self._on_npc_interaction)
+        global_bus.subscribe(ItemPickedUpEvent, self._on_item_picked_up)
         global_bus.subscribe(NpcSpottedPlayerEvent, self._on_npc_spotted)
 
     def _unsubscribe(self):
         global_bus.unsubscribe(BattleEncounterTriggeredEvent, self._on_battle_triggered)
         global_bus.unsubscribe(NpcInteractEvent, self._on_npc_interaction)
+        global_bus.unsubscribe(ItemPickedUpEvent, self._on_item_picked_up)
         global_bus.unsubscribe(NpcSpottedPlayerEvent, self._on_npc_spotted)
         if self.encounter_system:
             self.encounter_system.cleanup()
@@ -127,6 +133,8 @@ class OverworldView(GameView):
         self.npcs = loaded.npcs
         self.npc_controller = loaded.npc_controller
         self.transitions = loaded.transitions
+        self.items = loaded.items
+        self.ledges = loaded.ledges
         self.camera = arcade.Camera2D()
 
         if self.encounter_system:
@@ -194,6 +202,21 @@ class OverworldView(GameView):
 
         self.overlay("dialog", npc_id=npc_id, state=state, action=action)
 
+    def _on_item_picked_up(self, event: ItemPickedUpEvent):
+        """Move a ground item into the bag, clear it from the map, and say so."""
+        item = self.items.find_by_key(event.key)
+        if item is None:
+            return
+
+        if not self.player_manager.collect_overworld_item(event.key, event.item_id):
+            return  # already taken — don't duplicate it
+
+        self.items.collect(item)
+        self.overlay(
+            "dialog",
+            lines=[f"You found one {event.item_id.upper()}!"],
+        )
+
     def _resolve_dialog(self, npc_id: str, npc) -> tuple[str, str]:
         """
         Pick which dialog state to show and what happens after it,
@@ -244,6 +267,8 @@ class OverworldView(GameView):
                 self.scene["collision"],
                 self.transitions,
                 self.npcs,
+                self.items,
+                self.ledges,
             )
 
         if intent and intent["type"] == "transition":

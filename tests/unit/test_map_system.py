@@ -201,7 +201,9 @@ def test_load_places_player_at_named_spawn():
     assert (player.pixel_x, player.pixel_y) == (100.0, 200.0 + SPAWN_Y_OFFSET)
     assert mgr.current_map_id == "oldale_town"
     assert player.map_name == "oldale_town"
-    loader.load.assert_called_once_with("assets/map/oldale_town.tmx")
+    # The id travels with the path so per-map state (collected items) can be
+    # keyed without the loader re-deriving it.
+    loader.load.assert_called_once_with("assets/map/oldale_town.tmx", "oldale_town")
 
 
 def test_load_places_player_at_explicit_coords():

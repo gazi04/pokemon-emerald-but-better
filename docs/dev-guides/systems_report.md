@@ -88,8 +88,10 @@ Holds references to the player's `items`/`pokeballs` lists. Its highlight is the
 dict**:
 
 ```python
-self._effect_appliers   = {EffectType.HEAL: self._apply_heal}      # apply (mutates HP)
-self._effect_eligibility = {EffectType.HEAL: self._heal_eligible}  # check (pure, for the UI)
+self._effect_appliers = {EffectType.HEAL: self._apply_heal}  # apply (mutates HP)
+self._effect_eligibility = {
+    EffectType.HEAL: self._heal_eligible
+}  # check (pure, for the UI)
 ```
 
 `_handle_item_effects` looks up an applier by `effect.type` and calls it; `can_use_item` looks up an **eligibility** check the same way (as of 2026-06-25 it dispatches through `_effect_eligibility` instead of a hardcoded `if effect.type == EffectType.HEAL`). Two parallel dicts because "apply" mutates HP while "check" must stay read-only — the UI greys an item without healing. **Add an effect kind (cure status, boost) = one applier + one eligibility entry, no loop edits**. `use_item` only consumes the item if the effect actually applied (`_apply_heal` returns `False` when the target is full/fainted). `use_pokeball` consumes a ball and returns its `ItemSpecies` for the catch flow. (`ItemEffect.type` is now a typed `EffectType`, parsed at load.)
@@ -144,7 +146,9 @@ The pure-math helpers (`combat_calculator`, `catch_calculator`) live in `core/`,
 ### Drive overworld movement (in the view's `on_update`)
 ```python
 intent = self.player_input.poll(self.keys, self.player_state, self.movement_system)
-self.movement_system.update(delta_time, self.player_state, intent)   # publishes the move event
+self.movement_system.update(
+    delta_time, self.player_state, intent
+)  # publishes the move event
 ```
 
 ### Wire encounters for a map
@@ -155,14 +159,14 @@ self.encounter_system = EncounterSystem(bush_tiles, self.player_state, self.data
 
 ### Run a battle turn (from `BattleView`)
 ```python
-messages = self.battle_system.turn(selected_move_index)   # list[str] for the text box
+messages = self.battle_system.turn(selected_move_index)  # list[str] for the text box
 # react to HpChangedEvent / PokemonFaintedEvent in the UI
 ```
 
 ### Use a bag item
 ```python
 if self.bag_system.can_use_item(item_index, pokemon_id):
-    self.bag_system.use_item(item_index, pokemon_id)   # consumes only if it applied
+    self.bag_system.use_item(item_index, pokemon_id)  # consumes only if it applied
 ```
 
 ### Add a new NPC behavior (the scalable path)

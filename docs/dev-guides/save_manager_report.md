@@ -75,12 +75,12 @@ def flush_save(self, player_state) -> bool:
         with open(SAVE_TMP_PATH, "w") as f:
             json.dump(data, f, indent=4)
             f.flush()
-            os.fsync(f.fileno())          # force tmp to physical disk
+            os.fsync(f.fileno())  # force tmp to physical disk
 
         if os.path.exists(SAVE_PATH):
-            shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)   # keep a backup
+            shutil.copy2(SAVE_PATH, SAVE_BAK_PATH)  # keep a backup
 
-        os.replace(SAVE_TMP_PATH, SAVE_PATH)         # atomic rename
+        os.replace(SAVE_TMP_PATH, SAVE_PATH)  # atomic rename
         self.saved_position = data.get("position")
         return True
     except Exception:
@@ -140,13 +140,13 @@ On the read side, `saved_position` is consumed by `OverworldView` at constructio
 ```python
 saved = self.save_manager.saved_position
 if saved:
-    self.player_state.map_name  = saved.get("map_name", self.player_state.map_name)
+    self.player_state.map_name = saved.get("map_name", self.player_state.map_name)
     self.player_state.direction = saved.get("direction", self.player_state.direction)
     self.setup(f"assets/map/{self.player_state.map_name}.tmx")
     self.player_state.pixel_x = saved["pixel_x"]
     self.player_state.pixel_y = saved["pixel_y"]
 else:
-    self.setup()   # fresh game — default spawn
+    self.setup()  # fresh game — default spawn
 ```
 
 So `position` round-trips: `PlayerMotion → serialize → save.json → saved_position →PlayerMotion`. The party/items/money side round-trips through `SaveManager.player` (the`PlayerSave`), which `PlayerManager` reads and mutates all session long.

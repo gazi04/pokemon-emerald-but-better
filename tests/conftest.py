@@ -90,6 +90,7 @@ def mudkip_pokemon():
 def player_profile(mudkip_pokemon):
     return PlayerSave(
         pokemon=[mudkip_pokemon],
+        boxs=[],
         items={
             "potion": ItemStack(name="potion", count=3, category="medicine"),
             "pokeball": ItemStack(name="pokeball", count=5, category="pokeball"),

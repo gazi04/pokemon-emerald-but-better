@@ -49,6 +49,23 @@ class NpcSpottedPlayerEvent:
 
 
 # ---------------------------------------------------------------------------
+# Overworld items
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ItemPickedUpEvent:
+    """Fired when the player presses interact facing an item on the ground.
+
+    `key` identifies that specific pickup on that specific map, so it can be
+    recorded as collected and never respawn.
+    """
+
+    key: str
+    item_id: str
+
+
+# ---------------------------------------------------------------------------
 # Battle Phase
 # ---------------------------------------------------------------------------
 

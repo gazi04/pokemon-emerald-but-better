@@ -81,6 +81,7 @@ class PokemonMoveEffect:
     change: int | None = None
     condition: StatusEffect | None = None
     chance: int | None = None
+    weather: str | None = None  # which weather a type=="weather" effect summons
 
 
 @dataclass

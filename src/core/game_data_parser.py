@@ -59,6 +59,7 @@ class GameDataParser:
                     if e.get("condition")
                     else None,
                     chance=e.get("chance"),
+                    weather=e.get("weather"),
                 )
                 for e in raw["effects"]
             ]

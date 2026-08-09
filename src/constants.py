@@ -17,6 +17,9 @@ POKEDEX_UI = "assets/ui/pokedex.tmx"
 SHOP_UI = "assets/ui/shop_ui_design.tmx"
 FONT = "assets/fonts/pokemon-emerald.otf"
 
+CHANCE_TO_GET_ITEM = 0.3
+ITEMS_FROM_PICK_UP = ["pokeball", "ether", "potion", "sitrus berry", "oran berry"]
+
 # One tile step per facing direction. Arcade is y-up: "up" increases y.
 DIRECTION_OFFSETS = {
     "up": (0, TILE_SIZE),

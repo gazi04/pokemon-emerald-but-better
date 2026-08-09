@@ -310,16 +310,18 @@ def test_add_caught_pokemon_adds_enemy_to_party():
     assert result == {"success": True, "messages": []}
 
 
-def test_add_caught_pokemon_party_full_returns_failure_message():
+def test_add_caught_pokemon_full_party_still_succeeds():
+    # PC boxes: a full party no longer blocks catching. The caught Pokémon is
+    # handed to the save (which overflows it to a box), so the flow still
+    # reports success with no extra message.
     bs, _, _ = make_battle_system()
     pm = cast(MagicMock, bs.player_manager)
-    pm.add_pokemon.return_value = False
 
     result = bs.add_caught_pokemon()
 
     pm.add_pokemon.assert_called_once()
-    assert result["success"] is False
-    assert result["messages"]
+    assert result["success"] is True
+    assert result["messages"] == []
 
 
 # --- save() delegation + persistence (§12 1c) ---

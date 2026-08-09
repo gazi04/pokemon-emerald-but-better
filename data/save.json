@@ -1,77 +1,214 @@
 {
-    "pokemons": [
+  "pokemons": [
+    {
+      "name": "combusken",
+      "hp": 60,
+      "level": 18,
+      "exp": 5830,
+      "ability": "pick_up",
+      "held_item": null,
+      "moves": [
         {
-            "name": "combusken",
-            "hp": 20,
-            "level": 18,
-            "exp": 5830,
-            "ability": "blaze",
-            "held_item": null,
-            "moves": [
-                {
-                    "name": "close combat",
-                    "pp": 1
-                },
-                {
-                    "name": "will-o-wisp",
-                    "pp": 10
-                },
-                {
-                    "name": "blaze kick",
-                    "pp": 10
-                },
-                {
-                    "name": "protect",
-                    "pp": 10
-                }
-            ]
+          "name": "close combat",
+          "pp": 1
         },
         {
-            "name": "mudkip",
-            "hp": 37,
-            "level": 15,
-            "exp": 46,
-            "ability": "blaze",
-            "held_item": null,
-            "moves": [
-                {
-                    "name": "fake out",
-                    "pp": 10
-                },
-                {
-                    "name": "will-o-wisp",
-                    "pp": 10
-                },
-                {
-                    "name": "protect",
-                    "pp": 10
-                }
-            ]
+          "name": "will-o-wisp",
+          "pp": 10
+        },
+        {
+          "name": "blaze kick",
+          "pp": 10
+        },
+        {
+          "name": "protect",
+          "pp": 10
         }
-    ],
-    "items": {
-        "potion": {
-            "count": 3,
-            "category": "medicine"
-        },
-        "pokeball":  {
-            "count": 99,
-            "category": "pokeball"
-        },
-        "sitrus berry": {
-            "count": 99,
-            "category": "berry"
-        },
-        "ether": {
-            "count": 99,
-            "category": "medicine"
-        }
+      ]
     },
-    "battle_items": [],
-    "position": {
-        "map_name": "littleroot_town_original",
-        "direction": "down",
-        "pixel_x": 368,
-        "pixel_y": 846
+    {
+      "name": "combusken",
+      "hp": 20,
+      "level": 18,
+      "exp": 5830,
+      "ability": "blaze",
+      "held_item": null,
+      "moves": [
+        {
+          "name": "close combat",
+          "pp": 1
+        },
+        {
+          "name": "will-o-wisp",
+          "pp": 10
+        },
+        {
+          "name": "blaze kick",
+          "pp": 10
+        },
+        {
+          "name": "protect",
+          "pp": 10
+        }
+      ]
+    },
+    {
+      "name": "combusken",
+      "hp": 20,
+      "level": 18,
+      "exp": 5830,
+      "ability": "blaze",
+      "held_item": null,
+      "moves": [
+        {
+          "name": "close combat",
+          "pp": 1
+        },
+        {
+          "name": "will-o-wisp",
+          "pp": 10
+        },
+        {
+          "name": "blaze kick",
+          "pp": 10
+        },
+        {
+          "name": "protect",
+          "pp": 10
+        }
+      ]
+    },
+    {
+      "name": "combusken",
+      "hp": 20,
+      "level": 18,
+      "exp": 5830,
+      "ability": "blaze",
+      "held_item": null,
+      "moves": [
+        {
+          "name": "close combat",
+          "pp": 1
+        },
+        {
+          "name": "will-o-wisp",
+          "pp": 10
+        },
+        {
+          "name": "blaze kick",
+          "pp": 10
+        },
+        {
+          "name": "protect",
+          "pp": 10
+        }
+      ]
+    },
+    {
+      "name": "combusken",
+      "hp": 20,
+      "level": 18,
+      "exp": 5830,
+      "ability": "blaze",
+      "held_item": null,
+      "moves": [
+        {
+          "name": "close combat",
+          "pp": 1
+        },
+        {
+          "name": "will-o-wisp",
+          "pp": 10
+        },
+        {
+          "name": "blaze kick",
+          "pp": 10
+        },
+        {
+          "name": "protect",
+          "pp": 10
+        }
+      ]
+    },
+    {
+      "name": "combusken",
+      "hp": 20,
+      "level": 18,
+      "exp": 5830,
+      "ability": "blaze",
+      "held_item": null,
+      "moves": [
+        {
+          "name": "close combat",
+          "pp": 1
+        },
+        {
+          "name": "will-o-wisp",
+          "pp": 10
+        },
+        {
+          "name": "blaze kick",
+          "pp": 10
+        },
+        {
+          "name": "protect",
+          "pp": 10
+        }
+      ]
     }
+  ],
+  "box": [
+    {
+      "box_name": "Box 1",
+      "pokemons": [
+        {
+          "name": "mudkip",
+          "hp": 37,
+          "level": 15,
+          "exp": 46,
+          "ability": "blaze",
+          "held_item": null,
+          "moves": [
+            {
+              "name": "fake out",
+              "pp": 10
+            },
+            {
+              "name": "will-o-wisp",
+              "pp": 10
+            },
+            {
+              "name": "protect",
+              "pp": 10
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "items": {
+    "potion": {
+      "count": 3,
+      "category": "medicine"
+    },
+    "pokeball": {
+      "count": 99,
+      "category": "pokeball"
+    },
+    "sitrus berry": {
+      "count": 99,
+      "category": "berry"
+    },
+    "ether": {
+      "count": 99,
+      "category": "medicine"
+    }
+  },
+  "battle_items": [],
+  "position": {
+    "map_name": "littleroot_town_original",
+    "direction": "down",
+    "pixel_x": 368,
+    "pixel_y": 846
+  }
 }

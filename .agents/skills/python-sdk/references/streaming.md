@@ -17,10 +17,10 @@ from inferencesh import inference
 
 client = inference(api_key="inf_...")
 
-for update in client.run({
-    "app": "google/veo-3-1-fast",
-    "input": {"prompt": "A sunset timelapse"}
-}, stream=True):
+for update in client.run(
+    {"app": "google/veo-3-1-fast", "input": {"prompt": "A sunset timelapse"}},
+    stream=True,
+):
     print(f"Status: {update['status']}")
 ```
 
@@ -56,12 +56,14 @@ for update in client.run(config, stream=True):
 ```python
 import sys
 
+
 def progress_bar(current, total, width=50):
     filled = int(width * current / total)
     bar = "█" * filled + "░" * (width - filled)
     percent = current / total * 100
     sys.stdout.write(f"\r[{bar}] {percent:.1f}%")
     sys.stdout.flush()
+
 
 for update in client.run(config, stream=True):
     if update.get("progress"):
@@ -96,17 +98,18 @@ for update in client.run(config, stream=True):
 from inferencesh import async_inference
 import asyncio
 
+
 async def stream_task():
     client = async_inference(api_key="inf_...")
 
-    async for update in client.run({
-        "app": "google/veo-3-1-fast",
-        "input": {"prompt": "Ocean waves"}
-    }, stream=True):
+    async for update in client.run(
+        {"app": "google/veo-3-1-fast", "input": {"prompt": "Ocean waves"}}, stream=True
+    ):
         print(f"Status: {update['status']}")
 
         if update.get("status") == "completed":
             return update.get("output")
+
 
 result = asyncio.run(stream_task())
 ```
@@ -116,6 +119,7 @@ result = asyncio.run(stream_task())
 ```python
 agent = client.agent("my-org/assistant@latest")
 
+
 def on_message(msg):
     if msg.get("content"):
         # Stream text as it arrives
@@ -124,15 +128,15 @@ def on_message(msg):
     if msg.get("type") == "thinking":
         print(f"\n[Thinking: {msg.get('content')}]")
 
+
 def on_tool_call(call):
     print(f"\n[Calling tool: {call.name}]")
     result = execute_tool(call.name, call.args)
     agent.submit_tool_result(call.id, result)
 
+
 response = agent.send_message(
-    "Explain quantum entanglement",
-    on_message=on_message,
-    on_tool_call=on_tool_call
+    "Explain quantum entanglement", on_message=on_message, on_tool_call=on_tool_call
 )
 ```
 
@@ -146,7 +150,7 @@ client = inference(api_key="inf_...")
 options = StreamingOptions(
     max_retries=3,
     retry_delay=1.0,  # seconds
-    chunk_size=1024
+    chunk_size=1024,
 )
 
 for update in client.run(config, stream=True, options=options):
@@ -159,13 +163,14 @@ for update in client.run(config, stream=True, options=options):
 from inferencesh import async_inference
 import asyncio
 
+
 async def run_parallel():
     client = async_inference(api_key="inf_...")
 
     configs = [
         {"app": "infsh/flux-1-dev", "input": {"prompt": "A mountain"}},
         {"app": "infsh/flux-1-dev", "input": {"prompt": "An ocean"}},
-        {"app": "infsh/flux-1-dev", "input": {"prompt": "A forest"}}
+        {"app": "infsh/flux-1-dev", "input": {"prompt": "A forest"}},
     ]
 
     async def stream_one(config, index):
@@ -174,10 +179,9 @@ async def run_parallel():
             if update.get("status") == "completed":
                 return update.get("output")
 
-    results = await asyncio.gather(*[
-        stream_one(c, i) for i, c in enumerate(configs)
-    ])
+    results = await asyncio.gather(*[stream_one(c, i) for i, c in enumerate(configs)])
     return results
+
 
 results = asyncio.run(run_parallel())
 ```
@@ -242,6 +246,7 @@ class StreamProcessor:
         if self.start_time and self.end_time:
             return self.end_time - self.start_time
         return None
+
 
 processor = StreamProcessor()
 

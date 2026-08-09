@@ -71,13 +71,14 @@ The battle screen is the heaviest, so its UI is a **manager** coordinating sub-p
 ```python
 class BattleUiManager:
     def __init__(self, after_text_callback):
-        self.bounds = parse_battle_layout(BATTLE_UI)      # shared layout_parser
-        self.manager = arcade.gui.UIManager(); self.manager.enable()
+        self.bounds = parse_battle_layout(BATTLE_UI)  # shared layout_parser
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
         self._build_static_graphics()
         self.message_box = TypewriterMessageBox(self.bounds, self.manager)
         self.message_box.set_callback(after_text_callback)
-        self.menu_panel  = BattleMenuPanel(self.bounds, self.manager)
-        ...                                               # HP/exp bar rects, slide animation state
+        self.menu_panel = BattleMenuPanel(self.bounds, self.manager)
+        ...  # HP/exp bar rects, slide animation state
 ```
 It exposes `switch_mode`, `queue_messages`, `set_player_info`/`set_enemy_info`,
 `draw_hp_bar`/`draw_exp_bar`, `set_transition`, `update`, `draw` — the view calls these; the manager

@@ -120,13 +120,19 @@ def test_save_load_preserves_npc_states(save_manager, tmp_path, monkeypatch):
 
 
 def test_new_game_loads_money_from_player_json(tmp_path, monkeypatch):
-    # No save.json and no backup → SaveManager falls back to
-    # data/player.json (money: 1000)
+    # No save.json and no backup → SaveManager falls back to the new-game
+    # template (data/player.json). Assert the money it defines is threaded
+    # through, whatever value that is, rather than pinning a magic number.
+    import json
+
     monkeypatch.setattr("src.core.save_manager.SAVE_PATH", str(tmp_path / "save.json"))
     monkeypatch.setattr(
         "src.core.save_manager.SAVE_BAK_PATH", str(tmp_path / "save.bak.json")
     )
-    from src.core.save_manager import SaveManager
+    from src.core.save_manager import DEFAULT_PATH, SaveManager
+
+    with open(DEFAULT_PATH) as f:
+        expected_money = json.load(f).get("money", 0)
 
     fresh = SaveManager()
-    assert fresh.player.money == 1000
+    assert fresh.player.money == expected_money

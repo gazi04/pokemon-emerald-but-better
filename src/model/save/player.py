@@ -34,12 +34,21 @@ class ItemStack:
 
 
 @dataclass
+class Box:
+    name: str
+    pokemons: list[PlayerPokemon]
+
+
+@dataclass
 class PlayerSave:
     pokemon: list[PlayerPokemon]
+    boxs: list[Box]
     items: dict[str, ItemStack]
     seen: list[str] = field(default_factory=list)
     money: int = 0
     npc_states: list[dict] = field(default_factory=list)
+    # Keys of overworld items already picked up, so they never respawn.
+    collected_items: list[str] = field(default_factory=list)
 
     def get_pokemon(self, name: str) -> PlayerPokemon | None:
         target = name.lower()
@@ -101,12 +110,21 @@ class PlayerSave:
 
         pokemon.moves[index] = move
 
-    def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
-        if len(self.pokemon) >= 6:
-            return False
-        self.pokemon.append(pokemon)
+    def add_pokemon_team(self, pokemon: PlayerPokemon):
         self.mark_seen(pokemon.name)
-        return True
+        if len(self.pokemon) >= 6:
+            self.add_pokemon_box(pokemon)
+            return
+        self.pokemon.append(pokemon)
+
+    def add_pokemon_box(self, pokemon: PlayerPokemon):
+        for box in self.boxs:
+            if len(box.pokemons) == 30:
+                continue
+
+            box.pokemons.append(pokemon)
+
+        print(self.boxs)
 
     def mark_seen(self, name: str):
         """Record a species as seen. Normalized to lowercase because the Pokédex

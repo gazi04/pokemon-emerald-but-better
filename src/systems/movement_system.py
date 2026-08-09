@@ -1,43 +1,43 @@
 from src.model.motion.player_motion import PlayerMotion
+from src.model.motion.grid_motion import GridMotion
 from src.constants import TILE_SIZE
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent
 
 
-class MovementSystem:
-    """
-    Logic layer: Executes movement intent, updating pixel coordinates for the Sprite.
-    Works on any object exposing the GridMotion/PlayerMotion movement fields,
-    so it drives both the player and NPCs.
-    """
+WALK_DURATION = 0.25
+RUN_DURATION = 0.19
 
+
+class MovementSystem:
     def update(
-        self, delta_time: float, player_state: PlayerMotion, intent: dict | None
+        self, delta_time: float, state: GridMotion, intent: dict | None
     ) -> list[dict]:
         events = []
 
-        self.begin(player_state, intent)
+        self.begin(state, intent)
 
-        if self.advance(delta_time, player_state):
-            global_bus.publish(
-                PlayerFinishedMoveEvent(
-                    grid_x=player_state.grid_x,
-                    grid_y=player_state.grid_y,
-                    map_name=player_state.map_name,
+        if self.advance(delta_time, state):
+            if isinstance(state, PlayerMotion):
+                global_bus.publish(
+                    PlayerFinishedMoveEvent(
+                        grid_x=state.grid_x,
+                        grid_y=state.grid_y,
+                        map_name=state.map_name,
+                    )
                 )
-            )
+
             events.append(
                 {
                     "type": "finished_moving",
-                    "x": player_state.pixel_x,
-                    "y": player_state.pixel_y,
+                    "x": state.pixel_x,
+                    "y": state.pixel_y,
                 }
             )
 
         return events
 
-    def begin(self, state, intent) -> None:
-        """Start a new step if a 'move' intent is given and we're idle."""
+    def begin(self, state: GridMotion, intent: dict | None) -> None:
         if intent and not state.moving and intent.get("type") == "move":
             state.moving = True
             state.move_progress = 0.0
@@ -46,25 +46,25 @@ class MovementSystem:
             state.target_x = intent["target_x"]
             state.target_y = intent["target_y"]
 
-    def advance(self, delta_time: float, state) -> bool:
-        """
-        Progress an in-flight step. Returns True on the frame a step completes.
-        """
+            if isinstance(state, PlayerMotion):
+                state.is_hopping = bool(intent.get("hop"))
+
+    def advance(self, delta_time: float, state: GridMotion) -> bool:
         if not state.moving:
             return False
 
-        duration = state.move_duration if state.move_duration > 0 else 0.25
+        if isinstance(state, PlayerMotion):
+            duration = RUN_DURATION if state.is_running else WALK_DURATION
+        else:
+            duration = WALK_DURATION
 
-        state.move_progress += delta_time / duration
-        if state.move_progress >= 1.0:
-            state.move_progress = 1.0
+        # Clamp the stored progress, not just the local copy: a huge delta must
+        # not leave a >1 value behind for animations to read.
+        state.move_progress = min(state.move_progress + delta_time / duration, 1.0)
 
-        state.pixel_x = (
-            state.start_x + (state.target_x - state.start_x) * state.move_progress
-        )
-        state.pixel_y = (
-            state.start_y + (state.target_y - state.start_y) * state.move_progress
-        )
+        progress = state.move_progress
+        state.pixel_x = state.start_x + (state.target_x - state.start_x) * progress
+        state.pixel_y = state.start_y + (state.target_y - state.start_y) * progress
 
         if state.move_progress >= 1.0:
             state.pixel_x = state.target_x

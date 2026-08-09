@@ -124,6 +124,7 @@ class BattleView(GameView):
             is_trainer,
             trainer_data,
         )
+        self._battle_ended_processed = False
 
         self.ui.set_enemy_info(
             self.enemy_battle.name.upper(),
@@ -140,6 +141,10 @@ class BattleView(GameView):
             self.your_battle.name,
             self.enemy_battle.name,
         )
+
+        # Entry abilities (weather setters like Drought/Drizzle) announce right
+        # after the intro slide so their weather is up before the first turn.
+        self.ui.queue_messages(self.battle_system.start_battle())
 
     def update_ui_moves(self):
         moves = self.your_battle.moves
@@ -352,6 +357,14 @@ class BattleView(GameView):
         self.player_manager.mark_seen(name.lower())
 
     def _handle_battle_finishing(self):
+        if not self._battle_ended_processed:
+            messages = self.battle_system.battle_ended()
+            self._battle_ended_processed = True
+
+            if messages:
+                self.ui.queue_messages(messages)
+                return
+
         if self.battle_system.exp <= 0:
             self.run()
             return
@@ -514,10 +527,10 @@ class BattleView(GameView):
             self._attempt_run()
 
     def _attempt_run(self):
-        if not self.is_trainer:
+        if not self.battle_system.can_run():
             self.run()
         else:
-            self.ui.queue_messages(["You cant run away from trainers!"])
+            self.ui.queue_messages(["You cant run away!"])
             self.ui.switch_mode("dialog")
             arcade.schedule_once(self._reset_to_main_menu, 2)
 

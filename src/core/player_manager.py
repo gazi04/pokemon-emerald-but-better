@@ -104,8 +104,8 @@ class PlayerManager:
                 evolution.to,
             )
 
-    def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
-        return self.player.add_pokemon(pokemon)
+    def add_pokemon(self, pokemon: PlayerPokemon):
+        self.player.add_pokemon_team(pokemon)
 
     def update_pokemon_held_item(self, pokemon_id: str, item_id: str | None):
         pokemon = self.get_pokemon(pokemon_id)
@@ -123,6 +123,25 @@ class PlayerManager:
 
     def consume_item(self, name: str) -> bool:
         return self.player.consume_item(name)
+
+    # ── Overworld pickups ─────────────────────────────────────────────────────
+
+    def collected_item_keys(self) -> set[str]:
+        """Keys of overworld items already taken — the map loader hides these."""
+        return set(self.player.collected_items)
+
+    def collect_overworld_item(self, key: str, item_id: str, count: int = 1) -> bool:
+        """Move a ground item into the bag and remember it's gone.
+
+        Returns False if this key was already collected, so a double-trigger
+        can't duplicate the item.
+        """
+        if key in self.player.collected_items:
+            return False
+
+        self.add_item(item_id, count)
+        self.player.collected_items.append(key)
+        return True
 
     def get_money(self) -> int:
         return self.player.money

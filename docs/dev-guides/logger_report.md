@@ -21,12 +21,22 @@ class Logger:
     def __init__(self, name: str) -> None:
         self._log = logging.getLogger(name)
 
-    def debug(self, msg, *args):     self._log.debug(msg, *args)
-    def info(self, msg, *args):      self._log.info(msg, *args)
-    def warning(self, msg, *args):   self._log.warning(msg, *args)
+    def debug(self, msg, *args):
+        self._log.debug(msg, *args)
+
+    def info(self, msg, *args):
+        self._log.info(msg, *args)
+
+    def warning(self, msg, *args):
+        self._log.warning(msg, *args)
+
     warn = warning
-    def error(self, msg, *args):     self._log.error(msg, *args)
-    def exception(self, msg, *args): self._log.exception(msg, *args)
+
+    def error(self, msg, *args):
+        self._log.error(msg, *args)
+
+    def exception(self, msg, *args):
+        self._log.exception(msg, *args)
 ```
 - Wraps a stdlib logger named after the module (`logging.getLogger(name)`). Standard `logging` hierarchy still applies — names like `src.core.save_manager` roll up to the root.
 - `*args` are **lazy `%`-style format args**, passed straight through: `log.warning("Failed '%s': %s", path, e)` — the string is only formatted if the level is enabled.
@@ -41,18 +51,24 @@ def configure_logging(cfg) -> None:
     if _configured:
         return
     root = logging.getLogger()
-    root.setLevel(getattr(logging, cfg.level))         # gate for the whole tree
+    root.setLevel(getattr(logging, cfg.level))  # gate for the whole tree
     fmt = logging.Formatter(_FORMAT, _DATEFMT)
 
-    console = logging.StreamHandler()                  # → stderr
+    console = logging.StreamHandler()  # → stderr
     console.setLevel(getattr(logging, cfg.console_level))
-    console.setFormatter(fmt); root.addHandler(console)
+    console.setFormatter(fmt)
+    root.addHandler(console)
 
     Path(cfg.file_path).parent.mkdir(parents=True, exist_ok=True)
-    file = RotatingFileHandler(cfg.file_path, maxBytes=cfg.max_bytes,
-                               backupCount=cfg.backup_count, encoding="utf-8")
+    file = RotatingFileHandler(
+        cfg.file_path,
+        maxBytes=cfg.max_bytes,
+        backupCount=cfg.backup_count,
+        encoding="utf-8",
+    )
     file.setLevel(getattr(logging, cfg.file_level))
-    file.setFormatter(fmt); root.addHandler(file)
+    file.setFormatter(fmt)
+    root.addHandler(file)
     _configured = True
 ```
 - **Two handlers, two thresholds.** Console (stderr) and a `RotatingFileHandler`. Each has its own level *on top of* the root's `cfg.level` gate — a record must pass the root level **and** the handler level to show.
@@ -105,15 +121,15 @@ Each level is a `Literal["DEBUG","INFO","WARNING","ERROR"]`, so a bad value fail
 ```python
 from src.core.logger import get_logger
 
-log = get_logger(__name__)        # name = "src.core.my_module"
+log = get_logger(__name__)  # name = "src.core.my_module"
 
-log.info("loaded %d pokemon", count)          # lazy %-format args
+log.info("loaded %d pokemon", count)  # lazy %-format args
 log.warning("missing move '%s'; using default", name)
 
 try:
     risky()
 except Exception:
-    log.exception("risky() failed")           # ERROR + full traceback
+    log.exception("risky() failed")  # ERROR + full traceback
 ```
 
 ### Rules of thumb

@@ -140,15 +140,6 @@ class BagView(GameView):
         self.update_item()
 
     def _throw_pokeball(self, battle_system: BattleSystem):
-        pokemon_team = battle_system.player_manager.player.pokemon
-        if len(pokemon_team) >= 6:
-            self.window.show_view(self.previous_view)  # battle re-registers its box
-            if isinstance(self.previous_view, BattleView):
-                self.previous_view.show_messages(
-                    ["Your party is full!", "You can't catch any more Pokémon."]
-                )
-            return
-
         pokeball = self.bagSystem.use_pokeball(
             self.current_inventory[self.currentIndex].name
         )

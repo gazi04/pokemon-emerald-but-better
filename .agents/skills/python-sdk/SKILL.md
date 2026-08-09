@@ -24,10 +24,9 @@ from inferencesh import inference
 client = inference(api_key="inf_your_key")
 
 # Run an AI app
-result = client.run({
-    "app": "infsh/flux-1-dev",
-    "input": {"prompt": "A sunset over mountains"}
-})
+result = client.run(
+    {"app": "infsh/flux-1-dev", "input": {"prompt": "A sunset over mountains"}}
+)
 print(result["output"])
 ```
 
@@ -63,10 +62,7 @@ Get your API key: Settings → API Keys → Create API Key
 ### Basic Execution
 
 ```python
-result = client.run({
-    "app": "infsh/flux-1-dev",
-    "input": {"prompt": "A cat astronaut"}
-})
+result = client.run({"app": "infsh/flux-1-dev", "input": {"prompt": "A cat astronaut"}})
 
 print(result["status"])  # "completed"
 print(result["output"])  # Output data
@@ -75,10 +71,10 @@ print(result["output"])  # Output data
 ### Fire and Forget
 
 ```python
-task = client.run({
-    "app": "google/veo-3-1-fast",
-    "input": {"prompt": "Drone flying over mountains"}
-}, wait=False)
+task = client.run(
+    {"app": "google/veo-3-1-fast", "input": {"prompt": "Drone flying over mountains"}},
+    wait=False,
+)
 
 print(f"Task ID: {task['id']}")
 # Check later with client.get_task(task['id'])
@@ -87,10 +83,10 @@ print(f"Task ID: {task['id']}")
 ### Streaming Progress
 
 ```python
-for update in client.run({
-    "app": "google/veo-3-1-fast",
-    "input": {"prompt": "Ocean waves at sunset"}
-}, stream=True):
+for update in client.run(
+    {"app": "google/veo-3-1-fast", "input": {"prompt": "Ocean waves at sunset"}},
+    stream=True,
+):
     print(f"Status: {update['status']}")
     if update.get("logs"):
         print(update["logs"][-1])
@@ -112,12 +108,14 @@ for update in client.run({
 ### Automatic Upload
 
 ```python
-result = client.run({
-    "app": "image-processor",
-    "input": {
-        "image": "/path/to/image.png"  # Auto-uploaded
+result = client.run(
+    {
+        "app": "image-processor",
+        "input": {
+            "image": "/path/to/image.png"  # Auto-uploaded
+        },
     }
-})
+)
 ```
 
 ### Manual Upload
@@ -132,16 +130,11 @@ file = client.upload_file("/path/to/image.png")
 file = client.upload_file(
     "/path/to/image.png",
     UploadFileOptions(
-        filename="custom_name.png",
-        content_type="image/png",
-        public=True
-    )
+        filename="custom_name.png", content_type="image/png", public=True
+    ),
 )
 
-result = client.run({
-    "app": "image-processor",
-    "input": {"image": file["uri"]}
-})
+result = client.run({"app": "image-processor", "input": {"image": file["uri"]}})
 ```
 
 ## Sessions (Stateful Execution)
@@ -150,20 +143,20 @@ Keep workers warm across multiple calls:
 
 ```python
 # Start new session
-result = client.run({
-    "app": "my-app",
-    "input": {"action": "init"},
-    "session": "new",
-    "session_timeout": 300  # 5 minutes
-})
+result = client.run(
+    {
+        "app": "my-app",
+        "input": {"action": "init"},
+        "session": "new",
+        "session_timeout": 300,  # 5 minutes
+    }
+)
 session_id = result["session_id"]
 
 # Continue in same session
-result = client.run({
-    "app": "my-app",
-    "input": {"action": "process"},
-    "session": session_id
-})
+result = client.run(
+    {"app": "my-app", "input": {"action": "process"}, "session": session_id}
+)
 ```
 
 ## Agent SDK
@@ -212,13 +205,15 @@ image_gen = (
 )
 
 # Create agent
-agent = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "system_prompt": "You are a helpful assistant.",
-    "tools": [calculator, image_gen],
-    "temperature": 0.7,
-    "max_tokens": 4096
-})
+agent = client.agent(
+    {
+        "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
+        "system_prompt": "You are a helpful assistant.",
+        "tools": [calculator, image_gen],
+        "temperature": 0.7,
+        "max_tokens": 4096,
+    }
+)
 
 response = agent.send_message("What is 25 * 4?")
 ```
@@ -237,10 +232,7 @@ response = agent.send_message("What is 25 * 4?")
 ### Parameter Types
 
 ```python
-from inferencesh import (
-    string, number, integer, boolean,
-    enum_of, array, obj, optional
-)
+from inferencesh import string, number, integer, boolean, enum_of, array, obj, optional
 
 name = string("User's name")
 age = integer("Age in years")
@@ -248,11 +240,14 @@ score = number("Score 0-1")
 active = boolean("Is active")
 priority = enum_of(["low", "medium", "high"], "Priority")
 tags = array(string("Tag"), "List of tags")
-address = obj({
-    "street": string("Street"),
-    "city": string("City"),
-    "zip": optional(string("ZIP"))
-}, "Address")
+address = obj(
+    {
+        "street": string("Street"),
+        "city": string("City"),
+        "zip": optional(string("ZIP")),
+    },
+    "Address",
+)
 ```
 
 ### Client Tools (Run in Your Code)
@@ -321,17 +316,13 @@ config = (
     .memory()
     .web_search(True)
     .code_execution(True)
-    .image_generation({
-        "enabled": True,
-        "app_ref": "infsh/flux@latest"
-    })
+    .image_generation({"enabled": True, "app_ref": "infsh/flux@latest"})
     .build()
 )
 
-agent = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "internal_tools": config
-})
+agent = client.agent(
+    {"core_app": {"ref": "infsh/claude-sonnet-4@latest"}, "internal_tools": config}
+)
 ```
 
 ## Streaming Agent Responses
@@ -341,15 +332,15 @@ def handle_message(msg):
     if msg.get("content"):
         print(msg["content"], end="", flush=True)
 
+
 def handle_tool(call):
     print(f"\n[Tool: {call.name}]")
     result = execute_tool(call.name, call.args)
     agent.submit_tool_result(call.id, result)
 
+
 response = agent.send_message(
-    "Explain quantum computing",
-    on_message=handle_message,
-    on_tool_call=handle_tool
+    "Explain quantum computing", on_message=handle_message, on_tool_call=handle_tool
 )
 ```
 
@@ -358,36 +349,34 @@ response = agent.send_message(
 ```python
 # From file path
 with open("image.png", "rb") as f:
-    response = agent.send_message(
-        "What's in this image?",
-        files=[f.read()]
-    )
+    response = agent.send_message("What's in this image?", files=[f.read()])
 
 # From base64
 response = agent.send_message(
-    "Analyze this",
-    files=["data:image/png;base64,iVBORw0KGgo..."]
+    "Analyze this", files=["data:image/png;base64,iVBORw0KGgo..."]
 )
 ```
 
 ## Skills (Reusable Context)
 
 ```python
-agent = client.agent({
-    "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
-    "skills": [
-        {
-            "name": "code-review",
-            "description": "Code review guidelines",
-            "content": "# Code Review\n\n1. Check security\n2. Check performance..."
-        },
-        {
-            "name": "api-docs",
-            "description": "API documentation",
-            "url": "https://example.com/skills/api-docs.md"
-        }
-    ]
-})
+agent = client.agent(
+    {
+        "core_app": {"ref": "infsh/claude-sonnet-4@latest"},
+        "skills": [
+            {
+                "name": "code-review",
+                "description": "Code review guidelines",
+                "content": "# Code Review\n\n1. Check security\n2. Check performance...",
+            },
+            {
+                "name": "api-docs",
+                "description": "API documentation",
+                "url": "https://example.com/skills/api-docs.md",
+            },
+        ],
+    }
+)
 ```
 
 ## Async Support
@@ -396,14 +385,14 @@ agent = client.agent({
 from inferencesh import async_inference
 import asyncio
 
+
 async def main():
     client = async_inference(api_key="inf_...")
 
     # Async app execution
-    result = await client.run({
-        "app": "infsh/flux-1-dev",
-        "input": {"prompt": "A galaxy"}
-    })
+    result = await client.run(
+        {"app": "infsh/flux-1-dev", "input": {"prompt": "A galaxy"}}
+    )
 
     # Async agent
     agent = client.agent("my-org/assistant@latest")
@@ -412,6 +401,7 @@ async def main():
     # Async streaming
     async for msg in agent.stream_messages():
         print(msg)
+
 
 asyncio.run(main())
 ```
@@ -444,10 +434,8 @@ def handle_tool(call):
         else:
             agent.submit_tool_result(call.id, {"error": "Denied by user"})
 
-response = agent.send_message(
-    "Delete all temp files",
-    on_tool_call=handle_tool
-)
+
+response = agent.send_message("Delete all temp files", on_tool_call=handle_tool)
 ```
 
 ## Reference Files

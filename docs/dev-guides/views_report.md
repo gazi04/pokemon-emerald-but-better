@@ -158,14 +158,20 @@ Note the two return styles: a transient battle **closes** (nav decision → Dire
 
 ### Navigate from a view
 ```python
-self.overlay("bag", previous_view=self, battle_system=self.battle_system)  # stack on top
-self.swap("battle", pokemon_name=name, pokemon_data=data, pokemon_level=lvl)  # full takeover
-self.close()                                                                 # back to overworld
+self.overlay(
+    "bag", previous_view=self, battle_system=self.battle_system
+)  # stack on top
+self.swap(
+    "battle", pokemon_name=name, pokemon_data=data, pokemon_level=lvl
+)  # full takeover
+self.close()  # back to overworld
 ```
 
 ### Return from an overlay
 ```python
-self.window.show_view(self.previous_view)   # pop the stack (you know where you came from)
+self.window.show_view(
+    self.previous_view
+)  # pop the stack (you know where you came from)
 # hand a result up if needed:
 if hasattr(self.previous_view, "start_catch_attempt"):
     self.previous_view.start_catch_attempt(result)

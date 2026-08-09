@@ -40,6 +40,7 @@ Full current source (`src/core/message_service.py`):
 ```python
 class MessageBox(Protocol):
     is_processing: bool
+
     def queue_message(self, message: str) -> None: ...
     def set_on_complete(self, callback: Callable) -> None: ...
     def clear(self) -> None: ...
@@ -60,7 +61,7 @@ class MessageService:
             messages = [messages]
         for m in messages:
             self._box.queue_message(m)
-        if callback:                       # one-shot — never clobbers the persistent callback
+        if callback:  # one-shot — never clobbers the persistent callback
             self._box.set_on_complete(callback)
 
     def clear(self) -> None: ...
@@ -229,24 +230,28 @@ Note on the **wrappers** (`BattleUiManager.queue_messages`, `DialogUI.queue_mess
 ### 11.1 API at a glance
 
 ```python
-service.show("A wild Rattata appeared!")             # single string
-service.show(["Rattata used Tackle!", "It hit!"])    # multiple, queued in order
-service.show("Go Torchic!", callback=self._on_done)  # run fn ONCE after the last msg (one-shot)
-service.clear()       # wipe queue + stop
-service.is_idle()     # True when nothing typing/queued
+service.show("A wild Rattata appeared!")  # single string
+service.show(["Rattata used Tackle!", "It hit!"])  # multiple, queued in order
+service.show(
+    "Go Torchic!", callback=self._on_done
+)  # run fn ONCE after the last msg (one-shot)
+service.clear()  # wipe queue + stop
+service.is_idle()  # True when nothing typing/queued
 service.set_box(box)  # views call this in on_show_view — not for general callers
-service.set_box(None) # clear active box (boxless full views call this on_show_view)
+service.set_box(None)  # clear active box (boxless full views call this on_show_view)
 ```
 
 `TypewriterMessageBox` direct methods (when a view legitimately needs the box itself):
 
 ```python
-box.reset_prompt("What will Torchic do?")  # replace display instantly, no typewriter, clears queue
-box.clear()                                # wipe queue + stop processing
-box.queue_message("text")                  # low-level enqueue (prefer service.show)
-box.set_callback(fn)                       # PERSISTENT — fires after every queue-drain (battle turn flow)
-box.set_on_complete(fn)                    # ONE-SHOT — fires once after the final message, then clears
-box.show() / box.hide()                    # visibility — called by UI managers, not views
+box.reset_prompt(
+    "What will Torchic do?"
+)  # replace display instantly, no typewriter, clears queue
+box.clear()  # wipe queue + stop processing
+box.queue_message("text")  # low-level enqueue (prefer service.show)
+box.set_callback(fn)  # PERSISTENT — fires after every queue-drain (battle turn flow)
+box.set_on_complete(fn)  # ONE-SHOT — fires once after the final message, then clears
+box.show() / box.hide()  # visibility — called by UI managers, not views
 ```
 
 ### 11.2 When to use what
@@ -292,7 +297,7 @@ self.ui.message_box.dialog_text.text = "..."
 
 # GOOD
 self.ui.message_box.reset_prompt("...")  # static replacement, no typewriter
-self.message_service.show("...")         # queued typewriter
+self.message_service.show("...")  # queued typewriter
 ```
 
 ### 11.5 Current wiring status
