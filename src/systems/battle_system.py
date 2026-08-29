@@ -6,7 +6,7 @@ from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
 from src.core.catch_calculator import calc_catch_probability
 from src.core.event_bus import global_bus
-from src.core.events import HpChangedEvent, PokemonFaintedEvent
+from src.core.events import HpChangedEvent
 from src.enums.battle_state import BattleState
 from src.enums.stat import Stat
 from src.enums.effect_type import EffectType
@@ -537,13 +537,6 @@ class BattleSystem:
                 )
             self.battle_state = BattleState.PLAYER_FAINTED
             messages.append(f"{self.your_pokemon.name} fainted!")
-
-        global_bus.publish(
-            PokemonFaintedEvent(
-                target="enemy" if died_pokemon.is_enemy else "player",
-                pokemon_name=died_pokemon.name,
-            )
-        )
 
         return messages
 
