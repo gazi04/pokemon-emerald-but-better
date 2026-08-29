@@ -4,6 +4,7 @@ from src.core.data_loader import DataLoader
 from src.model.save.player import PlayerPokemon
 from src.model.static.pokemon import PokemonStat
 from src.tiled import object_layer
+from src.assets import load_sprite_texture
 
 
 class PokemonMenuUi:
@@ -246,7 +247,7 @@ class PokemonMenuUi:
                 slot["name_text"].text = pokemon.name.upper()
                 slot["level_text"].text = f"Lv{pokemon.level}"
                 slot["hp_text"].text = f"{pokemon.hp}/{max_hp}"
-                slot["pokemon"].texture = arcade.load_texture(
+                slot["pokemon"].texture = load_sprite_texture(
                     pokemon_profile.sprites.front
                 )
 
