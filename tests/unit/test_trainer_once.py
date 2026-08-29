@@ -2,6 +2,9 @@
 spends the encounter (both the sight and interaction gates honour that), and
 the battle must not drain the cached species roster."""
 
+from types import SimpleNamespace
+from typing import Any
+
 from src.model.static.trainer import Trainer
 from src.systems.npc_manager import NPCManager
 
@@ -109,3 +112,55 @@ def test_prize_money_must_be_read_before_the_party_drains():
     full = team.prize_money()
     team.party.pop(0)
     assert team.prize_money() < full
+
+
+# --- the interaction gate ---------------------------------------------------
+# can_fight() gated NPC-initiated spotting (overworld_view._can_challenge) but
+# nothing gated walking up and talking to a beaten trainer. DialogView now
+# honours the action the overworld resolved, and refuses the fight outright if
+# the encounter is already spent.
+
+
+def _dialog_view(npc_id="rival", npc_manager=None) -> Any:
+    from unittest.mock import MagicMock
+
+    from src.states.dialog_view import DialogView
+
+    view: Any = DialogView.__new__(DialogView)
+    view.npc_id = npc_id
+    view.npc = MagicMock()
+    view.player_manager = MagicMock()
+    view.player_manager.npc_manager = npc_manager or NPCManager()
+    view.swap = MagicMock()
+    view.close = MagicMock()
+    return view
+
+
+def test_action_fight_starts_the_battle_for_a_fresh_trainer():
+    view = _dialog_view()
+
+    view._action_fight()
+
+    view.swap.assert_called_once()
+
+
+def test_action_fight_refuses_once_the_encounter_is_spent():
+    manager = NPCManager()
+    manager.mark_fought("rival")
+    manager.mark_defeated("rival")
+    view = _dialog_view(npc_manager=manager)
+
+    view._action_fight()
+
+    view.swap.assert_not_called()
+
+
+def test_action_override_wins_over_the_npcs_own_action():
+    """A beaten trainer resolves to 'end', which must beat the NPC template's
+    'fight' — the value the director used to drop."""
+    from src.states.dialog_view import DialogView
+
+    npc = SimpleNamespace(action_after_dialog="fight")
+
+    assert DialogView._resolve_action(npc, "end") == "end"
+    assert DialogView._resolve_action(npc, None) == "fight"

@@ -177,10 +177,10 @@ class GameDirector:
             self.data_loader,
             self.player_manager,
             self.message_service,
-            payload.get("after_text_callback"),
             payload.get("npc_id", ""),
             state=payload.get("state", "default"),
             lines=payload.get("lines"),
+            action=payload.get("action"),
         )
 
     def _build_shop(self, payload: dict):
