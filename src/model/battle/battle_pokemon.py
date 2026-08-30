@@ -160,6 +160,10 @@ class BattlePokemon:
         self.is_first_turn = True
         self.is_protected = False
         self.confusion_counter = 0
+        # Last move this pokemon used, for `not_consecutive` conditions (Fake
+        # Out, Protect). Per-pokemon: BattleSystem used to keep a single shared
+        # field, so one side's move blocked the other's.
+        self.last_move = ""
 
     def calculate_stats(self):
         self.stats = self.base_stat.at_level(self.level)

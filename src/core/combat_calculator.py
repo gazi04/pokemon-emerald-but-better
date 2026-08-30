@@ -19,6 +19,7 @@ def calculate_damage(
     crit_modifier: int,
     type_chart: dict,
     weather_multiplier: float = 1.0,
+    check_accuracy: bool = True,
 ) -> CombatResult:
     """
     Pure damage calculation. All inputs are plain data — no BattlePokemon
@@ -27,11 +28,16 @@ def calculate_damage(
     `weather_multiplier` is the already-resolved weather scaling for this move's
     type (e.g. 1.5 for Water in rain); the caller owns the weather rules so this
     module stays decoupled from WeatherState.
+
+    `check_accuracy=False` skips the to-hit roll, for callers that have already
+    rolled it — a multi-hit move rolls accuracy once and then lands every hit.
     """
     messages = []
 
     # --- Accuracy check ---
-    if not _check_accuracy(move_data.accuracy, attacker_modifiers, defender_modifiers):
+    if check_accuracy and not _check_accuracy(
+        move_data.accuracy, attacker_modifiers, defender_modifiers
+    ):
         return CombatResult(
             damage=0,
             effectiveness=1.0,
