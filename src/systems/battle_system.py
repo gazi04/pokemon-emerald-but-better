@@ -675,10 +675,11 @@ class BattleSystem:
 
         Returns the same {"success", "messages"} shape as attempt_catch().
         "messages" is empty on success (nothing extra to show after "Gotcha!");
-        on failure (party already has 6) it explains the Pokemon was lost.
+        a full party sends the catch to storage, which is still a success. Only
+        an outright storage failure returns success=False with an explanation.
         """
         enemy = self.enemy_pokemon
-        self.player_manager.add_pokemon(
+        stored = self.player_manager.add_pokemon(
             PlayerPokemon(
                 name=enemy.name.lower(),
                 hp=enemy.current_hp,
@@ -689,6 +690,11 @@ class BattleSystem:
                 held_item=None,
             )
         )
+        if not stored:
+            return {
+                "success": False,
+                "messages": [f"There was no room for {enemy.name}!"],
+            }
         return {"success": True, "messages": []}
 
     def attempt_catch(self, item_data: ItemSpecies) -> dict:

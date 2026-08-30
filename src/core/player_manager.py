@@ -104,8 +104,9 @@ class PlayerManager:
                 evolution.to,
             )
 
-    def add_pokemon(self, pokemon: PlayerPokemon):
-        self.player.add_pokemon_team(pokemon)
+    def add_pokemon(self, pokemon: PlayerPokemon) -> bool:
+        """Add to the party or to storage. False means it could not be stored."""
+        return self.player.add_pokemon_team(pokemon)
 
     def update_pokemon_held_item(self, pokemon_id: str, item_id: str | None):
         pokemon = self.get_pokemon(pokemon_id)
@@ -154,6 +155,15 @@ class PlayerManager:
 
     def get_seen_pokemon(self) -> list[str]:
         return self.player.seen
+
+    def get_owned_pokemon(self) -> set[str]:
+        """Species the player owns — party *and* storage. Lives here so the
+        Pokédex doesn't need to know the save's storage layout; reading only the
+        party made every boxed species show as merely seen."""
+        owned = {pokemon.name for pokemon in self.player.pokemon}
+        for box in self.player.boxs:
+            owned.update(pokemon.name for pokemon in box.pokemons)
+        return owned
 
     def get_inventory(self) -> dict[str, ItemStack]:
         return self.player.items

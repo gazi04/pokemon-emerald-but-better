@@ -21,7 +21,7 @@ class PokedexView(GameView):
         self.data_loader = data_loader
 
         all_pokemon = list(data_loader.pokemons.keys())
-        owned = {p.name for p in player_manager.get_pokemon_team()}
+        owned = player_manager.get_owned_pokemon()
         seen = set(player_manager.get_seen_pokemon())
 
         self.ui = PokedexUi(data_loader, all_pokemon, owned, seen)
