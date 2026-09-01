@@ -42,6 +42,13 @@ def potions(n):
     ]
 
 
+def pokeballs(n):
+    return [
+        ItemStack(name="pokeball", count=c, category="pokeball")
+        for c in range(1, n + 1)
+    ]
+
+
 def test_update_item_formats_label_with_count(data_loader):
     view = make_view(data_loader, inventory=potions(1))
 
@@ -141,7 +148,7 @@ def test_interact_medicine_tab_opens_item_menu(data_loader, monkeypatch):
 
 
 def test_interact_pokeball_tab_in_wild_battle_throws_pokeball(data_loader):
-    view = make_view(data_loader, bag_index=1)
+    view = make_view(data_loader, inventory=pokeballs(1), bag_index=1)
     view.battle_system = MagicMock(is_trainer=False)
     view._throw_pokeball = MagicMock()
 
@@ -151,7 +158,7 @@ def test_interact_pokeball_tab_in_wild_battle_throws_pokeball(data_loader):
 
 
 def test_interact_pokeball_tab_in_trainer_battle_does_nothing(data_loader):
-    view = make_view(data_loader, bag_index=1)
+    view = make_view(data_loader, inventory=pokeballs(1), bag_index=1)
     view.battle_system = MagicMock(is_trainer=True)
     view._throw_pokeball = MagicMock()
 
@@ -161,7 +168,7 @@ def test_interact_pokeball_tab_in_trainer_battle_does_nothing(data_loader):
 
 
 def test_interact_pokeball_tab_outside_battle_does_nothing(data_loader):
-    view = make_view(data_loader, bag_index=1)
+    view = make_view(data_loader, inventory=pokeballs(1), bag_index=1)
     view.battle_system = None
     view._throw_pokeball = MagicMock()
 
@@ -234,3 +241,81 @@ def test_change_bag_resets_current_index(data_loader):
     view.change_bag()
 
     assert view.currentIndex == 0
+
+
+# --- tab dispatch by category ----------------------------------------------
+# L6: _on_interact branched on `bagIndex in (0, 2)` against
+# BAG_CATEGORIES = [MEDICINE, POKEBALL, HELD_ITEM, BERRY], so index 3 was
+# unreachable and the 99 sitrus berries the default save ships could not be used.
+
+
+def test_interact_berry_tab_opens_item_menu(data_loader):
+    view = make_view(data_loader, inventory=potions(1), bag_index=3)
+    view.current_inventory = potions(1)
+    view._open_item_menu = MagicMock()
+
+    view._on_interact()
+
+    view._open_item_menu.assert_called_once()
+
+
+def test_interact_held_item_tab_opens_item_menu(data_loader):
+    view = make_view(data_loader, inventory=potions(1), bag_index=2)
+    view.current_inventory = potions(1)
+    view._open_item_menu = MagicMock()
+
+    view._on_interact()
+
+    view._open_item_menu.assert_called_once()
+
+
+def test_interact_pokeball_tab_never_opens_the_item_menu(data_loader):
+    """Pokeballs are thrown, not 'used' on a party member."""
+    view = make_view(data_loader, inventory=potions(1), bag_index=1)
+    view.battle_system = MagicMock(is_trainer=False)
+    view._open_item_menu = MagicMock()
+    view._throw_pokeball = MagicMock()
+
+    view._on_interact()
+
+    view._open_item_menu.assert_not_called()
+
+
+def test_every_usable_tab_is_reachable(data_loader):
+    """Guards the whole mapping rather than one tab: every category except
+    pokeballs must open the item menu."""
+    for index, category in enumerate(bag_view_module.BAG_CATEGORIES):
+        if category == ItemCategory.POKEBALL:
+            continue
+        view = make_view(data_loader, inventory=potions(1), bag_index=index)
+        view.current_inventory = potions(1)
+        view._open_item_menu = MagicMock()
+
+        view._on_interact()
+
+        assert view._open_item_menu.call_count == 1, f"{category} tab is unreachable"
+
+
+# --- L7: the list must refresh when the view comes back ---------------------
+# Returning from the pokemon menu left stale counts on screen: on_show_view only
+# enabled the UI manager, and _open_item_menu refreshed *before* the overlay ran.
+
+
+def test_on_show_view_refreshes_the_item_list(data_loader):
+    view = make_view(data_loader, inventory=potions(1))
+    view.update_item = MagicMock()
+
+    view.on_show_view()
+
+    view.update_item.assert_called_once()
+
+
+def test_interact_on_an_empty_tab_is_a_noop(data_loader):
+    """Both interact branches index current_inventory. The berry tab was
+    unreachable before L6, so this IndexError had nowhere to fire."""
+    view = make_view(data_loader, inventory=[], bag_index=3)
+    view._open_item_menu = MagicMock()
+
+    view._on_interact()  # must not raise
+
+    view._open_item_menu.assert_not_called()
