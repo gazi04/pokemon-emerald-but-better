@@ -141,7 +141,9 @@ def _check_accuracy(
 
 
 def _roll_critical(crit_modifier: int) -> bool:
-    tier = min(crit_modifier, 4)
+    # Clamped at both ends: the table only defines tiers 0-4, so a negative crit
+    # stage used to index probabilities[-1] and raise KeyError.
+    tier = max(0, min(crit_modifier, 4))
     probabilities = {0: 16, 1: 8, 2: 4, 3: 3, 4: 2}
     return random.randint(1, probabilities[tier]) == 1
 

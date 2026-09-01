@@ -316,3 +316,34 @@ def test_burn_halves_attack():
     normal = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.NONE)
     burned = _get_stat(Stat.ATTACK, make_stat(attack=100), {}, StatusEffect.BURN)
     assert burned == normal // 2
+
+
+# --- crit tier clamping -----------------------------------------------------
+# `_roll_critical` indexes a {0..4: denominator} dict. min(mod, 4) capped the top
+# but not the bottom, so a negative crit stage hit probabilities[-1] -> KeyError.
+# Nothing lowers Stat.CRITS today; this pins the guard before something does.
+
+
+@pytest.mark.parametrize("crit_modifier", [-1, -3, -6])
+def test_negative_crit_modifier_does_not_raise(crit_modifier):
+    result = calc(crit_modifier=crit_modifier)
+
+    assert result.damage > 0
+
+
+def test_negative_crit_modifier_rolls_like_the_base_tier():
+    """Clamped to tier 0, so it behaves as an unmodified crit chance rather
+    than crashing or silently becoming a guaranteed crit."""
+    from src.core.combat_calculator import _roll_critical
+
+    with patch("src.core.combat_calculator.random.randint", return_value=1):
+        assert _roll_critical(-6) is True  # 1-in-16 roll hit
+    with patch("src.core.combat_calculator.random.randint", return_value=2):
+        assert _roll_critical(-6) is False
+
+
+def test_crit_modifier_above_the_table_still_clamps():
+    from src.core.combat_calculator import _roll_critical
+
+    with patch("src.core.combat_calculator.random.randint", return_value=1):
+        assert _roll_critical(99) is True
