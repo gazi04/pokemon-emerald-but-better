@@ -191,14 +191,56 @@ def make_tooltip_view(bag, battle_system=None, monkeypatch=None) -> Any:
     return view
 
 
-def test_tooltip_index2_gives_item_to_current_pokemon():
+# X2: "Give it" used to assign held_item directly, bypassing
+# BagSystem.give_held_item entirely — so nothing checked `holdable`, the item
+# was never consumed (unlimited duplication), and an already-held item was
+# silently overwritten and lost. The old version of this test asserted that
+# direct write against a MagicMock bag, which is to say it pinned the bug.
+
+
+def test_tooltip_index2_delegates_to_the_bag():
     view = make_tooltip_view(bag=MagicMock())
+    view.bag.give_held_item.return_value = True
     view.system.tooltip_index = 2
 
     view._tooltip_action()
 
-    assert view._get_current_pokemon().held_item == "potion"
+    view.bag.give_held_item.assert_called_once_with("potion", "mudkip")
+
+
+def test_tooltip_index2_never_writes_held_item_directly():
+    """The bag owns the mutation. A direct write skips the holdable check and
+    the bag decrement — the duplication exploit."""
+    view = make_tooltip_view(bag=MagicMock())
+    view.bag.give_held_item.return_value = False
+    view._get_current_pokemon().held_item = None
+    view.system.tooltip_index = 2
+
+    view._tooltip_action()
+
+    assert view._get_current_pokemon().held_item is None
+
+
+def test_tooltip_index2_returns_to_the_bag_when_the_item_was_given():
+    view = make_tooltip_view(bag=MagicMock())
+    view.bag.give_held_item.return_value = True
+    view.system.tooltip_index = 2
+
+    view._tooltip_action()
+
     view.window.show_view.assert_called_once_with(view.previous_view)
+
+
+def test_tooltip_index2_stays_put_when_the_item_was_refused():
+    """Refused (not holdable, or already holding something) — mirrors how
+    _use_item already treats a rejected item."""
+    view = make_tooltip_view(bag=MagicMock())
+    view.bag.give_held_item.return_value = False
+    view.system.tooltip_index = 2
+
+    view._tooltip_action()
+
+    view.window.show_view.assert_not_called()
 
 
 def test_tooltip_index2_without_bag_does_nothing():
