@@ -2,7 +2,6 @@ import random
 
 from src.constants import ENCOUNTER_RATE
 from src.core.data_loader import DataLoader
-from src.model.motion.player_motion import PlayerMotion
 from src.core.event_bus import global_bus
 from src.core.events import PlayerFinishedMoveEvent, BattleEncounterTriggeredEvent
 
@@ -11,11 +10,9 @@ class EncounterSystem:
     def __init__(
         self,
         bush_tiles: set[tuple[int, int]],
-        player_state: PlayerMotion,
         data_loader: DataLoader,
     ):
         self._bush_tiles = bush_tiles  # set of (grid_x, grid_y) integer pairs
-        self._player_state = player_state
         self.data_loader = data_loader
         self._subscribed = False
         self.resubscribe()
@@ -35,7 +32,11 @@ class EncounterSystem:
         if (event.grid_x, event.grid_y) not in self._bush_tiles:
             return
 
-        table = self.data_loader.encounters.get(self._player_state.map_name)
+        # The event carries the map the player just landed on — use it rather
+        # than re-reading the cached PlayerMotion. They agree today (Movement
+        # System publishes from the same object), but two sources for one fact
+        # meant the event's payload was dead input.
+        table = self.data_loader.encounters.get(event.map_name)
         if not table:
             return
 

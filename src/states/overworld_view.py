@@ -141,7 +141,6 @@ class OverworldView(GameView):
             self.encounter_system.cleanup()
         self.encounter_system = EncounterSystem(
             bush_tiles=loaded.bush_tiles,
-            player_state=self.player_state,
             data_loader=self.data_loader,
         )
 
