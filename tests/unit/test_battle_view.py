@@ -6,6 +6,10 @@
 """
 
 from types import SimpleNamespace
+
+import arcade
+
+from data.config import CONFIG
 from unittest.mock import MagicMock
 
 import pytest
@@ -428,3 +432,59 @@ def test_trainer_send_next_pokemon_sends_the_next_one(wired_view, data_loader):
     assert wired_view.enemy_battle.level == 8
     wired_view.ui.set_enemy_info.assert_called_once_with("POOCHYENA", 8)
     assert wired_view.battle_system.battle_state == BattleState.WAITING
+
+
+# --- empty moveset ----------------------------------------------------------
+# A moveless pokemon reaching the move menu used to divide by zero in
+# _move_menu_cursor (`% num_buttons`) and IndexError in _refresh_active_pokemon_ui
+# (`moves[0]`). wild_moveset.py guarantees wilds have at least Tackle, so this
+# needs a hand-edited save today — but both guards are one data change from
+# mattering, and neither had a test.
+
+
+def _menu_view(moves, component="moves"):
+    """A BattleView with only what _active_menu_size/on_key_press read.
+    MagicMock rather than SimpleNamespace so pyright accepts the assignments to
+    BattleView's typed attributes, matching the battle_view fixture above."""
+    view = BattleView.__new__(BattleView)
+    view.your_battle = MagicMock()
+    view.your_battle.moves = moves
+    view.ui = MagicMock()
+    view.ui.active_component = component
+    view.ui.menu_panel.main_buttons = []
+    view.ui.menu_panel.selection_index = 0
+    return view
+
+
+def test_empty_moveset_reports_no_active_menu():
+    """None is the existing 'ignore key presses' sentinel, so an empty move
+    menu behaves like no menu instead of crashing the cursor."""
+    assert _menu_view([])._active_menu_size() is None
+
+
+def test_populated_moveset_reports_its_size():
+    view = _menu_view([object(), object()])
+
+    assert view._active_menu_size() == 2
+
+
+def test_empty_main_menu_reports_no_active_menu():
+    view = _menu_view([], component="main")
+
+    assert view._active_menu_size() is None
+
+
+def test_key_press_on_an_empty_move_menu_does_not_raise():
+    """The regression proper: on_key_press bails on None before reaching the
+    modulo that would divide by zero.
+
+    Left/right specifically — up/down pass `guarded=True`, and the
+    `num_buttons <= 2` guard happens to skip the modulo, so they cannot prove
+    the fix. Left/right reach `% num_buttons` unconditionally.
+    """
+    view = _menu_view([])
+    view.is_pressed = lambda config_key, symbol: config_key == CONFIG.controls.left
+
+    view.on_key_press(arcade.key.LEFT, 0)
+
+    assert view.ui.menu_panel.selection_index == 0
