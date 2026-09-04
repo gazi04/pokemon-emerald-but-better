@@ -332,3 +332,20 @@ def test_get_items_filters_zero_count_and_groups_by_category():
     assert ItemCategory.BERRY not in result  # zero-count stack filtered out
     assert [s.name for s in result[ItemCategory.POKEBALL]] == ["poke ball"]
     assert [s.name for s in result[ItemCategory.MEDICINE]] == ["potion"]
+
+
+# --- live inventory ---------------------------------------------------------
+# L9: BagSystem bound player_manager.player.items once in __init__, so after a
+# save reload it read a detached dict.
+
+
+def test_bag_reads_the_current_save_after_a_reload():
+    bag, _, _ = make_bag()
+
+    reloaded = PlayerSave(
+        pokemon=[],
+        boxs=[],
+        items={"potion": ItemStack("potion", 7, ItemCategory.MEDICINE)},
+    )
+    bag.player_manager.player = reloaded
+

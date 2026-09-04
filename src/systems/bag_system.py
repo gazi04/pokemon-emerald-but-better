@@ -12,13 +12,17 @@ class BagSystem:
         self.player_manager = player_manager
         self.data_loader = data_loader
 
-        self._items = player_manager.player.items
-
         self._effect_appliers = {
             EffectType.HEAL: self._apply_heal,
             EffectType.CURE_STATUS: self._apply_cure_status,
             EffectType.RESTORE_PP: self._apply_restore_pp,
         }
+
+    @property
+    def _items(self) -> dict[str, ItemStack]:
+        """The live inventory. Read through the manager every time — binding the
+        dict in __init__ left the bag reading a detached copy after a reload."""
+        return self.player_manager.player.items
 
     # ── Eligibility checks ────────────────────────────────────────────────────
 
