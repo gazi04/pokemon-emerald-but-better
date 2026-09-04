@@ -1,6 +1,8 @@
 from typing import cast
 from unittest.mock import MagicMock
 
+import pytest
+
 
 from src.core.player_manager import PlayerManager
 from src.core.event_bus import global_bus
@@ -904,3 +906,37 @@ def test_turn_use_item_on_benched_pokemon_publishes_no_player_bar_event():
     bs.turn_use_item("potion", target_name="treecko")
 
     assert not [e for e in received if e.target == "player"]
+
+
+# --- move_index validation --------------------------------------------------
+# turn() indexed your_pokemon.moves with no range check. The battle menu happens
+# to bound the index (it sizes itself from len(moves)), so this never fired in
+# play — but the system is the contract boundary, and a bad index used to fail
+# deep inside _execute_move with a bare IndexError naming neither the caller nor
+# the moveset. It now fails at the door, with both.
+
+
+@pytest.mark.parametrize("bad_index", [1, 4, 99])
+def test_turn_rejects_an_out_of_range_move_index(bad_index):
+    bs, your, _ = make_battle_system()
+    assert len(your.moves) == 1
+
+    with pytest.raises(IndexError) as excinfo:
+        bs.turn(bad_index)
+
+    assert str(bad_index) in str(excinfo.value)
+    assert "1" in str(excinfo.value)  # the moveset length
+
+
+def test_turn_rejects_a_negative_move_index():
+    """Negative indices are valid Python but would silently select a move from
+    the far end of the list."""
+    bs, _, _ = make_battle_system()
+
+    with pytest.raises(IndexError):
+        bs.turn(-1)
+
+
+def test_turn_still_accepts_the_valid_index():
+    bs, _, _ = make_battle_system()
+

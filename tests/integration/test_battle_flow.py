@@ -6,7 +6,7 @@ Runs a full battle to KO and verifies state consistency.
 import pytest
 
 from src.core.event_bus import global_bus
-from src.core.events import HpChangedEvent, PokemonFaintedEvent
+from src.core.events import HpChangedEvent
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.enums.battle_state import BattleState
@@ -39,13 +39,12 @@ def real_data_loader():
     return DataLoader()
 
 
-def test_full_battle_to_ko_fires_fainted_event(real_data_loader, player_manager):
+def test_full_battle_runs_to_a_knockout(real_data_loader, player_manager):
+    """Observes the faint through battle state rather than PokemonFaintedEvent,
+    which had no production consumer and was removed."""
     your = _make_battle_pokemon("mudkip", real_data_loader, level=20)
     enemy = _make_battle_pokemon("poochyena", real_data_loader, level=1, is_enemy=True)
     # Level 1 poochyena has very low HP — should faint in one hit
-
-    fainted = []
-    global_bus.subscribe(PokemonFaintedEvent, fainted.append)
 
     bs = BattleSystem(your, enemy, player_manager, real_data_loader)
 
@@ -59,7 +58,11 @@ def test_full_battle_to_ko_fires_fainted_event(real_data_loader, player_manager)
             break
 
     assert enemy.current_hp == 0 or your.current_hp == 0
-    assert len(fainted) > 0
+    assert bs.battle_state in (
+        BattleState.END,
+        BattleState.TRAINER_SWITCH,
+        BattleState.PLAYER_FAINTED,
+    )
 
 
 def test_hp_changed_events_fire_during_battle(real_data_loader, player_manager):

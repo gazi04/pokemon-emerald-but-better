@@ -110,7 +110,24 @@ class BattleSystem:
         base = pokemon.get_stat(Stat.SPEED)
         return round(base * pokemon.weather_speed_multiplier(self.weather.kind))
 
+    @staticmethod
+    def _validate_move_index(pokemon: BattlePokemon, move_index: int) -> None:
+        """Fail at the boundary, naming both the index and the moveset size.
+
+        The battle menu sizes its cursor from len(moves) so it cannot produce a
+        bad index today, but this is the system's public entry point and a raw
+        IndexError from deep inside _execute_move names neither the caller nor
+        the pokemon. Negative indices are rejected too — Python would silently
+        select a move from the far end of the list.
+        """
+        if not 0 <= move_index < len(pokemon.moves):
+            raise IndexError(
+                f"move_index {move_index} out of range for {pokemon.name}'s "
+                f"{len(pokemon.moves)} move(s)"
+            )
+
     def turn(self, move_index: int) -> list[str]:
+        self._validate_move_index(self.your_pokemon, move_index)
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
 
