@@ -162,11 +162,21 @@ class BagSystem:
         max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
         item_def = self.data_loader.require_item(item_name)
 
-        return all(
-            not (applier := self._effect_appliers.get(effect.type))
-            or applier(pokemon_id, pokemon, max_hp, effect, move_index)
+        # An item is used when *at least one* of its effects lands. Built as a
+        # list, not a generator, so every applier runs — `any()` would
+        # short-circuit and skip the rest.
+        #
+        # This was `all()`, which returned True for an item with no effects at
+        # all (consumed for nothing) and False for a multi-effect item whose
+        # first effect landed and second did not (Full Restore on a poisoned
+        # pokemon at full HP: status cured, item not consumed).
+        applied = [
+            applier(pokemon_id, pokemon, max_hp, effect, move_index)
             for effect in item_def.effects
-        )
+            if (applier := self._effect_appliers.get(effect.type))
+        ]
+
+        return any(applied)
 
     # ── Held item support ─────────────────────────────────────────────────────
 

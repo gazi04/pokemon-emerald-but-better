@@ -52,6 +52,13 @@ ITEMS = {
     "poke ball": _item(name="Poke Ball", category="pokeball"),
     "oran berry": _item(name="Oran Berry", category="berry", holdable=True),
     "potion (not holdable)": _item(name="Potion", category="medicine", holdable=False),
+    # No applier exists for EffectType.STAT — using one must refuse, not consume.
+    "salac berry": _item(
+        name="Salac Berry",
+        category="berry",
+        holdable=True,
+        effects=[{"type": "stat", "stat": "speed", "change": 1}],
+    ),
 }
 
 
@@ -334,6 +341,53 @@ def test_get_items_filters_zero_count_and_groups_by_category():
     assert [s.name for s in result[ItemCategory.MEDICINE]] == ["potion"]
 
 
+# --- items with nothing to apply -------------------------------------------
+# L5: _handle_item_effects was an all() over the item's effects, which is True
+# for an empty effects list AND for any effect type with no registered applier.
+# So an item that does nothing was still consumed. The count assertions are the
+# point — a bare `is False` would pass even if the item vanished.
+
+
+def test_item_with_no_effects_is_refused_and_not_consumed():
+    bag, save, _ = make_bag(hp=30)
+    before = save.items["oran berry"].count
+
+    assert bag.use_item("oran berry", "mudkip") is False
+    assert save.items["oran berry"].count == before
+
+
+def test_item_whose_effect_has_no_applier_is_refused_and_not_consumed():
+    """A stat berry (EffectType.STAT) has no applier — using it from the bag
+    must not silently destroy it."""
+    bag, save, _ = make_bag(hp=30)
+    before = save.items["salac berry"].count
+
+    assert bag.use_item("salac berry", "mudkip") is False
+    assert save.items["salac berry"].count == before
+
+
+def test_an_item_applies_when_any_of_its_effects_lands():
+    """The all() was also wrong for multi-effect items: heal+cure on a poisoned
+    pokemon at full HP returned False, leaving the status cured but the item not
+    consumed. Any effect landing means the item was used."""
+    # max_hp for this fixture is 105 (base 50 @ level 50) — hp must equal it for
+    # the heal to no-op, which is the whole point of the test.
+    bag, save, mon = make_bag(hp=105, status="poison")
+    ITEMS["full restore"] = _item(
+        name="Full Restore",
+        effects=[
+            {"type": "heal", "amount": 20},
+            {"type": "cure_status", "status": "all"},
+        ],
+    )
+    save.items["full restore"] = ItemStack("full restore", 3, ItemCategory.MEDICINE)
+
+    assert bag.use_item("full restore", "mudkip") is True
+    assert mon.status_condition is None
+    assert save.items["full restore"].count == 2
+    del ITEMS["full restore"]
+
+
 # --- live inventory ---------------------------------------------------------
 # L9: BagSystem bound player_manager.player.items once in __init__, so after a
 # save reload it read a detached dict.
@@ -349,3 +403,5 @@ def test_bag_reads_the_current_save_after_a_reload():
     )
     bag.player_manager.player = reloaded
 
+    stacks = bag.get_items()[ItemCategory.MEDICINE]
+    assert [(s.name, s.count) for s in stacks] == [("potion", 7)]
