@@ -1,12 +1,12 @@
-from typing import cast
-from unittest.mock import MagicMock
+from typing import Any, cast
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 
 from src.core.player_manager import PlayerManager
 from src.core.event_bus import global_bus
-from src.core.events import HpChangedEvent, PokemonFaintedEvent
+from src.core.events import HpChangedEvent
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.save.player import PlayerPokemon, PlayerPokemonMove
@@ -168,29 +168,30 @@ def test_equal_speed_player_goes_first():
 # --- faint ---
 
 
-def test_pokemon_fainted_event_when_enemy_dies():
+# These asserted only that PokemonFaintedEvent fired, which is circular: the
+# event had no production consumer. They now assert the state pokemon_death
+# actually produces — the thing the rest of the battle flow branches on.
+
+
+def test_enemy_death_ends_the_battle_and_banks_exp():
     bs, _your, enemy = make_battle_system()
-    enemy.current_hp = 1  # one-shot
-    received = []
-    global_bus.subscribe(PokemonFaintedEvent, received.append)
-    # Execute all actions
-    bs.turn_queue = [("player", 0, -1)]
-    bs.execute_next_action()
-    if enemy.current_hp <= 0:
-        bs.pokemon_death(enemy)
-    assert any(e.target == "enemy" for e in received)
+    enemy.current_hp = 0
+
+    messages = bs.pokemon_death(enemy)
+
+    assert bs.battle_state == BattleState.END
+    assert bs.exp > 0
+    assert any("fainted" in m for m in messages)
 
 
-def test_pokemon_fainted_event_when_player_dies():
+def test_player_death_sets_the_fainted_state():
     bs, your, _enemy = make_battle_system()
-    your.current_hp = 1
-    received = []
-    global_bus.subscribe(PokemonFaintedEvent, received.append)
-    bs.turn_queue = [("enemy", 0, -1)]
-    bs.execute_next_action()
-    if your.current_hp <= 0:
-        bs.pokemon_death(your)
-    assert any(e.target == "player" for e in received)
+    your.current_hp = 0
+
+    messages = bs.pokemon_death(your)
+
+    assert bs.battle_state == BattleState.PLAYER_FAINTED
+    assert any("fainted" in m for m in messages)
 
 
 # --- post_turn ---
@@ -525,7 +526,7 @@ def test_check_move_condition_not_consecutive_fails_on_repeat():
     bs, your, _ = make_battle_system()
     move = make_poke_move(name="outrage")
     move.condition = "not_consecutive"
-    bs._last_player_move = "outrage"
+    your.last_move = "outrage"  # per-pokemon now, not shared on BattleSystem
 
     assert bs._check_move_condition(move, your) == "But outrage failed!"
 
@@ -545,7 +546,7 @@ def test_execute_move_defender_protected_short_circuits():
     bs, your, enemy = make_battle_system()
     enemy.is_protected = True
 
-    messages = bs._execute_move(your, enemy, 0, "enemy", announce=False)
+    messages = bs._execute_move(your, enemy, 0, "enemy", announce=False).messages
 
     assert messages == ["Poochyena protected itself!"]
 
@@ -554,7 +555,7 @@ def test_execute_move_defender_immune_short_circuits(monkeypatch):
     bs, your, enemy = make_battle_system()
     monkeypatch.setattr(enemy, "immunity_to", lambda move: "It doesn't affect enemy…")
 
-    messages = bs._execute_move(your, enemy, 0, "enemy", announce=False)
+    messages = bs._execute_move(your, enemy, 0, "enemy", announce=False).messages
 
     assert messages == ["It doesn't affect enemy…"]
 
@@ -940,3 +941,215 @@ def test_turn_rejects_a_negative_move_index():
 def test_turn_still_accepts_the_valid_index():
     bs, _, _ = make_battle_system()
 
+    assert bs.turn(0)
+
+
+# --- caught-pokemon storage -------------------------------------------------
+# add_caught_pokemon hardcoded {"success": True, "messages": []} while its
+# docstring promised a failure path, so a storage failure was reported to the
+# player as a successful catch. battle_view already knows how to show the
+# messages (what_happend_after_text:227) — only the truthful return was missing.
+
+
+def test_add_caught_pokemon_reports_success_when_stored():
+    bs, _, _enemy = make_battle_system()
+    bs.player_manager = MagicMock()
+    bs.player_manager.add_pokemon.return_value = True
+
+    result = bs.add_caught_pokemon()
+
+    assert result == {"success": True, "messages": []}
+
+
+def test_add_caught_pokemon_reports_failure_when_storage_refuses():
+    bs, _, enemy = make_battle_system()
+    bs.player_manager = MagicMock()
+    bs.player_manager.add_pokemon.return_value = False
+
+    result = bs.add_caught_pokemon()
+
+    assert result["success"] is False
+    assert result["messages"], "a refused catch must tell the player"
+    assert enemy.name in result["messages"][0]
+
+
+def _stub_move(bs, move):
+    """Point the system's DataLoader at `move`. Goes through a helper because
+    bs.data_loader is typed DataLoader, so pyright rejects .return_value on it."""
+    dl: Any = bs.data_loader
+    dl.get_move.return_value = move
+    return move
+
+
+# --- L2: Run Away -----------------------------------------------------------
+# can_run compared ability_name against "tun away". ability.json defines
+# "Run Away", so the branch was dead and the ability did nothing: a Run Away
+# holder was still blocked from fleeing a higher-level wild.
+
+
+def _with_ability(pokemon, display_name):
+    from src.model.static.ability import Ability
+
+    pokemon.ability = Ability({"name": display_name, "description": "", "effects": []})
+    return pokemon
+
+
+def test_run_away_lets_a_lower_level_pokemon_flee():
+    bs, your, _ = make_battle_system()
+    bs.your_pokemon = _with_ability(your, "Run Away")
+    bs.enemy_pokemon.level = your.level + 20  # normally blocks fleeing
+
+    assert bs.can_run() is True
+
+
+def test_without_run_away_a_lower_level_pokemon_cannot_flee():
+    bs, your, _ = make_battle_system()
+    bs.enemy_pokemon.level = your.level + 20
+
+    assert bs.can_run() is False
+
+
+def test_run_away_does_not_help_against_a_trainer():
+    bs, your, _ = make_battle_system()
+    bs.your_pokemon = _with_ability(your, "Run Away")
+    bs.is_trainer = True
+
+    assert bs.can_run() is False
+
+
+def test_a_higher_level_pokemon_can_still_flee_without_the_ability():
+    bs, your, _ = make_battle_system()
+    bs.enemy_pokemon.level = your.level - 1
+
+    assert bs.can_run() is True
+
+
+# --- L3: not_consecutive is per-pokemon -------------------------------------
+# _check_move_condition read a single BattleSystem-wide _last_player_move that
+# _execute_move set for whichever side had just attacked, so the enemy's Fake
+# Out failed because the *player* had used Fake Out. It was also written only
+# after the miss check, so a miss silently cleared the block.
+
+
+def _fake_out(name="fake out"):
+    move = make_poke_move(name=name)
+    move.condition = "not_consecutive"
+    return move
+
+
+def test_consecutive_use_by_the_same_pokemon_fails():
+    bs, your, _ = make_battle_system()
+    _stub_move(bs, _fake_out())
+
+    first = bs._execute_move(your, bs.enemy_pokemon, 0, "enemy").messages
+    second = bs._execute_move(your, bs.enemy_pokemon, 0, "enemy").messages
+
+    assert not any("failed" in m for m in first)
+    assert any("failed" in m for m in second)
+
+
+def test_one_sides_move_does_not_block_the_others():
+    """The regression: both sides used to share one field."""
+    bs, your, enemy = make_battle_system()
+    _stub_move(bs, _fake_out())
+
+    bs._execute_move(your, enemy, 0, "enemy")
+    enemy_messages = bs._execute_move(enemy, your, 0, "player").messages
+
+    assert not any("failed" in m for m in enemy_messages)
+
+
+def test_a_missed_move_still_blocks_the_repeat():
+    """The move was still *used*; only the damage missed."""
+    bs, your, _ = make_battle_system()
+    _stub_move(bs, _fake_out())
+
+    with patch("src.core.combat_calculator._check_accuracy", return_value=False):
+        first = bs._execute_move(your, bs.enemy_pokemon, 0, "enemy").messages
+    assert any("missed" in m.lower() for m in first)
+
+    second = bs._execute_move(your, bs.enemy_pokemon, 0, "enemy").messages
+    assert any("failed" in m for m in second)
+
+
+def test_a_different_move_in_between_clears_the_block():
+    bs, your, _ = make_battle_system()
+
+    _stub_move(bs, _fake_out())
+    bs._execute_move(your, bs.enemy_pokemon, 0, "enemy")
+
+    _stub_move(bs, make_poke_move(name="tackle"))
+    bs._execute_move(your, bs.enemy_pokemon, 0, "enemy")
+
+    _stub_move(bs, _fake_out())
+    third = bs._execute_move(your, bs.enemy_pokemon, 0, "enemy").messages
+
+    assert not any("failed" in m for m in third)
+
+
+# --- L1: multi-hit ----------------------------------------------------------
+# hits_landed counted loop iterations while _execute_move returned early on a
+# miss, so three whiffs still printed "Hit 3 time(s)!". Accuracy was also rolled
+# per hit; Gen III rolls once for the whole move.
+
+
+def _multi_hit(times=(3, 3), accuracy=85):
+    move = make_poke_move(accuracy=accuracy)
+    move.multi_hit = times
+    return move
+
+
+def test_a_move_that_misses_reports_no_hit_count():
+    bs, your, enemy = make_battle_system()
+    _stub_move(bs, _multi_hit())
+
+    with patch("src.core.combat_calculator._check_accuracy", return_value=False):
+        messages = bs._execute_move_multiple_times(your, enemy, 0, "enemy")
+
+    assert not any("Hit" in m and "time(s)" in m for m in messages)
+    assert any("missed" in m.lower() for m in messages)
+
+
+def test_a_landed_multi_hit_counts_every_hit():
+    bs, your, enemy = make_battle_system()
+    _stub_move(bs, _multi_hit(times=(3, 3)))
+
+    with (
+        patch("src.core.combat_calculator._check_accuracy", return_value=True),
+        patch("src.core.combat_calculator._roll_critical", return_value=False),
+    ):
+        messages = bs._execute_move_multiple_times(your, enemy, 0, "enemy")
+
+    assert "Hit 3 time(s)!" in messages
+
+
+def test_accuracy_is_rolled_once_for_the_whole_move():
+    """The half a hit-count assertion cannot see: three hits used to mean three
+    independent to-hit rolls."""
+    bs, your, enemy = make_battle_system()
+    _stub_move(bs, _multi_hit(times=(3, 3)))
+
+    with (
+        patch(
+            "src.core.combat_calculator._check_accuracy", return_value=True
+        ) as accuracy,
+        patch("src.core.combat_calculator._roll_critical", return_value=False),
+    ):
+        bs._execute_move_multiple_times(your, enemy, 0, "enemy")
+
+    assert accuracy.call_count == 1
+
+
+def test_a_multi_hit_stops_once_the_defender_faints():
+    bs, your, enemy = make_battle_system()
+    _stub_move(bs, _multi_hit(times=(5, 5)))
+    enemy.current_hp = 1
+
+    with (
+        patch("src.core.combat_calculator._check_accuracy", return_value=True),
+        patch("src.core.combat_calculator._roll_critical", return_value=False),
+    ):
+        messages = bs._execute_move_multiple_times(your, enemy, 0, "enemy")
+
+    assert not any("Hit" in m and "time(s)" in m for m in messages)
+    assert enemy.current_hp <= 0

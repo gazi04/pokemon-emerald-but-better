@@ -22,6 +22,10 @@ from src.systems.enemy_ai import EnemyAI
 from src.constants import CHANCE_TO_GET_ITEM, ITEMS_FROM_PICK_UP
 
 
+# Ability ids this system special-cases, in ability.json key form.
+RUN_AWAY = "run_away"
+
+
 class MoveOutcome(NamedTuple):
     """What one execution of a move produced.
 
@@ -791,7 +795,10 @@ class BattleSystem:
         if self.is_trainer:
             return False
 
-        if self.your_pokemon.ability_name.lower() == "tun away":
+        # Normalized to the ability id form: Ability carries only a display name
+        # ("Run Away"), and this used to compare against the typo "tun away", so
+        # the branch was dead and the ability did nothing.
+        if self.your_pokemon.ability_name.lower().replace(" ", "_") == RUN_AWAY:
             return True
 
         return self.your_pokemon.level >= self.enemy_pokemon.level
