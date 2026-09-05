@@ -51,6 +51,9 @@ class BagView(GameView):
 
     def on_show_view(self):
         self.ui.manager.enable()
+        # Every return path comes through here — including back from the pokemon
+        # menu after an item was used, which used to leave stale counts on screen.
+        self.update_item()
 
     def on_hide_view(self):
         self.ui.manager.disable()
@@ -120,14 +123,20 @@ class BagView(GameView):
         self.update_item()
 
     def _on_interact(self):
-        if self.bagIndex in (0, 2):
-            self._open_item_menu()
-        elif (
-            self.bagIndex == 1
-            and self.battle_system is not None
-            and not self.battle_system.is_trainer
-        ):
-            self._throw_pokeball(self.battle_system)
+        # Nothing to act on — both branches below index current_inventory.
+        if not self.current_inventory:
+            return
+
+        # Dispatch on the category, not the tab index. `bagIndex in (0, 2)` left
+        # BERRY (index 3) unreachable, so berries could never be used.
+        category = BAG_CATEGORIES[self.bagIndex]
+
+        if category == ItemCategory.POKEBALL:
+            if self.battle_system is not None and not self.battle_system.is_trainer:
+                self._throw_pokeball(self.battle_system)
+            return
+
+        self._open_item_menu()
 
     def _open_item_menu(self):
         self.overlay(
@@ -137,7 +146,6 @@ class BagView(GameView):
             item=self.current_inventory[self.currentIndex].name,
             battle_system=self.battle_system,
         )
-        self.update_item()
 
     def _throw_pokeball(self, battle_system: BattleSystem):
         pokeball = self.bagSystem.use_pokeball(

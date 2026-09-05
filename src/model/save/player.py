@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from src.enums.item_category import ItemCategory
 
+MAX_PARTY = 6
+BOX_CAPACITY = 30
+
 
 @dataclass
 class PlayerPokemonMove:
@@ -110,21 +113,37 @@ class PlayerSave:
 
         pokemon.moves[index] = move
 
-    def add_pokemon_team(self, pokemon: PlayerPokemon):
-        self.mark_seen(pokemon.name)
-        if len(self.pokemon) >= 6:
-            self.add_pokemon_box(pokemon)
-            return
-        self.pokemon.append(pokemon)
+    def add_pokemon_team(self, pokemon: PlayerPokemon) -> bool:
+        """Add to the party, or to storage when the party is full.
 
-    def add_pokemon_box(self, pokemon: PlayerPokemon):
+        Returns whether the pokemon was stored anywhere — callers surface that
+        to the player (see BattleSystem.add_caught_pokemon).
+        """
+        self.mark_seen(pokemon.name)
+        if len(self.pokemon) >= MAX_PARTY:
+            return self.add_pokemon_box(pokemon)
+        self.pokemon.append(pokemon)
+        return True
+
+    def add_pokemon_box(self, pokemon: PlayerPokemon) -> bool:
+        """Store in the first box with room, opening a new box if every box is
+        full. Exactly one box receives the pokemon.
+
+        The `return` matters: this used to append to *every* non-full box, so a
+        single catch was duplicated across all of them.
+        """
         for box in self.boxs:
-            if len(box.pokemons) == 30:
+            if len(box.pokemons) >= BOX_CAPACITY:
                 continue
 
             box.pokemons.append(pokemon)
+            return True
 
-        print(self.boxs)
+        # Every box is full (or there are none) — open another rather than
+        # dropping the pokemon on the floor.
+        new_box = Box(f"Box {len(self.boxs) + 1}", [pokemon])
+        self.boxs.append(new_box)
+        return True
 
     def mark_seen(self, name: str):
         """Record a species as seen. Normalized to lowercase because the Pokédex

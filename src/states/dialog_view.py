@@ -14,10 +14,10 @@ class DialogView(GameView):
         data_loader: DataLoader,
         player_manager: PlayerManager,
         message_service: MessageService,
-        after_text_callback,
         npc_id: str,
         state: str = "default",
         lines: list[str] | None = None,
+        action: str | None = None,
     ):
         super().__init__()
 
@@ -39,7 +39,7 @@ class DialogView(GameView):
             self.npc = data_loader.npc_dialog[npc_id]
             # The caller may override what happens after the dialog (e.g. a
             # beaten trainer should just close instead of fighting again).
-            self.action = self.npc.action_after_dialog
+            self.action = self._resolve_action(self.npc, action)
             self.dialog = self.npc.get_dialog(state)
 
         self._action_handlers = {
@@ -49,6 +49,18 @@ class DialogView(GameView):
         }
 
         self.ui.queue_messages(self.dialog[self.dialog_index])
+
+    @staticmethod
+    def _resolve_action(npc, override: str | None) -> str:
+        """What happens when the dialog ends. `override` is what the overworld
+        resolved for this encounter and wins when present; None means "no
+        opinion", so the NPC's own action stands.
+
+        The override used to be computed, published, and then silently dropped
+        by GameDirector._build_dialog, which is how beaten trainers stayed
+        fightable.
+        """
+        return override if override is not None else npc.action_after_dialog
 
     def on_show_view(self):
         self.message_service.set_box(self.ui.message_box)
@@ -72,6 +84,13 @@ class DialogView(GameView):
         self.overlay("shop")
 
     def _action_fight(self):
+        # Second gate on the once-only rule. The resolved action is the real
+        # fix; this holds the line however the view was constructed, and
+        # can_fight() is already the single source of that rule.
+        if not self.player_manager.npc_manager.can_fight(self.npc_id):
+            self.close()
+            return
+
         # Spend the encounter up front, not on victory — an NPC is fought once
         # whatever the outcome, so whiting out doesn't hand back a rematch.
         self.player_manager.npc_manager.mark_fought(self.npc_id)

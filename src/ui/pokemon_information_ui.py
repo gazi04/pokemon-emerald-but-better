@@ -7,6 +7,7 @@ from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
 from src.core.data_loader import DataLoader
 from src.tiled import object_layer
+from src.assets import load_sprite_texture
 
 _FONT = "Pokemon Emerald"
 
@@ -119,7 +120,7 @@ class PokemonInformationUI:
             elif obj.name == "pokemon":
                 self._manager.add(
                     arcade.gui.UIImage(
-                        texture=arcade.load_texture(profile.sprites.front),
+                        texture=load_sprite_texture(profile.sprites.front),
                         x=x,
                         y=y,
                         width=w,

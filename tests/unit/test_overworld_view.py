@@ -219,3 +219,55 @@ def test_on_key_release_discards_key(data_loader, player_manager):
     view.on_key_release(arcade.key.UP, 0)
 
     assert view.keys == {arcade.key.DOWN}
+
+
+# --- L8: first_encounter for non-battle NPCs --------------------------------
+# _resolve_dialog returned "default" for anything that isn't a fight NPC, so the
+# first_encounter lines authored for poke-mart-npc in npc_dialog.json never
+# displayed. The state is chosen before mark_talked runs, so has_talked is still
+# false on the very first interaction.
+
+
+def add_talking_npc(data_loader, npc_id, action_after_dialog="shop", **dialogs):
+    species = NpcSpecies(
+        name=npc_id,
+        dialogs=dialogs,
+        action_after_dialog=action_after_dialog,
+        team=Trainer([]),
+    )
+    data_loader.npc_dialog[npc_id] = species
+    return species
+
+
+def test_resolve_dialog_non_battle_npc_greets_on_the_first_visit(
+    data_loader, player_manager
+):
+    npc = add_talking_npc(
+        data_loader, "clerk", first_encounter=["Welcome!"], default=["Back again!"]
+    )
+    view = make_view(data_loader, player_manager)
+
+    assert view._resolve_dialog("clerk", npc) == ("first_encounter", "shop")
+
+
+def test_resolve_dialog_non_battle_npc_uses_default_once_talked_to(
+    data_loader, player_manager
+):
+    npc = add_talking_npc(
+        data_loader, "clerk", first_encounter=["Welcome!"], default=["Back again!"]
+    )
+    player_manager.npc_manager.mark_talked("clerk")
+    view = make_view(data_loader, player_manager)
+
+    assert view._resolve_dialog("clerk", npc) == ("default", "shop")
+
+
+def test_resolve_dialog_skips_first_encounter_when_the_npc_has_none(
+    data_loader, player_manager
+):
+    """Falling back to a state the NPC never authored would send get_dialog
+    hunting through its fallback chain for nothing."""
+    npc = add_talking_npc(data_loader, "clerk", default=["Hello."])
+    view = make_view(data_loader, player_manager)
+
+    assert view._resolve_dialog("clerk", npc) == ("default", "shop")

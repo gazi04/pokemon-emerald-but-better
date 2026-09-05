@@ -141,7 +141,6 @@ class OverworldView(GameView):
             self.encounter_system.cleanup()
         self.encounter_system = EncounterSystem(
             bush_tiles=loaded.bush_tiles,
-            player_state=self.player_state,
             data_loader=self.data_loader,
         )
 
@@ -230,6 +229,14 @@ class OverworldView(GameView):
             return "first_encounter", "fight"
         if is_battle_npc and already_beaten:
             return "after_victory", "end"
+
+        # Non-battle NPCs get a greeting on the first visit too. This is decided
+        # before _on_npc_interaction calls mark_talked, so has_talked is still
+        # false here on the very first interaction.
+        first_visit = not self.player_manager.npc_manager.get_state(npc_id).has_talked
+        if first_visit and npc.has_state("first_encounter"):
+            return "first_encounter", npc.action_after_dialog
+
         return "default", npc.action_after_dialog
 
     # ------------------------------------------------------------------

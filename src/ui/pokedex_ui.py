@@ -3,6 +3,7 @@ import arcade.gui
 from src.core.data_loader import DataLoader
 from src.constants import POKEDEX_UI
 from src.tiled import object_layer
+from src.assets import load_sprite_texture
 
 
 class PokedexUi:
@@ -156,7 +157,7 @@ class PokedexUi:
 
         if is_known:
             profile = self.data_loader.require_pokemon(name)
-            texture = arcade.load_texture(profile.sprites.front)
+            texture = load_sprite_texture(profile.sprites.front)
         else:
             texture = arcade.load_texture("assets/sprite/pokemon/question_mark.png")
 

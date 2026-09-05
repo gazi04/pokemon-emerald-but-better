@@ -167,17 +167,17 @@ class BattleView(GameView):
             self.your_battle.level,
         )
         self.update_ui_moves()
-        first_move = self.data_loader.get_move(self.your_battle.moves[0].name)
-        if first_move is not None:
-            self.ui.menu_panel.update_move_info(
-                first_move.type,
-                self.your_battle.moves[0].pp,
-                first_move.pp,
-            )
-        else:
-            self.ui.menu_panel.update_move_info(
-                "Normal", self.your_battle.moves[0].pp, 35
-            )
+        if self.your_battle.moves:
+            first = self.your_battle.moves[0]
+            first_move = self.data_loader.get_move(first.name)
+            if first_move is not None:
+                self.ui.menu_panel.update_move_info(
+                    first_move.type,
+                    first.pp,
+                    first_move.pp,
+                )
+            else:
+                self.ui.menu_panel.update_move_info("Normal", first.pp, 35)
         if update_texture:
             texture = self.data_loader.require_pokemon(
                 self.your_battle.name.lower()
@@ -489,9 +489,11 @@ class BattleView(GameView):
         """Number of buttons in the currently-active menu panel, or None if no
         menu is active (key presses are then ignored)."""
         if self.ui.active_component == "main":
-            return len(self.ui.menu_panel.main_buttons)
+            return len(self.ui.menu_panel.main_buttons) or None
         if self.ui.active_component == "moves":
-            return len(self.your_battle.moves)
+            # `or None` matters: a moveless pokemon would otherwise reach
+            # _move_menu_cursor's `% num_buttons` and divide by zero.
+            return len(self.your_battle.moves) or None
         return None
 
     def _move_menu_cursor(self, delta: int, num_buttons: int, guarded: bool):

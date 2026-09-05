@@ -3,6 +3,7 @@ from src.core.data_loader import DataLoader
 from src.core.player_manager import PlayerManager
 from data.config import CONFIG
 from src.states.base_view import GameView
+from src.model.static.item import ItemSpecies
 from src.ui.shop_ui import ShopUI
 
 
@@ -20,7 +21,7 @@ class ShopView(GameView):
         self.previous_view = previous_view
         self.player_manager = player_manager
 
-        self.items = data_loader.items
+        self.items = self.purchasable(data_loader.items)
         self._item_names = list(self.items.keys())
 
         self.ui = ShopUI(self.items)
@@ -32,6 +33,13 @@ class ShopView(GameView):
 
         self.ui.set_money(self.player_manager.player.money)
         self.ui.select_option(self._option_index)
+
+    @staticmethod
+    def purchasable(items: dict[str, ItemSpecies]) -> dict[str, ItemSpecies]:
+        """The mart's stock. `price: 0` in items.json marks something that is
+        found or given rather than sold (berries, held items) — listing those
+        made them free, and scrolling their amount divided by zero."""
+        return {name: item for name, item in items.items() if item.price > 0}
 
     def on_draw(self):
         self.clear()
@@ -95,13 +103,10 @@ class ShopView(GameView):
         item = self.items[self._get_item_name()]
 
         if self.is_pressed(CONFIG.controls.up, key):
-            max_affordable = self.player_manager.player.money // item.price
-            self._amount = min(self._amount + 1, max_affordable)
-            self.ui.set_amount(self._amount, self._amount * item.price)
+            self._handle_amount_step(item, +1)
 
         elif self.is_pressed(CONFIG.controls.down, key):
-            self._amount = max(1, self._amount - 1)
-            self.ui.set_amount(self._amount, self._amount * item.price)
+            self._handle_amount_step(item, -1)
 
         elif self.is_pressed(CONFIG.controls.interact, key):
             self._confirm_purchase(item)
@@ -110,6 +115,17 @@ class ShopView(GameView):
             self._mode = "items"
             self.ui.show_shop()
             self.ui.selecting_item(self._item_index)
+
+    def _handle_amount_step(self, item: ItemSpecies, delta: int) -> None:
+        """Move the quantity by `delta`, clamped to [1, what the player can
+        afford]. Never divides by a zero price, and never lands on 0 — buying a
+        0-count stack was the other half of that bug."""
+        if item.price <= 0:
+            return
+
+        max_affordable = self.player_manager.player.money // item.price
+        self._amount = max(1, min(self._amount + delta, max_affordable))
+        self.ui.set_amount(self._amount, self._amount * item.price)
 
     def _get_item_name(self):
         return self._item_names[self._item_index]

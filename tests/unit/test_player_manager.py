@@ -243,3 +243,122 @@ def test_capture_npc_states_round_trips_through_save(data_loader):
     pm.capture_npc_states()
 
     assert sm.player.npc_states == [NPCState(npc_id="npc1", has_talked=True).to_dict()]
+
+
+# --- box storage -------------------------------------------------------
+# X1: add_pokemon_box looped every box, `continue`d past full ones and appended
+# to each remaining one without returning, so one caught Pokemon landed in ALL
+# non-full boxes. The assertions below check the boxes that must stay EMPTY —
+# asserting only that the target box received it would pass on the bug.
+
+
+def _mon(name: str) -> PlayerPokemon:
+    return PlayerPokemon(
+        name=name,
+        hp=10,
+        level=5,
+        exp=0,
+        ability="",
+        moves=[PlayerPokemonMove(name="tackle", pp=35)],
+        held_item=None,
+    )
+
+
+def _fill_party(player_manager):
+    player_manager.player.pokemon = [_mon(f"mon{i}") for i in range(6)]
+
+
+def test_full_party_sends_the_catch_to_exactly_one_box(player_manager):
+    from src.model.save.player import Box
+
+    player_manager.player.boxs = [Box("Box 1", []), Box("Box 2", []), Box("Box 3", [])]
+    _fill_party(player_manager)
+
+    player_manager.add_pokemon(_mon("ralts"))
+
+    stored = [len(box.pokemons) for box in player_manager.player.boxs]
+    assert stored == [1, 0, 0], "the catch was duplicated across boxes"
+
+
+def test_box_storage_fills_the_first_box_before_the_next(player_manager):
+    from src.model.save.player import BOX_CAPACITY, Box
+
+    first = Box("Box 1", [_mon(f"m{i}") for i in range(BOX_CAPACITY - 1)])
+    second = Box("Box 2", [])
+    player_manager.player.boxs = [first, second]
+    _fill_party(player_manager)
+
+    player_manager.add_pokemon(_mon("ralts"))
+    assert (len(first.pokemons), len(second.pokemons)) == (BOX_CAPACITY, 0)
+
+    player_manager.add_pokemon(_mon("zubat"))
+    assert (len(first.pokemons), len(second.pokemons)) == (BOX_CAPACITY, 1)
+
+
+def test_all_boxes_full_creates_a_new_one_rather_than_losing_the_catch(player_manager):
+    from src.model.save.player import BOX_CAPACITY, Box
+
+    player_manager.player.boxs = [
+        Box("Box 1", [_mon(f"m{i}") for i in range(BOX_CAPACITY)])
+    ]
+    _fill_party(player_manager)
+
+    player_manager.add_pokemon(_mon("ralts"))
+
+    assert len(player_manager.player.boxs) == 2
+    assert player_manager.player.boxs[1].name == "Box 2"
+    assert [p.name for p in player_manager.player.boxs[1].pokemons] == ["ralts"]
+
+
+def test_no_boxes_at_all_still_stores_the_catch(player_manager):
+    """The shipped save has one box, but nothing guarantees that."""
+    player_manager.player.boxs = []
+    _fill_party(player_manager)
+
+    assert player_manager.add_pokemon(_mon("ralts")) is True
+    assert len(player_manager.player.boxs) == 1
+    assert [p.name for p in player_manager.player.boxs[0].pokemons] == ["ralts"]
+
+
+def test_room_in_the_party_skips_the_boxes_entirely(player_manager):
+    from src.model.save.player import Box
+
+    player_manager.player.boxs = [Box("Box 1", [])]
+    before = len(player_manager.player.pokemon)
+
+    assert player_manager.add_pokemon(_mon("ralts")) is True
+
+    assert len(player_manager.player.pokemon) == before + 1
+    assert player_manager.player.boxs[0].pokemons == []
+
+
+# --- owned species -----------------------------------------------------
+# L4: the Pokedex built `owned` from the party alone, so a boxed species showed
+# as merely seen. The box assertions are the regression.
+
+
+def test_owned_includes_the_party(player_manager):
+    player_manager.player.pokemon = [_mon("mudkip")]
+
+    assert player_manager.get_owned_pokemon() == {"mudkip"}
+
+
+def test_owned_includes_boxed_pokemon(player_manager):
+    from src.model.save.player import Box
+
+    player_manager.player.pokemon = [_mon("mudkip")]
+    player_manager.player.boxs = [Box("Box 1", [_mon("ralts")])]
+
+    assert player_manager.get_owned_pokemon() == {"mudkip", "ralts"}
+
+
+def test_owned_spans_every_box(player_manager):
+    from src.model.save.player import Box
+
+    player_manager.player.pokemon = []
+    player_manager.player.boxs = [
+        Box("Box 1", [_mon("ralts")]),
+        Box("Box 2", [_mon("zubat")]),
+    ]
+
+    assert player_manager.get_owned_pokemon() == {"ralts", "zubat"}

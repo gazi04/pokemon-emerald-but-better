@@ -69,4 +69,11 @@ class SaveManager:
             return True
         except Exception:
             log.exception("Save failed")
+            # Don't leave save.tmp.json behind. Best-effort inside its own try,
+            # like the backup above — cleanup must never mask the real failure.
+            try:
+                if os.path.exists(SAVE_TMP_PATH):
+                    os.remove(SAVE_TMP_PATH)
+            except OSError as e:
+                log.warning("Failed to remove temp save '%s': %s", SAVE_TMP_PATH, e)
             return False

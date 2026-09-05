@@ -114,9 +114,7 @@ class PokemonMenuView(GameView):
 
         if index == 2:
             if self.bag:
-                self._get_current_pokemon().held_item = self.item
-
-                self.window.show_view(self.previous_view)
+                self._give_held_item()
 
         elif index == 1:
             if self.bag:
@@ -141,6 +139,26 @@ class PokemonMenuView(GameView):
                 previous_view=self,
                 pokemon=self._get_current_pokemon(),
             )
+
+    def _give_held_item(self):
+        """Hand the selected bag item to the current pokemon.
+
+        Goes through BagSystem so the item is checked for `holdable`, removed
+        from the bag, and written via the player_manager mutation door. Writing
+        `held_item` here directly skipped all three — the item was duplicated
+        rather than moved, and anything already held was overwritten and lost.
+        """
+        if self.bag is None:
+            raise RuntimeError(
+                "_give_held_item requires the view to be opened with a bag."
+            )
+
+        # Refused: not holdable, or this pokemon already holds something. Stay
+        # on the menu, as _use_item does for a rejected item.
+        if not self.bag.give_held_item(self.item, self._get_current_pokemon().name):
+            return
+
+        self.window.show_view(self.previous_view)
 
     def _use_item(self, move_index: int | None = None):
         """Apply the selected bag item to the current pokemon. `move_index` is

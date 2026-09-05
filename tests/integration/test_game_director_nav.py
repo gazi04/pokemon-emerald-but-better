@@ -195,3 +195,25 @@ def test_save_request_fails_before_overworld_exists(director):
 
     assert len(results) == 1
     assert results[0].success is False
+
+
+# X3: _build_dialog dropped the `action` kwarg on the floor. overworld_view
+# computed ("after_victory", "end") for a beaten trainer and published it, but
+# DialogView never received it and fell back to npc.action_after_dialog =
+# "fight" — so a beaten trainer re-fought forever, re-awarding prize money each
+# time. Only the director sees this seam: both sides are individually correct.
+
+
+def test_dialog_forwards_the_resolved_action(director, arcade_window):
+    director.start()
+    global_bus.publish(OverlayViewEvent("dialog", {"npc_id": "timmy", "action": "end"}))
+    view = arcade_window.current_view
+    assert view.kwargs["action"] == "end"
+
+
+def test_dialog_action_defaults_to_none_when_unspecified(director, arcade_window):
+    """None means 'no override' — DialogView then uses the NPC's own action."""
+    director.start()
+    global_bus.publish(OverlayViewEvent("dialog", {"npc_id": "timmy"}))
+    view = arcade_window.current_view
+    assert view.kwargs["action"] is None

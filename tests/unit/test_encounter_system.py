@@ -19,7 +19,7 @@ def make_system(bush_tiles=None, map_name="littleroot_town", encounters=None):
     # tests/unit/test_encounter_data.py asserts against the real data files.
     dl.encounters = FAKE_ENC if encounters is None else encounters
     tiles = bush_tiles or {(5, 5)}
-    system = EncounterSystem(tiles, player_state, dl)
+    system = EncounterSystem(tiles, dl)
     return system, player_state, dl
 
 
@@ -173,3 +173,50 @@ def test_encounter_level_within_declared_range():
         system._on_player_moved(fire_move_event(5, 5))
 
     assert 2 <= received[0].pokemon_level <= 4
+
+
+# --- the event's map is the one that counts --------------------------------
+# D4: _on_player_moved read self._player_state.map_name and ignored the
+# event.map_name it was handed. Two sources for one fact — they agree today only
+# because MovementSystem publishes from the same PlayerMotion object the system
+# holds. The `map_name` argument on fire_move_event above was dead input, so a
+# test could name one map and silently exercise another.
+
+TWO_MAP_ENC = {
+    "littleroot_town": {
+        "grass": [{"name": "poochyena", "levels": [2, 4], "weight": 1}]
+    },
+    "root101": {"grass": [{"name": "zigzagoon", "levels": [3, 5], "weight": 1}]},
+}
+
+
+def test_encounter_follows_the_event_not_the_cached_state():
+    system, player_state, _dl = make_system(
+        bush_tiles={(5, 5)}, map_name="littleroot_town", encounters=TWO_MAP_ENC
+    )
+    received = []
+    global_bus.subscribe(BattleEncounterTriggeredEvent, received.append)
+
+    with patch("src.systems.encounter_system.random.random", return_value=0.0):
+        system._on_player_moved(fire_move_event(5, 5, map_name="root101"))
+
+    assert player_state.map_name == "littleroot_town"  # deliberately stale
+    assert len(received) == 1
+    assert received[0].pokemon_name == "zigzagoon", (
+        "encounter came from the cached state's map, not the event's"
+    )
+
+
+def test_no_encounter_when_the_events_map_has_no_table():
+    """The mirror case: the cached state names a map *with* a table, so reading
+    the wrong source would produce an encounter that should not happen."""
+    system, _player_state, _dl = make_system(
+        bush_tiles={(5, 5)}, map_name="littleroot_town", encounters=TWO_MAP_ENC
+    )
+    received = []
+    global_bus.subscribe(BattleEncounterTriggeredEvent, received.append)
+
+    with patch("src.systems.encounter_system.random.random", return_value=0.0):
+        system._on_player_moved(fire_move_event(5, 5, map_name="oldale_town"))
+
+    assert received == []

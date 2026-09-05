@@ -12,13 +12,17 @@ class BagSystem:
         self.player_manager = player_manager
         self.data_loader = data_loader
 
-        self._items = player_manager.player.items
-
         self._effect_appliers = {
             EffectType.HEAL: self._apply_heal,
             EffectType.CURE_STATUS: self._apply_cure_status,
             EffectType.RESTORE_PP: self._apply_restore_pp,
         }
+
+    @property
+    def _items(self) -> dict[str, ItemStack]:
+        """The live inventory. Read through the manager every time — binding the
+        dict in __init__ left the bag reading a detached copy after a reload."""
+        return self.player_manager.player.items
 
     # ── Eligibility checks ────────────────────────────────────────────────────
 
@@ -158,11 +162,21 @@ class BagSystem:
         max_hp = PokemonStat.max_hp(pokemon_profile.stats.hp, pokemon.level)
         item_def = self.data_loader.require_item(item_name)
 
-        return all(
-            not (applier := self._effect_appliers.get(effect.type))
-            or applier(pokemon_id, pokemon, max_hp, effect, move_index)
+        # An item is used when *at least one* of its effects lands. Built as a
+        # list, not a generator, so every applier runs — `any()` would
+        # short-circuit and skip the rest.
+        #
+        # This was `all()`, which returned True for an item with no effects at
+        # all (consumed for nothing) and False for a multi-effect item whose
+        # first effect landed and second did not (Full Restore on a poisoned
+        # pokemon at full HP: status cured, item not consumed).
+        applied = [
+            applier(pokemon_id, pokemon, max_hp, effect, move_index)
             for effect in item_def.effects
-        )
+            if (applier := self._effect_appliers.get(effect.type))
+        ]
+
+        return any(applied)
 
     # ── Held item support ─────────────────────────────────────────────────────
 

@@ -256,3 +256,47 @@ def test_load_all_sources_unreadable_raises(tmp_path, monkeypatch):
 
     with pytest.raises(RuntimeError):
         SM2()
+
+
+# --- D2: no orphan tmp file on a failed save --------------------------------
+# flush_save writes save.tmp.json, then promotes it with os.replace. The outer
+# except logged and returned False but never unlinked the tmp file, so a failure
+# between the two left it on disk.
+
+
+def test_failed_flush_leaves_no_tmp_file(save_manager, tmp_path, monkeypatch):
+    def _raise(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr("src.core.save_manager.os.replace", _raise)
+
+    state = PlayerMotion(
+        map_name="oldale_town", direction="down", pixel_x=1.0, pixel_y=2.0
+    )
+    result = save_manager.flush_save(state)
+
+    assert result is False
+    assert not (tmp_path / "save.tmp.json").exists(), "orphan tmp file left behind"
+
+
+def test_failed_flush_does_not_clobber_the_existing_save(
+    save_manager, tmp_path, monkeypatch
+):
+    """The tmp-file cleanup must not touch the good save already on disk."""
+    good = PlayerMotion(
+        map_name="littleroot_town", direction="down", pixel_x=1.0, pixel_y=2.0
+    )
+    assert save_manager.flush_save(good) is True
+
+    def _raise(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr("src.core.save_manager.os.replace", _raise)
+    save_manager.flush_save(
+        PlayerMotion(
+            map_name="petalburg_city", direction="up", pixel_x=3.0, pixel_y=4.0
+        )
+    )
+
+    data = json.loads((tmp_path / "save.json").read_text())
+    assert data["position"]["map_name"] == "littleroot_town"

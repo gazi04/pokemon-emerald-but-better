@@ -1,4 +1,5 @@
 import random
+from typing import NamedTuple
 
 from src.model.battle.battle_pokemon import BattlePokemon
 from src.core.player_manager import PlayerManager
@@ -6,7 +7,7 @@ from src.core.data_loader import DataLoader
 from src.core.combat_calculator import calculate_damage
 from src.core.catch_calculator import calc_catch_probability
 from src.core.event_bus import global_bus
-from src.core.events import HpChangedEvent, PokemonFaintedEvent
+from src.core.events import HpChangedEvent
 from src.enums.battle_state import BattleState
 from src.enums.stat import Stat
 from src.enums.effect_type import EffectType
@@ -19,6 +20,21 @@ from src.model.static.trainer import Trainer, TrainerPokemon
 from src.model.static.pokemon import PokemonMove
 from src.systems.enemy_ai import EnemyAI
 from src.constants import CHANCE_TO_GET_ITEM, ITEMS_FROM_PICK_UP
+
+
+# Ability ids this system special-cases, in ability.json key form.
+RUN_AWAY = "run_away"
+
+
+class MoveOutcome(NamedTuple):
+    """What one execution of a move produced.
+
+    `landed` is what the multi-hit loop needs and a bare list could not carry:
+    it counted iterations, so three whiffs still reported "Hit 3 time(s)!".
+    """
+
+    messages: list[str]
+    landed: bool
 
 
 class BattleSystem:
@@ -43,8 +59,6 @@ class BattleSystem:
 
         # Battle-wide weather (clear until a move or ability summons it).
         self.weather = WeatherState()
-
-        self._last_player_move = ""
 
         # Move-learning queue for the active pokemon after a level-up.
         self._learn_queue: list[str] = []
@@ -100,7 +114,24 @@ class BattleSystem:
         base = pokemon.get_stat(Stat.SPEED)
         return round(base * pokemon.weather_speed_multiplier(self.weather.kind))
 
+    @staticmethod
+    def _validate_move_index(pokemon: BattlePokemon, move_index: int) -> None:
+        """Fail at the boundary, naming both the index and the moveset size.
+
+        The battle menu sizes its cursor from len(moves) so it cannot produce a
+        bad index today, but this is the system's public entry point and a raw
+        IndexError from deep inside _execute_move names neither the caller nor
+        the pokemon. Negative indices are rejected too — Python would silently
+        select a move from the far end of the list.
+        """
+        if not 0 <= move_index < len(pokemon.moves):
+            raise IndexError(
+                f"move_index {move_index} out of range for {pokemon.name}'s "
+                f"{len(pokemon.moves)} move(s)"
+            )
+
     def turn(self, move_index: int) -> list[str]:
+        self._validate_move_index(self.your_pokemon, move_index)
         self.battle_state = BattleState.CURRENTLY_TURN
         enemy_move_index = self.ai.select_move(self.enemy_pokemon, self.your_pokemon)
 
@@ -253,7 +284,9 @@ class BattleSystem:
             return self._execute_move_multiple_times(
                 attacker, defender, move_index, defender_label
             )
-        return self._execute_move(attacker, defender, move_index, defender_label)
+        return self._execute_move(
+            attacker, defender, move_index, defender_label
+        ).messages
 
     def _execute_move_multiple_times(
         self,
@@ -275,18 +308,28 @@ class BattleSystem:
         hits_landed = 0
 
         for hit_number in range(1, times + 1):
-            hit_messages = self._execute_move(
+            outcome = self._execute_move(
                 attacker,
                 defender,
                 move_index,
                 defender_label,
                 announce=(hit_number == 1),
+                # Gen III rolls to-hit once for the whole move: the first hit
+                # carries the roll, and the rest land with it. Rolling per hit
+                # made a 2-5 hit move behave like several separate attacks.
+                check_accuracy=(hit_number == 1),
             )
-            messages.extend(hit_messages)
+            messages.extend(outcome.messages)
+
+            # Only count hits that actually connected. This counted iterations,
+            # so a move that missed every time still announced "Hit N time(s)!".
+            if not outcome.landed:
+                break
             hits_landed += 1
 
             if defender.current_hp <= 0:
                 break
+
         if hits_landed > 1:
             messages.append(f"Hit {hits_landed} time(s)!")
 
@@ -299,7 +342,8 @@ class BattleSystem:
         move_index: int,
         defender_label: str,
         announce: bool = True,
-    ) -> list[str]:
+        check_accuracy: bool = True,
+    ) -> MoveOutcome:
         move_name = attacker.moves[move_index].name
         move_data = self.data_loader.get_move(move_name)
         if move_data is None:
@@ -314,23 +358,28 @@ class BattleSystem:
             status_messages, can_move = attacker.check_can_move(move_index)
             messages.extend(status_messages)
             if not can_move:
-                return messages
+                return MoveOutcome(messages, landed=False)
 
             failure_message = self._check_move_condition(move_data, attacker)
             if failure_message:
                 messages.append(failure_message)
-                return messages
+                return MoveOutcome(messages, landed=False)
+
+            # Recorded here, after the condition check that reads it: the move is
+            # now committed. Recording the *attempt* rather than the landing is
+            # deliberate — a miss must still block a consecutive repeat.
+            attacker.last_move = move_data.name
 
         if defender.is_protected:
             messages.append(f"{defender.name} protected itself!")
-            return messages
+            return MoveOutcome(messages, landed=False)
 
         # Ability: defender immunity (e.g. Levitate vs Ground) — absolute, so
         # short-circuit before accuracy/damage are even rolled.
         immunity_message = defender.immunity_to(move_data)
         if immunity_message:
             messages.append(immunity_message)
-            return messages
+            return MoveOutcome(messages, landed=False)
 
         # Ability: attacker on-attack power boost (e.g. Blaze at low HP).
         attack_multiplier, ability_attack_messages = attacker.ability_attack_multiplier(
@@ -351,12 +400,13 @@ class BattleSystem:
             crit_modifier=attacker.modifiers.get(Stat.CRITS, 0) + move_data.crit,
             type_chart=self.data_loader.types,
             weather_multiplier=self.weather.damage_multiplier(move_data.type),
+            check_accuracy=check_accuracy,
         )
 
         messages.extend(result.messages)
 
         if result.is_miss:
-            return messages
+            return MoveOutcome(messages, landed=False)
 
         # Apply damage (attacker ability boost + held-item boost, e.g. Life Orb,
         # type boosters, Choice Band/Specs).
@@ -390,9 +440,7 @@ class BattleSystem:
         # Publish HP change for UI bar update
         self._publish_hp_change(defender_label, hp_before, defender)
 
-        self._last_player_move = move_data.name
-
-        return messages
+        return MoveOutcome(messages, landed=True)
 
     def _apply_move_weather(self, move_data: PokemonMove) -> list[str]:
         """Summon weather from a move's `weather` effect, if it has one."""
@@ -413,7 +461,7 @@ class BattleSystem:
         if condition == "first_turn_only" and not attacker.is_first_turn:
             return f"But {move_data.name} failed!"
 
-        if condition == "not_consecutive" and self._last_player_move == move_data.name:
+        if condition == "not_consecutive" and attacker.last_move == move_data.name:
             return f"But {move_data.name} failed!"
 
         return None
@@ -537,13 +585,6 @@ class BattleSystem:
                 )
             self.battle_state = BattleState.PLAYER_FAINTED
             messages.append(f"{self.your_pokemon.name} fainted!")
-
-        global_bus.publish(
-            PokemonFaintedEvent(
-                target="enemy" if died_pokemon.is_enemy else "player",
-                pokemon_name=died_pokemon.name,
-            )
-        )
 
         return messages
 
@@ -682,10 +723,11 @@ class BattleSystem:
 
         Returns the same {"success", "messages"} shape as attempt_catch().
         "messages" is empty on success (nothing extra to show after "Gotcha!");
-        on failure (party already has 6) it explains the Pokemon was lost.
+        a full party sends the catch to storage, which is still a success. Only
+        an outright storage failure returns success=False with an explanation.
         """
         enemy = self.enemy_pokemon
-        self.player_manager.add_pokemon(
+        stored = self.player_manager.add_pokemon(
             PlayerPokemon(
                 name=enemy.name.lower(),
                 hp=enemy.current_hp,
@@ -696,6 +738,11 @@ class BattleSystem:
                 held_item=None,
             )
         )
+        if not stored:
+            return {
+                "success": False,
+                "messages": [f"There was no room for {enemy.name}!"],
+            }
         return {"success": True, "messages": []}
 
     def attempt_catch(self, item_data: ItemSpecies) -> dict:
@@ -748,7 +795,10 @@ class BattleSystem:
         if self.is_trainer:
             return False
 
-        if self.your_pokemon.ability_name.lower() == "tun away":
+        # Normalized to the ability id form: Ability carries only a display name
+        # ("Run Away"), and this used to compare against the typo "tun away", so
+        # the branch was dead and the ability did nothing.
+        if self.your_pokemon.ability_name.lower().replace(" ", "_") == RUN_AWAY:
             return True
 
         return self.your_pokemon.level >= self.enemy_pokemon.level

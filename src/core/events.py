@@ -79,20 +79,23 @@ class TextMessageEvent:
 
 @dataclass
 class HpChangedEvent:
-    """Fired after damage or healing is applied to a Pokémon."""
+    """Fired after damage or healing is applied to a Pokémon.
+
+    Deliberately has no production subscriber yet: it is the seam for animating
+    the HP bar, which today is redrawn statelessly from the live ratio every
+    frame (`battle_ui_manager.draw_hp_bar`). A consumer holding a displayed
+    value and lerping it toward `new_hp` is the intended use; that work is
+    blocked behind view/UI test coverage. `old_hp` exists for that tween.
+
+    Tests are its only consumer for now — do not delete it as dead code.
+    (`PokemonFaintedEvent` sat beside this one with no such plan and was
+    removed; the battle flow branches on `battle_state` instead.)
+    """
 
     target: str  # "player" or "enemy"
     old_hp: int
     new_hp: int
     max_hp: int
-
-
-@dataclass
-class PokemonFaintedEvent:
-    """Fired when a Pokémon's HP reaches zero."""
-
-    target: str  # "player" or "enemy"
-    pokemon_name: str
 
 
 # ---------------------------------------------------------------------------
