@@ -6,10 +6,10 @@ from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
+from src.model.battle import ability_effects
 from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
-from src.model.static.ability import Ability, AbilityEffect
-from src.enums.ability import AbilityTypes, AbilityCondition, AbilityTrigger
+from src.model.static.ability import Ability
 from src.model.static.item import ItemSpecies
 
 MAX_MOVES = 4
@@ -216,7 +216,7 @@ class BattlePokemon:
         if status is None or self.status_effect != StatusEffect.NONE:
             return False
 
-        if self._has_status_immunity(status):
+        if ability_effects.has_status_immunity(self, status):
             return False
 
         if status == StatusEffect.BURN and "fire" in self.types:
@@ -312,7 +312,7 @@ class BattlePokemon:
         """
         messages = []
 
-        if self._ability_blocks_move_effect():
+        if ability_effects.blocks_move_effect(self):
             return []
 
         for effect in move.effects:
@@ -329,7 +329,7 @@ class BattlePokemon:
         change = effect.change
         current_stage = destination.modifiers[stat]
 
-        if self._ability_blocks_stat_drop(stat, change):
+        if ability_effects.blocks_stat_drop(self, stat, change):
             return []
 
         if change > 0 and current_stage == 6:
@@ -354,7 +354,7 @@ class BattlePokemon:
         chance = effect.chance if effect.chance else 100
 
         if chance >= random.randint(1, 100):
-            if self._has_status_immunity(effect.condition):
+            if ability_effects.has_status_immunity(self, effect.condition):
                 return []
 
             if effect.condition == StatusEffect.CONFUSION:
@@ -409,148 +409,24 @@ class BattlePokemon:
         return messages
 
     # ------------------------------------------------------------------
-    # Abilities — data-driven hooks fired by BattleSystem during a move.
-    # Mirrors the move-effect dispatch above: each trigger reads this
-    # pokemon's ability effects and applies the ones whose condition holds.
+    # Abilities — the hooks themselves live in ability_effects.py as free
+    # functions over this pokemon, so an EnemyAI simulation clone (a shallow
+    # copy) stays self-contained. These delegates keep BattleSystem's and
+    # EnemyAI's call sites — and the instance-level patches in tests — working.
     # ------------------------------------------------------------------
 
     @property
     def ability_name(self) -> str:
-        """The ability's name, for messages. Every caller is reached through
-        `_ability_effects`, which yields nothing when there's no ability, so the
-        empty fallback is unreachable in practice."""
-        return self.ability.name if self.ability else ""
-
-    def _ability_effects(self, trigger: str) -> list[AbilityEffect]:
-        if not self.ability or not self.ability.effects:
-            return []
-        return [e for e in self.ability.effects if e.trigger == trigger]
-
-    def _ability_condition_met(
-        self, effect: AbilityEffect, move: PokemonMove | None = None
-    ) -> bool:
-        """Gate an ability effect on its `condition` (None == always)."""
-        condition = effect.condition
-        if not condition:
-            return True
-        if condition == AbilityCondition.LOW_HP:
-            return self.current_hp <= self.max_hp / 3
-        if condition == AbilityCondition.CONTACT:
-            return move is not None and move.category == "physical"
-        if condition == AbilityCondition.GROUND_TYPE:
-            return move is not None and move.type == "ground"
-        if condition == AbilityCondition.HAS_STATUS_EFFECT:
-            return self.status_effect is not None
-
-        return False
+        return ability_effects.display_name(self)
 
     def ability_attack_multiplier(self, move: PokemonMove) -> tuple[float, list[str]]:
-        """Attacker hook (trigger 'on_attack'). Returns a damage multiplier and
-        any UI messages — e.g. Blaze powering up the attack at low HP."""
-        multiplier = 1.0
-        messages: list[str] = []
-        for effect in self._ability_effects(AbilityTrigger.ON_ATTACK):
-            if effect.type != "damage_boost":
-                continue
-            if not self._ability_condition_met(effect, move):
-                continue
-            if move.type != effect.move_type:
-                continue
-            multiplier *= 1 + (effect.change or 0) / 100
-            messages.append(f"{self.name}'s {self.ability_name} powered up the move!")
-
-        return multiplier, messages
+        return ability_effects.attack_multiplier(self, move)
 
     def immunity_to(self, move: PokemonMove) -> str | None:
-        """Defender hook. Returns a message if this pokemon's ability makes it
-        immune to `move` (e.g. Levitate vs Ground), else None."""
-        for effect in self._ability_effects(AbilityTrigger.ON_HIT):
-            if effect.type in [
-                AbilityTypes.IMMUNITY,
-                AbilityTypes.ABSORB,
-            ] and self._ability_condition_met(effect, move):
-                return f"It doesn't affect {self.name}…"
-        return None
-
-    def _ability_blocks_move_effect(self):
-        return any(
-            effect.type == AbilityTypes.IMMUNITY_MOVE_EFFECTS
-            for effect in self._ability_effects(AbilityTrigger.ON_HIT)
-        )
-
-    def _has_status_immunity(self, status: StatusEffect) -> bool:
-        """
-        Returns True if this pokemon's ability makes it immune to the status condition.
-        e.g. Limber prevents paralysis, Immunity prevents poison.
-        """
-        return any(
-            effect.type == AbilityTypes.IMMUNITY_STATUS_EFFECT
-            and effect.status == status
-            for effect in self._ability_effects(AbilityTrigger.ON_HIT)
-        )
-
-    def _ability_blocks_stat_drop(self, stat: Stat, change: int) -> bool:
-        """
-        Returns True if this pokemon's ability prevents a stat from being lowered.
-        e.g. Clear Body / White Smoke block any move or
-        ability that would reduce a stat stage.
-        Only applies when change is negative (a drop); boosts are never blocked.
-        """
-        return change < 0 and any(
-            effect.type == AbilityTypes.STAT_CHANGE and effect.stat == stat
-            for effect in self._ability_effects(AbilityTrigger.ON_STAT_CHANGE)
-        )
+        return ability_effects.immunity_to(self, move)
 
     def on_hit(self, attacker: BattlePokemon, move: PokemonMove) -> list[str]:
-        messages: list[str] = []
-        for effect in self._ability_effects(AbilityTrigger.ON_HIT):
-            if not self._ability_condition_met(effect, move):
-                continue
-            chance = effect.chance if effect.chance is not None else 1.0
-            if random.random() >= chance:
-                continue
-
-            if effect.type == AbilityTypes.STATUS:
-                victim = attacker if effect.target == "enemy" else self
-                applied, message = self._apply_status_effect_ability(effect, victim)
-                if applied:
-                    messages.append(message)
-
-            elif effect.type == AbilityTypes.ABSORB:
-                messages.extend(self._heal_from_ability(effect))
-
-            elif (
-                effect.type == AbilityTypes.PASSES_STATUS_EFFECT
-                and self.status_effect != StatusEffect.NONE
-            ):
-                attacker.apply_status_effect(self.status_effect)
-                self.status_effect = StatusEffect.NONE
-
-        return messages
-
-    def _apply_status_effect_ability(
-        self, effect: AbilityEffect, destination: BattlePokemon
-    ):
-        status = self._status_from(effect.status)
-        if status is None:
-            return (False, "")
-
-        if not destination.apply_status_effect(status):
-            return (False, "")
-
-        return (
-            True,
-            f"{destination.name} was {status.value} by "
-            f"{self.name}'s {self.ability_name}!",
-        )
-
-    def _heal_from_ability(self, effect: AbilityEffect) -> list[str]:
-        if effect.change is None:
-            return []
-
-        regained = int(self.max_hp * effect.change / 100)
-        self.current_hp = min(self.max_hp, self.current_hp + regained)
-        return [f"{self.name} restored HP using {self.ability_name}!"]
+        return ability_effects.on_hit(self, attacker, move)
 
     # ------------------------------------------------------------------
     # Held items — data-driven hooks fired by BattleSystem, mirroring the
@@ -687,99 +563,28 @@ class BattlePokemon:
         return [f"{self.name}'s {stat} rose!"]
 
     # ------------------------------------------------------------------
-    # Weather-linked abilities. Weather itself is owned by BattleSystem; these
-    # only read what this pokemon's ability wants, so the system can apply it.
+    # Weather-linked abilities and the switch-in / turn-end hooks. Weather
+    # itself is owned by BattleSystem; these only read what this pokemon's
+    # ability wants. Implemented in ability_effects.py.
     # ------------------------------------------------------------------
 
     def weather_on_switch_in(self) -> str | None:
-        """The weather this pokemon's ability summons on entry (Drought → sun),
-        or None. Returned as the raw string; BattleSystem maps it to Weather."""
-        for effect in self._ability_effects("on_switch_in"):
-            if effect.type == "weather" and effect.weather:
-                return effect.weather
-        return None
+        return ability_effects.weather_on_switch_in(self)
 
     def weather_speed_multiplier(self, weather: str) -> float:
-        """Swift Swim / Chlorophyll: a speed multiplier while their weather is up."""
-        for effect in self._ability_effects("weather"):
-            if effect.type == "speed" and effect.weather == weather:
-                return 1 + (effect.change or 0) / 100
-        return 1.0
+        return ability_effects.weather_speed_multiplier(self, weather)
 
     def weather_heal(self, weather: str) -> list[str]:
-        """Rain Dish / Ice Body: heal a little at end of turn in their weather."""
-        for effect in self._ability_effects("weather"):
-            if (
-                effect.type == "heal"
-                and effect.weather == weather
-                and self.current_hp < self.max_hp
-            ):
-                healed = max(1, int(self.max_hp * (effect.change or 0) / 100))
-                self.current_hp = min(self.max_hp, self.current_hp + healed)
-                return [f"{self.name} restored HP with {self.ability_name}!"]
-        return []
+        return ability_effects.weather_heal(self, weather)
 
     def absorbs_weather(self, weather: str) -> bool:
-        """Whether this pokemon's ability makes it immune to `weather`'s chip —
-        e.g. Ice Body thrives in hail, so it heals instead of taking damage."""
-        return any(
-            effect.type == "heal" and effect.weather == weather
-            for effect in self._ability_effects("weather")
-        )
+        return ability_effects.absorbs_weather(self, weather)
 
     def on_switch_in(self, opponent: BattlePokemon) -> list[str]:
-        messages = []
-        for effect in self._ability_effects("on_switch_in"):
-            if not self._ability_condition_met(effect):
-                continue
-
-            if effect.type == "stat_change":
-                target = opponent if effect.target == "enemy" else self
-                messages.extend(self._apply_stat_effect(effect, target))
-                messages.append(f"{self.name}'s {self.ability_name} took effect!")
-
-            elif effect.type == "status":
-                target = opponent if effect.target == "enemy" else self
-                applied, message = self._apply_status_effect_ability(effect, target)
-                if applied:
-                    messages.append(message)
-
-        return messages
+        return ability_effects.on_switch_in(self, opponent)
 
     def on_turn_end(self, opponent: BattlePokemon) -> list[str]:
-        messages = []
-        for effect in self._ability_effects("on_turn_end"):
-            if not self._ability_condition_met(effect):
-                continue
-
-            if effect.type == "stat_change":
-                target = opponent if effect.target == "enemy" else self
-                messages.extend(self._apply_stat_effect(effect, target))
-
-            elif effect.type == "cure_status":
-                if self.status_effect != StatusEffect.NONE:
-                    chance = effect.chance if effect.chance is not None else 1.0
-                    if random.random() < chance:
-                        cured = self.status_effect.value
-                        self.status_effect = StatusEffect.NONE
-                        self.sleep_counter = 0
-                        messages.append(
-                            f"{self.name}'s {self.ability_name} cured its {cured}!"
-                        )
-
-            elif effect.type == "heal":
-                messages.extend(self._heal_from_ability(effect))
-
-        return messages
-
-    @staticmethod
-    def _status_from(value) -> StatusEffect | None:
-        if not value:
-            return None
-        try:
-            return StatusEffect(value)
-        except ValueError:
-            return None
+        return ability_effects.on_turn_end(self, opponent)
 
     # ------------------------------------------------------------------
     # Exp and levelling — delegated to self.progression; this object only

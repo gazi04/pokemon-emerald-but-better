@@ -132,7 +132,7 @@ def test_levitate_immune_to_ground():
 def test_static_paralyses_attacker_on_contact():
     defender = _mon(STATIC)
     attacker = _mon()
-    with patch("src.model.battle.battle_pokemon.random.random", return_value=0.0):
+    with patch("src.model.battle.ability_effects.random.random", return_value=0.0):
         messages = defender.on_hit(attacker, _move("normal", "physical"))
     assert attacker.status_effect == StatusEffect.PARALYSIS and messages
 
@@ -140,7 +140,7 @@ def test_static_paralyses_attacker_on_contact():
 def test_static_no_proc_on_non_contact():
     defender = _mon(STATIC)
     attacker = _mon()
-    with patch("src.model.battle.battle_pokemon.random.random", return_value=0.0):
+    with patch("src.model.battle.ability_effects.random.random", return_value=0.0):
         messages = defender.on_hit(attacker, _move("normal", "special"))
     assert attacker.status_effect == StatusEffect.NONE and not messages
 
