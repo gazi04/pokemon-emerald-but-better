@@ -718,7 +718,7 @@ def test_next_move_to_learn_skips_already_known_move():
 
     assert result is not None
     assert result["type"] == "learned"
-    assert bs._learn_queue == []
+    assert bs._move_learning._queue == []
 
 
 def test_next_move_to_learn_learns_when_free_slot():
@@ -747,19 +747,19 @@ def test_next_move_to_learn_needs_replace_when_moveset_full():
 
     assert result is not None
     assert result["type"] == "needs_replace"
-    assert bs._pending_learn == "growl"
+    assert bs._move_learning.pending == "growl"
 
 
 def test_replace_learned_move_forgets_and_learns():
     bs, your, _ = make_battle_system()
     your.replace_move = MagicMock(return_value="tackle")
-    bs._pending_learn = "growl"
+    bs._move_learning.pending = "growl"
     cast(MagicMock, bs.data_loader).get_move.return_value = make_poke_move(name="growl")
 
     messages = bs.replace_learned_move(0)
 
     your.replace_move.assert_called_once_with(0, "growl", 35)
-    assert bs._pending_learn is None
+    assert bs._move_learning.pending is None
     assert any("forgot Tackle" in m for m in messages)
 
 
@@ -774,13 +774,13 @@ def test_replace_learned_move_raises_without_pending():
 
 def test_skip_learned_move_returns_decline_message():
     bs, your, _ = make_battle_system()
-    bs._pending_learn = "growl"
+    bs._move_learning.pending = "growl"
     cast(MagicMock, bs.data_loader).get_move.return_value = make_poke_move(name="growl")
 
     messages = bs.skip_learned_move()
 
     assert messages == [f"{your.name} did not learn Growl."]
-    assert bs._pending_learn is None
+    assert bs._move_learning.pending is None
 
 
 def test_skip_learned_move_raises_without_pending():
