@@ -19,6 +19,7 @@ from src.model.static.item import ItemSpecies
 from src.model.static.trainer import Trainer, TrainerPokemon
 from src.model.static.pokemon import PokemonMove
 from src.systems.enemy_ai import EnemyAI
+from src.systems import battle_weather
 from src.systems.move_learning import MoveLearningQueue
 from src.constants import CHANCE_TO_GET_ITEM, ITEMS_FROM_PICK_UP
 
@@ -110,9 +111,7 @@ class BattleSystem:
         return messages
 
     def _weather_speed(self, pokemon: BattlePokemon) -> int:
-        """Speed for turn order, including Swift Swim / Chlorophyll in weather."""
-        base = pokemon.get_stat(Stat.SPEED)
-        return round(base * pokemon.weather_speed_multiplier(self.weather.kind))
+        return battle_weather.speed(pokemon, self.weather)
 
     @staticmethod
     def _validate_move_index(pokemon: BattlePokemon, move_index: int) -> None:
@@ -443,12 +442,7 @@ class BattleSystem:
         return MoveOutcome(messages, landed=True)
 
     def _apply_move_weather(self, move_data: PokemonMove) -> list[str]:
-        """Summon weather from a move's `weather` effect, if it has one."""
-        messages: list[str] = []
-        for effect in move_data.effects:
-            if effect.type == EffectType.WEATHER and effect.weather:
-                messages.extend(self.weather.set(Weather(effect.weather)))
-        return messages
+        return battle_weather.apply_move_weather(self.weather, move_data)
 
     def _check_move_condition(
         self, move_data: PokemonMove, attacker: BattlePokemon
@@ -532,31 +526,9 @@ class BattleSystem:
         return messages
 
     def _apply_weather_end_of_turn(self) -> list[str]:
-        """Weather's per-turn effects on both active Pokémon, then its countdown.
-
-        Heal abilities (Rain Dish/Ice Body) first, then sandstorm/hail chip on
-        anything not immune. HP changes are published by post_turn's net-change
-        check, so this only mutates and messages.
-        """
-        if not self.weather.is_active:
-            return []
-
-        messages: list[str] = []
-        for pokemon in (self.your_pokemon, self.enemy_pokemon):
-            if pokemon.current_hp <= 0:
-                continue
-
-            messages.extend(pokemon.weather_heal(self.weather.kind))
-
-            takes_chip = self.weather.damages(
-                pokemon.types
-            ) and not pokemon.absorbs_weather(self.weather.kind)
-            if takes_chip:
-                pokemon.take_damage(self.weather.residual_damage(pokemon.max_hp))
-                messages.append(self.weather.residual_message(pokemon.name))
-
-        messages.extend(self.weather.tick())
-        return [m for m in messages if m]
+        return battle_weather.apply_end_of_turn(
+            self.weather, self.your_pokemon, self.enemy_pokemon
+        )
 
     def pokemon_death(self, died_pokemon: BattlePokemon) -> list[str]:
         messages = []
