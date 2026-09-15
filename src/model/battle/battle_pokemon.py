@@ -6,7 +6,7 @@ from src.model.save.player import PlayerPokemon, PlayerPokemonMove
 from src.enums.stat import Stat
 from src.enums.status_effect import StatusEffect
 from src.enums.effect_type import EffectType
-from src.model.battle import ability_effects
+from src.model.battle import ability_effects, held_item_effects
 from src.model.battle.progression import Progression
 from src.model.battle.exp_gain_result import ExpGainResult
 from src.model.static.ability import Ability
@@ -429,138 +429,27 @@ class BattlePokemon:
         return ability_effects.on_hit(self, attacker, move)
 
     # ------------------------------------------------------------------
-    # Held items — data-driven hooks fired by BattleSystem, mirroring the
-    # ability hooks. Berries are consumed (removed from the holder + its save
-    # source); passive items (choice/type/orb) stay equipped.
+    # Held items — implemented in held_item_effects.py, delegated here so
+    # BattleSystem's hook calls stay on the pokemon itself.
     # ------------------------------------------------------------------
 
-    def _consume_item(self) -> None:
-        self.held_item = None
-        if self.source is not None:
-            self.source.held_item = None
-
     def item_attack_multiplier(self, move: PokemonMove) -> float:
-        """Passive offensive item multiplier folded into damage: Life Orb / type
-        boosters (damage_multiplier) and Choice Band/Specs (stat_multiplier)."""
-        item = self.held_item
-        if not item or not item.battle_attributes:
-            return 1.0
-        attrs = item.battle_attributes
-        multiplier = 1.0
-
-        if attrs.damage_multiplier:
-            move_type = (
-                item.battle_condition.move_type if item.battle_condition else None
-            )
-            if move_type is None or move.type == move_type:
-                multiplier *= attrs.damage_multiplier
-
-        if attrs.stat_multiplier:
-            stat = attrs.stat_multiplier.get("stat")
-            mult = attrs.stat_multiplier.get("multiplier", 1.0)
-            if (stat == "attack" and move.category == "physical") or (
-                stat == "special_attack" and move.category == "special"
-            ):
-                multiplier *= mult
-
-        return multiplier
+        return held_item_effects.attack_multiplier(self, move)
 
     def item_recoil_self(self, move: PokemonMove) -> list[str]:
-        """Life Orb: the attacker loses HP after landing a damaging move."""
-        item = self.held_item
-        if not item or not move.power:
-            return []
-        for effect in item.effects:
-            if effect.type == EffectType.RECOIL_TO_SELF and effect.percent:
-                self.take_damage(max(1, int(self.max_hp * effect.percent / 100)))
-                return [f"{self.name} was hurt by its {item.name}!"]
-        return []
+        return held_item_effects.recoil_self(self, move)
 
     def item_on_hit(self, attacker: BattlePokemon, move: PokemonMove) -> list[str]:
-        """Rocky Helmet: the holder's item hurts the attacker on a contact hit."""
-        item = self.held_item
-        if item is None:
-            return []
-        cond = item.battle_condition
-        if not cond or cond.trigger != "on_hit":
-            return []
-        if cond.contact_only and move.category != "physical":
-            return []
-        for effect in item.effects:
-            if effect.type == EffectType.RECOIL_TO_ATTACKER and effect.percent:
-                attacker.take_damage(
-                    max(1, int(attacker.max_hp * effect.percent / 100))
-                )
-                return [f"{attacker.name} was hurt by {self.name}'s {item.name}!"]
-        return []
+        return held_item_effects.on_hit(self, attacker, move)
 
     def item_turn_end(self) -> list[str]:
-        """Leftovers: restore a little HP at the end of the turn."""
-        item = self.held_item
-        if item is None:
-            return []
-        cond = item.battle_condition
-        if not cond or cond.trigger != "on_turn_end" or self.current_hp >= self.max_hp:
-            return []
-        for effect in item.effects:
-            if effect.type == EffectType.HEAL and effect.percent:
-                healed = max(1, int(self.max_hp * effect.percent / 100))
-                self.current_hp = min(self.max_hp, self.current_hp + healed)
-                return [f"{self.name} restored a little HP using its {item.name}!"]
-        return []
+        return held_item_effects.turn_end(self)
 
     def consume_berry_on_hp(self) -> list[str]:
-        """Pinch berries (Sitrus/Oran heal, Salac/Liechi stat) — eaten when HP
-        drops to/below the berry's threshold."""
-        item = self.held_item
-        if item is None:
-            return []
-        cond = item.battle_condition
-        if not cond or cond.trigger != "hp_threshold" or self.current_hp <= 0:
-            return []
-        if self.current_hp / self.max_hp > (cond.threshold or 0):
-            return []
-
-        messages = [f"{self.name} ate its {item.name}!"]
-        for effect in item.effects:
-            if effect.type == EffectType.HEAL:
-                healed = (
-                    max(1, int(self.max_hp * effect.percent / 100))
-                    if effect.percent
-                    else (effect.amount or 0)
-                )
-                self.current_hp = min(self.max_hp, self.current_hp + healed)
-                messages.append(f"{self.name} restored its HP.")
-            elif effect.type == EffectType.STAT and effect.stat:
-                messages.extend(
-                    self._raise_stat_from_item(Stat(effect.stat), effect.change or 1)
-                )
-        self._consume_item()
-        return messages
+        return held_item_effects.consume_berry_on_hp(self)
 
     def consume_berry_on_status(self) -> list[str]:
-        """Lum Berry: cure any status the moment one is inflicted."""
-        item = self.held_item
-        if item is None:
-            return []
-        cond = item.battle_condition
-        if not cond or cond.trigger != "on_status":
-            return []
-        if self.status_effect == StatusEffect.NONE and self.confusion_counter == 0:
-            return []
-        name = item.name
-        self.status_effect = StatusEffect.NONE
-        self.sleep_counter = 0
-        self.confusion_counter = 0
-        self._consume_item()
-        return [f"{self.name}'s {name} cured its status!"]
-
-    def _raise_stat_from_item(self, stat: Stat, change: int) -> list[str]:
-        current = self.modifiers.get(stat, 0)
-        if current >= 6:
-            return [f"{self.name}'s {stat} won't go any higher!"]
-        self.modifiers[stat] = min(6, current + change)
-        return [f"{self.name}'s {stat} rose!"]
+        return held_item_effects.consume_berry_on_status(self)
 
     # ------------------------------------------------------------------
     # Weather-linked abilities and the switch-in / turn-end hooks. Weather
